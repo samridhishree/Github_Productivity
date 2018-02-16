@@ -1,5 +1,5 @@
 '''
-Computes pairwise P_k scores for the three bust segregation types
+Computes pairwise P_k scores for the three burst segregation types
 '''
 
 import os
@@ -10,18 +10,24 @@ import cPickle as pickle
 from datetime import datetime, date
 import math
 from collections import OrderedDict
+import argparse
 
-ref_burst_pickle = sys.argv[1]
-hyp_burst_pickle = sys.argv[2]
-project_active_days_pickle = sys.argv[3]
-valid_projects_pickle = sys.argv[4]
-output_file = sys.argv[5]
+parser = argparse.ArgumentParser()
+parser.add_argument('--ref_burst_pickle', help='Pickled dictionary for model 1 burst')
+parser.add_argument('--hyp_burst_pickle', help='Pickled dictionary for model 2 burst')
+parser.add_argument('--project_active_days_pickle', help='Pickled dictionary of the format: {project:[list of active days]}')
+parser.add_argument('--output_file', help='Output csv file containing pairwise average pk values')
+args, unknown = parser.parse_known_args()
+
+ref_burst_pickle = args.ref_burst_pickle
+hyp_burst_pickle = args.hyp_burst_pickle
+project_active_days_pickle = args.project_active_days
+output_file = args.output_file
 
 ref_bursts = pickle.load(open(ref_burst_pickle, 'rb'))
-projects = pickle.load(open(valid_projects_pickle, 'rb'))
-#projects = ['collective~collective.z3cform.select2']#, 'goinnn~django-multiselectfield', 'sdague~amt']
 hyp_bursts = pickle.load(open(hyp_burst_pickle, 'rb'))
 active_days = pickle.load(open(project_active_days_pickle, 'rb'))
+projects = ref_bursts.keys()
 
 # converts burst start and end points to datetime objects 
 def FormatBurstIntervals(bursts):
@@ -116,6 +122,8 @@ writer.writerow(['project', 'p_k'])
 
 # Compute P_k for each project
 for project in projects:
+    if project not in hyp_burst:
+        continue
     print "Computing pk values for the project = ", project
     # Get the active days
     project_active_days = active_days[project]

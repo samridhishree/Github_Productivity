@@ -10,14 +10,22 @@ import cPickle as pickle
 from datetime import datetime, date
 import math
 from collections import OrderedDict
+import argparse
 
-ref_burst_pickle = sys.argv[1]
-tt_burst_dir = sys.argv[2]
-project_active_days_pickle = sys.argv[3]
-valid_projects_pickle = sys.argv[4]
-output_file = sys.argv[5]
+parser = argparse.ArgumentParser()
+parser.add_argument('--ref_burst_pickle', help='Pickled dictionary for model 1 burst')
+parser.add_argument('--tt_burst_dir', help='Directory storing projectwise TT segments')
+parser.add_argument('--project_active_days_pickle', help='Pickled dictionary of the format: {project:[list of active days]}')
+parser.add_argument('--output_file', help='Output csv file containing pairwise average pk values')
+args, unknown = parser.parse_known_args()
+
+ref_burst_pickle = args.ref_burst_pickle
+tt_burst_dir = args.tt_burst_dir
+project_active_days_pickle = args.project_active_days
+output_file = args.output_file
+
 ref_bursts = pickle.load(open(ref_burst_pickle, 'rb'))
-projects = pickle.load(open(valid_projects_pickle, 'rb'))
+projects = ref_bursts.keys()
 active_days = pickle.load(open(project_active_days_pickle, 'rb'))
 
 # converts burst start and end points to datetime objects 
