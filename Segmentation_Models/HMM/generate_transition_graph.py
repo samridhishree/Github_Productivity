@@ -19,7 +19,7 @@ args, unknown = parser.parse_known_args()
 
 model_file = args.model_file
 output_dir = args.output_dir
-nstates = args.nstates
+nstates = int(args.nstates) 
 
 # Returns a dictionary of edge pairs with the transition probability as the weights
 def GetMarkovEdges(trans_mat, nstates):

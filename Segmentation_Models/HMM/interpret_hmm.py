@@ -3,7 +3,7 @@ Interpret the trained HMM model. Loads the transiton probabilities and mean and 
 '''
 
 import os
-import sys
+import sys  
 import csv
 import joblib
 import pandas as pd
@@ -18,7 +18,7 @@ args, unknown = parser.parse_known_args()
 model_dir = args.model_dir
 output_dir = args.output_dir
 
-focus_var = ['git_commits', 'gha_pr_merge', 'gha_pushes', \
+focus_vars = ['git_commits', 'gha_pr_merge', 'gha_pushes', \
             'gha_issue_comments' , 'gha_commit_comments', \
             'nml_pull_request_title', 'issues_opened', 'issues_closed']
 
