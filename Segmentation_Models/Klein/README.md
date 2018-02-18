@@ -7,7 +7,7 @@ This folder contains an implementation of the timeline segmentation of project a
 2. __Pandas__ - https://pandas.pydata.org/
 
 ## Data
-The input the the raw csv files containing the daily activity counts for different activities in a GitHub project.
+The input consists of the raw csv files containing the daily activity counts for different activities in a GitHub project.
 
 ## Execution Steps
 The execution is divided into following steps. Each step is noted with the corresponding script file. Please have a look at the file for the commandline arguments and usage:
