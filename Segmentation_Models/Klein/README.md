@@ -12,10 +12,10 @@ The input the the raw csv files containing the daily activity counts for differe
 ## Execution Steps
 The execution is divided into following steps. Each step is noted with the corresponding script file. Please have a look at the file for the commandline arguments and usage:
 
-1. __Compute the frequency of occurance of the project events__ - The raw csv files with daily activity counts are read with the activities summed for each day. Burst score for each day in the timeline is then calculated.
+1. __Compute the frequency of occurance of the project events__ - The raw csv files with daily activity counts are converted into their frequency of arrival from the beginning of the project (inverse of the offset of the days from the beginning of the project).
 > Script : __create_offsets_from_activity.py__
 
-2. __Segment the Timeline__ - Given the burst scores for each day, finds the intervals of days that maximize the overall burst score.
+2. __Segment the Timeline__ - The frequencies calculated above are modeled using an automaton.
 > Script: __klein_bursts.R__ 
 
 3. __Format the Burst__ - From the automata state assignments predicted from the previous step, map it to daily bursts (continuous run of days with the same state)
