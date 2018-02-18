@@ -6,7 +6,7 @@ This folder contains an implementation of the timeline segmentation of project a
 1. __Pandas__ - https://pandas.pydata.org/
 
 ## Data
-The input the the raw csv files containing the daily activity counts for different activities in a GitHub project. Since the sequence should be continuous run of days, a `NullState` is inserted in between 2 contiguous days to make a full continuous interval.
+The input consists of the raw csv files containing the daily activity counts for different activities in a GitHub project. Since the sequence should be continuous run of days, a `NullState` is inserted in between 2 contiguous days to make a full continuous interval.
 
 ## Execution Steps
 The execution is divided into following steps. Each step is noted with the corresponding script file. Please have a look at the file for the commandline arguments and usage:
