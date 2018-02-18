@@ -1,5 +1,5 @@
 '''
-Computes the P_k scores for the three bust segregation types
+Computes the P_k scores for the three burst segregation types with the TT segments
 '''
 
 import os
