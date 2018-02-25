@@ -2,7 +2,9 @@
 
 ### (_SIGKDD, 2018 - Applied Data Science Submission - Observational Track_)
 
-Data and code will be released soon
+Data and code are in the process of being released.
+
+Segmentation Models Released. Congruence coming soon.
 
 ## Abstract
 In open-source software development, coordination between globally separated developers is often structured in ways not immediately visible to them, such as implicit groupings of people working on similar code and related issues.
