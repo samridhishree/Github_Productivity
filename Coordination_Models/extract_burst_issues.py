@@ -1,5 +1,7 @@
 '''
-Extracts the issues belonging to the bursty periods for projects
+Extracts the issues belonging to the bursty periods for projects.
+Output -  csv file per burst per project containing the issues that were active during a burst.
+Bursts are indexed by their IDs (arranged chronologically)
 '''
 
 import os
@@ -11,13 +13,21 @@ import cPickle as pickle
 import pandas as pd
 from collections import defaultdict
 from datetime import datetime
+import argparse
 
 
 csv.field_size_limit(sys.maxsize)
 
-issue_dir = sys.argv[1]
-output_dir = sys.argv[2]
-project_burst_pickle = sys.argv[3]
+parser = argparse.ArgumentParser()
+parser.add_argument('--issue_dir', help='Directory with issue files')
+parser.add_argument('--output_dir', help='Directory containing active issues per burst per project')
+parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information')
+args, unknown = parser.parse_known_args()
+
+
+issue_dir = args.issue_dir
+output_dir = args.output_dir
+project_burst_pickle = args.burst_pickle
 
 burst_dict = pickle.load(open(project_burst_pickle, 'rb'))
 projects = burst_dict.keys()
@@ -41,12 +51,8 @@ def FormatBurstTimeInterval(bursts):
 		high = parts[1]
 		low = low.replace('/', '-')
 		high_str = high.replace('/', '-')
-		#low = low + '-01'
 		low = datetime.strptime(low, '%Y-%m-%d')
 		high = datetime.strptime(high_str, '%Y-%m-%d')
-		#day_range = calendar.monthrange(high.year, high.month)
-		#high = high_str + '-' + str(day_range[1])
-		#high = datetime.strptime(high, '%Y-%m-%d')
 		formatted.append((low, high))
 	return formatted
 
