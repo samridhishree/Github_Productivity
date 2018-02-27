@@ -1,5 +1,12 @@
 '''
-Generates a graph from the co-commit adjacency matrix provided. The matrix is weighted and undirected
+Generates a graph from the pairwise co-commit counts. The matrix is weighted and undirected.
+It also partitions the graph to find clusters/modules of files that are highly interdependent on each other.
+
+The partioning mehod: Fast unfolding of communities in large networks, Vincent D Blondel, Jean-Loup Guillaume, 
+					Renaud Lambiotte, Renaud Lefebvre, Journal of Statistical Mechanics: Theory and Experiment 2008
+Outputs:
+[1] A gml file containing the co-commit graph
+[2] A csv file per project containing graph metric - degree of each node (file); class that each node belongs to after partioning
 '''
 import os
 import sys
@@ -8,14 +15,23 @@ import community
 import cPickle as pickle
 import networkx as nx
 import pandas as pd
+import argparse
 
 csv.field_size_limit(sys.maxsize)
-adj_pickle_dir = sys.argv[1]
-output_graph_path = sys.argv[2]
-output_csv_path = sys.argv[3]
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--adj_pickle_dir', help='Directory containing pickles list of file pair co-commit counts')
+parser.add_argument('--output_graph_path', help='Output directory to store the gml graph files.')
+parser.add_argument('--output_csv_path', help='Output directory to store graph metrics obtained by partioning the graph')
+args, unknown = parser.parse_known_args()
+
+
+adj_pickle_dir = args.adj_pickle_dir
+output_graph_path =args.output_graph_path
+output_csv_path = args.output_csv_path
 title_row = ['file_name', 'degree', 'modularity_class', 'modularity_measure']
 
-#Read the adjacency matrix and create code graph as well as partioning
+#Read the pairwise co-commits and create code graph as well as partioning
 for fileName in os.listdir(adj_pickle_dir):
 	if fileName.endswith('.pickle'):
 		project_name = fileName.split('_co_commit.pickle')[0]

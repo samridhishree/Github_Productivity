@@ -1,6 +1,6 @@
 '''
 Generates all pairs of files that are committed together and updates their counts.
-Hoping this to be faster than the other method - faster
+Output - pair of files comitted together along with the number of times they are committed together
 '''
 import os
 import sys
@@ -12,11 +12,18 @@ import cPickle as pickle
 from collections import defaultdict
 from itertools import combinations, product, chain
 import time
+import argparse
+
 
 csv.field_size_limit(sys.maxsize)
 
-processed_commit_dir = sys.argv[1]
-output_pickle_dir = sys.argv[2]
+parser = argparse.ArgumentParser()
+parser.add_argument('--processed_commit_dir', help='Directory containing commit files processed for graphs')
+parser.add_argument('--output_pickle_dir', help='Output pickle file containing pairwise file co-commit counts')
+args, unknown = parser.parse_known_args()
+
+processed_commit_dir = args.processed_commit_dir
+output_pickle_dir = args.output_pickle_dir
 
 for filename in os.listdir(processed_commit_dir):
 	commit_file = os.path.join(processed_commit_dir, filename)
