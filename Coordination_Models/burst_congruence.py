@@ -1,7 +1,7 @@
 '''
 Implementation of Socio-Technical Congruence Measure introduced by Cataldo et.al. 
-The measure is calculated for 2 types of dependencies - FCT (Files that Change Together) and CGRAPH (Call Graph - synctactic dependencies)
-This implementation is only for the FCT dependencies
+The original measure is calculated for 2 types of dependency - FCT (Files that Change Together) and CGRAPH (Call Graph - synctactic dependencies)
+This implementation is only for the FCT dependencies.
 The actual ccordination is also measured in two respects - CA_mod (people belonging to the same module) and 
 														   CA_pr (people participating in the PR discussion thread)
 Thus, there are 2 Congruence Measures calculated: CM_mod^FCT and CM_PR^FCT
@@ -19,23 +19,26 @@ from collections import defaultdict, OrderedDict
 from itertools import groupby, combinations
 from datetime import datetime
 from dateutil import relativedelta
+import argaprse
 
 csv.field_size_limit(sys.maxsize)
 
 fct_adjacency_dir = sys.argv[1]
-user_file_pickle_dir = sys.argv[2]	#new commit
-user_mod_fct = sys.argv[3] #new commit
+user_file_pickle_dir = sys.argv[2]	
+user_mod_fct = sys.argv[3]
 bursty_commits_dir = sys.argv[4] 
 bursty_issues_dir = sys.argv[5]
 project_bursts_pickle = sys.argv[6]
 file_mod_pickle_dir = sys.argv[7]
-user_experience_pickle_dir = sys.argv[8]	#new commit
-participation_csv = sys.argv[9]	#new commit
+user_experience_pickle_dir = sys.argv[8]
+participation_csv = sys.argv[9]
 output_csv_dir = sys.argv[10]
 output_pickle_dir = sys.argv[11]
 output_csv_req_metrics = sys.argv[12]
-part_absent = []
 
+'''
+Converts the burst intervals to actual datetime intervals
+'''
 def FormatBurstTimeInterval(bursts):
 	formatted = []
 	for i,burst in enumerate(bursts):
@@ -44,16 +47,14 @@ def FormatBurstTimeInterval(bursts):
 		high = parts[1]
 		low = low.replace('/', '-')
 		high_str = high.replace('/', '-')
-		#low = low + '-01'
 		low = datetime.strptime(low, '%Y-%m-%d')
 		high = datetime.strptime(high_str, '%Y-%m-%d')
-		#day_range = calendar.monthrange(high.year, high.month)
-		#high = high_str + '-' + str(day_range[1])
-		#high = datetime.strptime(high, '%Y-%m-%d')
 		formatted.append((low, high))
 	return formatted
 
-
+'''
+Calculate the cm matrix
+'''
 def CalculateCM(ca_df, cr_df):
 	rows, cols = np.where(cr_df != 0)
 	rows = list(rows)
@@ -73,7 +74,9 @@ def CalculateCM(ca_df, cr_df):
 		cm = (float)(count)/(float)(cr_cardinality)
 	return cm
 
-#Bookeeping function to unpickle user_file adjacency
+'''
+Bookeeping function to unpickle user_file adjacency
+'''
 def dd():
 	return defaultdict(int)
 
@@ -90,6 +93,9 @@ def ConvertStringToTime(str_time):
 	str_obj = datetime.strptime(str_time, '%Y-%m-%d %H:%M:%S')
 	return str_obj
 
+'''
+Get the open and close times of an issue and convert them to datetime objects for better processing
+'''
 def GetIssueTimes(issue_df, burst_start, burst_end, for_art=False):
 	starts = issue_df.loc[issue_df['action'] == 'start issue']
 	closes = issue_df.loc[issue_df['action'] == 'closed issue']
@@ -121,7 +127,9 @@ def GetIssueTimes(issue_df, burst_start, burst_end, for_art=False):
 		return start_times, close_times
 
 
-# Get the number of issues opened in the burst period and the number if issues_closed
+'''
+Get the number of issues opened in the burst period and the number of issues_closed
+'''
 def GetOpenCloseIssues(issue_df, burst_start, burst_end):
 	opened = 0
 	closed = 0
@@ -179,18 +187,18 @@ def ConvertToFormattedTime(time_df):
 	times = list(time_df)
 	formatted_time = []
 	for t in times:
-		#print "time = ", t
 		ft = t.split('+')[0]
 		t_obj = datetime.strptime(ft, '%Y-%m-%d %H:%M:%S')
 		formatted_time.append(t_obj)
-		# print t_obj
 	formatted_series = pd.Series(formatted_time)
 	return formatted_series
 
+'''
+Get the issues active in the burst
+'''
 def GetIssueInBurst(issue_df, burst_start, burst_end):
 	times = issue_df['time']
 	times.dropna(inplace=True)
-	#print times
 	issue_df['formatted_time'] = ConvertToFormattedTime(times)
 	sub1 = issue_df.loc[issue_df['formatted_time'] >= burst_start]
 	sub2 = sub1.loc[sub1['formatted_time'] <= burst_end]
@@ -231,9 +239,10 @@ def CalculateTenure(participation, users, burst_end):
 	return avg
 
 
-#Read the PR info csv files for each project and compute measure for each PR in the project
+'''
+Read the PR info csv files for each project and compute measure for each PR in the project
+'''
 def CalculateAndStoreCongruence(project_name, bursts):
-	#print "Processing for project: ", project_name
 	prev = project_name
 	project_name = project_name.replace("~", "_")	
 	fct_adjacency_file = project_name + '_co_commit.pickle'
@@ -246,8 +255,8 @@ def CalculateAndStoreCongruence(project_name, bursts):
 	if (os.path.isfile(os.path.join(user_mod_fct, user_mod_filename)) == True) and \
 	(os.path.isfile(os.path.join(fct_adjacency_dir, fct_adjacency_file)) == True):
 		print "Calculating the measure for the project = ", project_name
+		
 		#Load all the data from the required files
-
 		fct_adjacency = pickle.load(open(os.path.join(fct_adjacency_dir, fct_adjacency_file), 'rb'))
 		user_file_dict = pickle.load(open(os.path.join(user_file_pickle_dir, user_file_pickle), 'rb'))
 		user_mod_fct_dict = pickle.load(open(os.path.join(user_mod_fct, user_mod_filename), 'rb'))
@@ -261,32 +270,26 @@ def CalculateAndStoreCongruence(project_name, bursts):
 		final_info_dict = []
 		
 		for burst_id,burst in enumerate(bursts):
-			#print "burst_id : ", burst_id
-			#print burst
 			commit_file_name = prev + "_burst_" + str(burst_id) + "_commits.csv"
 			issue_file_name = prev + "_burst_" + str(burst_id) + "_issues.csv"
 			commit_file = os.path.join(bursty_commits_dir, commit_file_name)
 			issue_file = os.path.join(bursty_issues_dir, issue_file_name)
 			file_modules_involved = set()
 			user_modules_involved = set()
-			#print "commit file = ", commit_file
-			#print "issue file = ", issue_file
-
+			
 			if os.path.isfile(commit_file) == True and os.path.isfile(issue_file) == True:
 				commits = pd.read_csv(open(commit_file,'rU'))#, encoding='utf-8')
 				issues = pd.read_csv(open(issue_file,'rU'))#, encoding='utf-8')
 				issue_events_in_burst = GetIssueInBurst(issues, burst[0], burst[1])
 				valid_issues = GetValidIssueCommentsForBurst(issue_events_in_burst)
+				
 				#Commits
 				all_files = commits['paths']
 				all_files.fillna('', inplace=True)
-				#print "all_files = ", all_files
-				files_modified = set()
 				for files_commited in list(all_files):
 					if str(files_commited) == '':
 						continue
 					files_commited = ast.literal_eval(files_commited)
-					print "files_commited = ", type(files_commited[0])
 					for file in files_commited[0]:
 						if file.endswith('.py'):
 							file = file.lower()
@@ -302,7 +305,6 @@ def CalculateAndStoreCongruence(project_name, bursts):
 				commenting_users = set(commenting_users)
 				commiting_users = set(commiting_users)
 
-				#print 'before commiting_users: ', commiting_users
 				commenting_users = list(map(lambda x:str(x), commenting_users))
 				commiting_users = list(map(lambda x: str(x), commiting_users))
 				commenting_users = list(map(lambda x: x.lower(), commenting_users))
@@ -312,14 +314,10 @@ def CalculateAndStoreCongruence(project_name, bursts):
 
 				#Group the issues by their issue_ids
 				grouped = issues.groupby('issueid', axis=0)
-				# grouped = issues.groupby('issueid', axis=0)
 				issue_dict = {}
 				for i,group in grouped:
 					issue_dict[i] = set(group['actor'])
 				
-				#print "user_superset = ", user_superset
-				#print "commenting_users: ", commenting_users
-				#print 'commiting_users: ', commiting_users
 				all_users = set(commenting_users + commiting_users)
 				all_users = set(map(lambda x: x.lower(), all_users))
 				
@@ -329,10 +327,6 @@ def CalculateAndStoreCongruence(project_name, bursts):
 				avg_comp_experience = 0.0
 				if len(files_modified) > 0 and len(commiting_users) > 1: #and len(commiting_users) > 0:
 					ta_dict = defaultdict(lambda: defaultdict(int))
-					#print 'user_file_dict.keys: ', user_file_dict.keys()
-					#print 'user_mod_fct_dict.keys ', user_mod_fct_dict.keys()
-					#print "all_users:", all_users
-					#print "files_modified: ", files_modified
 					for user in commiting_users:
 						if user in user_file_dict:
 							for file in files_modified:
@@ -411,17 +405,12 @@ def CalculateAndStoreCongruence(project_name, bursts):
 					#For users present in commit list but not in the issue, add zero rows for them
 					common_users = set(commiting_users).intersection(set(commenting_users))
 					remaining_users = set(commiting_users) - common_users
-					#print 'commiting_users :', set(commiting_users)
-					#print 'commenting_users: ', set(commenting_users)
-					#print 'common users: ', common_users
-					#print "remaining_users : ", remaining_users
-
+					
 					#print ca_mr_dict
 					for user in remaining_users:
 						ca_mr_dict[user][user] = 1
-					#print 'cs_mr_dict users:', ca_mr_dict.keys()
-
 					ca_mr_df = pd.DataFrame.from_dict(ca_mr_dict, orient='index')
+					
 					#Consider only the subset of committing users from the above adjacency matrix
 					commiting_users = set(commiting_users)
 					ca_mr_df = ca_mr_df.loc[commiting_users, commiting_users]
@@ -430,9 +419,8 @@ def CalculateAndStoreCongruence(project_name, bursts):
 					ca_mr_df = ca_mr_df.reindex_axis(sorted(ca_mr_df.columns), axis=1)
 
 
-					'''
-					Congruence Measures Calculations - CM_mod^FCT and CM_PR^FCT
-					'''
+					
+					# Congruence Measures Calculations - CM_mod^FCT and CM_PR^FCT
 					cm_mod_fct = CalculateCM(ca_mod_fct_df, cr_fct)
 					cm_mr_fct = CalculateCM(ca_mr_df, cr_fct)
 					cr_file = project_name + "_burst_" + str(burst_id) + "_requirements.csv"
@@ -447,18 +435,12 @@ def CalculateAndStoreCongruence(project_name, bursts):
 
 
 				#Calculate the values of the control variables
-				# duration_time = burst[1] - burst[0]
 				time_delta = burst[1] - burst[0]
 				burst_duration_days = abs(time_delta.days) + 1
 				burst_issue_duration = CalculateBurstIssueInterval(issues, burst[0], burst[1])
 				issue_comments = valid_issues['text']
 				issue_comments = list(issue_comments.dropna())
 				num_comments = len(issue_comments)
-				# issue_text = issues['text']
-				# issue_text = list(issue_text.dropna())
-				# num_text = len(issue_text)
-				# print "Valid comments = ", num_comments
-				# print "all text = ", num_text
 				num_commits = commits.shape[0]
 				num_issues = len(issue_dict.keys())
 				num_committers = len(set(commiting_users))
@@ -481,8 +463,7 @@ def CalculateAndStoreCongruence(project_name, bursts):
 
 				# Calculate Tenure
 				parts = project_name.split('_')
-				#print "Tenure parts = ", parts
-				project_owner = parts[0].lower()
+				roject_owner = parts[0].lower()
 				project = ' '.join(parts[1:]).lower()
 				valid_participation = all_participation.loc[all_participation['owner'] == project_owner]
 				valid_participation_1 = valid_participation.loc[valid_participation['project'] == project]
@@ -490,7 +471,6 @@ def CalculateAndStoreCongruence(project_name, bursts):
 					avg_tenure = CalculateTenure(valid_participation_1, commiting_users, burst[1])
 				else:
 					avg_tenure = "NA"
-					part_absent.append(project_name)
 
 				#Save as a new dictionary
 				temp = OrderedDict()
@@ -498,17 +478,13 @@ def CalculateAndStoreCongruence(project_name, bursts):
 				temp['burst_start'] = burst[0]
 				temp['burst_end'] = burst[1]
 				temp['burst_duration_days'] = burst_duration_days
-				# temp['num_comments'] = num_comments
-				# temp['num_commits'] = num_commits
 				temp['total_activity'] = num_commits + num_comments
 				temp['num_files (Change Size)'] = len(files_modified)
 				temp['file_modules (#Teams)'] = len(file_modules_involved)
 				temp['total_num_issues'] = num_issues
 				temp['issues_opened'] = issues_opened
 				temp['issues_closed'] = issues_closed
-				# temp['issues_remaining_open'] = num_issues - issues_closed
 				temp['avg_res_time_hours'] = avg_issue_time
-				# temp['burst_issue_duration_hours'] = burst_issue_duration
 				temp['efficiency'] = efficiency
 				temp['issue_per_person (Team Load)'] = issue_per_person
 				temp['activity_per_person'] = activity_per_person
@@ -523,41 +499,22 @@ def CalculateAndStoreCongruence(project_name, bursts):
 				final_info_dict.append(temp)
 
 			#Save the final info for this project as a pickle file
-			#print "final_info_dict = ", final_info_dict
 			pickle_file = os.path.join(output_pickle_dir, project_name + '_cm_mr_info.pickle')
 			with open(pickle_file, 'wb') as p_pickle:
 				pickle.dump(final_info_dict, p_pickle)
 			info_df = pd.DataFrame(final_info_dict)
 			info_df.to_csv(os.path.join(output_csv_dir, project_name + '_cm_mr_info.csv'))
 
-#projects = pickle.load(open(valid_projects_pickle, 'rb'))
-#print project_bursts_pickle
 burst_dict = pickle.load(open(project_bursts_pickle, 'rb'))
 projects = burst_dict.keys()
 ignore_projects = ['python-diamond~Diamond', 'juanifioren~django-oidc-provider']
-#projects = ['theano~theano']
-# ignore_projects = []
-# calculate again - Suor~django-cacheops
 
 for project_name in projects:
 	if project_name in ignore_projects:
 		continue
-	#pickle_file = os.path.join(output_pickle_dir, project_name.replace("~", "_") + '_cm_mr_info.pickle')
-	# if os.path.isfile(pickle_file) == True:
-	# 	print "Already computed for project, skipping = ", project_name
-	# 	continue
 	project_burst = burst_dict[project_name]
 	formatted_burst = FormatBurstTimeInterval(project_burst)
 	CalculateAndStoreCongruence(project_name, formatted_burst)
-
-print "part_absent = ", part_absent
-pickle.dump(part_absent, open('projects_with_absent_participation.pickle', 'wb'))
-
-# project_name = "flowersteam_explauto"
-# project_burst = burst_dict[project_name]
-# formatted_burst = FormatBurstTimeInterval(project_burst)
-# CalculateAndStoreCongruence(project_name, formatted_burst)
-
 
 
 
