@@ -1,6 +1,7 @@
 '''
 Creates file-module dictionaries per project.
-{file1.py: module, ...., file_n.py: module}
+Module - cluster/module class obtained after partioning the co-commit graph.
+{file1.py: module_number, ...., file_n.py: module_number}
 '''
 
 import os
@@ -8,11 +9,17 @@ import sys
 import csv
 import cPickle as pickle
 import pandas as pd
+import argparse
 
 csv.field_size_limit(sys.maxsize)
 
-code_metric_path = sys.argv[1]
-output_pickle_path = sys.argv[2]
+parser = argparse.ArgumentParser()
+parser.add_argument('--code_metric_path', help='Directory containing graph metrics obtained by partioning the graph')
+parser.add_argument('--output_pickle_path', help='Output directory to store pickle files per project to store file-module membership')
+args, unknown = parser.parse_known_args()
+
+code_metric_path = args.code_metric_path
+output_pickle_path = args.output_pickle_path
 
 for fileName in os.listdir(code_metric_path):
 	if fileName.endswith('.csv'):

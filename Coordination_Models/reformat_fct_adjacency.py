@@ -1,27 +1,30 @@
 '''
-Reformat fct adjacancy from {(file1.py, pile2.py):num....} to a 2D adjacency representation
+Reformat fct adjacancy from {(file1.py, pile2.py):num....} to a 2D adjacency representation. 
+Required for congruence calculations
 '''
 import os
 import sys
 import pandas as pd
 import cPickle as pickle
 from collections import defaultdict
+import argparse
 
-fct_adjacency_dir = sys.argv[1]
-#valid_projects_pickle = sys.argv[2]
-output_pickle_dir = sys.argv[2]
-#projects = pickle.load(open(valid_projects_pickle, 'rb'))
+parser = argparse.ArgumentParser()
+parser.add_argument('--input_adjacency_dir', help='Directory containing pickles list of file pair co-commit counts')
+parser.add_argument('--output_pickle_dir', help='Directory reformatted 2d adjacency matrix per project')
+args, unknown = parser.parse_known_args()
+
+input_adjacency_dir = args.input_adjacency_dir
+output_pickle_dir = args.output_pickle_dir
 
 def dd():
 	return defaultdict(int)
 
-for fileName in os.listdir(fct_adjacency_dir):
-#for project in projects:
-	#fileName = project + '_co_commit.pickle'
-	file_path = os.path.join(fct_adjacency_dir, fileName)
+for fileName in os.listdir(input_adjacency_dir):
+	file_path = os.path.join(input_adjacency_dir, fileName)
 	adj_pick = os.path.join(output_pickle_dir, fileName)
+
 	if os.path.isfile(file_path) == True and os.path.isfile(adj_pick) == False:
-		#project_name = fileName.split('_co_commit.pickle')[0]
 		print "Processing for file: ", fileName
 		fct_adjacency = pickle.load(open(file_path, 'rb'))
 		reformed_dict = defaultdict(dd)

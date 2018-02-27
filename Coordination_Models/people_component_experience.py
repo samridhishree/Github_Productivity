@@ -1,7 +1,7 @@
 '''
 Calculates the component experience of the people in a project per burst.
 Component Experience - average number of times the people invovled in a burst have worked on the same files as the ones in the burst.
-dictionary: {username:{burst_id:{filename1: count, filename2: count...}...}...}
+Output: {username:{burst_id:{filename1: count, filename2: count...}...}...}
 '''
 import os
 import sys
@@ -13,12 +13,19 @@ from collections import defaultdict
 from itertools import groupby, combinations
 from datetime import datetime
 from dateutil import relativedelta
+import argparse
 
 csv.field_size_limit(sys.maxsize)
 
-raw_commit_path = sys.argv[1]
-project_bursts_pickle = sys.argv[2]
-output_pickle_path = sys.argv[3]
+parser = argparse.ArgumentParser()
+parser.add_argument('--raw_commit_path', help='Directory containing raw commit (non-processed) files per project')
+parser.add_argument('--project_bursts_pickle', help='Pickled list of bursts per project')
+parser.add_argument('--output_pickle_path', help='Output directory to store the pickled dictionary of component experience')
+args, unknown = parser.parse_known_args()
+
+raw_commit_path = args.raw_commit_path
+project_bursts_pickle = args.project_bursts_pickle
+output_pickle_path = args.output_pickle_path
 
 def dd():
 	return defaultdict(int)
