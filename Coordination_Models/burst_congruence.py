@@ -23,18 +23,38 @@ import argaprse
 
 csv.field_size_limit(sys.maxsize)
 
-fct_adjacency_dir = sys.argv[1]
-user_file_pickle_dir = sys.argv[2]	
-user_mod_fct = sys.argv[3]
-bursty_commits_dir = sys.argv[4] 
-bursty_issues_dir = sys.argv[5]
-project_bursts_pickle = sys.argv[6]
-file_mod_pickle_dir = sys.argv[7]
-user_experience_pickle_dir = sys.argv[8]
-participation_csv = sys.argv[9]
-output_csv_dir = sys.argv[10]
-output_pickle_dir = sys.argv[11]
-output_csv_req_metrics = sys.argv[12]
+parser = argparse.ArgumentParser()
+parser.add_argument('--fct_adjacency_dir', help='Directory containing 2D adjacency matrix (output of: reformat_adjacency.py)')
+parser.add_argument('--user_file_pickle_dir', help='Directory containing the user-file membership (output of: people_file_dict.py)')
+parser.add_argument('--user_mod_fct', help='Directory containing user module membership (output of: people_module_dict.py)')
+parser.add_argument('--bursty_commits_dir', help='Directory containing the per project per burst commits (output of: extract_burst_commits.py)')
+parser.add_argument('--bursty_issues_dir', help='Directory containing active issues per burst per project (output of: extract_burst_issues.py)')
+parser.add_argument('--project_bursts_pickle', help='Pickled list of bursts per project (output of: HMM/extract_daily_bursts.py)')
+parser.add_argument('--file_mod_pickle_dir', help='Directory containing the file module membership (output of: file_module_dict.py)')
+parser.add_argument('--user_experience_pickle_dir', help='Directory containing component experience \
+												per user for each project (output of: people_component_experience.py)')
+parser.add_argument('--participation_csv', help='Input csv file containing the participation information for the users of the project')
+parser.add_argument('--output_csv_dir', help='Output directory to hold project wise computed metrics for each burst')
+parser.add_argument('--output_pickle_dir', help='Output directory to hold te computed metric as pickled dataframes')
+parser.add_argument('--output_csv_req_metrics', help='Output directory to hold the requirement matrices')
+
+
+
+
+args, unknown = parser.parse_known_args()
+
+fct_adjacency_dir = args.fct_adjacency_dir
+user_file_pickle_dir = args.user_file_pickle_dir	
+user_mod_fct = args.user_mod_fct
+bursty_commits_dir = args.bursty_commits_dir 
+bursty_issues_dir = args.bursty_issues_dir
+project_bursts_pickle = args.project_bursts_pickle
+file_mod_pickle_dir = args.file_mod_pickle_dir
+user_experience_pickle_dir = args.user_experience_pickle_dir
+participation_csv = args.participation_csv
+output_csv_dir = args.output_csv_dir
+output_pickle_dir = args.output_pickle_dir
+output_csv_req_metrics = args.output_csv_req_metrics
 
 '''
 Converts the burst intervals to actual datetime intervals
