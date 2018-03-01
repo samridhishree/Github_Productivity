@@ -1,10 +1,11 @@
 # Modeling Coordination and Productivity in Open Source GitHub Projects 
 
 ### (_SIGKDD, 2018 - Applied Data Science Submission - Observational Track_)
+Data to be made public soon.
 
-Data and code are in the process of being released.
+Segmentation Models Released. 
 
-Segmentation Models Released. Congruence coming soon.
+Congruence and helper structures released.
 
 ## Abstract
 In open-source software development, coordination between globally separated developers is often structured in ways not immediately visible to them, such as implicit groupings of people working on similar code and related issues.
