@@ -15,7 +15,7 @@ The execution is divided into three phases:
 2. Helper Structures
 3. Congruence Computation
 
-#### Pre-processing
+### Pre-processing
 ----
 1. __*Extract bursty commits*__: This step groups together the commits that occur in a burst.
 > Script: __extract_burst_commits.py__
@@ -24,7 +24,7 @@ The execution is divided into three phases:
 3. __*Process commits for graphs*__: Formats the individual commit entries for each project to a format that is convenient to be used while creating co-commit graphs. It essentially separates the files committed per commit.
 > Script: __preprocess_commits_for_graph.py__
 
-#### Helper Structures
+### Helper Structures
 ---
 1. __*Compute Pairwise Co-commit Frequency*__: Generates all the pair of files that are committed together along with the number of times that they are committed together.
 > Script: __file_co_commit.py__
@@ -41,7 +41,7 @@ The execution is divided into three phases:
 7. __*Reformat Co-commit Adjacency*__: Reformats the pairwise co-commit counts to a 2D adjacency matrix representation. 
 > Script: __reformat_adjacency.py__
 
-#### Congruence Computation
+### Congruence Computation
 ---
 1. __*Socio-Technical Congruence*__: Implementation of Socio-Technical Congruence Measure introduced by: "_Cataldo, Marcelo, et al. __"Identification of coordination requirements: implications for the Design of collaboration and awareness tools."__ Proceedings of the 2006 20th anniversary conference on Computer supported cooperative work. ACM, 2006._"
 > Script: __burst_congruence.py__
