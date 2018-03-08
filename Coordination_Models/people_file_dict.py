@@ -14,12 +14,19 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--commit_dep_path', help='Directory containing processed commits per project (output of - preprocess_commits_for_graph)')
-parser.add_argument('--output_pickle_path', help='Output directory to store pickle files per project to store user-file membership')
+parser.add_argument('--commit_dep_path', help='Directory containing processed commits per project (output of - preprocess_commits_for_graph)',\
+					default='data/commits_processed_for_graph/')
+parser.add_argument('--output_pickle_path', help='Output directory to store pickle files per project to store user-file membership', \
+					default='data/people_file_dict/')
 args, unknown = parser.parse_known_args()
 
 commit_dep_path = args.commit_dep_path
 output_pickle_path = args.output_pickle_path
+
+try:
+    os.makedirs(output_pickle_path)
+except:
+    pass
 
 def dd():
 	return defaultdict(int)

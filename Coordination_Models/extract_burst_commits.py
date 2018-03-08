@@ -18,15 +18,20 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--raw_commits_dir', help='Directory with project-wise commit files')
-parser.add_argument('--output_dir', help='Directory containing commits per burst per project')
-parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information')
+parser.add_argument('--raw_commits_dir', help='Directory with project-wise commit files', default='data/raw_commits/')
+parser.add_argument('--output_dir', help='Directory containing commits per burst per project', default='data/bursty_commits/')
+parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='results/daily_bursts.pickle')
 args, unknown = parser.parse_known_args()
 
 
 raw_commits_dir = args.raw_commits_dir
 output_dir = args.output_dir
 project_burst_pickle = args.burst_pickle
+
+try:
+    os.makedirs(output_dir)
+except:
+    pass
 
 burst_dict = pickle.load(open(project_burst_pickle, 'rb'))
 projects = burst_dict.keys()

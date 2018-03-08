@@ -10,12 +10,19 @@ from collections import defaultdict
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input_adjacency_dir', help='Directory containing pickles list of file pair co-commit counts')
-parser.add_argument('--output_pickle_dir', help='Directory reformatted 2d adjacency matrix per project')
+parser.add_argument('--input_adjacency_dir', help='Directory containing pickles list of file pair co-commit counts',\
+					default='data/co_commit_adj_pickle/')
+parser.add_argument('--output_pickle_dir', help='Directory reformatted 2d adjacency matrix per project',\
+					default='data/reformatted_co_commit_adj/')
 args, unknown = parser.parse_known_args()
 
 input_adjacency_dir = args.input_adjacency_dir
 output_pickle_dir = args.output_pickle_dir
+
+try:
+    os.makedirs(output_pickle_dir)
+except:
+    pass
 
 def dd():
 	return defaultdict(int)

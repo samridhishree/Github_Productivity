@@ -15,14 +15,22 @@ from collections import defaultdict
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--people_file_pickle_dir', help='Directory with people-file pickles (output of: people_file_dict.py)')
-parser.add_argument('--file_mod_pickle_dir', help='Directory with file-module pickles (output of: file_module_dict.py)')
-parser.add_argument('--output_pickle_dir', help='Pickle file containing the people-module dictionary pickles per project')
+parser.add_argument('--people_file_pickle_dir', help='Directory with people-file pickles (output of: people_file_dict.py)',\
+					default='data/people_file_dict/')
+parser.add_argument('--file_mod_pickle_dir', help='Directory with file-module pickles (output of: file_module_dict.py)',\
+					default='data/file_module_dict/')
+parser.add_argument('--output_pickle_dir', help='Pickle file containing the people-module dictionary pickles per project',\
+					default='data/people_module_dict/')
 args, unknown = parser.parse_known_args()
 
 people_file_pickle_dir = args.people_file_pickle_dir
 file_mod_pickle_dir = args.file_mod_pickle_dir
 output_pickle_dir = args.output_pickle_dir
+
+try:
+    os.makedirs(output_pickle_dir)
+except:
+    pass
 
 # Placeholder to properly unpickle the inputs
 def dd():

@@ -19,7 +19,7 @@ The execution is divided into three phases:
 ----
 1. __*Extract bursty commits*__: This step groups together the commits that occur in a burst.
 > Script: __extract_burst_commits.py__
-2. __*Extract bursty commits*__: This step groups together the active issues per burst per project.
+2. __*Extract bursty issues*__: This step groups together the active issues per burst per project.
 > Script: __extract_burst_issues.py__
 3. __*Process commits for graphs*__: Formats the individual commit entries for each project to a format that is convenient to be used while creating co-commit graphs. It essentially separates the files committed per commit.
 > Script: __preprocess_commits_for_graph.py__

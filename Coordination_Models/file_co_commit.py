@@ -18,12 +18,19 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--processed_commit_dir', help='Directory containing commit files processed for graphs')
-parser.add_argument('--output_pickle_dir', help='Output pickle file containing pairwise file co-commit counts')
+parser.add_argument('--processed_commit_dir', help='Directory containing commit files processed for graphs',\
+					default='data/commits_processed_for_graph/')
+parser.add_argument('--output_pickle_dir', help='Output pickle file containing pairwise file co-commit counts',\
+					default='data/co_commit_adj_pickle/')
 args, unknown = parser.parse_known_args()
 
 processed_commit_dir = args.processed_commit_dir
 output_pickle_dir = args.output_pickle_dir
+
+try:
+    os.makedirs(output_pickle_dir)
+except:
+    pass
 
 for filename in os.listdir(processed_commit_dir):
 	commit_file = os.path.join(processed_commit_dir, filename)

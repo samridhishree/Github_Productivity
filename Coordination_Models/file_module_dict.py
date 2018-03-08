@@ -14,12 +14,19 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--code_metric_path', help='Directory containing graph metrics obtained by partioning the graph')
-parser.add_argument('--output_pickle_path', help='Output directory to store pickle files per project to store file-module membership')
+parser.add_argument('--code_metric_path', help='Directory containing graph metrics obtained by partioning the graph',\
+					default='data/co_commit_graph_stats/')
+parser.add_argument('--output_pickle_path', help='Output directory to store pickle files per project to store file-module membership',\
+					default='data/file_module_dict/')
 args, unknown = parser.parse_known_args()
 
 code_metric_path = args.code_metric_path
 output_pickle_path = args.output_pickle_path
+
+try:
+    os.makedirs(output_pickle_path)
+except:
+    pass
 
 for fileName in os.listdir(code_metric_path):
 	if fileName.endswith('.csv'):

@@ -20,9 +20,12 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--adj_pickle_dir', help='Directory containing pickles list of file pair co-commit counts')
-parser.add_argument('--output_graph_path', help='Output directory to store the gml graph files.')
-parser.add_argument('--output_csv_path', help='Output directory to store graph metrics obtained by partioning the graph')
+parser.add_argument('--adj_pickle_dir', help='Directory containing pickles list of file pair co-commit counts', \
+					default='data/co_commit_adj_pickle/')
+parser.add_argument('--output_graph_path', help='Output directory to store the gml graph files.',\
+					default='data/co_commit_graph/')
+parser.add_argument('--output_csv_path', help='Output directory to store graph metrics obtained by partioning the graph',\
+					default='data/co_commit_graph_stats/')
 args, unknown = parser.parse_known_args()
 
 
@@ -30,6 +33,12 @@ adj_pickle_dir = args.adj_pickle_dir
 output_graph_path =args.output_graph_path
 output_csv_path = args.output_csv_path
 title_row = ['file_name', 'degree', 'modularity_class', 'modularity_measure']
+
+try:
+    os.makedirs(output_graph_path)
+    os.makedirs(output_csv_path)
+except:
+    pass
 
 #Read the pairwise co-commits and create code graph as well as partioning
 for fileName in os.listdir(adj_pickle_dir):

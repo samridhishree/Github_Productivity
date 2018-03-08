@@ -12,12 +12,17 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--commit_root_dir', help='Directory containing raw commit files per project')
-parser.add_argument('--output_dir', help='Output directory containing processed commit files')
+parser.add_argument('--commit_root_dir', help='Directory containing raw commit files per project', default='data/raw_commits/')
+parser.add_argument('--output_dir', help='Output directory containing processed commit files', default='data/commits_processed_for_graph/')
 args, unknown = parser.parse_known_args()
 
 commit_root_dir = args.commit_root_dir
 output_dir = args.output_dir
+
+try:
+    os.makedirs(output_dir)
+except:
+    pass
 
 title_row = ['rectype', 'project_owner', 'project_name', 'actor', 'time', 'commit_message', 'action', 'files_affected']
 valid_column_ids = [0, 2, 3, 4, 5, 6, 7]
