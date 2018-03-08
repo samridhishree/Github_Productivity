@@ -19,12 +19,21 @@ import argparse
 warnings.filterwarnings('ignore')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_file', help='The compressed hdf5 train/dev/test data for HMM')
-parser.add_argument('--output_dir', help='Directory to save the trained models and the model scores')
+parser.add_argument('--data_file', \
+                    help='The compressed hdf5 train/dev/test data for HMM', \
+                    default='data/hmm_data.hdf5')
+parser.add_argument('--output_dir', \
+                    help='Directory to save the trained models and the model scores', \
+                    default='results/')
 args, unknown = parser.parse_known_args()
 
 data_file = args.data_file
 output_dir = args.output_dir
+
+try:
+    os.makedirs(output_dir)
+except:
+    pass
 
 # Define the target function to be called in parallel
 def train_hmm(nstates, final_train_seq, train_lengths, final_test_seq, test_lengths):

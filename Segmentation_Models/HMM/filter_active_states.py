@@ -9,13 +9,18 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--prediction_dir', help='Directory with predicted states in project timeline')
-parser.add_argument('--filtered_dir', help='Output directory with filtered states')
+parser.add_argument('--prediction_dir', help='Directory with predicted states in project timeline', default='results/predictions/')
+parser.add_argument('--filtered_dir', help='Output directory with filtered states', default='results/filtered_states/')
 args, unknown = parser.parse_known_args()
 
 prediction_dir = args.prediction_dir
 filtered_dir = args.filtered_dir
-active_states = [2, 3, 4, 5, 6, 7, 8, 10, 11]
+active_states = [2, 3, 4, 5, 6, 7, 8, 10, 11]   # Add the active states according to the model interpretation
+
+try:
+    os.makedirs(filtered_dir)
+except:
+    pass
 
 for filename in os.listdir(prediction_dir):
     if '.csv' not in filename:

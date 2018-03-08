@@ -10,8 +10,8 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_dir', help='The trained models directory ')
-parser.add_argument('--output_dir', help='Interpreted csv output folder')
+parser.add_argument('--model_dir', help='The trained models directory', default='results/GaussianHMMdiag/')
+parser.add_argument('--output_dir', help='Interpreted csv output folder', default='result/model_interpretations/')
 args, unknown = parser.parse_known_args()
 
 
@@ -22,6 +22,12 @@ focus_vars = ['git_commits', 'gha_pr_merge', 'gha_pushes', \
             'gha_issue_comments' , 'gha_commit_comments', \
             'nml_pull_request_title', 'issues_opened', 'issues_closed']
 
+try:
+    os.makedirs(output_dir)
+except:
+    pass
+
+    
 for model_file in os.listdir(model_dir):
 
     # Load the model

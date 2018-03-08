@@ -19,10 +19,10 @@ import argparse
 warnings.filterwarnings('ignore',category=DeprecationWarning)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--project_data_dir', help='Directory with the daily activity counts of each project')
-parser.add_argument('--model_dir', help='Directory that stores the trained models on different #states')
-parser.add_argument('--output_dir', default='Directory to store state predictions for each project')
-parser.add_argument('--nstates', default='number of states HMM model to use')
+parser.add_argument('--project_data_dir', help='Directory with the daily activity counts of each project', default='data/daily_data_nullstate/')
+parser.add_argument('--model_dir', help='Directory that stores the trained models on different #states', default='results/GaussianHMMdiag/')
+parser.add_argument('--output_dir', help='Directory to store state predictions for each project', default='results/predictions/')
+parser.add_argument('--nstates', help='Number of states HMM model to use. The one with the maximum likelihood', default='12')
 args, unknown = parser.parse_known_args()
 
 project_data_dir = args.project_data_dir
@@ -32,6 +32,11 @@ nstates = int(args.nstates)
 focus_var = ['git_commits', 'gha_pr_merge', 'gha_pushes', \
             'gha_issue_comments' , 'gha_commit_comments', \
             'nml_pull_request_title', 'issues_opened', 'issues_closed']
+
+try:
+    os.makedirs(output_dir)
+except:
+    pass
 
 # Load the model - model is saved in this format from train_hmm
 model_filename = str(nstates) + 'states'

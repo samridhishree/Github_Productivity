@@ -13,8 +13,8 @@ from dateutil import relativedelta
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--filtered_dir', help='Directory with filtered states')
-parser.add_argument('--output_file', help='Output filename for the pickled dictionary {project:[bursts]}')
+parser.add_argument('--filtered_dir', help='Directory with filtered states', default='results/filtered_states/')
+parser.add_argument('--output_file', help='Output filename for the pickled dictionary {project:[bursts]}', default='results/daily_bursts.pickle')
 args, unknown = parser.parse_known_args()
 
 filtered_dir = args.filtered_dir

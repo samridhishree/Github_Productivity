@@ -56,8 +56,12 @@ def CreateDataLengthMatrix(project_list, input_dir, is_train, compressed_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dir', help='Directory containing daily activity counts (with nullstates inserted in non active days)')
-    parser.add_argument('--output_dir', default='Directory to store the data in hdf5 format')
+    parser.add_argument('--input_dir', \
+                        help='Directory containing daily activity counts (with nullstates inserted in non active days)',\
+                        default='data/daily_data_nullstate/')
+    parser.add_argument('--output_dir',\
+                        help='Directory to store the data in hdf5 format', \
+                        default='data/')
     args, unknown = parser.parse_known_args()
 
     projects = os.listdir(args.input_dir)
