@@ -11,7 +11,7 @@ This folder contains an implementation of the timeline segmentation using the Te
 Following are the inputs needed:
 1. __Project Daily Activity__ - In order to get all the active days of a project.
 2. __Project Issues__ - All the issues and Pull Requests associated with the project (title, actor, conversations and action)
-3. __Project Commits__ - Al the commits associated with the project (title, actor, comments, action, files).
+3. __Project Commits__ - All the commits associated with the project (title, actor, comments, action, files).
 
 ## Execution Steps
 The execution is divided into following steps. Each step is noted with the corresponding script file. Please have a look at the file for the commandline arguments and usage:
