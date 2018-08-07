@@ -1,0 +1,112 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","257","nilearn","nilearn","dohmatob","2014-10-08 07:07:38","fetch_haxby (of course the exception is raised lower down the stack) throws cryptic (non-explicit) error message when *NILEARN_DATA not exported. Indeed,
+
+```
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+/home/elvis/CODE/FORKED/nilearn/plot_haxby_smoothlasso.py in <module>()
+     14 
+     15 from nilearn import datasets
+---> 16 data_files = datasets.fetch_haxby()
+     17 
+     18 ### Load Target labels ########################################################
+
+/home/elvis/CODE/FORKED/nilearn/nilearn/datasets.py in fetch_haxby(data_dir, n_subjects, fetch_stimuli, url, resume, verbose)
+    970         n_subjects = 6
+    971 
+--> 972     data_dir = _get_dataset_dir('haxby2001', data_dir=data_dir)
+    973 
+    974     # Dataset files
+
+/home/elvis/CODE/FORKED/nilearn/nilearn/datasets.py in _get_dataset_dir(dataset_name, data_dir, verbose)
+    223             return path
+    224 
+--> 225     raise ValueError('Could not find a writable directory to store dataset')
+    226 
+    227 
+
+ValueError: Could not find a writable directory to store dataset
+> /home/elvis/CODE/FORKED/nilearn/nilearn/datasets.py(225)_get_dataset_dir()
+    224 
+--> 225     raise ValueError('Could not find a writable directory to store dataset')
+    226 
+
+ipdb> 
+```
+
+The error message doesn't tell the user how to fix the problem; it doesn't even mention *NILEARN_DATA, etc. That is, for the frontend user this error message is not very helpful..
+","start issue","fetch_haxby throws cryptic (non-explicit) error message when *NILEARN_DATA not exported"
+"issue_closed","257","nilearn","nilearn","lesteve","2014-10-28 07:54:39","","closed issue","fetch_haxby throws cryptic (non-explicit) error message when *NILEARN_DATA not exported"
+"issue_comment","257","nilearn","nilearn","AlexandreAbraham","2014-10-10 14:44:10","Well, I did not speack explicitely of the NILEARN_DATA variable because this is not the actual problem. The problem is that you try to run a script in a directory where you don't have writing permissions. Setting a NILEAR_DATA environment variable could solve your problem (and is certainly the most recommended way) but this is not mandatory, you could also specify a data_dir manually.
+
+So you think that, if the download fails because of an IOError, we should issue a message that looks like a usage which specifies all the rules used by nilearn to find a writable path? Ping @GaelVaroquaux 
+","",""
+"issue_comment","257","nilearn","nilearn","GaelVaroquaux","2014-10-10 17:10:18","> So you think that, if the download fails because of an IOError, we
+> should issue a message that looks like a usage which specifies all the
+> rules used by nilearn to find a writable path? Ping @GaelVaroquaux
+
+If you can find 3 lines that describes this well, this is good. Elsewhere
+it is too long, and people won't read it. Just write a paragraph as well
+as possible in the docs, and do a http link to it in the error message
+(linking to the online version).
+","",""
+"issue_comment","257","nilearn","nilearn","AlexandreAbraham","2014-10-10 22:45:15","I can say that the most recommended way is to use NILEARN_DATA.
+","",""
+"issue_comment","257","nilearn","nilearn","GaelVaroquaux","2014-10-11 12:03:07","> I can say that the most recommended way is to use NILEARN_DATA.
+
+Yes, and point to the online docs.
+","",""
+"issue_comment","257","nilearn","nilearn","lesteve","2014-10-14 09:55:44","It didn't really occur to me until @Titan-C opened #262 but there is a real bug here (somehow I assumed @dohmatob had got himself in a edge case scenario where the current directory was not writable).
+
+Basically, when you start from a fresh install, nilearn_data (or any of the other alternative paths) is not created resulting in
+
+```
+In [7]: d = datasets.fetch_smith_2009()
+---------------------------------------------------------------------------
+IOError                                   Traceback (most recent call last)
+<ipython-input-7-465f00c43b6c> in <module>()
+----> 1 d = datasets.fetch_smith_2009()
+
+/home/lesteve/dev/nilearn/nilearn/datasets.py in fetch_smith_2009(data_dir, url, resume, verbose)
+    927              ]
+    928 
+--> 929     data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir)
+    930     files_ = _fetch_files(data_dir, files, resume=resume)
+    931 
+
+/home/lesteve/dev/nilearn/nilearn/datasets.py in _get_dataset_dir(dataset_name, data_dir, verbose)
+    226 
+    227     raise IOError('Nilearn tried to store the dataset in the following '
+--> 228             'directories, but has no write permission:\n' + '\n'.join(paths))
+    229 
+    230 
+
+IOError: Nilearn tried to store the dataset in the following directories, but has no write permission:
+/home/lesteve/dev/nilearn/nilearn_data
+```
+
+Something similar happens if you have defined NILEARN_DATA but $NILEARN_DATA doesn't exist.
+","",""
+"issue_comment","257","nilearn","nilearn","Titan-C","2014-10-14 10:05:23","I had the same issue when following the tutorial. My guess was to keep nilearn_data as the default but create the required folder by default if none existing. For a new user, it's hard to follow the tutorial if the default behavior fails.
+","",""
+"issue_comment","257","nilearn","nilearn","lesteve","2014-10-14 11:36:13","I propose we keep this issue for the error message improvement bit, and we tackle the fresh install dataset download bug in #262.
+","",""
+"issue_comment","257","nilearn","nilearn","dohmatob","2014-10-14 12:18:29","+1
+
+On Tue, Oct 14, 2014 at 1:36 PM, Loïc Estève notifications@github.com
+wrote:
+
+> I propose we keep this issue for the error message improvement bit, and we
+> tackle the fresh install dataset download bug in #262
+> https://github.com/nilearn/nilearn/pull/262.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/257#issuecomment-59028868.
+
+## 
+
+DED
+","",""
+"issue_comment","257","nilearn","nilearn","lesteve","2014-10-28 07:54:39","Improving the error message is going to be done in #262.
+","",""

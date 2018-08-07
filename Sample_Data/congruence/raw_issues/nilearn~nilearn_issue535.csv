@@ -1,0 +1,275 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","535","nilearn","nilearn","AlexandreAbraham","2015-04-10 13:05:52","An example about that would be nice. The outline would be:
+- load a labels version of HarvardOxford, plot it
+- load a probabilistic maps version of HarvardOxford, plot it (4D plotting)
+- future: we may load only the maps version and build the labels version using `hard_assignment` (work in progress on my side)
+- fetch a subject from ADHD.
+- mask data using the 2 atlases, with NiftiLabelsMasker and NiftiMapsMasker
+- pick 2/3 regions, show the timelines for them in both atlases. They should be slightly different.
+","start issue","Add example for Nifti{Labels,Maps}Masker"
+"issue_comment","535","nilearn","nilearn","banilo","2015-04-10 13:27:11","Good idea. What do you mean by 4D plotting?
+","",""
+"issue_comment","535","nilearn","nilearn","AlexandreAbraham","2015-04-17 07:23:49","By 4D plotting, I just mean a for loop and 3D plotting.
+","",""
+"issue_comment","535","nilearn","nilearn","chrplr","2015-07-09 08:31:55","Hello Guys, 
+
+Here is a small piece of code that might be interesting to consider for documentation (unfortunately I cannot attend your sprint next week; I would have done it). 
+
+``` python
+#! /usr/bin/env python
+# Time-stamp: <2015-07-09 10:09 christophe@pallier.org>
+
+""""""
+Extract data from contrasts maps in the intersections of a priori ROIs
+and subject-specific localizer masks.
+""""""
+
+from glob import glob
+import os
+import os.path as op
+
+import numpy as np
+import nibabel
+from nilearn.input_data import NiftiMapsMasker
+from nilearn.masking import intersect_masks
+
+
+def get_data_in_rois(ROIs, subjects, contrasts, localizerf, THR_loc):
+    values = np.zeros((len(subjects), len(contrasts), len(ROIs)))
+    for isub, sub in enumerate(subjects):
+        conlist = [op.join(sub, condir, x) for x in contrasts]
+        localizer_img = nibabel.load(op.join(sub, localizerf))
+        localizer = localizer_img.get_data()
+        localizer[localizer < THR_loc] = 0
+        localizer[localizer >= THR_loc] = 1
+        locmask = nibabel.Nifti1Image(localizer,
+                                  localizer_img.get_affine())
+        masker = NiftiMapsMasker(ROIs, locmask)
+        values[isub, :] = masker.fit_transform(conlist)
+
+        # reports the number of voxels per ROI (crashes if locmask and roi have different affines)
+        # for r in ROIs:
+        #     print r
+        #     x = intersect_masks((locmask, r), threshold=1)
+        #     print(np.sum(x.get_data()))
+
+        return values
+
+
+if __name__ == '__main__':
+
+    rootdir = os.getenv('ROOTDIR')
+    if rootdir is None:
+        rootdir = '/neurospin/unicog/protocols/IRMf/SyntMov_Fabre_Pallier_2014'
+    # Subjects' paths
+    subjdir = op.join(rootdir, 'processed_fmri_data')
+    subjects = sorted(glob(op.join(subjdir, 'subj*')))
+
+    # Contrast maps for each subject
+    condir = 'analyse_smooth5/model_ancova_nbChar/'
+    contrasts = ['scon_%04d.img' % x for x in (1, 2, 3, 4)]
+
+    # location of individual localizer T map
+    localizerf = 'analyse_smooth5/localizer/spmT_0001.img'
+    THR_loc = 2.5  # statistical threshold for localizer's T-map
+
+    # regions of interest (binary maps)
+    roidir = op.join(rootdir, 'masks_and_ROIs/fROIs_GrSS_fdr/')
+    ROIs = [op.join(roidir, 'fROIs_%d.nii' % x)
+            for x in (1, 2, 3, 4, 5, 6, 7, 8)]
+
+    v = get_data_in_rois(ROIs, subjects, contrasts, localizerf, THR_loc)
+    for s in range(v.shape[0]):
+        np.savetxt('betas_sub%02d.csv' % s, v[s, :, :])
+```
+
+It extracts average values of contrasts in the intersections of a priori Regions of Interest (binary maps) and subject-specific localizers (thresholded spmT maps). (This code runs if you have access to /neurospin/unicog)
+
+Now, one feature I would like to add is  the possibility to detect a percentile (e.g, 25%) of the 'best' voxels in a given ROIs for a given subject, and use these voxels to extract data in yet another image. By 'best voxels', I mean the voxels for with the highest values in a contrasts or tmap localizer.
+
+This would avoid thresholding the localizer map with the same fixed threshold for every participant, and allow to get measurements based on the same number of voxels for each participant.
+","",""
+"issue_comment","535","nilearn","nilearn","chrplr","2015-07-09 10:16:01","A starting point to address my last point.
+The first function selects voxels with an 'adaptative' threshold in order to get a fixed proportion of voxels in the ROI.
+The second thresholds the localizer map at a fixed value.
+
+``` python
+from scipy.stats import scoreatpercentile
+
+def create_bestvoxels_mask(roi_img, localizer_img, percentile=75):
+    """""" returns a mask that corresponds to the voxels 
+    within 'roi_img' that have the largest values 
+    (i.e. above given percentile) inside the 'localizer_img' """"""
+    masked_data = apply_mask(localizer_img, roi_img)
+    threshold = scoreatpercentile(masked_data, percentile)
+    mask2 = localizer_img.get_data()
+    mask2[mask2 < threshold] = 0
+    mask2[mask2 >= threshold] = 1
+    mask2_img = nibabel.Nifti1Image(mask2, roi_img.get_affine())
+    return intersect_masks((roi_img, mask2_img), threshold=1)
+
+
+def create_localizer_mask(roi_img, localizer_img, loc_threshold):
+    """""" returns the interesection of 'roi_img' with the mask 
+    obtained by thresholding 'localizer_img' at loc_threshold """"""
+    localizer = localizer_img.get_data()
+    localizer[localizer < loc_threshold] = 0
+    localizer[localizer >= loc_threshold] = 1
+    locmask = nibabel.Nifti1Image(localizer,
+                                  localizer_img.get_affine())
+    return intersect_masks((roi_img, locmask), threshold=1)
+```
+","",""
+"issue_comment","535","nilearn","nilearn","chrplr","2015-07-10 10:05:40","Latest iteration of a code that might be use to write a tutorial on subject-specific masking. 
+Sorry if it is not the right place to post...
+
+``` python
+#! /usr/bin/env python
+# Time-stamp: <2015-07-10 12:00 christophe@pallier.org>
+
+""""""
+Extract data from contrasts maps in the intersections of a priori ROIs
+and subject-specific localizer masks.
+""""""
+
+from glob import glob
+import os
+import os.path as op
+
+import numpy as np
+import nibabel
+from nilearn.input_data import NiftiMapsMasker
+from nilearn.masking import intersect_masks
+
+from nilearn.masking import apply_mask
+from scipy.stats import scoreatpercentile
+from nilearn.plotting import plot_roi
+
+
+def binarize_img(img, threshold):
+    mask = img.get_data().copy()
+    mask[mask < threshold] = 0.
+    mask[mask >= threshold] = 1.
+    return nibabel.Nifti1Image(mask, img.get_affine())
+
+def get_mask_size(mask_img):
+    return np.sum(mask_img.get_data())
+
+def create_bestvoxels_mask(roi_img, localizer_img, toppercentile=25):
+    """""" select voxels within roi_img having the largest values in localizer_img """"""
+    masked_data = apply_mask(localizer_img, roi_img)
+    threshold = scoreatpercentile(masked_data, 100 - toppercentile)
+    mask = binarize_img(localizer_img, threshold)
+    return intersect_masks((roi_img, mask), threshold=1)
+
+
+def create_localizer_mask(roi_img, localizer_img, loc_threshold):
+    """""" select voxels within roi_img that have a value above loc_threshold in localizer_img """"""
+    locmask = binarize_img(localizer_img, loc_threshold)
+    return intersect_masks((roi_img, locmask), threshold=1)
+
+### Three methods to extract data from ROIs
+
+def get_data_in_rois_method1(ROIs, subjects, contrasts):
+    """""" returns the average contratst in each ROI and for each subject """"""
+    masker = NiftiMapsMasker(ROIs)
+    values = np.zeros((len(subjects), len(contrasts), len(ROIs)))
+    for isub, sub in enumerate(subjects):
+        conlist = [op.join(sub, condir, x) for x in contrasts]
+        values[isub, :] = masker.fit_transform(conlist)
+    return values
+
+
+def get_data_in_rois_method2(ROIs, subjects, contrasts, localizerf, threshold):
+    """""" returns, for individual subjects, the average contrasts values  in ROIs masked by individual localizers,
+    thresholded at a fixed theshold""""""
+    values = np.zeros((len(subjects), len(contrasts), len(ROIs)))
+    for isub, sub in enumerate(subjects):
+        conlist = [op.join(sub, condir, x) for x in contrasts]
+        localizer_img = nibabel.load(op.join(sub, localizerf))
+        locmask = binarize_img(localizer_img, threshold)
+        masker = NiftiMapsMasker(ROIs, locmask)
+        values[isub, :] = masker.fit_transform(conlist)
+    return values
+
+
+def get_data_in_rois_method3(ROIs, subjects, contrasts, localizerf, toppercentile):
+    """""" returns, for individual subjects, the average contrasts values  in ROIs masked by individual localizers,
+    tresholded to keep a toppertcentil voxels in each ROI. """"""
+    values = np.zeros((len(subjects), len(contrasts), len(ROIs)))
+    for isub, sub in enumerate(subjects):
+        conlist = [op.join(sub, condir, x) for x in contrasts]
+        localizer_img = nibabel.load(op.join(sub, localizerf))
+        for iroi, roi in enumerate(ROIs):
+            roi_img = nibabel.load(roi)
+            locmask = create_bestvoxels_mask(roi_img, localizer_img, toppercentile)
+            values[isub, :, iroi] = np.mean(apply_mask(conlist, locmask), axis=1)
+    return values
+
+
+##############
+
+def ndarray2df(v):
+    import pandas as pd
+
+    df = pd.DataFrame(columns=['Subject', 'ROI', 'contrast', 'beta'])
+
+    subj = [op.splitext(op.basename(fn))[0] for fn in subjects]
+    con = [op.splitext(op.basename(fn))[0] for fn in contrasts]
+    rois = [op.splitext(op.basename(fn))[0] for fn in ROIs]
+    n1, n2, n3 = v.shape
+    k=0
+    for i1 in range(n1):
+        for i2 in range(n2):
+            for i3 in range(n3):
+                df.loc[k] = pd.Series({'Subject': subj[i1],
+                                       'contrast': con[i2],
+                                       'ROI': rois[i3],
+                                       'beta': v[i1, i2, i3]})
+                k = k + 1
+    return df
+
+
+##############
+
+if __name__ == '__main__':
+
+    rootdir = os.getenv('ROOTDIR')
+    if rootdir is None:
+        rootdir = '/neurospin/unicog/protocols/IRMf/SyntMov_Fabre_Pallier_2014/scripts/python/ss_roi/testdata/'
+
+    # Subjects' paths
+    subjdir = op.join(rootdir, 'subjects')
+    subjects = sorted(glob(op.join(subjdir, 'subj*')))
+
+    # Contrast maps for each subject
+    condir = 'analyse_smooth5/full_ancova_nbchar/'
+    contrasts = ['scon_%04d.img' % x for x in (10, 11, 12, 13)]
+
+    # location of individual localizer T map
+    localizerf = 'analyse_smooth5/localizer_3/spmT_0001.img'
+    THR_loc = 3.1  # statistical threshold for localizer's T-map
+
+    # regions of interest (binary maps)
+    roidir = op.join(rootdir, 'ROIs')
+    ROIs = sorted(glob(op.join(roidir, '*.nii')))
+
+
+    # extract data and save in csv files
+    v1 = get_data_in_rois_method1(ROIs, subjects, contrasts)
+    df1 = ndarray2df(v1)
+    df1.to_csv('method1.csv')
+
+    v2 = get_data_in_rois_method2(ROIs, subjects, contrasts, localizerf, THR_loc)
+    df2 = ndarray2df(v2)
+    df2.to_csv('method2.csv')
+
+    v3 = get_data_in_rois_method3(ROIs, subjects, contrasts, localizerf, 10)
+    df3 = ndarray2df(v3)
+    df3.to_csv('method3.csv')
+
+    print 'you can now execture plot.R in R'
+```
+","",""
+"issue_comment","535","nilearn","nilearn","MartinPerez","2015-07-14 11:17:47","I will take care of this
+","",""

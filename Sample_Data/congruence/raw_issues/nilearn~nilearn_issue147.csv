@@ -1,0 +1,148 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","147","nilearn","nilearn","GaelVaroquaux","2013-12-10 01:46:31","http://data.pymvpa.org/datasets/hyperalignment_tutorial_data/
+
+This is HDF5, so we need to do what we already did for the Kamitani dataset: reconvert it to nifti, and host it on our nilearn data repo.
+
+Tasklist:
+- [ ] Understand the data
+- [ ] Turn it into nifti
+- [ ] Write an example
+","start issue","Include Haxby hyper alignment data"
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-02-22 00:19:19","I am in need of a preprocessed functional dataset; I didn't see one in `nilearn.datasets`, so I have been taking a look at this today.
+
+I was able to download the data, install pymvpa (non-trivail!), and load up the data.
+
+Turns out that the HDF5 data serialized the header with an old version of `nibabel` that is incompatible with 2.0.0.  I am currently stuck here.  https://github.com/nipy/nibabel/issues/144
+
+Any comments / concerns / duplicate efforts, please let me know!  Otherwise, I'll follow up as things go...
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-02-22 05:18:49","Pretty close to having this done; something is weird about the conversion to Nifti that I need to fix.  But the basic instructions and code is all there.  Feel free to play:
+https://github.com/bcipolli/nilearn/tree/haxby_etal_2011
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-02-22 05:48:52","Example can be derived from: http://www.pymvpa.org/examples/hyperalignment.html
+","",""
+"issue_comment","147","nilearn","nilearn","GaelVaroquaux","2015-02-23 06:59:34","No specific advice, I haven't tried doing this. However, just to let you know, if you succeed in loading these as nifti, save therm as .nii.gz and we will upload them on our nilearn site. That way other people can load them. 
+
+Thanks heaps
+
+Gaël
+
+PS :  what kind of pre processed days do you need? Maybe we can help. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 22, 2015, 01:19, at 01:19, Ben Cipollini notifications@github.com wrote:
+
+> I am in need of a preprocessed functional dataset; I didn't see one in
+> `nilearn.datasets`, so I have been taking a look at this today.
+> 
+> I was able to download the data, install pymvpa (non-trivail!), and
+> load up the data.
+> 
+> Turns out that the HDF5 data serialized the header with an old version
+> of `nibabel` that is incompatible with 2.0.0.  I am currently stuck
+> here.  https://github.com/nipy/nibabel/issues/144
+> 
+> Any comments / concerns / duplicate efforts, please let me know! 
+> Otherwise, I'll follow up as things go...
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/147#issuecomment-75404794
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-05-05 21:15:53","Just a note: looks like the PyMVPA folks recoded this, so the conversion to .nii should be relatively easy now:
+https://github.com/PyMVPA/PyMVPA/issues/278#issuecomment-99069421
+","",""
+"issue_comment","147","nilearn","nilearn","AlexandreAbraham","2015-06-01 15:31:16","_Relatively_ is the word here. I took a quick look at the file and the format is not clear at all to me.
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-07-13 15:09:58","Hi all, is anybody on the nilearn side planning to work on this? I may be able to take a look soon as well.
+","",""
+"issue_comment","147","nilearn","nilearn","AlexandreAbraham","2015-07-13 15:15:07","Not for the moment given that it is not trivial ;). But you definitely have the knowledge to handle this. Do you want me to make it official by assigning it to you?
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-07-13 15:25:08","I'm not sure that I have the knowledge to handle this, but I do have the will to figure it out :) Please assign to me, and I will try to work it out.
+","",""
+"issue_comment","147","nilearn","nilearn","AlexandreAbraham","2015-07-13 15:42:02","> I'm not sure that I have the knowledge to handle this
+
+Do not hesitate to report problems so that we can try to sort them out together! I sent you an invitation to join the nilearn team. Please accept it so that I can assign this issue to you ;).
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-07-13 15:44:12","Done!
+","",""
+"issue_comment","147","nilearn","nilearn","AlexandreAbraham","2015-07-13 15:45:48","Misclicked ;).
+
+When do you plan to work on that? I think you may be aware that we are doing a nilearn sprint this week so, if you need support, our time is 100% dedicated to nilearn.
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-07-13 15:49:21","I hope to take a look tonight or tomorrow. I've got `pymvpa` installed, the file downloaded and loaded... just need to figure out the different data there, then export to `.nii` (easy) and hopefully extract an example from the `pymvpa` tutorial.
+","",""
+"issue_comment","147","nilearn","nilearn","AlexandreAbraham","2015-07-13 16:22:51","Sounds like bullet points. I added them into the first post ;).
+
+Once you've made a script to convert the data to nifti, please keep it: we'll ship it with the transformed data.
+","",""
+"issue_comment","147","nilearn","nilearn","AlexandreAbraham","2015-07-17 09:11:32","Could you provide a working script? I can't reproduce your figures :-/
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-07-15 16:35:03","Here's where I am so far:
+- downloaded data
+- installed PyMVPA
+- Understood data structures ~65%
+- Got basic script for saving `Nifti1Image`s and stimuli.
+
+Problems:
+- Was able to use affine info, but not header info (it's a dict, can't figure out how to convert back to `Nifti1Header`)
+
+Unfortunately, something seems slightly off. The docs said the data are in MNI152 space, so I don't think it's that. Any suggestions on where to go next would be appreciated!
+
+![image](https://cloud.githubusercontent.com/assets/4072455/8703898/8f1aec1a-2ad4-11e5-8da3-b55d3418f534.png)
+
+``` python
+            # raw_files[0] is a local path to the download of 
+            # 'http://data.pymvpa.org/datasets/hyperalignment_tutorial_data/hyperalignment_tutorial_data_2.4.hdf5.gz'
+            import os
+            import numpy as np
+            import nibabel as nib
+            from mvpa2.base.hdf5 import h5load
+            raw_files = ['/Users/bcipolli/datasets/haxby_etal_2011/hyperalignment_tutorial_data_2.4.hdf5.gz']
+            n_subjects = 10
+            processed_files = ['S%02d_func_mni.nii.gz' % subj_id
+                               for subj_id in range(1, 1 + n_subjects)]
+            processed_files.append('stims.csv')
+            ds_all = h5load(raw_files[0])
+            for si, func_filename in enumerate(processed_files[:-1]):
+                if not os.path.exists(os.path.dirname(func_filename)):
+                    os.makedirs(os.path.dirname(func_filename))
+
+                # Construct and save the image
+                func_data = np.transpose(ds_all[si].O, [1, 2, 3, 0])
+                func_affine = ds_all[si].a['imgaffine'].value
+                func_hdr = ds_all[si].a['imghdr'].value
+                img = nib.Nifti1Image(func_data, affine=func_affine)#, header=func_hdr)
+                nib.save(img, func_filename)
+
+            # Construct and save the stimuli
+            value_arr = np.asarray([ds_all[0].T, ds_all[0].sa['chunks']])
+            csv_cols = np.vstack([['stim', 'chunk'], value_arr.T])
+            np.savetxt(processed_files[-1], csv_cols, delimiter=',', fmt='%s')
+```
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-07-15 16:37:25","script for plotting is:
+
+``` python
+import matplotlib.pyplot as plt
+import nibabel as nib
+from nilearn.plotting import plot_stat_map
+from nilearn.image import index_img
+# from nilearn.datasets import fetch_haxby_hyperalignment
+
+# dset = fetch_haxby_hyperalignment(n_subjects=1)  # 
+# func_img = nib.load(dset['func'][0])
+n_subjects = 10
+processed_files = ['S%02d_func_mni.nii.gz' % subj_id
+                              for subj_id in range(1, 1 + n_subjects)]
+func_img = nib.load(processed_files[0])
+plot_stat_map(index_img(func_img, 0))
+plt.show()
+```
+","",""
+"issue_comment","147","nilearn","nilearn","bcipolli","2015-07-17 14:33:41","@AlexandreAbraham Added the missing parts just now. if you replace the path to the file, should work now.
+
+Let me know if you have a problem with the `pymvpa` import...
+","",""

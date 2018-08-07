@@ -1,0 +1,114 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1489","nilearn","nilearn","raamana","2017-08-14 16:38:49","This is not an issue per se, but more of a discussion for improvement.
+
+I like the dataset fetching part of nilearn, not just the individual functions, but the collection as a whole is helpful in the long run and for the newcomers. However, different methods in `nilearn.datasets` mix a few different things, especially two distinctly different things: atlases and datasets. Even for sufficiently similar things e.g. `fetch_atlas_surf_destrieux` and `fetch_surf_fsaverage5`, the return types are not consistent. My quick searching and skimming of issues and PRs did not show me any discussion and current work towards this (point me to existing/earlier discussion if one exists). Given people regularly compare few atlases in a study, I'll be surprised if one of you haven't already thought about this (or have some code lying around already taking care of this).
+
+In that context, I think we should consider one or a combination or variation of following:
+ - add `nilearn.atlas` which contains two methods: `fetch_cortical` and `fetch_wholebrain` [my vote]
+ -  add `nilearn.datasets.fetch_atlas_cortical` and `nilearn.datasets.fetch_atlas_wholebrain`
+
+and let the user supply which atlas they want, and these methods return something consistent e.g. *an atlas object* for example.
+
+Regardless of how we provide the functionality, I think arriving at *uniform access to similar types* solution is important IMHO. For example, to make visualizations of ROI-wise mean thicknesses for different atlases, I would like to be able to do the following:
+```python
+import nilearn
+
+atlas_list = [ 'fsaverage', 'glasser2016', 'destrieux', 'DKT']
+for atlas in atlas_list:
+    parc = nilearn.atlas.fetch_cortical(atlas)
+    mean_thickness = compute_ROI_means(data, parc)
+    visualize_ROI(parc, mean_thickness, atlas)
+
+```
+
+So defining a standard data structure for atlases (Freesurfer annotations and label files are a good start, esp. given nibabel already supports them), regardless of where it is returned from would be great.
+
+Looking forward to learn from you guys, and contribute to this, if found helpful to others.
+
+","start issue","ENH: Uniform access to atlas parcellations"
+"issue_comment","1489","nilearn","nilearn","bthirion","2017-08-14 20:45:58","Thx for the suggestion. I like the idea of more uniform access to atlases.
+I think that most atlases can be only be accessed through brain or cortex representation *exclusively*. I don't  think that the data access can be factored across these two representations.","",""
+"issue_comment","1489","nilearn","nilearn","bthirion","2017-10-05 20:08:43","@KamalakerDadi  I fully agree, we should not have to check all the atlases. This would be a never-ending task.
++1 also for progressive convergence of the downloaders API.","",""
+"issue_comment","1489","nilearn","nilearn","bthirion","2017-10-08 20:10:55","Thanks for the clarification. I think we mostly agree :-))
+Ideally, this might occur through successive improvements of the existing API. PR welcome ! ","",""
+"issue_comment","1489","nilearn","nilearn","raamana","2017-08-14 21:52:55","Thanks Bertrand. It seems so to me also - even representing such info in an atlas object for example, would be good for nilearn usage. This probably would require us to catalogue the atlas landscape, in terms of how they are produced (underlying modalities, is it an average, demographics of underlying subjects), how it is intended to be used, what are the alternative and invalid usages etc. 
+
+ps: updated my original post, to add ""and let the user supply which atlas they want, and these methods return something consistent e.g. *an atlas object* for example.""","",""
+"issue_comment","1489","nilearn","nilearn","raamana","2017-08-24 22:20:08","Thanks Derek. Consistency in naming attributes is certainly one aspect I had mind, in addition to their validation for example.
+
+It'd be great if everyone else who utilizes different types of atlases jot down their difficulties atlas usage, the problems they may have solved themselves and what they would like to see, so I can try to design a class for that. It doesn't have to be one class, could be multiple based on their properties (volumetric, cortical, multi-resolution, multi-parcellation etc). I've a rough sketch in my mind, but I don't think it captures the use cases for other researchers (esp. the fMRI ones).
+
+pinging @GaelVaroquaux @banilo ","",""
+"issue_comment","1489","nilearn","nilearn","raamana","2017-09-24 15:29:33","Sorry for the delay - just mulling this point as and when I am able to. Short: I agree with you Gael on many of the practical considerations and issues you raise. It is definitely more pragmatic to evolve the codebase than shove a shiny new object, and choose native data structures when possible. However, I still feel strongly that my original proposal for an atlas object is worth it, atleast to put it up for good debate to identify candidates for implementation.
+
+Some of the points I have in mind are as follows:
+
+- most *users* do not dig into the data structures and just *use them* as long as they work.
+- if I understand it correctly, nilearn currently does NOT validate atlas data/info. It simply loads them pre-shared files assuming them to be valid, right? Although this is not terrible as long as we validate them before making it an option, but I would rather see few sanity checks performed before returning the atlas to unsuspecting users. Checks could be simple:  
+
+  - Do the number of vertices match something else? are the ROIs non-empty?
+  - do the faces/edges and vertices work well together (are all the vertices getting indexed by edges)?
+  - if atlas is supposed to have ROIs, does it have any ROIs (ensuring its not all blank or same value in every voxel)?
+  - are the ROIs non-overlapping? if not, was it by design?
+  - others that may be of relevance.
+
+- the kind of data structures I have in mind are only slightly more complicated than the Bunch object (which itself is non-native). They could simply be a Bunch object with more validation code depending on whether its volumetric or surface-based atlas. This could also be currently achieved by running separate validator methods outside of the atlas data, but it's my  preference to have validation self-contained in an object. Given atlas is an important part of neuroimaging research today, and for some time to come, this might be worth a consideration.
+
+As for whether full uniformization is possible, I agree there won't be a grand-unified atlas object, ( *as brain mapping is itself an evolving field so to say :p* ), but we can cover 80% use cases with two types of objects (volumetric and surface). With some care and discussion on where the object may likely change in the future ( given its an object by design), it won't be hard to add new use cases as we move forward.
+
+Sorry for the long reply, just jotting down my thoughts. Don't consider this as a blind push to implement a shiny new object, but something that may be of great use (given atlas cuts across other modalities and streams of research).
+","",""
+"issue_comment","1489","nilearn","nilearn","raamana","2017-10-06 03:36:41","Perhaps I made the validation appear to be something bigger and more complicated than what it is. It's like the validation of a new Estimator class when someone wants to roll their own estimator into scikit-learn code base (make sure it is an estimator, with expected properties and behaviour). Just need to define what they are, communicate to those interested in publishing atlases into nilearn and validation. I imagine the convergence of the what will be returned by the validators (an uniform object, which everyone supports) could be a good start for specifying what is expected in an atlas of specific type (volumetric or cortical).
+
+@bthirion I imagine it will be one-time, not end-less task, as once it is defined, it will be automatic later one.
+
+Don't want to extend the discussion, but I am hoping an object will emerge as the return structure of the fetchers gets finalized.","",""
+"issue_comment","1489","nilearn","nilearn","raamana","2017-10-12 20:11:22","I'd love to. However, arriving at on the design or ""structure"" of the outputs returned by atlas fetchers is what I am trying to achieve here. I think @GaelVaroquaux touched up on it a bit. However, I would like it more detailed discussion and some loose consensus on the direction, before I go on implementing something ugly :)","",""
+"issue_comment","1489","nilearn","nilearn","dpisner453","2017-08-24 22:06:09","I second this proposition, and would like to add that consistency of naming of all 'fine-grained' atlas attributes would also be incredibly useful. For instance, maintaining dictionaries of interchangeably used terminology for named regions and networks (if they are available) would be extraordinarily helpful to facilitate streamlined comparisons across atlases. 
+
+FYI: maybe this has already been changed, but the last time I checked the Power atlas was missing network membership labels (unlike the Dosenbach 2010 atlas, for instance, where they are listed with terrific formatting!). If you need the network labels for the Power atlas to add to nilearn, they are attached to this message.[
+[Consensus264.zip](https://github.com/nilearn/nilearn/files/1250357/Consensus264.zip)
+
+](url)","",""
+"issue_comment","1489","nilearn","nilearn","GaelVaroquaux","2017-08-25 09:04:08","Thanks for the suggestion. There is certainly room for more standardization. A few thoughts:
+
+* Atlas object: I'd rather not introduce a new data structure. A philosophy of nilearn is to work as much as possible with standard data structures. One of the reasons is that learning/understanding data structures is hard. Another one is that we want it to be as easy as possible for new users to use the code on their own data/atlas.
+
+* Full uniformization is not possible. There are many aspects that vary:
+
+  - probabilistic versus hard-assignment atlas (ie 3D vs 4D)
+  - surface versus volume
+  - presence of labels or not
+  - presence of regions coordinates in MNI or not
+  - presence of networks ID (ie more hierarchy in labels or not)
+
+  For these reasons, I think that it is not a good idea to have one single function: having the properties of a return value vary as a function of input arguments is bad policy, as it creates bugs in users code that they do not expect.
+
+* However, we do have a will of harmonization, and we can certainly do better. We started a while ago with: https://github.com/nilearn/nilearn/issues/930
+
+  I think that the goal should be that functions should be as uniform as possible. Hence: **a given atlas property should be always in the same attribute**.
+
+  The kind of code that I have in mind would look like:
+<pre>
+atlas1 = datasets.fetch_atlas_1()
+atlas2 = datasets.fetch_atlas_2()
+atlas3 = datasets.fetch_atlas_3()
+for atlas in [atlas1, atlas2, atlas3]:
+   ...
+</pre>
+
+Thinking of this code, I see a few direct improvements that we can do to the datasets fetcher:
+
+* Some of our functions (fetch_atlas_yeo_2011, fetch_atlas_smith_2009, fetch_atlas_basc_multiscale_2015, fetch_atlas_allen_2011, and maybe more) return different atlases, in different keys. We should change these functions to be more like fetch_atlas_harvard_oxford, and take an argument to specify the atlas wanted. This will require a deprecation cycle in the fetcher code where this argument is put by default to ""None"" for 2 release cycles, and it returns the old structure, raising a deprecation warning.
+
+* We need to _really_ make sure that every argument is named similar, and has the same type. We could even create labels for atlases that lack them ('1', '2', ...).
+
+Sorry for the really long reply. I am suggesting something that is more of an evolution of what we have than a revolution. I hope that this makes sense and sounds good.","",""
+"issue_comment","1489","nilearn","nilearn","KamalakerDadi","2017-08-25 11:26:23",">Thinking of this code, I see a few direct improvements that we can do to the datasets fetcher:
+
++1. Sounds good to me.","",""
+"issue_comment","1489","nilearn","nilearn","dpisner453","2017-08-26 16:40:07","Sounds good to me as well!","",""
+"issue_comment","1489","nilearn","nilearn","KamalakerDadi","2017-10-05 13:03:25","@raamana I think your idea of uniform access to parcellations is worth to consider. Personally, I see it by making a small step-by-step implementation of the uniform idea, where the initial step is already proposed by @GaelVaroquaux .
+
+Regarding validation, Nilearn provides downloaders based on openly available. AFAIK, it is up to the publishers for providing right atlases and validation in Nilearn is for out of scope (Anybody can correct me if I am wrong). This is just my opinion on downloaders shipped with Nilearn. Moreover, validating each atlas makes API grow heavy which in result gives a collapsable form of your uniform design idea. ","",""

@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","82","nilearn","nilearn","AlexandreAbraham","2013-06-19 22:57:00","Formerly, if a MultiNiftiMasker was given to MultiPCA, along with masker arguments (smoothing_fwhm...), then parameters of the MultiNiftiMasker were overriden by the ones given to MultiPCA.
+
+After discussion with Philippe, we find much more consistant to ignore masker parameters given to MultiPCA in this case (if the user gives us a masker, we assume that he knows what he's doing).
+
+This is a thread to discuss and validate this new behavior.
+
+In any case, the code must be cleaned as, for the moment, the user is warned that memory and memory_level are ignored, which should not be the case. 
+","start issue","Validate the behavior of MultiPCA if a MultiNiftiMasker is given"
+"issue_closed","82","nilearn","nilearn","AlexandreAbraham","2013-11-05 13:55:37","","closed issue","Validate the behavior of MultiPCA if a MultiNiftiMasker is given"
+"issue_comment","82","nilearn","nilearn","GaelVaroquaux","2013-06-19 23:03:46","> After discussion with Philippe, we find much more consistant to ignore masker
+> parameters given to MultiPCA in this case (if the user gives us a masker, we
+> assume that he knows what he's doing).
+
+I'd rather have it the other way: explicit is better than implicit.
+","",""
+"issue_comment","82","nilearn","nilearn","GaelVaroquaux","2013-11-05 13:44:33","> For the moment, if we are in such a case, the value of the MultiPCA is taken
+> and we raise a warning.
+
+I am not sure what your sentence mean.
+","",""
+"issue_comment","82","nilearn","nilearn","GaelVaroquaux","2013-11-05 13:51:54","> if there is a conflict between the parameters of the MultiNiftiMasker and of
+> the MultiPCA, the parameters of the MultiPCA are kept and a warning message
+> tell the user that parameters of the masker were overridden
+
+All good!
+","",""
+"issue_comment","82","nilearn","nilearn","pgervais","2013-06-21 08:57:25","My thoughts on this. 
+
+MultiPCA needs a mask for its computations. The user can provide it or let the object compute it from data. The latter situation can be handled in two ways: either by providing a masker object, or by providing the _options_ taken by the masker object (and let MultiPCA create one). What the user would write is respectively (in extremely simplified form, for the purpose of the example):
+
+```
+MultiPCA(smoothing_fwhm=2)
+```
+
+or 
+
+```
+masker = MultiNiftiMasker(smoothing_fwhm=2)
+MultiPCA(mask=masker)
+```
+
+The second situation being useful when the same masker (not mask) is to be reused in different places.
+
+The question raised in this issue is what should happen in this situation:
+
+```
+masker = MultiNiftiMasker(smoothing_fwhm=2)
+MultiPCA(mask=masker, smoothing_fwhm=3)
+```
+
+What I think after talking with Alexandre is that this situation must not happen: this is an **error**. The Python langage prevents a keyword argument from being provided twice. Let's do the same. The present example is a conflict, which is ambiguous. Giving priority to either value (that in masker or that provided to MultiPCA itself) is implicit in all cases.
+","",""

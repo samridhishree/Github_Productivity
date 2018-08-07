@@ -1,0 +1,100 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","954","nilearn","nilearn","salma1601","2016-01-18 14:41:20","since this function gives only the coordinates
+","start issue","rename fetch_atlas_power_2011 to fetch_coords_power_2011"
+"issue_closed","954","nilearn","nilearn","AlexandreAbraham","2016-02-19 07:44:02","","closed issue","rename fetch_atlas_power_2011 to fetch_coords_power_2011"
+"issue_comment","954","nilearn","nilearn","AlexandreAbraham","2016-01-18 14:51:11","In all papers I've read, this is referred as ""Power atlas"". So I'm -1 on this one. If we start doing this, that means that all ""atlas"" functions should be renames to either ""labels"" or ""maps"" depending on their type.
+","",""
+"issue_comment","954","nilearn","nilearn","GaelVaroquaux","2016-01-18 15:04:35","Hum :$
+
+It's going to make teaching even harder. When I teach I warn users that
+they are 2 types of atlases, and I spend time explaining the differences.
+How I need to talk about three... I am not very convinced.
+","",""
+"issue_comment","954","nilearn","nilearn","salma1601","2016-01-18 15:33:08","for me the difference is bigger between giving coordinates vs regions than between maps vs labels
+","",""
+"issue_comment","954","nilearn","nilearn","banilo","2016-01-18 23:42:58","Tricky case...introduce something like ""coordinate collections""?
+
+On the top of it, ""fetch"" might not make sense because sets of coordinates are not space/memory-demanding
+","",""
+"issue_comment","954","nilearn","nilearn","GaelVaroquaux","2016-01-19 07:09:52","> On the top of it, ""fetch"" might not make sense because sets of coordinates are
+> not space/memory-demanding
+
+Indeed: we are not ""fetching"" them: they are provided in a CSV file in
+the repo.
+
+That's an oversight, the function should be named ""load_..."".
+","",""
+"issue_comment","954","nilearn","nilearn","lesteve","2016-01-19 08:17:31","> Indeed: we are not ""fetching"" them: they are provided in a CSV file in
+> the repo.
+> 
+> That's an oversight, the function should be named ""load_..."".
+
+My 2c: I'd rather have a consistent naming with fetch_ rather than something that is based on implementation details (whether the data is part of the repo or not).
+","",""
+"issue_comment","954","nilearn","nilearn","GaelVaroquaux","2016-01-19 08:53:44","> My 2c: I'd rather have a consistent naming with fetch_ rather than something
+> that is based on implementation details (whether the data is part of the repo
+> or not).
+
+It's not an implementation detail: it's about whether it will download
+something or not. Therefore is conditions disk space and the need for
+internet access.
+","",""
+"issue_comment","954","nilearn","nilearn","lesteve","2016-01-19 11:25:43","> It's not an implementation detail: it's about whether it will download something or not. Therefore is conditions disk space and the need for internet access.
+
+Not entirely convinced the user cares that much about these details, he just wants to get the data and  vast majority of cases has the resources (internet + disk space) to do so.
+
+Also I could imagine doing `from nilearn.datasets import fetch_atlas<TAB>` and being confused because  fetch_atlas_power_2011 is not listed after the tab completion.
+","",""
+"issue_comment","954","nilearn","nilearn","AlexandreAbraham","2016-01-19 11:27:21","> Also I could imagine doing `from nilearn.datasets import fetch_atlas<TAB>` and being confused because  fetch_atlas_power_2011 is not listed after the tab completion.
+
+Same problem with the `fetch_coords` renaming.
+","",""
+"issue_comment","954","nilearn","nilearn","lesteve","2016-01-19 11:31:21","> Same problem with the fetch_coords renaming.
+
+I was more arguing about fetch_ vs load_ here.
+","",""
+"issue_comment","954","nilearn","nilearn","banilo","2016-01-21 11:32:07","> I was more arguing about fetch_ vs load_ here.
+
+The modern neuroscience hacker working at airports, in train and metro will probably care whether the fast prototyping he or she is effectuating in an IPython notebook will require an internet connection or not....
+","",""
+"issue_comment","954","nilearn","nilearn","lesteve","2016-01-21 12:45:14","> The modern neuroscience hacker working at airports, in train and metro will probably care whether the fast prototyping he or she is effectuating in an IPython notebook will require an internet connection or not....
+
+The modern neuroscience hacker will very likely have the data already downloaded because he uses nilearn extensively :-). Since my previous comment, I realised scikit-learn has this load_ vs fetch_ convention, so that's probably fine if people are used to it.
+","",""
+"issue_comment","954","nilearn","nilearn","GaelVaroquaux","2016-01-21 12:45:59","> The modern neuroscience hacker will very likely have the data already
+> downloaded because he uses nilearn extensively :-).
+
+No
+","",""
+"issue_comment","954","nilearn","nilearn","lesteve","2016-01-21 12:59:56","> > The modern neuroscience hacker will very likely have the data already
+> >  downloaded because he uses nilearn extensively :-).
+> 
+> No
+
+For the record that was meant as a tongue in cheek comment. IIRC most datasets in nilearn need to be downloaded the first time. The poor modern neuroscience hacker without an internet connection is slightly out of luck I am afraid, unless of course he has downloaded the dataset already.
+
+Other than that I reckon we are getting a bit side-tracked with respect to the original issue.
+","",""
+"issue_comment","954","nilearn","nilearn","GaelVaroquaux","2016-01-21 13:01:45","> ```
+>     The modern neuroscience hacker will very likely have the data already
+>     downloaded because he uses nilearn extensively :-).
+> 
+> No
+> ```
+> 
+> For the record that was meant as a tongue in cheek comment.
+
+Sorry, I forgot the smiley, in my comment.
+","",""
+"issue_comment","954","nilearn","nilearn","AlexandreAbraham","2016-02-18 11:23:59","I'm setting it to milestone 0.2.3 because I think that it is important to make a decision on this subject now.
+
+Regarding atlas vs. coords: I prefer to keep atlas since I've never read Power coordinates anywhere. But I have no strong feelings, I am OK for changing it to coords if majority votes for it.
+
+Regarding fetch vs load: I am not against the distinction between online/offline but what bothers me is that this comes before the fact that the dataset is an atlas. First, I think that the difference between `fetch` and `load` is not clear for everybody (let's ask Baptiste if he knows the difference...). A better option would be to put in the name but further. Something like `fetch_atlas_blabla_offline`. We can even make it closer like `fetch_atlas_offline_blabla` but putting it in first position will lose people that are used to do `fetch_atlas_<TAB>` like Loic said.
+","",""
+"issue_comment","954","nilearn","nilearn","bthirion","2016-02-18 22:35:14","I don't have strong feelings, but `fetch_coords_power_2011` makes it clear that the output is not a standard atlas, so I'd rather go for it. I'm afraid that otherwise people will complain they don't know how to handle it.
+","",""
+"issue_comment","954","nilearn","nilearn","AlexandreAbraham","2016-02-18 23:13:41","Given that most people agree on `coords`, I created a PR to change that #995.
+
+The question `fetch` vs `load` still remains.
+","",""

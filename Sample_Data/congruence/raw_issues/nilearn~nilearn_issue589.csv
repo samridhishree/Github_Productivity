@@ -1,0 +1,998 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","589","nilearn","nilearn","KamalakerDadi","2015-05-16 18:02:05","Edited by @AlexandreAbraham
+- [x] thicken contour lines
+- [x] add an example of plotting with several atlases
+- [x] make code PEP8 compliant
+- [x] for thresholding, accept one value, or a list of values, or a percentage, or a list of percentage
+
+I have basically utilised the content of the code and documentation of each arguments for writing a function called `plot_4d` in `img_plotting`.
+Here is the code snippet to call the function `plot_4d` for plotting in contours. 
+Harvard Oxford Atlas:
+
+``` python
+from nilearn import datasets, plotting
+import matplotlib.pyplot as plt
+atlas_img_4D, labels = datasets.fetch_harvard_oxford('cort-prob-2mm')
+display = plotting.img_plotting.plot_4d(atlas_img_4D)
+plt.show()
+```
+
+Result:
+![figure_1](https://cloud.githubusercontent.com/assets/11410385/7667394/2952f1ae-fc06-11e4-8055-70f6ba96a2b2.png)
+
+MSDL Atlas:
+
+``` python
+from nilearn import datasets, plotting
+import matplotlib.pyplot as plt
+atlas_data = datasets.fetch_msdl_atlas()
+atlas_filename = atlas_data.maps
+display = plotting.img_plotting.plot_4d(atlas_filename)
+plt.show()
+```
+
+Result:
+![figuremsdl](https://cloud.githubusercontent.com/assets/11410385/7667400/54c4ae68-fc06-11e4-8a05-cfdb56c63ad8.png)
+","start issue","[MRG+1] Adding a 4Dplot function displaying as a contours in img_plotting "
+"issue_closed","589","nilearn","nilearn","GaelVaroquaux","2015-07-16 13:35:26","","closed issue","[MRG+1] Adding a 4Dplot function displaying as a contours in img_plotting "
+"pull_request_title","589","nilearn","nilearn","KamalakerDadi","2015-05-16 18:02:05","Edited by @AlexandreAbraham
+- [x] thicken contour lines
+- [x] add an example of plotting with several atlases
+- [x] make code PEP8 compliant
+- [x] for thresholding, accept one value, or a list of values, or a percentage, or a list of percentage
+
+I have basically utilised the content of the code and documentation of each arguments for writing a function called `plot_4d` in `img_plotting`.
+Here is the code snippet to call the function `plot_4d` for plotting in contours. 
+Harvard Oxford Atlas:
+
+``` python
+from nilearn import datasets, plotting
+import matplotlib.pyplot as plt
+atlas_img_4D, labels = datasets.fetch_harvard_oxford('cort-prob-2mm')
+display = plotting.img_plotting.plot_4d(atlas_img_4D)
+plt.show()
+```
+
+Result:
+![figure_1](https://cloud.githubusercontent.com/assets/11410385/7667394/2952f1ae-fc06-11e4-8055-70f6ba96a2b2.png)
+
+MSDL Atlas:
+
+``` python
+from nilearn import datasets, plotting
+import matplotlib.pyplot as plt
+atlas_data = datasets.fetch_msdl_atlas()
+atlas_filename = atlas_data.maps
+display = plotting.img_plotting.plot_4d(atlas_filename)
+plt.show()
+```
+
+Result:
+![figuremsdl](https://cloud.githubusercontent.com/assets/11410385/7667400/54c4ae68-fc06-11e4-8a05-cfdb56c63ad8.png)
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","[MRG+1] Adding a 4Dplot function displaying as a contours in img_plotting "
+"pull_request_merged","589","nilearn","nilearn","GaelVaroquaux","2015-07-16 13:35:26","[MRG+1] Adding a 4Dplot function displaying as a contours in img_plotting ","0a5085816a3d302a46c21f8320c3d545acf5f7c7","Pull request merge from KamalakerDadi/nilearn:fix_588 to nilearn/nilearn:master"
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-05-16 18:02:35","issue #588 
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 07:33:24","I am wondering if we want to have such a function instead of educating the user about how to display several regions himself. The only additional logic in this function is the way the colormap is computed, which is a pain in matplotlib but for which we can provide a utility function.
+
+I have one myself and so to do the same thing I write:
+
+``` python
+p = plot_anat(...)
+
+for region_img, color in zip(iter_img(atlas_img), get_colors('gist_rainbow', len(atlas_img.shape[-1]))):
+    p.add_countours(region_img, ...)
+```
+
+What would be (in my sense) a good addition for such function:
+- a ""group"" heuristic for `find_cut_coords` because it will always be centered here I think (but this may be something to add in the slicer itself, an update of the cut coords when contours or overlays are added)
+- an intelligent coloring code. Here, neighboring regions have similar colors because the atlas is made this way. We should write an algorithm to have maximum contrast between neigboring regions, this is a pain but this would be the new killer feature for me
+- same code but with `add_overlay` to display several stat maps.
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-05-18 09:43:55","> I am wondering if we want to have such a function instead of educating
+> the user about how to display several regions himself.
+
+This will provide a lot of value for beginners. It's a feature that many
+people have been curious about. Also, many of us have a copy-pasted
+variant of this code. Getting is right is somewhat challenging, and each
+time someone rewrites it, its time lost.
+
+When something keeps coming up in people's code, it's often a good thing
+to make a function out of it. Also, we are going to need it to make the
+output of the ICA.
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 10:09:30","Well, in that case, I would say that we need to support maps and labels. Maybe an `iter_map` function would be useful. It would iterate on 4d if there is one, and if it is 3D with integer values (ie labels), it would return a binary mask corresponding to each label.
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-05-18 10:11:13","I would provide 2 functions, and not do magic, but have a good error
+message. We already have the first function: plot_roi.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-05-18 11:03:17","I am thinking more or less like a enhancement to plotting functions, for example 4D. As far as I have seen, there is no specific example describing plotting 4D. As a users point, I thought it would be nice to input data and view the maps as an overlay or contours on the anatomical image.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-01 09:21:28","Examples with Harvard Oxford, MSDL atlases: default `threshold` mode
+
+``` python
+from nilearn import datasets, plotting
+# Harvard Oxford Atlas
+atlas_img_4D = datasets.fetch_harvard_oxford('cort-prob-2mm')
+# Visualization of Harvard Oxford Atlas maps as a contours type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0], 
+                                                title='Harvard-Oxford with contours')
+# Visualization of Harvard Oxford Atlas maps as a continuous type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0], view_type='continuous',
+                                                title='Harvard-Oxford with continuous')
+```
+
+Output:
+![hocontours](https://cloud.githubusercontent.com/assets/11410385/7909869/ee77dd96-084f-11e5-8ac0-145d487b6aa7.png)
+
+![hocontinuous](https://cloud.githubusercontent.com/assets/11410385/7909871/f46734d6-084f-11e5-8ea6-37cfade51177.png)
+
+MSDL Atlas Example:
+
+``` python
+from nilearn import datasets, plotting
+# MSDL Atlas
+atlas_data = datasets.fetch_msdl_atlas()
+atlas_filename = atlas_data.maps
+# Visualization of MSDL Atlas maps as a contours type
+display = plotting.img_plotting.plot_prob_atlas(atlas_filename,
+                                                title='MSDL with contours')
+# Visualization of MSDL Atlas maps as a continuous type
+display = plotting.img_plotting.plot_prob_atlas(atlas_filename, view_type='continuous',
+                                                title='MSDL with continuous')
+```
+
+Output:
+![msdlcontours](https://cloud.githubusercontent.com/assets/11410385/7909892/28d93494-0850-11e5-9071-517163b27955.png)
+![msdlcontinuous](https://cloud.githubusercontent.com/assets/11410385/7909893/2d704934-0850-11e5-9224-abae23e8a240.png)
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-03 08:35:33","> As I see I missed the ""label = 0"", which is ""Frontal Pole""
+
+I don't see how you can lose a region with this threshold strategy. Could you add some debug info, like the min and max of the frontal pole map and the computed threshold?
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-03 08:40:03","> To avoid maximum overlaps between each maps, I used less value `threshold=1e-1`.
+
+For me, this value has no sense. What we said about threshold:
+- if threshold is a string, it must look like ""38%"" and, in that case, we keep all the values that are, in absolute, above the threshold of 38%
+- if threshold if a float, we use this value as a threshold
+- if threshold is a list, then the same rules as above apply but each map has a different threshold
+
+You can take a look at the parameter `edge_threshold` of `plot_connectome` which is handled the same way.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-09 13:04:26","After addressing some comments: 
+**Fixing contour fillings using contourf**
+Output: 
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn import datasets, plotting
+
+# Harvard Oxford Atlas
+atlas_img_4D = datasets.fetch_harvard_oxford('cort-prob-2mm')
+# Visualization of Harvard Oxford Atlas maps as a contours type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0],
+                                                title='Harvard-Oxford with contours')
+# Visualization of Harvard Oxford Atlas maps as a contour fillings type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0], fill=True,
+                                                title='Harvard-Oxford with contour fillings')
+# Visualization of Harvard Oxford Atlas maps as a continuous type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0], view_type='continuous',
+                                                title='Harvard-Oxford with continuous')
+plt.show()
+```
+
+**contours**
+**continuous overlays**
+ **contours with fillings**
+![hocontours](https://cloud.githubusercontent.com/assets/11410385/8058271/9ab3b904-0eb8-11e5-8954-1ec02903b50b.png)
+![hooverlays](https://cloud.githubusercontent.com/assets/11410385/8058277/a173e3c2-0eb8-11e5-942b-802e607aa45a.png)
+![hocontourfillings](https://cloud.githubusercontent.com/assets/11410385/8058278/a492db3a-0eb8-11e5-8f6a-a6677fd4abe0.png)
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 14:02:43","@GaelVaroquaux I'm not convinced by the filled contours and I think that we should let the user decide if he wants them or not. Do you agree with that? If so, should we add a `view_type` or a kwarg?
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-09 14:53:25","I agree that we should let the option open. It can be useful, as can be seen on figures from Yannick's paper.
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Jun 9, 2015, 07:02, at 07:02, Alexandre Abraham notifications@github.com wrote:
+
+> @GaelVaroquaux I'm not convinced by the filled contours and I think
+> that we should let the user decide if he wants them or not. Do you
+> agree with that? If so, should we add a `view_type` or a kwarg?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/589#issuecomment-110365075
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 15:01:10","You still have cosmetics details to solve. Apart from that, the code is ready.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-13 08:37:23","@GaelVaroquaux We addressed most of the comments and I will push the code with these changes with some tests.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-14 11:55:27","Example which displays Harvard-Oxford, MSDL and Smith 2009 atlas maps:
+- Harvard Oxford
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn import datasets, plotting
+
+# Harvard Oxford Atlas
+atlas_img_4D = datasets.fetch_harvard_oxford('cort-prob-2mm')
+# Visualization of Harvard Oxford Atlas maps as a contours type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0],
+                                                title='Harvard-Oxford with contours')
+# Visualization of Harvard Oxford Atlas maps as a contour fillings type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0], filled=True,
+                                                title='Harvard-Oxford with contour fillings')
+# Visualization of Harvard Oxford Atlas maps as a continuous type
+display = plotting.img_plotting.plot_prob_atlas(atlas_img_4D[0], view_type='continuous',
+                                                title='Harvard-Oxford with continuous')
+plt.show()
+```
+- MSDL
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn import datasets, plotting
+# MSDL Atlas
+atlas_data = datasets.fetch_msdl_atlas()
+atlas_filename = atlas_data.maps
+# Visualization of MSDL Atlas maps as a contours type
+display = plotting.img_plotting.plot_prob_atlas(atlas_filename,
+                                                title='MSDL with contours')
+# Visualization of MSDL Atlas maps as a contour fillings type
+display = plotting.img_plotting.plot_prob_atlas(atlas_filename, filled=True,
+                                                title='MSDL with contour fillings')
+# Visualization of MSDL Atlas maps as a continuous type
+display = plotting.img_plotting.plot_prob_atlas(atlas_filename, view_type='continuous',
+                                                title='MSDL with continuous')
+plt.show()
+```
+- Smith Atlas
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn import datasets, plotting
+# Smith 2009 Atlas
+smith_data = datasets.fetch_smith_2009()
+# Visualization of Smith data atlas maps as a contours type
+display = plotting.img_plotting.plot_prob_atlas(smith_data.rsn10,
+                                                title='Smith Atlas with contours')
+# Visualization of Smith data atlas maps as a contour fillings type
+display = plotting.img_plotting.plot_prob_atlas(smith_data.rsn10, filled=True,
+                                                title='Smith Atlas with contour fillings')
+# Visualization of Smith data atlas maps as a continuous type
+display = plotting.img_plotting.plot_prob_atlas(smith_data.rsn10, view_type='continuous',
+                                                title='Smith Atlas with continuous')
+plt.show()
+```
+
+![atlas](https://cloud.githubusercontent.com/assets/11410385/8148392/6e049ec8-129b-11e5-932a-3bbdc0f3c03f.png)
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-14 11:57:01","@GaelVaroquaux Pushed some changes. Balance as of now is to add smoke tests.
+","",""
+"issue_comment","589","nilearn","nilearn","bthirion","2015-06-14 18:55:17","Looks great. Are you providing an example with these displays ?
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-14 19:56:58","Yes definitely. I have no specific thing to work on. May be an example should be using canica maps ?
+","",""
+"issue_comment","589","nilearn","nilearn","bthirion","2015-06-14 20:00:44","Or just the same as you did with atlases ? The advantage is that the example would be faster (no computation involved), which is better if the purpose is to illustrate the visualization capabilities of Nilearn.
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-14 20:47:01","@KamalakerDadi : this is looking good. Now you need to work on the documentation (you need to add an entry to the plotting.rst documentation page) and the examples. It's important to get good wording.
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-18 13:20:13","You should also add your function in `__init__.py`.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-18 14:00:17","ping @AlexandreAbraham @lesteve 
+
+Addressed some of the comments.
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-18 21:18:59","We need an example.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-19 13:32:57","ping @GaelVaroquaux @AlexandreAbraham 
+
+Added a simple example file. If you need any specific example to be addressed your inputs are welcome. 
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-19 16:30:49","ping @GaelVaroquaux @AlexandreAbraham @lesteve 
+
+I have also added an entry into plotting.rst. I had to follow the same lines of the previous entries. I hope it goes well.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-23 08:57:46","ping @AlexandreAbraham @lesteve 
+Added some lines in the `check_threshold` to suit for a generic usage and fixed minor documentation changes.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 11:02:55","@AlexandreAbraham @GaelVaroquaux @lesteve 
+I have added some tests and fixed some pep8 errors. Running nosetests seems to be OK with these new additions in the test files.
+","",""
+"issue_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:42:17","I may have missed it but it looks like you are still not using check_threshold in the plot_connectome code.
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-29 07:57:26","I'll answer that point. In `plot_connectome`, some special calculations are made for the percent case. This is logical as computing a percentile means that we need data to compute the percentile on. I'm still questioning the interest of factorizing the code in a function but I definitely do not want to block the PR just for that. So maybe we can merge it and then find a clean way to factorize the code.
+","",""
+"issue_comment","589","nilearn","nilearn","lesteve","2015-06-29 08:08:27","> I'll answer that point.
+
+Chatting with @AlexandreAbraham we agreed that check_threshold can be used by the plot_connectome code.
+","",""
+"issue_comment","589","nilearn","nilearn","KamalakerDadi","2015-07-14 07:46:13","ping @AlexandreAbraham @GaelVaroquaux @lesteve 
+I have added an example which visualizes all the 4D atlases. Need some reviews and comments on the updates. If any.
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-14 08:05:04","> I have added an example which visualizes all the 4D atlases.
+
+On my computer, fig 3 of this example (Harvard Oxford as continuous) is
+broken. Feel free to drop by to see what I am talking about.
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-14 08:09:19","> > I have added an example which visualizes all the 4D atlases.
+
+Also, I don't really like the fact that we now have two examples, one
+named plot_prob_altas.py and the other named plot_probabilistic_atlas.py.
+We need to find names that render the difference more obvious.
+","",""
+"issue_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-14 08:58:59","You need to import the function in the **init** of plotting, so that it is directly accessible.
+","",""
+"issue_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-16 13:32:50","You have my blessing :pray:
+","",""
+"issue_comment","589","nilearn","nilearn","lesteve","2015-07-16 13:07:44","I think @KamalakerDadi is still tweaking a few things (sphinx minor issues mostly).
+","",""
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 07:16:41","The name of the function is a bit misleading. Given that EPI is 4d, I may want to put it in this function, which is not the intended purpose. Something like `plot_atlas` or `plot_contours` would be more meaningful I think.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 07:17:25","The cmap of the contours should be an option.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 07:18:08","The value of levels is arbitrary here.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 07:23:02","Is there a sense in applying vmin and vmax on anat? I would rather have `anat_vmin` and `anat_vmax` and maybe a `threshold` parameter to be considered as level.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-05-18 10:54:44","Yes, I agree. I will change it.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-05-18 10:55:51","To be clarified myself, should be added as an optional argument ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-05-18 11:00:41","I have looked how `plot_anat` and included here. Do you mean it will be nice to use keywords `anat_vmin` instead of `vmin` ?
+I can also check ``threshold` parameter.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-05-18 11:02:40","One thing I saw is that if I use default `cmap` which was already defined. I don't see any contours in colors instead showed in a gray scale. I thought there would be double mismatch with cmap.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-05-18 11:28:30","> > +def plot_4d(img, anat_img=MNI152TEMPLATE, cut_coords=None,
+> 
+> Yes, I agree. I will change it.
+
+It could be called 'plot_multi_maps', and have a contours option to
+switch between contours and continuous colors.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-05-18 11:29:10","> > -    node_colors = [plt.cm.spectral(i / float(n_colors))
+> 
+> To be clarified myself, should be added as an optional argument ?
+
+Yes, the cmap should be there as an argument.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 11:39:49","Why not `plot_maps`?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 11:42:33","You already have `cmap` parameter and you use it for the anatomical background. You should rely on default argument for the anat and use the cmap arg here. In my experience, gist_rainbow is better than spectral since spectral have black and white colors.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-18 11:43:33","Note: this is why you have nothing when plotting MSDL. We should put it as a parameter and have by default an 'auto' strategy where we use `compute_background_mask.`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-19 13:52:30","> I have looked how plot_anat and included here. Do you mean it will be nice to use keywords anat_vmin instead of vmin ?
+
+Well, take example on `plot_stat_map`. There is no option to set vmin and vmax for the anat. I think that you should do the same.
+
+> I can also check `threshold parameter.
+
+Yes, I think that it would be useful. Or maybe vmin to stick the conventions. @GaelVaroquaux, any thoughts on this?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-05-19 14:20:58","At the moment, I used `display.add_contours(cur_img, levels=[anat_vmin, anat_vmax])`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-05-19 14:32:21","Why do use `anat_vmin` to display non anatomic data? Plus, why would you put two contours in the figure?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-03 08:17:00","Small remark, I think that @GaelVaroquaux wanted colormaps going from transparent to color and not from black to color.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-03 08:24:52","The best way to handle that is to put `threshold` in the zip. And do this test before:
+
+``` python
+if not hasattr(threshold, '__iter__'):
+    threshold = [threshold] * n_maps
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-03 08:31:09","You don't need to take the abs. It's already done in `fast_abs_percentile` (hence the `abs` in the name ;)).
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-03 08:32:21","Where is the `view_type` contours?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-03 11:45:02","`view_type` contours does it in default `auto` mode.
+You mean to switch to display only as contours without any contour fillings ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-03 11:48:49","What we said, but maybe @GaelVaroquaux wan confirm, is that we have three view types:
+- contours which plot contours only
+- continuous which plot the statistical maps
+- auto that chooses between these 2 modes depending on some heuristic on the data (typically, we can plot continuous maps if there is not too much overlap between the maps)
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-03 13:42:02","Indeed.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-03 13:45:06","Yes. And contours should be filled contours, like what Yannick does. Filled contours are not continous overlays, they are obtained using the matplotlib contourf function.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:32:02","You should not add a parameter but directly use `type='contourf'` in function call.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:32:28","You should not add spaces in these lines.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:32:48","Trailing whitespaces.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:33:45","Could you add a comment about what happens here because I don't get it :confused: 
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:34:40","You still don't handle the case where threshold is a precise value and not a percentile.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:35:41","I think `filled` would be better. Maybe we should add a `'filled_contours'` `view_type`, what do you think?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-09 13:40:44","Not done intentionally. It happened when I was looking into the code whats happening to know how the add_contour does.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-09 13:40:55","Same not done intentionally.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:44:40","I know it's not intentional ;). You should take a look at vim-flake8 that spot these problems.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-09 13:46:41","If I add `type='contourf'`, will it not disturb other contour plotting examples ?
+Did I understood your comment wrongly?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 13:51:45","You should add that in the function call. Instead of `draw_2d(..., fill=True)`, you can write `draw_2d(..., type=""contourf"")`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-09 13:57:05","At the moment, I used simply a value. I would add code validations to accept string (percentage) as done in `plot_connectome` once we have a good discussions and conclusions on using a  `threshold`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-09 14:00:07","`if filled` would be better but regarding `'filled_contours'` are we not trying to confuse by increasing the options ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 14:01:22","We already had this discussion with Gael. You can code it, I think that's all what's left in this PR.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-09 14:01:34","Even me too. I am sorry but basically for an easy way I took code snippet from Yannick. May be I will understand now to answer.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-09 14:03:41","Obviously we should only chose one of these solutions. I asked Gael on the PR discussion, we'll wait for his answer.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:55:32","Put a message that is more precise here.
+
+Something like:
+
+``` python
+raise TypeError('You tried to plot an atlas with %i maps but gave %i values for thresholding, which is inconsistent.' % (n_maps, len(threshold)))
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:55:59","```
+threshold = ""99.7%""
+```
+
+Would work too and is clearer in this context.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:56:11","You did not address this comment.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:56:20","You did not address this comment.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:57:23","You did not address this comment. What you can do is directly ask yannick or even do a `git blame` where you found the code and look at the log of the corresponding commit. It may be helpful.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:58:45","When you add magic values, specify why you do that. Plus, this value is not small.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:58:59","TODO here.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 14:59:59","Add an inline comment like `# .5 alpha for filling color`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-12 19:33:05","> Small remark, I think that @GaelVaroquaux wanted colormaps going from
+> transparent to color and not from black to color.
+
+Yes. And we have a function for that in plotting.com, I believe.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-12 19:34:40","> What we said, but maybe @GaelVaroquaux wan confirm, is that we have three view
+> types:
+> 
+>   • contours which plot contours only
+>   • continuous which plot the statistical maps
+>   • auto that chooses between these 2 modes depending on some heuristic on the
+>     data (typically, we can plot continuous maps if there is not too much
+>     overlap between the maps)
+
+Yes. I'd also like a third option 'filled_contours', that reproduces the
+figures from Yannick's work. This one would not be turned on
+automatically.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 21:00:18","I has been fixed.
+
+On Fri, Jun 12, 2015 at 9:33 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> In nilearn/plotting/img_plotting.py
+> https://github.com/nilearn/nilearn/pull/589#discussion_r32347171:
+> 
+> >  from .displays import get_slicer, get_projector
+> >  from . import cm
+> > 
+> >  ################################################################################
+> >  # Core, usage-agnostic functions
+> > 
+> > +def black_to(color):
+> 
+>  Small remark, I think that @GaelVaroquaux
+> https://github.com/GaelVaroquaux wanted colormaps going from
+> transparent to color and not from black to color.
+> Yes. And we have a function for that in plotting.com, I believe.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/589/files#r32347171.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-12 21:01:09","For the moment, you can do it by selecting view_type='contour' and
+filled=True.
+
+On Fri, Jun 12, 2015 at 9:34 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> In nilearn/plotting/img_plotting.py
+> https://github.com/nilearn/nilearn/pull/589#discussion_r32347297:
+> 
+> > -    color_list = color_map(np.linspace(0, 1, n_maps))
+> >   +
+> > -    for i, (map_img, color) in enumerate(zip(iter_img(maps_img), color_list)):
+> > -        over = black_to(color)
+> > -        cont = ListedColormap(color).colors
+> > -        if threshold is not None:
+> > -           if hasattr(threshold, '**iter**'):
+> > -              value = threshold[i]
+> > -           else:
+> > -                value = threshold
+> > -        # To threshold or choose the level of the contours
+> > -        percentile = 100 \* (1 - (value/n_maps))
+> > -        data = np.abs(map_img.get_data())
+> > -        level = fast_abs_percentile(data, percentile) + 1e-4
+> >   +
+> > -        if view_type == 'auto':
+> 
+>  What we said, but maybe @GaelVaroquaux https://github.com/GaelVaroquaux
+> wan confirm, is that we have three view types: • contours which plot
+> contours only • continuous which plot the statistical maps • auto that
+> chooses between these 2 modes depending on some heuristic on the data
+> (typically, we can plot continuous maps if there is not too much overlap
+> between the maps)
+> Yes. I'd also like a third option 'filled_contours', that reproduces the
+> figures from Yannick's work. This one would not be turned on automatically.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/589/files#r32347297.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-12 21:48:07","Should we remove the ""filled"" argument, and add an additional option to the view_type? I think that avoiding the multiplicity of kwargs is a good thing. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Jun 12, 2015, 14:01, at 14:01, Alexandre Abraham notifications@github.com wrote:
+
+> > -    color_list = color_map(np.linspace(0, 1, n_maps))
+> >   +
+> > -    for i, (map_img, color) in enumerate(zip(iter_img(maps_img),
+> >   color_list)):
+> > -        over = black_to(color)
+> > -        cont = ListedColormap(color).colors
+> > -        if threshold is not None:
+> > -           if hasattr(threshold, '**iter**'):
+> > -              value = threshold[i]
+> > -           else: 
+> > -                value = threshold
+> > -        # To threshold or choose the level of the contours
+> > -        percentile = 100 \* (1 - (value/n_maps))
+> > -        data = np.abs(map_img.get_data())
+> > -        level = fast_abs_percentile(data, percentile) + 1e-4
+> > -   
+> > -        if view_type == 'auto': 
+> 
+> For the moment, you can do it by selecting view_type='contour' and
+> filled=True.
+> 
+> On Fri, Jun 12, 2015 at 9:34 PM, Gael Varoquaux
+> notifications@github.com
+> wrote:
+> 
+> > In nilearn/plotting/img_plotting.py
+> > https://github.com/nilearn/nilearn/pull/589#discussion_r32347297:
+> > 
+> > > -    color_list = color_map(np.linspace(0, 1, n_maps))
+> > >   +
+> > > -    for i, (map_img, color) in enumerate(zip(iter_img(maps_img),
+> > >   color_list)):
+> > > -        over = black_to(color)
+> > > -        cont = ListedColormap(color).colors
+> > > -        if threshold is not None:
+> > > -           if hasattr(threshold, '**iter**'):
+> > > -              value = threshold[i]
+> > > -           else:
+> > > -                value = threshold
+> > > -        # To threshold or choose the level of the contours
+> > > -        percentile = 100 \* (1 - (value/n_maps))
+> > > -        data = np.abs(map_img.get_data())
+> > > -        level = fast_abs_percentile(data, percentile) + 1e-4
+> > >   +
+> > > -        if view_type == 'auto':
+> > 
+> >  What we said, but maybe @GaelVaroquaux
+> > https://github.com/GaelVaroquaux
+> > wan confirm, is that we have three view types: • contours which plot
+> > contours only • continuous which plot the statistical maps • auto
+> > that
+> > chooses between these 2 modes depending on some heuristic on the data
+> > (typically, we can plot continuous maps if there is not too much
+> > overlap
+> > between the maps)
+> > Yes. I'd also like a third option 'filled_contours', that reproduces
+> > the
+> > figures from Yannick's work. This one would not be turned on
+> > automatically.
+> > 
+> > —
+> > Reply to this email directly or view it on GitHub
+> > https://github.com/nilearn/nilearn/pull/589/files#r32347297.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/589/files#r32354591
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-12 22:16:44","This function is already in cm.py. Please reuse it.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-06-12 22:19:05","Should we be using plot_anat here?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-15 06:34:15","This is shorter and more reable:
+
+``` python
+filled_type = 'contour'
+if filled:
+    fikked_type += 'f'
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-15 06:35:49","Something like `contour func` would be a better wording for this variable
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-15 06:37:50","Don't put magic constants with no reason nor explanation.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-15 06:39:43","use the view type `contours_filled` for that case.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-15 06:41:06","You should raise an error if `view_type` is not an accepted value.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 09:38:25","I personally prefer one-liners for things like that:
+
+``` python
+filled_type = 'contourf' if filled else 'contour'
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 09:39:59","Not such a big deal for this one but please refrain from making changes like this in the future. It just adds unnecessary noise.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 09:41:58","No need to pass explicitly a cmap here just let plot_anat use its default (which is indeed plt.cm.gray)
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 09:42:47","For consistency I would use cmap=plt.cm.gist_rainbow here
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 09:46:50","This is not going to play nicely with the rest of the code if threshold is an iterator. I would just require threshold to be a list for simplicity rather than trying to cater for iterators.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 10:05:37","Result is the same : in any case, iterators are not supported.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 10:36:54","Maybe threshold = list(threshold) before the `if` condtion?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 10:39:14","You can replace this line by `else:`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 10:41:13","Maybe `filled_contours` instead of `contours_filled`?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 10:42:12","You should indent this block.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 10:42:54","The `float(...)` was for testing, you can remove it.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:03:24","Just curious: .add_contours is going to be called twice if view_type == 'contours_filled' (in which case both `view_type.startswith('contours') and view_type == 'contours_filled'` are True), is that on purpose?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:04:17","This is wrong (probably copied and pasted from plot_glass_brain)
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:05:27","It seems that it has been copied and pasted from the plot_connectome code. It'd be great to put the functionality in a function and reuse it.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:07:32","""a value"" is quite vague
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 11:14:46","Yes. `add_countours` plot contours around regions in solid lines. The other mode is used to fill these lines with transparent color.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 11:15:55","Agreed. The whole gestion of threshold (value, string, or list of any of them) should be exported in a function.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:28:47","Same thing about leaving threshold unspecified here and letting plot_anat set its default.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:30:03","if you do require a list, why not use isinstance(threshold, list) then ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:32:15","Should the coloring inside the solid lines not happen inside add_contours ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:35:13","This seems a bit overcomplicated, is there no way to pass an alpha via the kwargs ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 11:37:40","Looks like we require a colormap instance rather than a string for `cmap` for all the other plotting functions. For consistency I would follow the same convention here.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 12:09:28","I think we should go for the simplest solution. We know that the handling of iterators in nilearn is partial and buggy in most functions so we won't handle it in this PR. We just try to support as many types as possible, ie numpy arrays, lists, tuples. I suggest this:
+
+`if hasattr(threshold, '__len__') and not isinstance(threshold, _basestring):`
+
+This matches all previous types but fails for iterators. BTW, if we do that and an iterator is given, it will explode deep in the code with a weird error I think.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-17 12:40:19","> BTW, if we do that and an iterator is given, it will explode deep in the code with a weird error I think.
+
+I reckon there should be a catch-all else at the end that raises if threshold is not of one of the accepted types.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-17 14:50:45","I just followed the flow of the code. I felt its easy to call both contours and contour fillings when I use the first word naming as `contours`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-17 14:54:01","If I get you correctly. Yes its happening inside provided when we override option `type` to `contourf`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 15:02:12","I think that what @lesteve says is that `add_contours(filled=False)` should draw only the contours and `add_contours(filled=True)` should draw the contours and the filling at the same time, so only one call is required. This is a good point.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-17 15:04:02","Well, the choice of namings should not be the easiest but the more accurate according to the english language ;). And `filled contours` has much more results than `contours filled` on google.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-18 13:25:37","If `output_file` is not None, your function will crash since returned display will be None.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-18 13:33:59","`countourf` does not use `linewidths`. Please remove it to avoid raising unnescessary warning.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-18 14:01:05","I could not addressed this. Any ideas are welcome. Killed most of the time to address this.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-18 14:08:19","Spurious space.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-22 10:57:13","I would put ""ROIs contours are delineated by colored lines"". ""plots"" have no meaning in any case.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-22 10:58:05","The colors ""will be picked randomly in the given colormap"". @banilo, could you review the documentation part of this PR at least? You're our expert!
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-22 11:00:20","Maybe something like ""real values, percentage express in a string or a list of these""
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-22 11:00:33","itmush -> it must
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-22 11:06:24","Just call the parameter threshold rather than thr.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-22 11:07:28","I see the problem you are addressing but I don't think it's the best way to do it.
+
+Your problem is : when the percentile il too high, all values of the image are kept, including the 0. in the background.
+For me, the solution would be to consider the background to be masked by default, because it's background. And this is not specific to the percentile mode. I would remove the `1e-6` and add, just before the return statement:
+
+``` python
+# Get rid of background values in all cases
+thr = max(thr, 1e-6)
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-22 11:12:56","One of the point of creating this function was to be able to use it for connectome plotting. I don't think you have done that yet.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-22 11:15:59","You should take care of keeping this function generic. For example, the 1e-6 threshold trick should probably not be part of this function because it looks like we don't need it for connectome plotting.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-22 11:17:27","Why did you change the error message? I reckon the original one is more accurate:
+
+``` python
+'edge_threshold should be either a number '
+'or a string finishing with a percent sign'
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-23 09:04:53","Your example generates 3 images. So `plot_prob_atlas_006.png` will not exist. Pick an image from `plot_prob_atlas_001.png`, `plot_prob_atlas_002.png` or `plot_prob_atlas_003.png`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'doc/manipulating_visualizing/plotting.rst')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-23 09:06:03","This code has nothing to do here!
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-23 09:08:51","Second point of this remark has not been addressed.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-23 14:40:22","I think that there is a misunderstanding on this function. You seem to randomly add stuff to address comments without converging toward an acceptable solution. What you must do is see the logic in common between the two functions, see which functional part of the code can be put in common, think about the specifications (or write them down) and then code it.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-24 06:41:37","Not sure whether this comment was made before the most recent changes but I don't see too much wrong with this function right now.
+
+I think something which needs to be done is to use it in the plot_connectome code, which hasn't been done yet.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 11:08:59","Spurious spaces.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 11:10:46","It is optional.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 11:11:11","I loooked the preview of the doc. It looks so clumbsy.  Thats the reason why I added some spaces. If you are talking about the line gaps. for example between 1. and 2.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 11:11:35","Use `str` or `string` but be consistent.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 11:12:47","I removed because it exceeded more that 79 according to pep8 warnings.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 11:13:34","Ok.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 11:16:45","This function does not handle lists of threshold.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 11:17:18","First line of the doc contains only the type of the parameter. Semantic information are described after.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 11:18:06","Your code won't work with a string. If you want to handle both `scoreatpercentile` and `fast_abs_percentile`, I would add a `exact=True` parameter rather than passing the function.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 11:26:07","We are looping over the list of thresholds in `plot_prob_atlas` case where as `plot_connectome` I suppose there is no doc for list of thresholds. So, I think we are safe in both cases. Am I wrong ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 11:27:37","The code is good in both cases. However, this particular function does not handle lists ofr thresholds.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 12:18:04","Ok. May be something like this: Will this suits ?
+**a numpy array of a map or a adjacency matrix of shape (n, n)**
+**data of a map represents the probabilistic atlas of the brain regions whereas adjacency matrix represents the** **edges or connections of the brain regions.**
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 12:21:27","There is no map or adjacency matrix specific code here. This is sufficient:
+
+``` python
+    data: numpy array
+        Data on which the threshold will be calculated if the threshold is a percentage.
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 12:28:09","I will stick to this 
+`Data on which the threshold will be calculated`
+since I already told this in the `returns`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 12:33:30","Ok, then at the moment I will remove saying `list of these`. 
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 13:02:56","Do you think I should add lines of code so that it will also handle list ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-26 13:23:37","I actually checked with `plot_prob_atlas` by changing the string of the function. I may also be wrong. Can you please elaborate a bit on this ? `exact=True`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-26 22:21:39","What I think is that since you've added some tests, your PR is now ready to merge and I don't want to spend weeks arguing about one function. Factorizing this code with the one in `plot_connectome` is not trivial and maybe we should keep that for the sprint.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:15:27","I think I had an old comment somewhere that was saying I would rather have one `add_contours` call and that `add_contours(filled=True)` would do both the filling and the line around it.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:17:19","Just use a clearer name, like allowed_view_types.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:18:10","This should be a ValueError rather than a TypeError I reckon.
+
+Also your error message is incomplete, 'auto' is another possibility that you haven't listed.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:19:25","I am not too sure this one is necessary TBH.
+
+The previous check making sure that view_type is one of the allowed view types is enough.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-29 07:24:40","Yes I tried with this idea but the only way to happen is to call both `contour` and `contourf` some where whether it would be in `draw_2d` or in the same `plot_prob_atlas`. It looks complicated for me. Also we need to take care of `levels` which needs low level to be appended to `0.` to work for contour fillings seems to be bit complicated for me to handle both cases.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:25:24","You can go to the next line using `\`. This is actually the only way to please numpydoc. For an example see:
+https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/manifold/mds.py#L368
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:26:18","Try to avoid fixing PEP8 problems if you don't touch the neighboring lines.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(45, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:31:34","a three -> three
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:37:41","Remove this comment which doesn't add anything. BTW this is not a smoke test.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/tests/test_displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:38:26","Call it test_check_threshold. This doesn't have anything to do with plot_connectome any more.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/tests/test_displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:39:39","While you are at it, you should check that `name` is used in the error message. You can use a regexp like:
+
+`'{0}.+should be a number followed by the percent sign'.format(name)`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/tests/test_displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-29 07:44:32","@KamalakerDadi, I find your explanation very shallow!
+
+Basically, adding `filled=True` in `add_contours` is not trivial because some options are common for `contour` and `contourf` and some are not. We would end up with a lot of kwargs in `add_contours` and the code would be much more complicated.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-29 07:45:45",":+1: 
+Also, you have a set of allowed types. Use this set to generate the error message: it will be shorter and more robust.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-29 07:47:16",":+1:
+You can use the condition `if not isinstance(view_type, _basestring) or view_type not in _view_type:`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-29 07:48:33","Okay, but you have to escape the newline and properly indent the line below. Thanks for the tip!
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:52:09","The problem in my mind is that the .add_\* methods can be called directly by the (advanced) user so they should be convenient to use. Remembering to call add_contours twice plus do the magic with the threshold and the alpha is not a very reasonable expectation.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-06-29 07:53:15","> If you want to handle both scoreatpercentile and fast_abs_percentile, I would add a exact=True parameter rather than passing the function.
+
+Personally I am fine with passing in a function.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-29 09:24:12","Since we have bug in `display.add_overlay` when plotting Harvard Oxford Atlas, can I change the atlas name to MSDL ?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-06-29 11:57:45","No, we'll fix the bug.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-06-29 21:04:31","ping @lesteve @AlexandreAbraham 
+Attempts are made regarding this comment. Please let me know if it looks OK.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-06-30 00:33:05","Aren't additional brackets more pythonic than the backslash here?
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-06 11:55:44","`elif` -> `if` otherwise filled will not be properly initialized for `auto`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-07-06 17:10:06","Should I change `elif` to `if` ?
+
+> otherwise filled will not be properly initialized for auto
+
+We were discussed not to include filled in `auto`. Sorry I could not get it properly.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-06 17:13:19","No problem. I may even be the one that told you to put an elif here ;). However, it is weird that you did not spot this problem in the tests (even if they are smoky).
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-07-12 11:53:19","Fixed.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","arthurmensch","2015-07-13 09:31:30","Maybe test that check_threshold returns the right value with valid arguments:
+
+``` python
+assert( 1. < check_threshold('50%', adjacency_matrix, calculate, name) < 2.)
+```
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(44, '', u'nilearn/plotting/tests/test_displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-07-13 11:30:40","Tests are passed by adding this line. Done
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(44, '', u'nilearn/plotting/tests/test_displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-14 08:41:53","Yes
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","KamalakerDadi","2015-07-14 11:49:27","Fixed
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-14 12:11:36","Please remove disabled code.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-14 12:39:07","There is no custom colormap, it's just a list.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-14 12:41:21","`filled = view_type.startsWith('filled')`
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-14 12:48:46","an idea of
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-14 12:50:08","Comment content redundent with print content
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-14 15:58:19","too many lines (PEP8)
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-14 15:59:43","inconsistency: space before :
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-15 14:48:36","add `sorted`so that the order will not change different runs of document compilation
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-15 14:50:41","The description of the function is not entirely clear.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(115, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-15 14:51:38","One could inverse the if-else here to handle the non-basestring case first, instead of having the body of the function inside an if-clause
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(151, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","banilo","2015-07-15 14:54:03","4D prob.. map [no s]..because you already said it is 4d
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 16:52:12","Remove ""Basically"". Also ""gives an idea"". I would say ""This example shows how to visualize probabilistic atlases made of 4D images. There are 3 different display types: 1....""
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 16:52:59","""This function""? Which function? I would say:
+
+""The :func:`nilearn.plotting.plot...` function displays...""
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 16:53:24","Here I would like a dictionary to be used.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 16:55:36","You are missing a description of what is data here (you're just describing it's type).
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 16:56:01","This empty line shouldn't be there.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(60, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 16:57:03","Break down this entry in the type, which goes on the first line, and what it means (4D probabilistic...) that goes on a line below.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 18:18:19","You haven't addressed my comment that I did earlier:
+- Rename 'allowed_view_types' to 'valid_view_types'
+- Don't use ""list(('a', 'b', 'c'))"" but ""['a', 'b', 'c']""
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-15 18:20:20","You don't want to be testing for a list, because that's too restrictive. You need to use something like:
+
+<pre>
+import collections
+
+if isinstance(e, collections.Iterable):
+</pre>
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:04:07","Extra spaces.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'doc/manipulating_visualizing/plotting.rst')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:04:40",":+1:
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:06:07","I think that there is no `between` after `tune`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:06:48","Unnecessary newline.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:08:46","This function is in `displays.py` and in `img_plotting.py`. You only need one version ;).
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:09:03","Missing newline
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:10:26","Sorry, we had to deal with a git spaghetti history and lost comments in the process.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:15:03","You need at least to check that `threshold` is not a `_basestring`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:16:17","For next PR: try not to fix PEP8 errors in random code. Only fix them if you work in the concerned code.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(225, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-16 06:11:54","> You need at least to check that threshold is not a _basestring.
+
+You have a point. But let's at least accept tuples and arrays, or there
+will be a surprising behavior.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","lesteve","2015-07-16 07:42:24","Also supporting iterables in general, without an extremely good reason, is a pain in the ass as we already experienced elsewhere in nilearn. For example, this code will break with an iterable because you consume the iterable at least twice, `len(threshold)` and `enumerate(zip(..., threshold))`.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-16 07:43:36","Yes, it's fine. Let's just support list, tuple and arrays, which are the
+comon cases.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-16 12:21:53","To be more precise, I would write.
+
+e.g. ""25.3%"", and it is a percentile. Or if it is a number, if should be a real number, in which case it is the value to threshold at.
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-16 12:28:25","I would make this title shorter:
+
+""Visualizing 4D probabilistic atlas maps""
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit_comment","589","nilearn","nilearn","GaelVaroquaux","2015-07-16 12:29:23","You need a 'sorted' here, because 'items()' will not always return the values in the same order. So the code would be:
+
+""for name, atlas in sorted(atlas_types.items()):""
+","e9838f8f0660404a5c6af8e6995767b5093b2c45","(None, '', u'examples/manipulating_visualizing/plot_prob_atlas.py')"
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-05-16 17:48:34","Adding a 4Dplot function displaying as a contours in img_plotting using a Harvard Oxford 4D maps","b0d4c8fb28b7ac5fec549c8c6edf059c95467e73",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-16 15:49:30","Added view_type='contours_filled' and added some validation steps
+to accept correct input to ""view_type"" and added some documentation lines","eb3c70506387a1a17268bc05de6aa44503cae0a8",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-18 13:54:01","Fixed new comments","42d67f40c9428eb17acdb533083bd4c42c69877b",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-19 13:24:17","Added plot_prob_atlas in init file and some minute changes","8eeef8edeaef454ae51fd69d83f55e4e9c15d398",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-19 13:27:26","Added an example showing how to plot Harvard Oxford Atlas","cc11a1c14ae36bedc98bbe913c957dc36da4d484",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-19 13:44:52","Added magic value to show a consistent behaviour with all atlas maps","4dfc01cce0b89854468772af6412f394c11f8aa0",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-19 16:26:24","Added plot_prob_atlas entry in plotting documentation","0a5b70004a3fcd1ba3db74791f874b7e48eb6ac7",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-23 08:48:09","Attempts to fix function threshold towards a more generic usage
+and some minor documentation changes","938fb2392d18595ac01bfa43b84d748fe5cff03b",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-23 08:53:57","Removed unwanted lines","00fcab123fb50cadebf25b7e6f5084a29eb7cdde",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-23 14:19:30","Changed some code in check_threshold function and addressed some comments
+changing image name in plotting doc","bea275d03e5dd159a02eb87d901d8e6a86c79643",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-26 10:58:43","Added tests and fixed some pep8 errors","60e7e0a74601a1dc9ebaea2b29f3a6ff08d5a072",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-29 11:59:43","Fixed almost all comments","c6d616a9a0fbefefeddb42cd3ee3f3c01009d1a9",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-06-29 21:00:56","Attempts to fix calling add_contours only once to display both contours and fillings","92fcf9c916762fc15fb4cb40b02d8eb73a688bff",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-12 09:34:22","Added the example which shows visualizing the available 4D atlas maps","f8cc4cbb71deffd1f607c34b01ffe1b1e62c058a",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-12 11:49:54","Fixed ""if"" bug","36b6f80969eded5a7ba6351dfcf665a4ce0ac02f",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-13 11:28:45","Added test to check the output of a score percentile in check_threshold","8601c67244d1538dda8f1351ccde7d18e32fcda3",""
+"pull_request_commit","589","nilearn","nilearn","GaelVaroquaux","2015-07-14 09:24:46","ENH: tweak default for plot_prob_atlas
+
+Also, add more atlases in the example","2d035ed79bb41e800172bf9e140c5efb424a45ec",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-14 09:55:56","Renamed plot_probabilistic_atlas to plot_overlay and changed
+documentation related to plot_probabilistic_atlas","20809d2de9d55a8122e0e861cf2b77c5cbe9a6a0",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-16 07:50:05","Adderessed some recent comments","dbae23562d59f3b487306d7b091e79833f8e5aad",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-16 12:11:55","Addressed all the comments at maximum","2bac5630c92dd579eb1289003f427dc704a050f0",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-16 12:30:48","Added threshold doc correction","0d3eca6924d31e29227b5192937f8aed145dba0e",""
+"pull_request_commit","589","nilearn","nilearn","KamalakerDadi","2015-07-16 13:14:53","Final fix related to documentation in plotting and references","e9838f8f0660404a5c6af8e6995767b5093b2c45",""

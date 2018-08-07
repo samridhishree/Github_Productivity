@@ -1,0 +1,49 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1101","nilearn","nilearn","rschmaelzle","2016-05-22 20:23:23","Hi, 
+I am getting this error
+
+```
+>  File ""/Users/Ralf/anaconda/lib/python2.7/site-packages/nilearn/plotting/displays.py"", line 659, in _show_colorbar
+>     bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
+> 
+> AttributeError: 'str' object has no attribute 'N'
+
+```
+
+This is my code 
+
+```
+display = plotting.plot_connectome(delta_edge, 
+                         networks_coords[3:], 
+                         display_mode = 'y',
+                         node_color= networks_cols[3:],  
+                         colorbar=True,                         
+                         edge_cmap = 'Blues',
+                         edge_vmin = 0,
+                         edge_vmax = 0.075,
+                         annotate = False,
+                         );        
+```
+
+All works well without the custom edge_cmap. If that is intended behavior, all is fine, but perhaps one wants to make a note. Thanks, Ralf.
+","start issue","colorbar in plot_connectome with different edge_cmap"
+"issue_closed","1101","nilearn","nilearn","rschmaelzle","2016-05-22 21:02:03","","closed issue","colorbar in plot_connectome with different edge_cmap"
+"issue_comment","1101","nilearn","nilearn","AlexandreAbraham","2016-05-22 20:39:48","You are right, we should accept colormap names. In the meantime, you can use this workaround:
+
+``` python
+from matplotlib.cm import get_cmap
+
+display = plotting.plot_connectome(delta_edge, 
+                         networks_coords[3:], 
+                         display_mode = 'y',
+                         node_color= networks_cols[3:],  
+                         colorbar=True,                         
+                         edge_cmap = get_cmap('Blues'),
+                         edge_vmin = 0,
+                         edge_vmax = 0.075,
+                         annotate = False,
+                         );       
+```
+","",""
+"issue_comment","1101","nilearn","nilearn","rschmaelzle","2016-05-22 21:02:03","nice! thanks so much. Best ralf
+","",""

@@ -1,0 +1,234 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","542","nilearn","nilearn","AlexandreAbraham","2015-04-15 08:34:17","Supersedes #536.
+
+@banilo: This is still WIP but I have fixed some stuff. You can take over the branch again if you want ;)
+","start issue","Rely on a common iterator for check_niimg* and concat_niimg."
+"issue_closed","542","nilearn","nilearn","lesteve","2015-04-30 08:20:08","","closed issue","Rely on a common iterator for check_niimg* and concat_niimg."
+"pull_request_title","542","nilearn","nilearn","AlexandreAbraham","2015-04-15 08:34:17","Supersedes #536.
+
+@banilo: This is still WIP but I have fixed some stuff. You can take over the branch again if you want ;)
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","Rely on a common iterator for check_niimg* and concat_niimg."
+"pull_request_merged","542","nilearn","nilearn","lesteve","2015-04-30 08:20:08","Rely on a common iterator for check_niimg* and concat_niimg.","90adb38723eabd59a2ea87f89111d8a2ba10d22d","Pull request merge from AlexandreAbraham/nilearn:danilo_fix to nilearn/nilearn:master"
+"issue_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-16 15:10:05","@lesteve: it's all green, ready to review :)
+","",""
+"issue_comment","542","nilearn","nilearn","lesteve","2015-04-17 11:13:38","There still seems to be this bug from #463, is this PR supposed to fix it?
+
+``` python
+import numpy as np
+from nibabel import Nifti1Image
+
+from nilearn import _utils
+
+affine = np.eye(4)
+img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+
+input_iterator = iter([img_3d, img_3d])
+img_4d = _utils.check_niimg_4d(input_iterator)
+img_4d.shape  # (10, 10, 10, 1) instead of (10, 10, 10, 2)
+
+input_iterator = iter([img_3d, img_3d])
+img_4d = _utils.check_niimg(input_iterator)
+img_4d.shape  # (10, 10, 10, 1) instead of (10, 10, 10, 2)
+```
+","",""
+"issue_comment","542","nilearn","nilearn","lesteve","2015-04-17 11:16:32","Forget what I said I was on master rather than on your branch, sorry for the noise !
+","",""
+"issue_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-21 09:03:40","@lesteve ""Meeeerge meeeeee""
+","",""
+"issue_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-27 08:54:23","Yeah, good catch! It is fixed, I'm adding a test. I must admit that I did not improve check_niimg tests, I just added some related to new features.
+","",""
+"issue_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-30 09:02:32","Nah, no pb. You can put your comments here and I will address them ;).
+","",""
+"issue_comment","542","nilearn","nilearn","lesteve","2015-04-27 08:43:41","Something unintutive I bumped into, check_niimg_3d accepts a list of 3d images and concatenates them:
+
+``` python
+import numpy as np
+import nibabel as nib
+from nilearn import _utils
+img_3d = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+_utils.check_niimg_3d([img_3d, img_3d]).shape  # (10, 10, 10, 2)
+```
+","",""
+"issue_comment","542","nilearn","nilearn","lesteve","2015-04-27 08:46:43","> Something unintutive I bumped into, check_niimg_3d accepts a list of 3d images and concatenates them.
+
+That kind of shows the coverage of check_niimg\* is not great at the moment. Given this is one of the nilearn cornerstones for input checking, it'd be great if that could be improved. Maybe not in this PR though.
+","",""
+"issue_comment","542","nilearn","nilearn","lesteve","2015-04-30 08:20:04","All right let's do this, merging. Thanks a lot for the refactoring effort!
+","",""
+"issue_comment","542","nilearn","nilearn","lesteve","2015-04-30 09:00:46","@banilo you are aware that the PR has been merged right? Feel free to open another PR if you feel strongly about any of your points!
+","",""
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 08:33:11","Pfff...
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(4, '', u'nilearn/_utils/__init__.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 08:47:08",":bow:
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(4, '', u'nilearn/_utils/__init__.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 08:47:45","Error message update due to code factorization in one function.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(5, '', u'nilearn/tests/test_region.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 11:47:39","`niimg` is a Image object, so I guess the function should be called `_index_img` and the variable `img`.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 11:52:13","what about calling it ndim_minus_one?
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 11:57:04","maybe put ""Must be 3 or 4"" in the docstring instead:
+
+ndim: integer {3, 4}, optional
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 11:57:27","Fixed.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 11:58:27","Fixed.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 12:03:35","assert_equal provides better error when it fails
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 12:07:03","could we have a more explicit message checking that 'image' while you are at it ?
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 12:26:03","Any reason why you removed the caching params from concat_niimgs?
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 12:29:25","Good question, the answer is yes since you added a test so we can remove this last line from the comment.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 12:32:04","unnecessary parentheses around the isinstance call
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 12:32:26","unnecessary parentheses around the isinstance call
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 12:40:48","accept_4d is not used in this function !
+
+Not sure what you mean with this docstring. Isn't it just that you can concatenate 4D niimg-like images together along the 4th dimension.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 12:41:43","I think danilo did it and I didn't put it back...
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 12:42:54","Removed. It was never used.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 13:34:10","I think 'iterable' is the right word here
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 13:34:47","another one of these parentheses ...
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-17 14:00:46","`inspect.isgenerator` has some weird corner cases:
+
+``` python
+import inspect
+import itertools
+inspect.isgenerator(itertools.chain('a', 'bc'))  # return False
+```
+
+I reckon we should either use:
+
+``` python
+if hasattr(niimgs, '__iter__') and not hasattr(niimgs, '__len__')
+```
+
+or 
+
+``` python
+isinstance(niimgs, collections.Iterator)
+```
+
+haven't investigated in detail about this is too many details, TBH.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 14:34:44","``` python
+inspect.isgenerator(itertools.chain('a', 'bc'))  # return False
+```
+
+Well, I see no problem here.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-20 07:43:18","``` python
+import itertools
+
+import numpy as np
+from nibabel import Nifti1Image
+
+from nilearn import _utils
+
+affine = np.eye(4)
+img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+
+input_iterator = itertools.chain([img_3d], [img_3d])
+img_4d = _utils.check_niimg_4d(input_iterator)
+print(img_4d.shape)  # (10, 10, 10, 2) which is correct
+print(img_4d.get_data())  # uninitialised data rather than ones
+```
+
+This happens because the first loop to compute the shape works fine but the second loop to set the data never gets run because the iterator has already been consumed in the first one.
+
+All I am trying to say is that the check should be whether `niimgs` is an iterator rather than a generator.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-20 08:38:00","Do you think we should fallback on case 2 for iterator or use tee?
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-20 09:16:00","I think the simplest thing to do is to check whether `niimg` is an iterator since this is a single-line change and the rest of the code stays the same.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-20 09:34:57","Using tee is also a single line change...
+![your-argument-is-invalid-meme-dumpaday-10](https://cloud.githubusercontent.com/assets/1647301/7227475/443ca6be-e751-11e4-9916-6f1e5e10a5e5.jpg)
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-21 09:39:46","In some small tests I did itertools.tee seems to work fine with generators so I don't really see the point of having two code paths anymore.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-21 09:45:27","`tee` can yield a signficant memory overhead and, if somebody uses a generator for NiftiImages (well, I see no reason to do that but it may happen), they may not want to deal with that. I see no point in saving memory by pre-allocating memory if we lose it in the copy of the generator.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","GaelVaroquaux","2015-04-21 10:55:09","If niimgs is a string, there will be an incomprehensible error further down (as the line above will work).
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","GaelVaroquaux","2015-04-21 10:56:14","It would be good to have the filename in the error message ('%r"" % niimg).
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","GaelVaroquaux","2015-04-21 10:58:01","Isn't this argument redundant with ndim.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(104, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-21 11:22:11","This function is meant to iterate over a list of niimg. It is never called with a filename.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-21 11:29:20","Agreed.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-21 11:37:03","Then I guess niimg should not be used. Maybe `_iter_check_imgs(imgs, ...)` would be better. A short docstring would be great as well.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-21 11:41:25","No because we iterate on a list of niimg. I'll add a docstring.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-21 11:53:34","Oops sorry for the noise.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-21 12:03:25","Not really. ndim is a stronger limitation, atleast_4d is more smooth. ndim = 4 will fail if 3d images is provided.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(104, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","GaelVaroquaux","2015-04-22 05:47:33","> Not really. ndim is a stronger limitation, atleast_4d is more smooth. ndim = 4
+> will fail if 3d images is provided.
+
+I think that the docstring and the name of the argument should be changed
+to make this more explicit. How about ""enforce_ndim"", and ""coerce_4d""?
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(104, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-24 09:05:19","I would be more in favor of ""ensure_ndim"". And no specific objection for ""coerce_4d"".
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(104, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","banilo","2015-04-30 08:42:47","a little convoluted
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(51, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","banilo","2015-04-30 08:48:11","I still think a Is4D() function might be useful. We do this test a number of times across the code.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(126, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","banilo","2015-04-30 08:50:09","perhaps return niimgs argument in the error message?
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(238, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","banilo","2015-04-30 08:57:29","`nifti_generator()` for consistency?
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(90, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-30 09:06:50","Feel free to propose something else! When I put a 2-line condition, people tell that it's a one-liner ;)
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(51, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-30 09:08:28","I tried to grep it and got only one occurence.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(126, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-30 09:11:08","I'm not sure. We do not displayed it because it would be either ""[]"" or nothing (in the case of a functional iterator). So I don't think that it is very useful.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(238, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","AlexandreAbraham","2015-04-30 09:12:06","Fixed.
+","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac","(90, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-08 14:07:31","Refactor check_niimg (again, more final version)","057ce85932ea16e86f85fba1e837fa7b50d43584",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-08 14:14:12","Move code","b113bb84518b0c9332743520657551975f8b4a6d",""
+"pull_request_commit","542","nilearn","nilearn","banilo","2015-04-10 16:59:32","concat_niimgs uses iterator","b3a89a78bb2a6402db49a100ee3e365063f5f094",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-15 08:31:42","Fix part of iterator problems in concat_niimgs","1adf6bb44e1897757464394bcf7502de30278b16",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-15 11:09:36","FIx P3 compat","6cb367aae453bde72579dfe6d7e0d758735d0ac9",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-16 09:03:08","Finalize code","a65b1cfd38e96dbb27491546199e9a15e7254c0e",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-16 13:59:23","Add iterator / generator test","a160fd432b6c1a7270a545acc5a01d2f46f9a885",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-16 14:01:17","Better tests","47d7eb881d358574ca2c829532c40a7401ac77ee",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-16 14:55:33","Fix P3","7583a682e156ca0225f8101e59c885e19ead5f8e",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 11:58:54","Fix Loic comments","828c5136c00b008ed10a2f52e19ac96b2df5fa13",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 12:04:18","Fix docstring","c8b350ac5d2a3af94e93b847459274b551634acc",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 12:06:41","Use assert_euqal in tests","92b4a9d6264039aaf4fc3d03905656be85e5a29d",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 12:18:13","Richer regexp in tests","f7600758f9f56e189d191130f268def0717cf796",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 12:46:28","Bring memory back","8c2ffbedb94da8b1b702776148615233de8d2179",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 13:37:41","Fix doc","4cdbb3589b2bd17c2082b9afaaf270a5672fdc56",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-17 13:40:24","Remove spurious parenthesis","2cb7cf3d62202ea6d9d5b8393b561df3cc58bf84",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-20 12:35:21","Fix iterator bug","a81baffdf52a8e09f138d303668b40d85c2b5149",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-20 13:18:35","Use tee to solve problem","a360ed7a2518900b1b1e01eb0823d42e53ae9c5c",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-24 10:55:10","Simplify concat_niimg using tee only","1bf365581ecd61975c42d5bd335b9b8313c30a2f",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-24 10:57:49","Remove spurious import","4f52cbf1dfc26510dbd995ce91a5d3108b42bb1a",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-27 07:34:20","Naming","a8306b43ae8c764b7c2f057d4346d09ff8c89988",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-27 09:12:17","Fix bug and add test","b079c0bc9976cfa6bc62216ee617092a71a5eefe",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-29 12:41:48","Fix error message","6dd6fa2a022458aa495fc89c7203a63793775907",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-29 13:56:40","Lesteve.","d643f9f4bf90799b0beb288e610ef175a326af10",""
+"pull_request_commit","542","nilearn","nilearn","AlexandreAbraham","2015-04-29 14:25:37","Better error message thanks to the wonderful lesteve.","bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac",""
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-29 14:01:22","a list -> an iterable
+
+Maybe put the type of the argument for a better error message if we deem that the average user might be confused by the 'iterable' wording.
+","6dd6fa2a022458aa495fc89c7203a63793775907","(6, 142, u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","542","nilearn","nilearn","lesteve","2015-04-29 14:01:29","`ensure_ndim is not None` not necessary
+","6dd6fa2a022458aa495fc89c7203a63793775907","(4, 140, u'nilearn/_utils/niimg_conversions.py')"

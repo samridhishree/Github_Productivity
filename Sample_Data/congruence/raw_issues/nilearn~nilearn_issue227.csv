@@ -1,0 +1,270 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","227","nilearn","nilearn","salma1601","2014-07-21 19:37:25","Different connectivity measures, including tangent space measure
+","start issue","Tangent space embedding"
+"issue_closed","227","nilearn","nilearn","GaelVaroquaux","2015-07-18 17:35:58","","closed issue","Tangent space embedding"
+"pull_request_title","227","nilearn","nilearn","salma1601","2014-07-21 19:37:25","Different connectivity measures, including tangent space measure
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","Tangent space embedding"
+"issue_comment","227","nilearn","nilearn","salma1601","2014-08-25 08:40:29","Dear all,
+Some comments on the changes:
+
+@AlexandreAbraham
+Removed manifold.py and grouped all functions in embedding.py.
+Replaced all the `try` ... `except` statements by `if`.
+
+@agramfort
+Checked all docstrings.
+Used relative imports in module and absolute in tests.
+Used a random state.
+
+@AlexandreAbraham and @agramfort
+Moved the functions used only in tests to the test file.
+
+@AlexandreAbraham and @rphlypo
+Replaced all matrix functions by the function
+`map_sym(function, sym)`
+that applies a given function to the eigenvalues of `sym` and returns the transformed matrix.
+Alternatively, `map_eig(function, vals, vecs)` is used directly on eigenvalues and eigenvectors to avoid multiple eigen decomposition of the same matrix if one needs to transform it by different matrix functions.
+
+@rphlypo
+Added an extra function `check_mat(mat, props)` to check positive definiteness etc.
+Used `np.random.randn` instead of `np.random.rand` to generate matrices to be QR-decomposed.
+Replaced the non-unitary tests of matrix functions based on random matrices by testing expected results on simple cases.
+","",""
+"issue_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:30:33","Could you rebase on master ? You work on a very old code base.
+","",""
+"issue_comment","227","nilearn","nilearn","bthirion","2014-08-28 07:29:50","Big picture: In spite of a couple of details, the PR sounds good. My main worry is that we are adding somewhat complicated code and that I do not see what difference it makes wrt the good old Euclidean mean. So
+1. Could the example be reworked to illustrate the difference (this is a matter of pedagogy) ?
+2. Could the modules doctrings give some explanations on the definition of the distance functions involved
+e.g d_g(A,B) = || log(B^{-1/2} A B^{-1/2})||
+and of the resulting mean definition:
+e.g.mean(A_1,..., A_n) = argmin_M sum_{i=1}^n d_g^2(M, A_i)
+Good news: you can do that without using the terms 'embedding' and 'manifold'
+3. Of course: do a pass on the necessary corrections, rebase on master etc.
+","",""
+"issue_comment","227","nilearn","nilearn","GaelVaroquaux","2015-07-18 17:35:58","Closing this PR, as it is superseeded by #677
+","",""
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 22:50:36","Missing space: `(n + 1) / 2)`
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 22:56:02","`off_diag_mask = tril_mask - np.eye(p, dtype=bool)`
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 22:56:20","The copy is only necessery if isometry is True
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 23:01:31","Why using a `try ... except` ? You can use a simple `if` there. Also, `np.testing.assert_almost_equal(p, int(p))` is always true.
+
+```
+if n != int(p):
+    raise ...
+```
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 23:02:30","Why do you impose a dtype float?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 23:21:39","The newaxis trick may be unclear for people who are not used to it.
+I would have written sth like:
+
+```
+def my_cov_to_corr(cov):
+    d = np.atleast_2d(1. / np.diag(np.sqrt(cov)))
+    corr = cov * d * d.T
+    return corr
+```
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 23:33:17","This is equivalent to `np.array(arrays)`
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-21 23:34:47","The error message is a bit light. `Expected a square matrix. Got a matrix of shape: ...`
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-22 00:00:05","All these functions are special cases of a general pattern:
+
+```
+if mat.ndim != 2 or mat.shape[0] != mat.shape[-1]:
+    raise ValueError('expected a square matrix')
+vals, vecs = linalg.eigh(mat)
+mat_exp = np.dot(vecs * f(vals), vecs.T)
+return mat_exp
+```
+
+You can factorize some code
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-22 11:09:30","All this code can be factorized.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-07-22 11:25:21","you don't need to put cov_estimator explicitely
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:41:47","use relative import 
+
+from .manifold
+
+with .
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:42:09","use ----- not ====
+you use ---- below
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:43:08","shape as to be put on the line above:
+
+```
+sym : ndarray, shape (..., m, n)
+    Input array.
+```
+
+note the space before :
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:43:24","please check all your docstrings
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:43:54","```
+output : ndarray, shape ...
+    The output flattened ...
+```
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:45:16","```
+off_diag_mask = tril_mask
+off_diag_mask.flat[::p + 1] = False
+```
+
+to avoid the eye allocation.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:45:42","avoid the eye allocation
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:46:16","use math.sqrt for floats
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:47:06","np.sqrt(np.diag(cov))
+
+to avoid computing the sqrt of all entries.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:47:14","---
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:47:33","missing empty line
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:48:12","bad formatting
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:49:16","to me all functions that work with spd matrices should have spd in their name.
+
+it's weird to have a function called inv that only works for spd data
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:49:28","inv_spd?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:49:51","mat : ndarray, shape (M, M)
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:50:33","xrange will not work with py3k
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:51:19","use linalg.norm
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:52:35","all these functions used in tests should be in the test file.
+you should use a random state.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:52:50","use assert_greater from nose
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/manifold.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:53:24","for tests don't use relative imports. It's a good way to check install problems.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/tests/test_embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 11:53:39","math.sqrt
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/tests/test_embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","salma1601","2014-07-22 13:13:05","This puts the diagonal of `tril_mask` to False. What about 
+
+```
+off_diag_mask = tril_mask - np.diag(np.diag(tril_mask))
+```
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","agramfort","2014-07-22 13:14:33","same pb np.diag(np.diag(tril_mask)) allocates a full dense matrix. Then
+
+off_diag_mask.flat[::p + 1] -= np.diag(tril_mask)
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","salma1601","2014-07-22 13:32:24","replaced by 
+
+```
+if p > floor(p):
+    raise ...
+```
+
+I want to check that `p` is an integer 
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:17:07","As ususallyn this property has little to do with the set of sdp matrices being a manifold, but is actually tied to the metric you decide to use in this set. 
+Actually, the words _embedding_, _manifold_ sound a bit pedantic in this code base, and do not help since neither the embedding nor the manifold structure are even made explicit. 
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(91, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:18:29","Sounds very cool but it is important for Nilearn to check that this complex way of computing means actually matters for the problems we deal with.
+Moreover, this is horribly expensive.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(97, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:20:27","if these functions are not used outside of this module, they could be private:
+
+def _map_eig(function, vals, vec):
+     """"""Return the symmetric matrix with eigenvectors vecs and eigenvalues
+- obtained by applying the function to vals.""""""
+  return np.dot(vecs \* function(vals), vecs.T)
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:24:17","call it geo_mean. geo is not explicit enough
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(121, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:33:24","Sorry, I still don't have the big picture, but shouldn't this function be merged with the previous one ?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(184, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:41:04","Could this be the case systematically ?
+Should this function be private ?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(249, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:42:54","Make this function private ?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(305, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:43:28","pep8:
+partial = - cov_to_corr(prec)
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(336, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:45:36","This definition is cryptic. Please clarify it
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(343, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:46:33","why not geo_mean then ?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(359, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:47:42","Are the 'subjects' datasets or correlation matrices ?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(378, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:49:26","A bit of pedagogy is needed here : what should one expect from the output ? what does it look like ? How to name it ?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(409, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:55:32","You should probably focus on the second goal rather than both.
+One example = one idea = one message
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(6, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:57:51","maybe rather: from matplotlib import colors
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(10, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:58:25","this function should go somewhere in utils
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(19, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:59:17","Also seems a general purpose function. Could be added in visualization code
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(29, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 21:59:31","what do you call a measure ?
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(30, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 22:01:17","If you don't write proper doctrings, make this function private. But I feel that it should rather go to a module dedicated to connectivity matrices visualization.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(55, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 22:02:30","Please use less subjects if this possible. The example takes ages to run !
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 22:05:37","what you call 'subject' is actually something like 'individual_time_series'.
+
+The you could write:
+'for subject in subjects'
+which is nicer.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 22:06:47","This is nice, but I don't see by eye any difference between the mean estimators. Is there (really) any difference (I mean: larger than the sampling noise ?)
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-27 22:07:27","Nice work on visualization. i'm not sure of the message though
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(191, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-08-28 06:43:37","I think that some functions that are not restricted to tangent space embedding (like this one) should be included in a  ̀utils` package outside of this file.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(305, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-08-28 06:47:15","Actually pep8 does not impose a whitespace here. I would write the same as Salma, it's clearer to me.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(336, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-08-28 06:48:58",":+1: 
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(10, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-08-28 06:49:06",":+1: 
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(19, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-08-28 06:53:29","I would go for a `plot_connectivity_matrix` function that set a good colormap and do fancy labelling (see seaborn[2]). We could even propose to rearrange labels by block (using a spectral clustering for exemple) and give a different color for each block (see bokeh [1]).
+
+[1] http://bokeh.pydata.org/docs/gallery/les_mis.html
+[2] http://stanford.edu/~mwaskom/software/seaborn/examples/many_pairwise_correlations.html
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(29, '', u'plot_adhd_tangent.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","bthirion","2014-08-28 07:15:55"," You're right. fair enough. Now I got used to the opposite ;-)
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(336, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-08-28 07:19:28","Fun fact: PEP8 recommands to remove spaces around operators with highest priority if you write an arithmetic operation containing several operators with different priorities.
+
+Therefore `x = 2*2 + 3`should be preferred to `x = 2 * 2 + 3` but most of pep8 validators will consider the first expression as non compliant (I also prefer the second expression).
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(336, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","AlexandreAbraham","2014-10-10 22:44:47","The `testing` module contains functions related to testing only. If a function in there become useful into nilearn itself, then I think that we should move it out from this package for the sake of clarity.
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit_comment","227","nilearn","nilearn","lesteve","2014-10-13 09:14:55","Good catch, I opened an [issue](https://github.com/nilearn/nilearn/issues/260) about that
+","ce5b1f99f7c781cf757d691d75d8783198437c9e","(None, '', u'nilearn/connectivity/embedding.py')"
+"pull_request_commit","227","nilearn","nilearn","GaelVaroquaux","2014-03-27 10:28:40","MISC: Add covariance embedding files
+
+This is completely temporary and just a copy of our own internal files","4a8fdfd1db449280da8e4ca48005f500b4cda4ac",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2014-04-07 13:23:38","tmp save","f38a2f4289837a2934d6f4fff35e812d654e45c4",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2014-07-21 19:01:55","connectivity measure in manifold of spd matrices","4184f4a91c23f40d2b814357aaeb32497fe4f4e3",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2014-07-21 19:21:33","new connectivity files","e6669aadce1d59a0bf8bb7f5c0658aba36efe791",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2014-07-21 19:24:22","example for different connectivity measures
+Please enter the commit message for your changes. Lines starting","814604f661384f47668650ca9e5fe8651415939e",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2014-08-22 14:45:40","checked docstrings and factorized matrix functions","fbf2fe13bc585fb80b0e12aa514fc1be5a209ad7",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2014-08-25 08:53:20","updated __init__.py","1cedbbf8e711078638ec30c5130f1a7bab98c654",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-06-30 16:53:50","plot correlation of tangent measure","f2e2ea98fd0ea652deec475eb6f343e6411ba66e",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-07-01 04:08:17","added classification","83eabfa8d85332e48025215f987dba244f7ebfe6",""
+"pull_request_commit","227","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-07-01 04:09:06","updated is_spd","ce5b1f99f7c781cf757d691d75d8783198437c9e",""

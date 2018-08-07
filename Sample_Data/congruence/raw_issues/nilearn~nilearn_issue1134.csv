@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1134","nilearn","nilearn","ahoyosid","2016-06-17 09:11:23","SpaceNet is not checking_consistent_length(X, y) when using the whole brain.
+
+On the example ""plot_haxby_space_net.py""
+### Using the whole brain: It won't raise an error
+
+``` python
+# Remove one sample from y_train
+y_train = y_train[:-1]
+
+decoder = SpaceNetClassifier(memory=""nilearn_cache"", penalty='graph-net',
+                             screening_percentile=100)
+decoder.fit(X_train, y_train)
+
+y_pred = decoder.predict(X_test)
+accuracy = (y_pred == y_test).mean() * 100.
+print(""Graph-net classification accuracy : %g%%"" % accuracy)
+```
+
+Graph-net classification accuracy : 97.7778%
+### Using screening: This will raise an error because it uses SelectPercentile
+
+``` python
+decoder = SpaceNetClassifier(memory=""nilearn_cache"", penalty='graph-net',
+                             screening_percentile=20)
+decoder.fit(X_train, y_train)
+
+y_pred = decoder.predict(X_test)
+accuracy = (y_pred == y_test).mean() * 100.
+print(""Graph-net classification accuracy : %g%%"" % accuracy)
+```
+
+ValueError: Found arrays with inconsistent numbers of samples: [125 126]
+
+I added a backport to scikit-learn validation module, which I'm currently using on #698. This can be added easily to solve this issue.
+
+Should I split #698  on two different PRs?, one for the backports and another for the Decoder 
+","start issue","SpaceNet is not checking length consistency btw X and y"
+"issue_closed","1134","nilearn","nilearn","AlexandreAbraham","2016-07-21 10:50:05","","closed issue","SpaceNet is not checking length consistency btw X and y"
+"issue_comment","1134","nilearn","nilearn","AlexandreAbraham","2016-07-21 10:50:05","Fixed by #1148.
+","",""

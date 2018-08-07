@@ -1,0 +1,58 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","501","nilearn","nilearn","satra","2015-03-17 16:25:37","if i give a list of these images to niftimasker it complains that it received 4d images. i have opened an issue with nibabel asking why it's return the 4th dimension, but i think this is also a case where niftimasker can simply check if the 4th dimension is one for it's image check to know that this is a 3d file.
+
+```
+images[0] = nb.load('cope01.nii.gz')
+images[0].shape
+(91, 109, 91, 1)
+```
+
+```
+--> 176             imgs = _utils.check_niimgs(imgs, accept_3d=True)
+    177             self.mask_img_ = self._cache(compute_mask,
+    178                               func_memory_level=1,
+
+/om/user/satra/envs/testenv/lib/python2.7/site-packages/nilearn/_utils/niimg_conversions.pyc in check_niimgs(niimgs, accept_3d, return_iterator)
+    384                         ""%s%dD image(s), of shape %s. ""
+    385                         ""See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg."" % (
+--> 386                         'list of ' * depth, dim, shape))
+    387 
+    388     # Now, we load data as we know its format
+
+TypeError: Data must be a 4D Niimg-like object. You provided a list of 4D image(s), of shape (91, 109, 91, 1). See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+```
+","start issue","nilearn _check_niimgs called from niftimasker doesn't support current nibabel shape output"
+"issue_closed","501","nilearn","nilearn","GaelVaroquaux","2015-04-15 10:46:26","","closed issue","nilearn _check_niimgs called from niftimasker doesn't support current nibabel shape output"
+"issue_comment","501","nilearn","nilearn","satra","2015-04-15 14:22:28","@AlexandreAbraham - sorry for the delay - yes this fixed the issue. i also fixed the source of the issue which was in ANTS-ITK
+","",""
+"issue_comment","501","nilearn","nilearn","GaelVaroquaux","2015-03-17 16:58:15","> but i think this is also a case where niftimasker can simply check if
+> the 4th dimension is one for it's image check to know that this is a 3d
+> file.
+
+Agreed.
+","",""
+"issue_comment","501","nilearn","nilearn","GaelVaroquaux","2015-04-15 10:46:26","Is this fixed? I think it is, so I am closing the issue. If it's not fixed, @satra, please ping us, and we will reopen the issue.
+","",""
+"issue_comment","501","nilearn","nilearn","GaelVaroquaux","2015-04-15 10:53:16","> It is fixed but I am not sure that we added a test for that case. I'll take 5
+> minutes to do it.
+
+Cool, thx
+","",""
+"issue_comment","501","nilearn","nilearn","GaelVaroquaux","2015-04-15 14:24:19","Thanks @satra . Good to have 2 fixes for one issue.
+","",""
+"issue_comment","501","nilearn","nilearn","GaelVaroquaux","2016-08-29 04:51:44","Yes, this is fixed. I suspect that you are getting a genuine error, due to a mistake that you are doing. For instance, maybe you are not performing 2-class classification with the SVM, but multiclass, and hence getting multiple return weight maps where you expect to be getting only one.
+","",""
+"issue_comment","501","nilearn","nilearn","AlexandreAbraham","2015-03-17 16:54:02","Hi Satra, thanks for your interest in nilearn. Actually, this bug is known and I already prepared a fix. We are in the process of integraring it as it implies some changes in nilearn's core that are not trivial. I'll let you know when it's ready to use!
+","",""
+"issue_comment","501","nilearn","nilearn","AlexandreAbraham","2015-03-27 08:50:40","Hi @satra,
+
+Sorry for the long wait. We have just merged a PR that should fix your problem. Could you try again and report us any error?
+
+Thanks!
+","",""
+"issue_comment","501","nilearn","nilearn","AlexandreAbraham","2015-04-15 10:49:17","It is fixed but I am not sure that we added a test for that case. I'll take 5 minutes to do it.
+","",""
+"issue_comment","501","nilearn","nilearn","AlexandreAbraham","2015-04-15 11:04:27","OK, I thought that fixing it at check_niimg level would fix it at nifti_masker level but that was not the case. Same as for the colorbar bug: I added a hotfix and the problem itself will be tackled properly in #542.
+","",""
+"issue_comment","501","nilearn","nilearn","Nufas204","2016-08-29 03:02:39","May I know if this is fixed? I get that similar error in viewing the results to plot the SVM weights for haxby dataset. 
+","",""

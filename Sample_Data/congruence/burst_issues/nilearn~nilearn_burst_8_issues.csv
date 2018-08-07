@@ -1,0 +1,72 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,45,nilearn,nilearn,pgervais,2013-04-18 07:50:42,"This branch adds an implementation of the CompCor algorithm, and associated tests. 
+Feedback is welcome on API and implementation.
+",start issue,Added high_variance_confounds() and tests
+2,issue_closed,45,nilearn,nilearn,pgervais,2013-04-22 09:24:37,,closed issue,Added high_variance_confounds() and tests
+3,pull_request_title,45,nilearn,nilearn,pgervais,2013-04-18 07:50:42,"This branch adds an implementation of the CompCor algorithm, and associated tests. 
+Feedback is welcome on API and implementation.
+",cf9612933e79ba8ed6457b5013f9aa9f8f3376f5,Added high_variance_confounds() and tests
+4,pull_request_merged,45,nilearn,nilearn,pgervais,2013-04-22 09:24:36,Added high_variance_confounds() and tests,9c712745dc710dab2531ce11dbed1ecc3aad3d42,Pull request merge from pgervais/nilearn:compcor to nilearn/nilearn:master
+5,issue_comment,45,nilearn,nilearn,GaelVaroquaux,2013-04-18 08:19:16,"Imports should be from general to specific. Thus sklearn comes after scipy.
+
+Naming conventions: n_confounds rather then confound_number
+
+In docstrings, we usually say ""array-like"", rather than ""numpy.ndarray"", as other objects should work.
+
+The return section is not correctly formatted. It won't build the docs right.
+
+The remark on ordering faster is true only for numpy belove 1.7. Anyhow, I would try doing something like:
+
+var = np.copy(series)
+var **= 2
+var = var.sum(axis=0)
+
+I believe that this should always be fast (not tested, please correct me if I am wrong).
+
+""Most energetic"" -> largest
+
+thanks for the PR!
+",,
+6,issue_comment,45,nilearn,nilearn,GaelVaroquaux,2013-04-18 21:01:35,">   • The solution you give is slightly slower (of the order of 10%) than the
+>     best solution I found, though way better than the worst one.
+
+Then go for the solution I gave: in my experience this pattern is
+applicable in many many spots. I would like to favor it in the code
+(people learn to code by copy-pasting).
+",,
+7,issue_comment,45,nilearn,nilearn,GaelVaroquaux,2013-04-19 12:54:14,"> nosetests.tools.assert_true is in the present case almost equivalent to
+> assert().
+
+It gives a better errror message.
+",,
+8,issue_comment,45,nilearn,nilearn,pgervais,2013-04-18 09:09:33,"- The faster ordering remark is indeed true only for numpy 1.3, not for 1.7 (I just checked). This is not a problem for me, since nisl must work with numpy 1.3 (tell me if I'm wrong).
+- The solution you give is slightly slower (of the order of 10%) than the best solution I found, though way better than the worst one. This is true for both numpy 1.3 and numpy 1.7. Ratio of execution time (best solution/your solution) are similar across versions. Here are the times I find on my mini-benchmark (the second times is your solution):
+
+**C order** numpy 1.7: 1.0s vs 1.2s. numpy 1.3: 1.3s vs 1.6s.
+**F order** numpy 1.7: 0.9s vs 1.1s. numpy 1.3: 0.9s vs 1.3s. 
+
+Values were obtained on a single run, but are fairly reproducible. Uncertainty is around 0.05s. At least, differences are significant.
+",,
+9,issue_comment,45,nilearn,nilearn,pgervais,2013-04-19 07:35:31,"For @bthirion: I removed the prints. nosetests.tools.assert_true is in the present case almost equivalent to assert(). I made the change though.
+The failure you experienced is probably due to a difference in computation error between my machine and yours, or to a different Scipy version. Try increasing the factor (set 20 instead of 15). If that doesn't work, tell me that I investigate further.
+
+For @GaelVaroquaux: I used your solution in the code. I replaced var.sum() by var.mean() because there is no significant change in execution time, and if people are copy-pasting, they'll end up with a proper computation for variance, not for sum of squares.
+",,
+10,issue_comment,45,nilearn,nilearn,pgervais,2013-04-19 14:00:36,"The failure in test reported by @bthirion is real, but unrelated to this pull request. If nobody feels strongly against merging this, I'll do it on Monday.
+",,
+11,issue_comment,45,nilearn,nilearn,pgervais,2013-04-23 12:42:33,"@bthirion: I changed the factor in the test from 15 to 20 in commit 3fb93b2ed5b1b367c53, just pushed in branch master.
+",,
+12,pull_request_commit,45,nilearn,nilearn,pgervais,2013-04-16 13:27:11,Added high_variance_confounds() and tests,3a28b097f6b820bce26f687ad4834b96142c7588,
+13,pull_request_commit,45,nilearn,nilearn,pgervais,2013-04-18 08:50:31,"Coding-style corrections
+
+- Renamed parameter confound_number to n_confound
+- Reordered imports
+- Fixed documentation",07f8d6fbf2dec6cc04c93f3ccbc78cc218b0ed03,
+14,pull_request_commit,45,nilearn,nilearn,pgervais,2013-04-19 07:33:16,"Simplified compcor implementation.
+
+Removed a test for array ordering and two different expressions by
+an unique code that performs identically for C or F ordering, though
+slightly slower (20%).
+
+Cleanup in test_signals.py",cf9612933e79ba8ed6457b5013f9aa9f8f3376f5,

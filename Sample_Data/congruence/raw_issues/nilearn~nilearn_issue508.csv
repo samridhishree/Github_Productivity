@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","508","nilearn","nilearn","GaelVaroquaux","2015-03-19 16:45:03","We cannot depend on six. It is opening a risk of install breakage, with is the thing that we are absolutely trying to avoid.
+
+The easiest way forward is probably to do manually what six does. It's actually suprisingly easy. Joblib does it this way:
+- [x] replace all the 'xrange' by 'range'
+- [x] the urlib, StringIO and cPickle moves can be tackled by try/except imports
+- [x] the string_types is the hardest. I suspect that it can be handled by something like https://github.com/joblib/joblib/blob/master/joblib/_compat.py
+- [x] 'zip(.)' should probably be changed to 'list(zip(.))'
+
+Overall, nothing really hard.
+","start issue","Remove the six dependency"
+"issue_closed","508","nilearn","nilearn","GaelVaroquaux","2015-03-20 14:24:48","","closed issue","Remove the six dependency"
+"issue_comment","508","nilearn","nilearn","GaelVaroquaux","2015-03-20 14:24:48","Fixed. Excellent work, @AlexandreAbraham ! Thanks.
+","",""
+"issue_comment","508","nilearn","nilearn","AlexandreAbraham","2015-03-20 12:28:36","> 'zip(.)' should probably be changed to 'list(zip(.))' 
+
+It was already the case almost everywhere...
+","",""
+"issue_comment","508","nilearn","nilearn","AlexandreAbraham","2015-03-20 12:34:36","I have done the search & replace modifications.
+
+For the others:
+- cPickle is trivial (pickle in p3)
+- StringIO is trivial
+- urllib seems to be a nightmare. The module tree has been completely changed. It means that we need an if statement for each and every function call. We may be saved by the fact that we use only a small part of it, but we have to keep in mind that adding functionalities may require extra-work because of p3
+","",""
+"issue_comment","508","nilearn","nilearn","AlexandreAbraham","2015-03-20 13:34:35","@GaelVaroquaux , could you take a look at #515?
+","",""

@@ -1,0 +1,369 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","356","nilearn","nilearn","lesteve","2015-01-19 10:32:50","Fixes #335.
+","start issue","Add functions to slice and iterate over a 4D image"
+"issue_closed","356","nilearn","nilearn","lesteve","2015-01-29 09:09:41","","closed issue","Add functions to slice and iterate over a 4D image"
+"pull_request_title","356","nilearn","nilearn","lesteve","2015-01-19 10:32:50","Fixes #335.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","Add functions to slice and iterate over a 4D image"
+"pull_request_merged","356","nilearn","nilearn","lesteve","2015-01-29 09:09:40","Add functions to slice and iterate over a 4D image","7be813e9ba279188ebb07960129753c2d1ae7b09","Pull request merge from lesteve/nilearn:index-and-iter-img to nilearn/nilearn:master"
+"issue_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-22 17:42:29","General design seems absolutely right to me.
+
+I have this quirk about the conversion to 4D in-memory NiftiImage object that I think should be addressed. With data like the HCP data, people are really running into memory problems.
+","",""
+"issue_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-29 09:29:39","This is really awesome.
+
+Now we should adapt all the examples to use these functions. The goal
+would be to call get_data on the Nifti1Images as little as possible.
+
+In general, I always like to design such function via the modification of
+example files: it tells me if I am making the life of users easier or
+not.
+","",""
+"issue_comment","356","nilearn","nilearn","lesteve","2015-01-20 08:44:42","> You will seldom hear me argue for a class instead of functions
+
+My thoughts exactly ;-) to be fair it does make the code simpler. I have pushed the change now.
+","",""
+"issue_comment","356","nilearn","nilearn","lesteve","2015-01-22 10:35:29","Tried to improve the index_img docstring and I think I have addressed all comments. If I don't hear anything I'll merge this afternoon.
+","",""
+"issue_comment","356","nilearn","nilearn","bthirion","2015-01-22 12:05:06","LGTM
+","",""
+"issue_comment","356","nilearn","nilearn","lesteve","2015-01-22 15:14:45","> >    From my understanding of Python scopes, you shouldn't be able to pickle the result of iter_img (the iterator itself) but I can be wrong.
+> 
+> Yep you are right, I just checked pickling the iter_img function originally.
+
+OK I caved in and moved the class outside the iter_img function.
+","",""
+"issue_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 15:17:45","... but we just concluded that inside was better! Or am I wrong?
+","",""
+"issue_comment","356","nilearn","nilearn","lesteve","2015-01-22 15:28:58","> ... but we just concluded that inside was better! Or am I wrong?
+
+I think the outcome was that nested classes wasn't good practice, and we found a case where pickability was broken. Good enough for me to drop it. Also adding an underscore in front of the class name, namely using _Checked4DImageIterator makes me happy enough about the whole thing.
+","",""
+"issue_comment","356","nilearn","nilearn","lesteve","2015-01-27 10:44:52","> What I find is somewhat a pity here is that if I am giving a list of strings (3D nifti files), the full data gets loaded.
+
+OK I added a `return_iterator` optional argument to `check_niimgs` which I am now using in `iter_img` in order to address this problem.
+
+Also just a heads up, I had to rebase to solve merge conflicts with upstream master.
+","",""
+"issue_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-29 09:22:53","Great!
+","",""
+"issue_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-29 09:35:22","> In general, I always like to design such function via the modification of example files: it tells me if I am making the life of users easier or not.
+
+No doubts on this one. It will definitely get rid of some nasty code in the examples.
+","",""
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 10:37:06","This is a bit surprising, the iterator only throws when next is called.
+
+We could do something similar to the coroutine decorator to make sure that the error is raised at construction time:
+
+``` python
+
+def wrapped(raise_error):
+    if raise_error:
+        raise ValueError('Nope')
+    yield
+
+    for i in range(10):
+        yield i
+
+def gen(raise_error):
+    it = wrapped(raise_error)
+    next(it)
+    return it
+
+g = gen(raise_error=True)
+```
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-19 11:55:08","I think we should not make this option available to people. You can create an `_index_img` method that does not do the `check_niimg` and call it from both functions.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 11:58:56","Yep I could do that, this was mostly done this way by laziness I must admit.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-19 12:00:15","As dimensionality of the data has been checked, you can use `...`:
+
+```
+return nibabel.Nifti1Image(imgs.get_data()[..., index],
+    imgs.get_affine(),
+    header=imgs.get_header())
+```
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-19 12:12:24","Forget that, I remember reading somewhere that `...` was faster than `:,:,:` but a quick benchmark shows that it's the same.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 12:21:03","I have to admit I just copied and pasted @GaelVaroquaux's code. From a quick grep, we do tend to use `...` more often than `:, :, :`. `...` also looks slightly easier on the eyes in my biased opinion.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-19 12:39:09","For the record, I tried several strategies to iterate on Nifti Images and they seem to have the same performance:
+
+```
+python -m timeit -s '
+import numpy as np
+import nibabel
+d = nibabel.load(""bold.nii"")
+for i in range(d.get_data().shape[3]):
+    a = d.get_data()[:, :, :, i]'
+
+python -m timeit -s '
+import numpy as np
+import nibabel
+d = nibabel.load(""bold.nii"")
+for i in range(d.get_data().shape[3]):
+    a = d.get_data()[..., i]'
+
+python -m timeit -s '
+import numpy as np
+import nibabel
+d = nibabel.load(""bold.nii"")
+for id in np.rollaxis(d.get_data(), 3, 0):
+    a = id'
+
+python -m timeit -s '
+import numpy as np
+import nibabel
+d = nibabel.load(""bold.nii"")
+for id in d.get_data().T:
+    a = id.T'
+```
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 14:00:21","perhaps, add an informative error message when index is out of bounds and/or image is not 4D?
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 14:02:20","The later could be done easily by `accept_3d=False`.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 14:04:48","accept_3d=False?
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 14:08:00","yield does not exist for python <2.5, but that's ok, I guess.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-19 14:09:01","> yield does not exist for python <2.5, but that's ok, I guess.
+
+Yes, quite clearly
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 14:10:08","accept_3d is False by default.
+
+I haven't looked at the out of bounds error, I have to say. Also I should probably add some tests for it.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 14:27:19","re out of bounds error. This is how it looks at the moment. Is that not good enough?
+
+```
+---------------------------------------------------------------------------
+IndexError                                Traceback (most recent call last)
+<ipython-input-6-32c3bef60180> in <module>()
+----> 1 image.index_img(img, 9)
+
+/home/lesteve/dev/nilearn/nilearn/image/image.pyc in index_img(imgs, index)
+    534     """"""
+    535     imgs = check_niimgs(imgs)
+--> 536     return _index_img(imgs, index)
+    537 
+    538 
+
+/home/lesteve/dev/nilearn/nilearn/image/image.pyc in _index_img(imgs, index)
+    511     """"""Helper function for index_img and iter_img
+    512     """"""
+--> 513     return nibabel.Nifti1Image(imgs.get_data()[..., index],
+    514                                imgs.get_affine(),
+    515                                header=imgs.get_header())
+
+IndexError: index 9 is out of bounds for axis 3 with size 6
+```
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-19 14:38:24","Edit: I didn't get Loïc's remark at first time. OK for the coroutine but document it because it is quite a mindfuck to read ;)
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 14:38:58",":+1:
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 14:49:20","`this_img_3d`is actually 4d in the last 2 iterations.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 14:53:45","As _index_img() also passes on the header, one might add a test for this.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 14:54:59","Just for the sake of clarity, here is what I meant originally: it would make more sense and be more user-friendly if `gen = iter_img(img_3d)` was raising an error saying that `iter_img` only takes 4d images. At the moment, it doesn't and the error is raised only when doing `next(iter)` as the test shows.
+
+My snippet above was meant to be a demonstration how to get `gen = iter_img(img_3d)` to raise an error.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 14:56:19","Fair point, I'll change that.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 14:59:56","Is there a good way to do that? I originally tried to test the header, but actually the following statement doesn't hold:
+
+`index_img(img, index).get_header() == img.get_header()`
+
+One of the reason is the header contains the shape of the data and that the indexed image generally doesn't have the same dimensions as the original image.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 15:09:11","That's unfair. I wasn't allow to do this :-P
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(12, '', u'nilearn/image/__init__.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-19 15:11:59","Yes, I agree with @AlexandreAbraham that it's code that's really hard to read. My gut feeling is: isn't there a simpler way to do this? Such code gets me nervous.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 15:17:20","here and for `ìndex``argument: perhaps add/exchange by ""slicing"" to explicitly communicate that more than one target image can be drawn from imgs. At first sight, the user might think index_img is constrained to retrieving single niftis.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 15:28:58","Doing it in **init**() of classical generator object could be more readable?
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-19 15:33:14","That might have been a bit harsh on you indeed ;-). In my defense I added a line in the immediate vicinity so I was allowed to fix this PEP8 infraction.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(12, '', u'nilearn/image/__init__.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-19 15:36:50","Since we are at it, is `ìndex=[]`` tested somewhere?
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(46, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-19 16:00:12","> IndexError: index 9 is out of bounds for axis 3 with size 6
+
+I think that it is good enough for now.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-19 16:00:36","> Doing it in init() of classical generator object could be more readable?
+
+That's possible.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-20 08:28:29","Sorry I didn't see @GaelVaroquaux's comment about being nervous with this kind of code before pushing (now it is hidden somewhere in one of the outdated diffs, annoying). I can replace it by a object instead if people feel better about that:
+
+``` python
+class Iterator(object):
+    def __init__(self, imgs):
+        self.imgs = check_niimgs(imgs)
+    def __iter__(self):
+        for i in range(_get_shape(self.imgs)[3]):
+            yield _index_img(self.imgs, i)
+```
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-20 08:32:13","> class Iterator(object):
+>     def **init**(self, imgs):
+>         self.imgs = check_niimgs(imgs)
+>     def **iter**(self):
+>         for i in range(_get_shape(imgs)[3]):
+>             yield _index_img(imgs, i)
+
+I actually feel better about this. You will seldom hear me argue for a
+class instead of functions, but I feel that the class is more explicite
+here.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","eickenberg","2015-01-20 22:28:21","`index=slice(0, imgs.shape[0], 2)` will not make a copy, whereas `index=range(0, imgs.shape[0], 2)` will. Do we trust that any user who knows the difference between these expressions also knows about memory-related issues of their use? (I would say yes)
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-20 22:35:07","> Do we trust that any user who knows the difference between these
+> expressions also knows about memory-related issues of their use?
+
+Clueless users don't, but we cannot solve their problems with low-level
+code. Advanced users do, and we should enable them by no trying to
+second-guess their goals.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","eickenberg","2015-01-20 22:40:45",":+1: 
+
+(clueless users don't know the difference between slicing and fancy indexing, and probably won't even think about assigning values to a nifti slice. Experienced users would probably be annoyed if the behaviour of slicing was changed.)
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","bthirion","2015-01-22 10:53:44","Sorry if I'm mistaken, but to me it looks like the output is always 4D (with the forth dimension being 0 if index == [] or 1 if index == [0]) ? 
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-22 11:57:38","Point-at-the-end-of-line here but not e.g. for `index`. Inconsistent?
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 12:00:36","If `index == 0`, then the output is 3D.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","bthirion","2015-01-22 12:04:28","Oops, it is indeed the case whenever index is a scalar.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 12:07:45","Sidenote: you can also end up with more dimensions: `index == None` (or `np.newaxis` for the purists) will give you 5D data (which totally fine for Nifti1Image).
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 12:08:09","typo `nibabel.Nifti1IMage` -> `nibabel.Nifti1Image`
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 12:10:07","I prefer to have classes declaration outside of the function unless it is mandatory. But that's personal taste I think.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-22 13:13:31","Yeah I agree in general but this function is such a tight wrapper around the class that it doesn't really make sense to expose the class.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-22 13:17:26","Done a few lines above. `index=[]` is actually a valid index, looks like you were expecting an out of bounds error from the positioning of your comment.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(46, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-22 13:17:39","Done.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","banilo","2015-01-22 13:20:15","Ok, thanks. I did not know it is a valid argument.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(46, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-22 13:26:54","> I prefer to have classes declaration outside of the function unless it is
+> mandatory. But that's personal taste I think.
+
+No, it's definitely good policy. With this code it becomes much harder to
+introspect or to pickle (pickle is pretty much based on reflexivity, and
+this breaks reflexity)
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-22 13:57:23","FWIW, I seem to be able to pickle iter_img fine, even with the nested class. Nested classes within a class on the other hand are not picklable.
+
+The main reason I put it inside the class it that otherwise iter_img and Checked4DImageIterator are an alias of each other, which doesn't seem ideal.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 14:54:16","> FWIW, I seem to be able to pickle iter_img fine, even with the nested class
+
+From my understanding of Python scopes, you shouldn't be able to pickle the result of iter_img (the iterator itself) but I can be wrong.
+
+> The main reason I put it inside the class it that otherwise iter_img and Checked4DImageIterator are an alias of each other, which doesn't seem ideal.
+
+I have no strong feeling. I just prefer classes outside of functions for the sake of readability. I honestly didn't think of people trying to pickle iterators.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-22 15:06:26","> From my understanding of Python scopes, you shouldn't be able to pickle the result of iter_img (the iterator itself) but I can be wrong.
+
+Yep you are right, I just checked pickling the `iter_img` function originally.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-22 17:36:14","What I find is somewhat a pity here is that if I am giving a list of strings (3D nifti files), the full data gets loaded. I know it makes for custom code, but we should maybe try to find a way that in this situation only the files that will be used get loaded.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(39, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-22 17:40:57","Same remark here: the data gets loaded when the iterator is created. Not only does it get loaded, but it gets concatenated to a 4D image. That means that it is using way more memory than it should be.
+
+We should try to find a way around this.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 18:34:51","There could be 2 modes: browsing (in that case a list of 3D files will not be loaded, or just memmapped) and computing (in that case the whole thing is loaded). However, is this a real usecase? I have the impression that this is more for plotting maps rather than indexing scans in a whole sequence.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(39, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-22 18:38:34","> There could be 2 modes: browsing (in that case a list of 3D files will not be
+> loaded, or just memmapped) and computing (in that case the whole thing is
+> loaded).
+
+Modal functions are not good for API. Users tend to get them wrong.
+
+Aside from making the code simpler, I don't see a benefit of the greedy
+loading.
+
+> However, is this a real usecase? I have the impression that this is
+> more for plotting maps rather than indexing scans in a whole sequence.
+
+It's for everywhere. One example: if I need to load a resting-state data,
+but discard the first 3 images.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(39, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-22 18:57:57","> Aside from making the code simpler, I don't see a benefit of the greedy loading.
+
+I don't get this remark. You mean that we should be able to give an `index` parameter to `check_niimg`?
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(39, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","GaelVaroquaux","2015-01-22 19:02:00","> ```
+> Aside from making the code simpler, I don't see a benefit of the greedy
+> loading.
+> ```
+> 
+> I don't get this remark. You mean that we should be able to give an index
+> parameter to check_niimg?
+
+Ah! Your remark applied to check_niimg and not to index_niimg? Then I
+mostly agree with it that two modes could be useful. My remark does apply
+here, as it is a developer-oriented function.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(39, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-27 15:04:25","Isn't that suboptimal if niimgs is a 4d nifti?
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(40, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-29 07:36:23","> Isn't that suboptimal if niimgs is a 4d nifti?
+
+Remind me what did you mean by suboptimal? I seem to remember that you were concerned that `check_niimg` will be called on individual 3d images but that's not the case because `_index_niimgs` doesn't include checks and only does the data slicing + 3d image creation.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(40, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","AlexandreAbraham","2015-01-29 08:30:58","That was just a question ;). Forget it I was wrong.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(40, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","356","nilearn","nilearn","lesteve","2015-01-29 09:09:21","OK merging then. Further optimisation can be added later if needed.
+","3071c38abaab4dd0013500a085d83f0d9a305dfb","(40, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-19 10:30:40","Add functions to slice and iterate over a 4D image","7217e255f9872dca0f7b27cf562fbf1307237396",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-19 13:24:19","Add _index_img helper function
+
+rather than allowing check_imgs=False in index_img. Other minor fixes","f8b5ba9f9a388e3d49604d8f5bc5a9072ce24f79",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-19 14:11:06","Add index_img/iter_img to image/__init__.py","382d9d5b002569303d1d98011062ae6fd7ef9206",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-19 14:37:11","Test out of bounds errors in index_img","88776ff221c84c48d3d2e102271fc74ef0d82905",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-19 15:06:29","Variable renaming
+
+this_img_3d was actually not 3d for all the tested indices","cf3c67487e4bb572f1dea00905939135324b883e",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-19 15:37:56","Get iter_img to raise when image is not 4D
+
+Previously the error was raised only when the generator returned by iter_img was used","623a88d902698e288de8298414b7ec12a311de40",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-20 08:42:30","Used an iterator class for iter_img
+
+Clearer than the previous generator tricks","76e7024510d293c7dabb0ed69b12ebcc15017ad7",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-22 10:30:54","Revert to using slices rather than Ellipsis
+
+Makes it more explicit that we are using the fourth dimension for the indexing","48bc0f6340d15fd59a47436b5b73c12865bc6e28",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-22 10:31:05","Improve docstring","c6b3a3cd07089ce653302c08cf2d35776e3c21e4",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-22 10:32:15","Add test for empty list","cba1df3001c29571161297388d9c6f305dbb367f",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-22 13:14:07","DOC: docstring tweaks","12742dce01207383bc7e25667506081e682d3be3",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-22 13:24:38","Use _utils.testing.assert_raises_regexp
+
+for Python 2.6","3e8dd3d3f1f34dd5f74f059eac3bed66ccefce5d",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-22 15:11:48","Move helper class outside function.
+
+Mostly for pickability of the iterator returned by iter_img. Use an underscore in class name
+to discourage its direct usage.
+Also a docstring tweak","0e6b58ef7446180bc004cd0560b9557247ba65a4",""
+"pull_request_commit","356","nilearn","nilearn","lesteve","2015-01-27 10:29:32","Reduce memory usage of iter_img
+
+when input is an iterator of 3D images. This is done by avoiding
+concatenating 3D images into a single 4D image.
+
+* add `return_iterator` optional parameter to check_niimgs + tests
+* Move some code from nilearn/image/image.py to
+  nilearn/_utils/niimg_conversions.py","3071c38abaab4dd0013500a085d83f0d9a305dfb",""

@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","549","nilearn","nilearn","salma1601","2015-04-17 20:02:44","The behavior of signal.clean with standardize=False is different whether one includes or not confounds. If confounds to remove, the input signal and the confounds are standardized even though standardize=False.
+
+The standard choice for scaling signals within ROIs (e.g. MarsBaR, Conn) is to scale them to their own ROI-specific average BOLD signal and multiply by 100 to get what is commonly called Percent Signal Change units. This allows to put all the ROIs to the same range while maintaining the difference in variances between them. 
+
+Below signals within 2 ROIs from ADHD dataset, note that although region 12 has higher average, it has less variance. But after the regression of one confound (average CSF), the variances are almost the same because of this partial standardization achieved in signal.clean. My expected behavior of cleaning is the bottom subplot.
+
+![demo_psc](https://cloud.githubusercontent.com/assets/7080143/7209880/0574f630-e54d-11e4-883b-7aeb35fd4759.png)
+","start issue","signal.clean with standardize=False"
+"issue_closed","549","nilearn","nilearn","GaelVaroquaux","2015-05-11 09:26:00","","closed issue","signal.clean with standardize=False"
+"issue_comment","549","nilearn","nilearn","GaelVaroquaux","2015-04-20 14:54:02","I think that we have a bug here: the fact that with confounds, the variance of the signal is forgotten is wrong.
+
+I remember that Philippe divided by the standard variance before removing the confounds to give a better conditioning to the confound regression. What we should do is probably multiply back by the standard deviation after confound removal.
+","",""
+"issue_comment","549","nilearn","nilearn","GaelVaroquaux","2015-04-20 15:13:27","Hum, thinking more closely about this, I think that the standardization of the signal is not useful to improve conditioning of confound removal, only that of the confounds.
+","",""
+"issue_comment","549","nilearn","nilearn","GaelVaroquaux","2015-04-23 10:03:34","Hi @salma1601 
+
+Could you have a look at https://github.com/nilearn/nilearn/pull/553 . I think that it should solve your problem.
+","",""
+"issue_comment","549","nilearn","nilearn","salma1601","2015-04-19 08:21:57","Sorry but the range in the cleaned PSC subplot was incorrect, this is the correct one.
+
+![demo_psc](https://cloud.githubusercontent.com/assets/7080143/7218715/8eef503c-e67d-11e4-8291-32c5334bedcf.png)
+","",""
+"issue_comment","549","nilearn","nilearn","salma1601","2015-04-23 09:52:03","I agree that standardization does not improve conditioning of confound removal. Also I guess that _standardize must be changed because with detrend=False and normalize=False the signals are not centered ?
+Ok so we get as output of cleaning the raw signal after regressing out the confounds and if one is interested by PSC units he can just get the means from the initial signals and scales the signals.
+","",""

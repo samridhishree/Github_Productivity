@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","900","nilearn","nilearn","TheChymera","2015-12-11 13:50:31","I am trying to plot the `.nii` file located [here](http://chymera.eu/NIhelp/nilearn_plot0/6_restore_maths.nii.gz), with this script:
+
+```
+from nilearn import image, plotting
+
+def plot_nii(file_path, slices):
+    plotting.plot_anat(file_path, cut_coords=slices, display_mode=""y"", annotate=False, draw_cross=False)
+
+if __name__ == '__main__':
+    plot_nii(""6_restore_maths.nii.gz"", (-50,0,4,5))
+    plotting.show()
+```
+
+The resulting image looks like this:
+![figure_1](https://cloud.githubusercontent.com/assets/950524/11745019/47a5207e-a015-11e5-869c-b0a977100131.png)
+
+I have two issues with that:
+- My image only has 14 coronal slices. Mapping the slices via some other unit of measurement (btw, what is it?) is annoying and unwieldy - as you can see, an increment of up to four displays the same slice, and then suddenly, via an increment of just one, I go to the next.
+- The caudal slices are cut off at the top. Why? my data is not cut off like that (as you can see when plotting the image via FSLView or MRIcron.
+","start issue","Plotting anatomical images"
+"issue_comment","900","nilearn","nilearn","danlurie","2016-04-30 22:51:00","I agree it would be really useful to have the option of forcing Nilearn to take the header affine into account when plotting. 
+
+Also useful would be a note to the plotting docs to at least mention the automatic interpolation. I'm happy to do this part, but it will have to wait until after the SFN deadline
+","",""
+"issue_comment","900","nilearn","nilearn","banilo","2016-05-02 11:09:53","> I agree it would be really useful to have the option of forcing Nilearn to take the header affine into account when plotting.
+
+I agree
+","",""
+"issue_comment","900","nilearn","nilearn","MartinPerez","2016-05-03 14:48:06","@TheChymera if I understand what you want. Then maybe you just need to do something like this?
+
+```
+# cutting on the x axis:
+data = nib.load(img).get_data()
+fig, axes = plt.subplots(1, data.shape[0])
+for idx, ax in enumerate(axes):
+    plt.sca(ax)
+    plt.imshow(data[idx, :, :])
+plt.show()
+```
+
+does that help?
+","",""

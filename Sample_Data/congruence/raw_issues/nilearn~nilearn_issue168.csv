@@ -1,0 +1,71 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","168","nilearn","nilearn","eickenberg","2014-02-25 08:25:10","Adressing issue https://github.com/nilearn/nilearn/issues/166
+
+Added rtol=1e-6 to crop_img. Setting this to 0 would revert this back to the ""0-tolerance"" way it was.
+
+Test included
+","start issue","Added relative tolerance to cropping"
+"issue_closed","168","nilearn","nilearn","GaelVaroquaux","2014-03-19 10:35:52","","closed issue","Added relative tolerance to cropping"
+"pull_request_title","168","nilearn","nilearn","eickenberg","2014-02-25 08:25:10","Adressing issue https://github.com/nilearn/nilearn/issues/166
+
+Added rtol=1e-6 to crop_img. Setting this to 0 would revert this back to the ""0-tolerance"" way it was.
+
+Test included
+","56dc23fdb6f4458f7e90723565080af1f443ed2a","Added relative tolerance to cropping"
+"pull_request_merged","168","nilearn","nilearn","GaelVaroquaux","2014-03-19 10:35:52","Added relative tolerance to cropping","dcb2c3bd0c5301f4f84f4b450447b734e9bd9609","Pull request merge from eickenberg/nilearn:cropping to nilearn/nilearn:master"
+"issue_comment","168","nilearn","nilearn","eickenberg","2014-02-26 08:41:39","As referred to in the issue, the present adaptation requires evaluating the maximum norm. Contrary to the previous version which checked only equality to 0, this makes a floating point copy of the image instead of only one binary one and leads to higher memory consumption.
+
+@AlexandreAbraham's first remark was this, along with the proposition to evaluate the infinity norm using max(array.max(), -array.min()) and identifying threshold passing using a logical or on negative or positive threshold passing.
+
+This makes 2-3 binary copies instead of the equivalent of around 8-9 for the floating point absolute value. A clear gain in memory usage, but a potential loss in code readability. Where do we set the tradeoff?
+","",""
+"issue_comment","168","nilearn","nilearn","GaelVaroquaux","2014-03-05 12:11:10","I don't think that the loss in readability for @AlexandreAbraham 's suggestion will be substantial. I would favor giving it a try.
+","",""
+"issue_comment","168","nilearn","nilearn","eickenberg","2014-03-05 15:06:15","Like this for example?
+
+What about the default value for rtol? 0 or 1e-6?
+","",""
+"issue_comment","168","nilearn","nilearn","GaelVaroquaux","2014-03-05 16:55:14","Small comment on inlining the two temporary arrays for fast garbage collection. Aside from that, :+1: for merge from my side.
+","",""
+"issue_comment","168","nilearn","nilearn","eickenberg","2014-03-05 17:01:42","Two temporary arrays now inline.
+
+Is default rtol=1e-6 OK, or is 0. to be preferred in order to have exact same behaviour as before?
+","",""
+"issue_comment","168","nilearn","nilearn","GaelVaroquaux","2014-03-05 18:05:22","> Is default rtol=1e-6 OK, or is 0. to be preferred in order to have exact same
+> behaviour as before?
+
+How about cutting the pear in two ( :) ). Would 1e-8 work for your
+usecase?
+","",""
+"issue_comment","168","nilearn","nilearn","GaelVaroquaux","2014-03-18 23:18:16","@eickenberg : could you just check my last question and hopefully finish this PR so that we merge it?
+
+It will make your own code easier to have this guy merged in.
+","",""
+"issue_comment","168","nilearn","nilearn","eickenberg","2014-03-19 09:16:43","1e-8 works for me.
+Do I revert to one commit before or not (trade off btw nice looking code and some memory saving)
+","",""
+"issue_comment","168","nilearn","nilearn","eickenberg","2014-03-19 10:30:02","reverted to more memory saving setting (which remains very readable) and changed rtol to 1e-8
+","",""
+"pull_request_commit_comment","168","nilearn","nilearn","GaelVaroquaux","2014-03-05 16:51:31","Using in here an 'np.abs(data) < rtol \* infinity_norm' would be more memory friendly for two reasons. First you would avoid having two temporary buffers and you would have only one. Second, it would be garbage collected very quickly, whereas here you have to wait for the function to exit to have garbage collection kick in.
+","56dc23fdb6f4458f7e90723565080af1f443ed2a","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","168","nilearn","nilearn","GaelVaroquaux","2014-03-05 16:54:15","Actually, maybe my first point is wrong, because of the different dtypes (the masks use 8 bytes, while the data uses probably 32 or 64 bytes). I would just inline the two arrays and not take in account my idea of using the abs. Sorry for the noise.
+","56dc23fdb6f4458f7e90723565080af1f443ed2a","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","168","nilearn","nilearn","eickenberg","2014-03-05 16:55:22","This is almost what I had before. The key argument against it was that np.abs(data) creates a float array which is 8 times larger than a bool/byte array of the same size.
+
+Before I had saved these absolute values to a variable, making them persist for longer. So your proposition seems like the golden middle between the two.
+","56dc23fdb6f4458f7e90723565080af1f443ed2a","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","168","nilearn","nilearn","GaelVaroquaux","2014-03-05 17:51:16","> This is almost what I had before. The key argument against it was that np.abs
+> (data) creates a float array which is 8 times larger than a bool/byte array of
+> the same size.
+
+Yes. I figured that in the mean time, and decided it was a bad idea.
+Sorry for the noise. I am slow. Maybe it's worth putting a comment on
+this design decision, to avoid reiterating this discussion.
+
+G
+","56dc23fdb6f4458f7e90723565080af1f443ed2a","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit","168","nilearn","nilearn","eickenberg","2014-02-25 08:19:25","Added relative tolerance to cropping","990e0782613a785b1a93ab800e762ad5d169f54f",""
+"pull_request_commit","168","nilearn","nilearn","eickenberg","2014-03-05 14:49:55","Merge branch 'master' of github.com:nilearn/nilearn into cropping","4ce20110a07cd4908fe7982d49accda5cde29c3d",""
+"pull_request_commit","168","nilearn","nilearn","eickenberg","2014-03-05 15:04:11","refactored threshold passing evaluation to use less memory","b5b4a8a1488e8bd72a99b3969e85068da0fab975",""
+"pull_request_commit","168","nilearn","nilearn","eickenberg","2014-03-05 16:59:19","Inlined threshold checking","816b9bcf25d4047fcdf1ef14fbdb3401ba1dd599",""
+"pull_request_commit","168","nilearn","nilearn","eickenberg","2014-03-19 10:28:20","changed rtol to 1e-8 and saved some memory by avoiding np.abs","56dc23fdb6f4458f7e90723565080af1f443ed2a",""

@@ -1,0 +1,68 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","998","nilearn","nilearn","arthurmensch","2016-02-19 14:43:47","`python examples/02_decoding/plot_haxby_space_net.py`
+
+Traceback:
+
+```
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/func_inspect.py:191: DeprecationWarning: inspect.getargspec() is deprecated, use inspect.signature() instead
+  arg_spec = inspect.getargspec(func)
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/hashing.py:178: DeprecationWarning: Changing the shape of non-C contiguous array by
+descriptor assignment is deprecated. To maintain
+the Fortran contiguity of a multidimensional Fortran
+array, use 'a.T.view(...).T' instead
+  obj_bytes_view = obj.view(self.np.uint8)
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/func_inspect.py:191: DeprecationWarning: inspect.getargspec() is deprecated, use inspect.signature() instead
+  arg_spec = inspect.getargspec(func)
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/func_inspect.py:191: DeprecationWarning: inspect.getargspec() is deprecated, use inspect.signature() instead
+  arg_spec = inspect.getargspec(func)
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/hashing.py:178: DeprecationWarning: Changing the shape of non-C contiguous array by
+descriptor assignment is deprecated. To maintain
+the Fortran contiguity of a multidimensional Fortran
+array, use 'a.T.view(...).T' instead
+  obj_bytes_view = obj.view(self.np.uint8)
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/func_inspect.py:191: DeprecationWarning: inspect.getargspec() is deprecated, use inspect.signature() instead
+  arg_spec = inspect.getargspec(func)
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/hashing.py:178: DeprecationWarning: Changing the shape of non-C contiguous array by
+descriptor assignment is deprecated. To maintain
+the Fortran contiguity of a multidimensional Fortran
+array, use 'a.T.view(...).T' instead
+  obj_bytes_view = obj.view(self.np.uint8)
+/opt/anaconda/lib/python3.5/site-packages/numpy/core/_methods.py:59: RuntimeWarning: Mean of empty slice.
+  warnings.warn(""Mean of empty slice."", RuntimeWarning)
+/opt/anaconda/lib/python3.5/site-packages/numpy/core/_methods.py:68: RuntimeWarning: invalid value encountered in true_divide
+  ret, rcount, out=ret, casting='unsafe', subok=False)
+/opt/anaconda/lib/python3.5/site-packages/sklearn/externals/joblib/func_inspect.py:191: DeprecationWarning: inspect.getargspec() is deprecated, use inspect.signature() instead
+  arg_spec = inspect.getargspec(func)
+/opt/anaconda/lib/python3.5/site-packages/numpy/core/_methods.py:82: RuntimeWarning: Degrees of freedom <= 0 for slice
+  warnings.warn(""Degrees of freedom <= 0 for slice"", RuntimeWarning)
+/opt/anaconda/lib/python3.5/site-packages/numpy/core/_methods.py:94: RuntimeWarning: invalid value encountered in true_divide
+  arrmean, rcount, out=arrmean, casting='unsafe', subok=False)
+/opt/anaconda/lib/python3.5/site-packages/numpy/core/_methods.py:114: RuntimeWarning: invalid value encountered in true_divide
+  ret, rcount, out=ret, casting='unsafe', subok=False)
+Traceback (most recent call last):
+  File ""/home/arthur/work/repos/nilearn/examples/02_decoding/plot_haxby_space_net.py"", line 50, in <module>
+    decoder.fit(X_train, y_train)
+  File ""/home/arthur/work/repos/nilearn/nilearn/decoding/space_net.py"", line 814, in fit
+    classifier=self.is_classif))
+  File ""/opt/anaconda/lib/python3.5/site-packages/sklearn/cross_validation.py"", line 1677, in check_cv
+    cv = StratifiedKFold(y, cv)
+  File ""/opt/anaconda/lib/python3.5/site-packages/sklearn/cross_validation.py"", line 505, in __init__
+    len(y), n_folds, shuffle, random_state)
+  File ""/opt/anaconda/lib/python3.5/site-packages/sklearn/cross_validation.py"", line 245, in __init__
+    "" than the number of samples: {1}."").format(n_folds, n))
+ValueError: Cannot have number of folds n_folds=8 greater than the number of samples: 0.
+```
+","start issue","plot_haxby_space_net is broken on Python 3"
+"issue_closed","998","nilearn","nilearn","GaelVaroquaux","2016-06-13 14:16:10","","closed issue","plot_haxby_space_net is broken on Python 3"
+"issue_comment","998","nilearn","nilearn","arthurmensch","2016-02-19 14:44:32","for some reason `self.masker_.fit_transform(X) == []` in the estimator
+","",""
+"issue_comment","998","nilearn","nilearn","Naereen","2016-03-19 18:10:31","Thanks for this check.
+
+The live version of the auto example has not been updated yet, though.
+","",""
+"issue_comment","998","nilearn","nilearn","lesteve","2016-03-02 15:01:35","Wild guess : a lot of things are iterators rather than lists in Python 3, e.g. zip, map, dict.keys. This could be the case that an iterator is used and looped over once. When you iterate over it again it is empty so you get 0 samples.
+","",""
+"issue_comment","998","nilearn","nilearn","lesteve","2016-03-02 16:35:32","Yep I reached the exact same conclusion. Good duplication of effort ;-).
+
+As mentioned in another issue, our downloaders in Python 3 loads all the string data as bytes, which leads to this kind of nasty surprises. AFAICR I could not convince one of the different numpy ways of reading a csv to output strings but maybe I didn't try hard enough at the time.
+","",""

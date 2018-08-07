@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","611","nilearn","nilearn","AlexandreAbraham","2015-06-15 16:07:24","When calling `add_overlay` with an uint8 threshold, the mask is sometimes reversed. The culprit is here: https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L532
+
+``` python
+                data = np.ma.masked_inside(data, -threshold, threshold,
+                                           copy=False)
+```
+
+If `threshold` is an `uint8`, then you get `threshold = 22` and `-threshold = 234` because of the underflow. There may be other cases like that here and there in the code.
+
+Should we properly handle uint8 everywhere or simply convert the image to float systematically for plotting?
+
+For the record, this bug happened to @KamalakerDadi when he tried to plot the Harvard Oxford atlas (since Harvard Oxford is shipped in uint8 format). So this is not an isolated case.
+","start issue","Messy behavior with uint8 images"
+"issue_closed","611","nilearn","nilearn","GaelVaroquaux","2015-07-13 21:22:31","","closed issue","Messy behavior with uint8 images"
+"issue_comment","611","nilearn","nilearn","GaelVaroquaux","2015-06-15 18:52:59","> Should we properly handle uint8 everywhere or simply convert the image
+> to float systematically for plotting?
+
+I say convert to float: the problem with that is blowing up memory. But
+for a single volume it should be fine.
+","",""
+"issue_comment","611","nilearn","nilearn","lesteve","2015-06-16 09:40:02","Just curious: could we not use a mask based on np.abs ?
+","",""
+"issue_comment","611","nilearn","nilearn","AlexandreAbraham","2015-06-18 08:11:24","@lesteve we can do that too. But I must admit that conversion to float is easier and will prevent all errors.
+","",""
+"issue_comment","611","nilearn","nilearn","lesteve","2015-06-18 09:27:19","> But I must admit that conversion to float is easier and will prevent all errors.
+
+Out of curiosity what kind of other errors are likely to happen?
+","",""
+"issue_comment","611","nilearn","nilearn","KamalakerDadi","2015-06-18 14:36:06","> Just curious: could we not use a mask based on np.abs ?
+
+If I use `np.abs(data)` to mask, I get the same error. This is what you mean to use ?
+
+![errorwithnomagic](https://cloud.githubusercontent.com/assets/11410385/8233662/cc061152-15d7-11e5-95f1-bd9379bce595.png)
+","",""
+"issue_comment","611","nilearn","nilearn","lesteve","2015-06-18 16:04:54","What I meant, instead of:
+
+``` python
+data = np.ma.masked_inside(data, -threshold, threshold,
+                                               copy=False)
+```
+
+do something like this:
+
+``` python
+data = np.ma.masked_where(np.abs(data) <= threshold, data, copy=False)
+```
+","",""
+"issue_comment","611","nilearn","nilearn","KamalakerDadi","2015-06-18 19:48:11","`data = np.ma.masked_where(np.abs(data) <= threshold, data, copy=False)`
+
+Using this line worked without a problem.
+","",""
+"issue_comment","611","nilearn","nilearn","GaelVaroquaux","2015-06-18 20:55:03","I think that using the abs is a bit of a dirty hack. Are we sure that we
+do not risk looping too far and becoming positive again (droping in the
+discussion while having forgotten the beginning of it, and in the middle
+of doing 1000 things, so maybe the comment is irrelevent).
+","",""

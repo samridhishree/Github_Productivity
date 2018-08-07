@@ -1,0 +1,462 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 12:49:25","I have a user getting an error that he does not understand at all when the mask extraction has failed:
+
+<pre>
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\nilearn-0.1
+.5.dev0-py2.7.egg\nilearn\decoding\space_net.pyc in path_scores(solver, X, y,
+mask, alphas, l1_ratios, train, test, solver_params, is_classif, n_alphas,
+eps, key, debias, Xmean, screening_percentile, verbose)
+    356
+    357     # crop the mask to have a tighter bounding box
+--> 358     mask = _crop_mask(mask)
+    359
+    360     # get train and test data
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\nilearn-0.1
+.5.dev0-py2.7.egg\nilearn\decoding\space_net.pyc in _crop_mask(mask)
+     61     the same support (active voxels)""""""
+     62     idx = np.where(mask)
+---> 63     i_min = max(idx[0].min() - 1, 0)
+     64     i_max = idx[0].max()
+     65     j_min = max(idx[1].min() - 1, 0)
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\numpy\core\
+_methods.pyc in _amin(a, axis, out, keepdims)
+     27
+     28 def _amin(a, axis=None, out=None, keepdims=False):
+---> 29     return umr_minimum(a, axis, None, out, keepdims)
+     30
+     31 def _sum(a, axis=None, dtype=None, out=None, keepdims=False):
+
+ValueError: zero-size array to reduction operation minimum which has no
+identity
+</pre>
+
+
+We should detect that ""idx"" is empty in _crop_mask and raise a more comprehensible error: something like ""Empty mask: if you have given a mask, it is empty, and if you have not given a mask, the mask-extraction routines have fail. Please provide an appropriate mask"".
+
+@dohmatob : do you want to take care of that?
+","start issue","space_net._crop_mask returns incomprehensible error when mask is empty"
+"issue_closed","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 21:18:53","","closed issue","space_net._crop_mask returns incomprehensible error when mask is empty"
+"issue_comment","822","nilearn","nilearn","dohmatob","2015-11-05 12:53:16","Oops! Ok, sure. Lemme reproduce and then fix it. Thanks.
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 12:55:02","Thanks!
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 15:03:50","Thanks for your work for my issue. I tried the updated code with a mask file, but the same error shows up.
+
+There is my code:
+
+# 
+
+import numpy as np
+
+# make X (design matrix) and y (response variable)
+import nibabel
+from nilearn.image import index_img
+
+train_index = np.ones(60)>0
+test_index = np.ones(600)>0
+
+X_train = nibabel.load('C:\Users\LYF\Desktop\sim2train.nii')
+X_test = nibabel.load('C:\Users\LYF\Desktop\sim2test.nii')
+
+X_train = index_img(X_train,train_index)
+X_test = index_img(X_test, test_index)
+
+mask = nibabel.load('C:\Users\LYF\Desktop\sim1mask.nii')
+
+a=np.array([1,2])
+y_train = a.repeat(30)
+y_test = a.repeat(300)
+
+from nilearn.decoding import SpaceNetClassifier
+
+penalty1 = 'graph-net'
+penalty2 = 'tv-l1'
+### Fit model on train data and predict on test data ######################
+decoder = SpaceNetClassifier(penalty=penalty1,loss = 'logistic',screening_percentile=100,mask=mask)
+decoder.fit(X_train, y_train)
+y_pred = decoder.predict(X_test)
+accuracy1 = (y_pred == y_test).mean() \* 100.
+decoder = SpaceNetClassifier(penalty=penalty2,loss = 'logistic',screening_percentile=100,mask=mask)
+decoder.fit(X_train, y_train)
+y_pred = decoder.predict(X_test)
+accuracy2 = (y_pred == y_test).mean() \* 100.
+
+# 
+
+And here is the track back log:
+
+%run ""C:\Users\LYF\Desktop\NILEARN\SIM1.py""
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\cross_validation.py:1601: DeprecationWarning: check_cv will return indices instead of boolean masks from 0.17
+  'masks from 0.17', DeprecationWarning)
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\cross_validation.py:69: DeprecationWarning: The indices parameter is deprecated and will be removed (assumed True) in 0.17  
+
+## stacklevel=1)
+
+ValueError                                Traceback (most recent call last)
+C:\Users\LYF\Desktop\NILEARN\SIM1.py in <module>()
+     28 ### Fit model on train data and predict on test data ######################
+     29 decoder = SpaceNetClassifier(penalty=penalty1,loss = 'logistic',screening_percentile=100)
+---> 30 decoder.fit(X_train, y_train)
+     31 y_pred = decoder.predict(X_test)
+     32 accuracy1 = (y_pred == y_test).mean() \* 100.
+
+C:\Users\LYF\Documents\GitHub\nilearn\nilearn\decoding\space_net.py in fit(self, X, y)
+    829                 debias=self.debias, verbose=self.verbose,
+    830                 screening_percentile=self.screening_percentile_
+--> 831                 ) for cls in range(n_problems) for fold in range(n_folds)):
+    832             self.best_model_params_.append((best_alpha, best_l1_ratio))
+    833             self.alpha_grids_.append(alphas)
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\parallel.pyc in **call**(self, iterable)
+    657             self._iterating = True
+    658             for function, args, kwargs in iterable:
+--> 659                 self.dispatch(function, args, kwargs)
+    660 
+    661             if pre_dispatch == ""all"" or n_jobs == 1:
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\parallel.pyc in dispatch(self, func, args, kwargs)
+    404         """"""
+    405         if self._pool is None:
+--> 406             job = ImmediateApply(func, args, kwargs)
+    407             index = len(self._jobs)
+    408             if not _verbosity_filter(index, self.verbose):
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\parallel.pyc in **init**(self, func, args, kwargs)
+    138         # Don't delay the application, to avoid keeping the input
+    139         # arguments in memory
+--> 140         self.results = func(_args, *_kwargs)
+    141 
+    142     def get(self):
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\memory.pyc in **call**(self, _args, *_kwargs)
+    279 
+    280     def **call**(self, _args, *_kwargs):
+--> 281         return self.func(_args, *_kwargs)
+    282 
+    283     def call_and_shelve(self, _args, *_kwargs):
+
+C:\Users\LYF\Documents\GitHub\nilearn\nilearn\decoding\space_net.py in path_scores(solver, X, y, mask, alphas, l1_ratios, train, test, solver_params, is_classif, n_alphas, eps, key, debias, Xmean, screening_percentile, verbose)
+    353 
+    354     # crop the mask to have a tighter bounding box
+--> 355     mask = _crop_mask(mask)
+    356 
+    357     # get train and test data
+
+C:\Users\LYF\Documents\GitHub\nilearn\nilearn\decoding\space_net.py in _crop_mask(mask)
+     61     the same support (active voxels)""""""
+     62     idx = np.where(mask)
+---> 63     i_min = max(idx[0].min() - 1, 0)
+     64     i_max = idx[0].max()
+     65     j_min = max(idx[1].min() - 1, 0)
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\numpy\core_methods.pyc in _amin(a, axis, out, keepdims)
+     27 
+     28 def _amin(a, axis=None, out=None, keepdims=False):
+---> 29     return umr_minimum(a, axis, None, out, keepdims)
+     30 
+     31 def _sum(a, axis=None, dtype=None, out=None, keepdims=False):
+
+ValueError: zero-size array to reduction operation minimum which has no identity 
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 15:05:34","Can you put 'mask.nii' somewhere online, so that we have a look at it?
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 15:22:05","I cannot upload in the discussion at https://github.com/nilearn/nilearn/issues/822.https://github.com/nilearn/nilearn/issues/822
+
+I have attached it in the email. And also the training data set and a brief description of the setting.
+
+The mask is just ruling out the surface of the 20 by 20 by 10 box.
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 15:28:05","Here is a dropbox line for the three files I mentioned in the last reply.
+https://www.dropbox.com/sh/pnj8kduyivvwmss/AABq_AL6WyB6ueMwoHnuyh75a?dl=0
+Let me know if that does not work.
+Thanks.
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 15:28:30","> I have attached it in the email.
+
+Where? I am sorry, I missed it. If you need a temporary transfer service
+to upload the file, we can provide that, just let us know.
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 15:28:55","> https://www.dropbox.com/sh/pnj8kduyivvwmss/AABq_AL6WyB6ueMwoHnuyh75a?dl=0
+
+That works. Thanks
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 15:55:11","@Leo-YF-Liu : I am on it. It seems that it doesn't have much to do with your mask, but is a bug in our code. We'll have this fixed soon.
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 15:57:17","@GaelVaroquaux Thanks a lot. :)
+","",""
+"issue_comment","822","nilearn","nilearn","dohmatob","2015-11-05 16:02:02","Yes, it's a bug in our code, reproducible with:
+
+```
+import numpy as np
+import nibabel
+from nilearn.decoding import SpaceNetClassifier
+X_train = nibabel.load(""sim2train.nii"")
+mask = nibabel.load(""sim1mask.nii"")
+mask = nibabel.Nifti1Image(mask.get_data(),
+                           mask.get_affine())
+a = np.array([1, 2])
+y_train = a.repeat(30)
+decoder = SpaceNetClassifier(loss='logistic', screening_percentile=100,
+                             mask=mask).fit(X_train, y_train)
+
+
+```
+
+I'll look at it asap.
+","",""
+"issue_comment","822","nilearn","nilearn","dohmatob","2015-11-05 16:12:57","OK, the bug concerns the (internal) interpretation of `screening_percentile`: does 100% mean 100% of standard brain or 100% of **this** brain ? There was once a debate on this issue, and we retained: the first meaning.
+
+For @Leo-YF-Liu's particular example, 100% of standard brain = 0.044438533900526642% of **this** brain, leading to an essentially empty mask.
+
+I think it's more natural to let `screening_percentile=100` mean 100% of **this** brain, i.e full-brain. Users can more easily make sense out of this.
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 16:15:37","@dohmatob I tried to remove the option, i.e. decoder = SpaceNetClassifier(penalty=penalty1,loss = 'logistic',mask=mask). The same error still occur. What I want is just a mask that contains all the voxel in the image.
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 16:19:41","My data is not a typical brain image. It's just a simulated image of size  20 by 20 by 10 .
+","",""
+"issue_comment","822","nilearn","nilearn","dohmatob","2015-11-05 16:20:37","On Thu, Nov 5, 2015 at 5:19 PM, Leo-YF-Liu notifications@github.com wrote:
+
+> My data is not a typical brain image. It's just a simulated 20 by 20 by 10
+> image.
+> 
+> Ya, saw that already.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/822#issuecomment-154109968.
+
+## 
+
+DED
+","",""
+"issue_comment","822","nilearn","nilearn","dohmatob","2015-11-05 16:38:48","OK, I just pushed a fix on PR #823.
+
+Demo code.
+
+```
+import numpy as np
+import matplotlib.pyplot as plt
+import nibabel
+from nilearn.decoding import SpaceNetClassifier
+from nilearn.plotting import plot_stat_map
+X_train = nibabel.load(""sim2train.nii"")
+mask = nibabel.load(""sim1mask.nii"")
+mask = nibabel.Nifti1Image(mask.get_data(),
+                           mask.get_affine())
+a = np.array([1, 2])
+y_train = a.repeat(30)
+for penalty in ['graph-net', 'tv-l1']:
+    decoder = SpaceNetClassifier(
+        penalty=penalty, loss='logistic', screening_percentile=100,
+        verbose=2).fit(X_train, y_train)
+    plot_stat_map(decoder.coef_img_, None, black_bg=True,
+                  title=penalty.upper(), colorbar=True)
+    plt.savefig(""%s.png"" % penalty)
+plt.show()
+
+```
+
+![graph-net](https://cloud.githubusercontent.com/assets/634068/10974773/030df910-83e4-11e5-9ea6-f10ad46643ef.png)
+![tv-l1](https://cloud.githubusercontent.com/assets/634068/10974779/06c9e208-83e4-11e5-97d4-8cb32aa550c5.png)
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 16:50:59","@dohmatob : I don't see anything.
+
+But I am on it, I have diagnosed the problem, and I am adding logic (including warnings) to prevent from it.
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 16:58:21","@dohmatob Your results are pretty good, but I tried your demo code, the same error showed up again. Did you update any internal code in the nilearn package? Shall I wait for the update of the package before I run the code?
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 17:01:27","> Shall I wait for the update of the package before I run the code?
+
+Yes, @domathob and myself are on it. Give me 20mn to do a PR, and another
+hour of two for reviews and merge to happen.
+","",""
+"issue_comment","822","nilearn","nilearn","dohmatob","2015-11-05 17:04:13","Sorry, the PR link i gave you was wrong. It's here: https://github.com/nilearn/nilearn/pull/824.
+
+Also, i didn't notice @GaelVaroquaux was working on the issue. So, you may ignore the above PR.
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 21:21:03","@Leo-YF-Liu : I believe that now your problem is fixed. You can pull master and rerun your analysis on the new version. Tell us if that works for you.
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 21:40:27","I just updated and tried, but the error still occurred.
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 21:40:57","This is the trackback log:
+
+%run ""C:\Users\LYF\Desktop\Dropbox (YUFENG)\sim1\sim1.py""
+Mask volume = 812mm^3 = 0.812cm^3
+Standard brain volume = 1.82724e+06mm^3 = 1827.24cm^3
+Original screening-percentile: 100
+Volume-corrected screening-percentile: 0.0444385
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\cross_validation.py:1601: DeprecationWarning: check_cv will return indices instead of boolean masks from 0.17
+  'masks from 0.17', DeprecationWarning)
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\cross_validation.py:69: DeprecationWarning: The indices parameter is deprecated and will be removed (assumed True) in 0.17
+
+##   stacklevel=1)
+
+ValueError                                Traceback (most recent call last)
+C:\Users\LYF\Desktop\Dropbox (YUFENG)\sim1\sim1.py in <module>()
+     12     decoder = SpaceNetClassifier(
+     13         penalty=penalty, loss='logistic', screening_percentile=100,
+---> 14         verbose=2).fit(X_train, y_train)
+     15     plot_stat_map(decoder.coef_img_, None, black_bg=True,
+     16                   title=penalty.upper(), colorbar=True)
+
+C:\Users\LYF\AppData\Roaming\Python\Python27\site-packages\nilearn-0.1.5.dev0-py2.7.egg\nilearn\decoding\space_net.pyc in fit(self, X, y)
+    832             self.cv_ = [(np.arange(n_samples), [])]
+    833         n_folds = len(self.cv_)
+--> 834 
+    835         # scores & mean weights map over all folds
+    836         self.cv_scores_ = [[] for _ in range(n_problems)]
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\parallel.pyc in **call**(self, iterable)
+    657             self._iterating = True
+    658             for function, args, kwargs in iterable:
+--> 659                 self.dispatch(function, args, kwargs)
+    660 
+    661             if pre_dispatch == ""all"" or n_jobs == 1:
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\parallel.pyc in dispatch(self, func, args, kwargs)
+    404         """"""
+    405         if self._pool is None:
+--> 406             job = ImmediateApply(func, args, kwargs)
+    407             index = len(self._jobs)
+    408             if not _verbosity_filter(index, self.verbose):
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\parallel.pyc in **init**(self, func, args, kwargs)
+    138         # Don't delay the application, to avoid keeping the input
+    139         # arguments in memory
+--> 140         self.results = func(_args, *_kwargs)
+    141 
+    142     def get(self):
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\sklearn\externals\joblib\memory.pyc in **call**(self, _args, *_kwargs)
+    279 
+    280     def **call**(self, _args, *_kwargs):
+--> 281         return self.func(_args, *_kwargs)
+    282 
+    283     def call_and_shelve(self, _args, *_kwargs):
+
+C:\Users\LYF\AppData\Roaming\Python\Python27\site-packages\nilearn-0.1.5.dev0-py2.7.egg\nilearn\decoding\space_net.pyc in path_scores(solver, X, y, mask, alphas, l1_ratios, train, test, solver_params, is_classif, n_alphas, eps, key, debias, Xmean, screening_percentile, verbose)
+    356 
+    357     test : array or list of integers
+--> 358         List of indices for the test samples
+    359 
+    360     l1_ratio : float in the interval [0, 1]; optional (default .5)
+
+C:\Users\LYF\AppData\Roaming\Python\Python27\site-packages\nilearn-0.1.5.dev0-py2.7.egg\nilearn\decoding\space_net.pyc in _crop_mask(mask)
+     61     original_screening_percentile = screening_percentile
+     62     # correct screening_percentile according to the volume of the data mask
+---> 63     mask_volume = _get_mask_volume(mask_img)
+     64     if mask_volume > MNI152_BRAIN_VOLUME:
+     65         warnings.warn(
+
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\numpy\core_methods.pyc in _amin(a, axis, out, keepdims)
+     27 
+     28 def _amin(a, axis=None, out=None, keepdims=False):
+---> 29     return umr_minimum(a, axis, None, out, keepdims)
+     30 
+     31 def _sum(a, axis=None, dtype=None, out=None, keepdims=False):
+
+ValueError: zero-size array to reduction operation minimum which has no identity 
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 21:41:41","This is the code I use:
+
+import numpy as np
+import matplotlib.pyplot as plt
+import nibabel
+from nilearn.decoding import SpaceNetClassifier
+from nilearn.plotting import plot_stat_map
+X_train = nibabel.load(""C:\Users\LYF\Desktop\sim2train.nii"")
+mask = nibabel.load(""C:\Users\LYF\Desktop\sim1mask.nii"")
+mask = nibabel.Nifti1Image(mask.get_data(),mask.get_affine())
+a = np.array([1, 2])
+y_train = a.repeat(30)
+for penalty in ['graph-net', 'tv-l1']:
+    decoder = SpaceNetClassifier(
+        penalty=penalty, loss='logistic', screening_percentile=100,
+        verbose=2).fit(X_train, y_train)
+    plot_stat_map(decoder.coef_img_, None, black_bg=True,
+                  title=penalty.upper(), colorbar=True)
+    plt.savefig(""%s.png"" % penalty)
+plt.show()
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 21:42:48","Basically it's a copy of @dohmatob 's code, with some modification on the path of files.
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 21:43:44","> I just updated and tried, but the error still occurred.
+
+With the data and the script that you shared, I am no longer getting an
+error.
+
+Are you sure that you are indeed running the latest code? How did you do
+the update?
+
+Can you paste the output of the run, with eventual warnings and the
+corresponding traceback?
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 21:44:34","> %run ""C:\Users\LYF\Desktop\Dropbox (YUFENG)\sim1\sim1.py""
+> Mask volume = 812mm^3 = 0.812cm^3
+> Standard brain volume = 1.82724e+06mm^3 = 1827.24cm^3
+> Original screening-percentile: 100
+> Volume-corrected screening-percentile: 0.0444385
+
+That's strange, it looks like you are running the old code. How did you
+do the update?
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 21:45:42","I downloaded the zip file from the website then unzip it. Then do the installation from that path. 
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 21:48:49","> I downloaded the zip file from the website then unzip it.
+
+Which exact link? Just to be sure.
+
+> Then do the installation from that path.
+
+Which exact command? Once again, just to be sure, and help us understand
+the problems.
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 21:51:50","Scrap my previous questions: that's a different error that you are
+getting, and the traceback below does show that you are running the latest
+code.
+
+<pre>
+C:\Users\LYF\AppData\Roaming\Python\Python27\site-packages\
+nilearn-0.1.5.dev0-py2.7.egg\nilearn\decoding\space_net.pyc in _crop_mask(mask)
+61 original_screening_percentile = screening_percentile
+62 # correct screening_percentile according to the volume of the data mask
+---> 63 mask_volume = _get_mask_volume(mask_img)
+64 if mask_volume > MNI152_BRAIN_VOLUME:
+65 warnings.warn(
+C:\Users\LYF\AppData\Local\Enthought\Canopy\User\lib\site-packages\numpy\
+core_methods.pyc in _amin(a, axis, out, keepdims)
+27
+28 def _amin(a, axis=None, out=None, keepdims=False):
+---> 29 return umr_minimum(a, axis, None, out, keepdims)
+30
+31 def _sum(a, axis=None, dtype=None, out=None, keepdims=False):
+ValueError: zero-size array to reduction operation minimum which has no
+identity
+</pre>
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 21:53:15","I downloaded it from https://github.com/nilearn/nilearn, lower right corner, icon download zip.
+Then unzip it on my desktop, and run python setup.py install --user
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 22:00:11","OK, I find that the traceback that you are getting is very surprising. It
+pretty much makes no sense. I wonder if there is not a mixture of the new
+and the old code.
+
+Can you, reinstall, but before you do the operations for reinstallation,
+can you remove completely the directory
+C:\Users\LYF\AppData\Roaming\Python\Python27\site-packages\nilearn-0.1.5.dev0-py2.7.egg
+","",""
+"issue_comment","822","nilearn","nilearn","Leo-YF-Liu","2015-11-05 22:07:03","Great!!! It works now! Thanks a lot for the big effort you and your team made today!
+","",""
+"issue_comment","822","nilearn","nilearn","GaelVaroquaux","2015-11-05 22:13:36","> Great!!! It works now! Thanks a lot for the big effort you and your
+> team made today!
+
+Awesome! That's good news.
+
+Well, interacting with you was useful, as it revealed a bug in our code,
+and that before we released it to the public. Thanks a lot for the
+detailed information.
+
+I hope that you get good results with nilearn.
+","",""

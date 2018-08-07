@@ -1,0 +1,52 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","563","nilearn","nilearn","salma1601","2015-04-28 14:07:01","Fixes #561
+It remains to add a test to check that output from regessing out confounds equals residue obtained with scipy least squares. May be it will be better to add it after PR #553 is merged, because this PR will affect the way the regression is done.
+","start issue","Deal with non-full rank confounds"
+"issue_closed","563","nilearn","nilearn","GaelVaroquaux","2015-05-11 13:30:27","","closed issue","Deal with non-full rank confounds"
+"pull_request_title","563","nilearn","nilearn","salma1601","2015-04-28 14:07:01","Fixes #561
+It remains to add a test to check that output from regessing out confounds equals residue obtained with scipy least squares. May be it will be better to add it after PR #553 is merged, because this PR will affect the way the regression is done.
+","40f7495a399fb62271efa57432a50923716b9164","Deal with non-full rank confounds"
+"issue_comment","563","nilearn","nilearn","GaelVaroquaux","2015-05-07 14:39:55","@salma1601 : thanks a lot.
+
+The tests are not passing on scipy 0.9.0, which we must support as it is the standard version in one of the ubuntu distributions that we support.
+
+The reason is trivial: the 'pivoting' argument to scipy.linalg.qr was added in version 0.10.1.
+
+The solution is to test for the version of scipy, and use the 'pivoting' only if the version is greater. One example of such code to do this can be found on 
+https://github.com/nilearn/nilearn/blob/master/nilearn/decomposition/canica.py#L153
+
+Thanks!
+","",""
+"issue_comment","563","nilearn","nilearn","GaelVaroquaux","2015-05-11 12:59:24","Yes, but the QR is significantly faster. The Leipzig people were impressed at how fast this was.
+","",""
+"issue_comment","563","nilearn","nilearn","GaelVaroquaux","2015-05-11 13:03:13","OK, maybe not faster. I just know that it is the recommended way of doing it.
+","",""
+"issue_comment","563","nilearn","nilearn","GaelVaroquaux","2015-05-11 13:30:26","Closing this PR as superseeded by #580 
+","",""
+"issue_comment","563","nilearn","nilearn","eickenberg","2015-05-11 12:57:54","I may be completely mistaken, but the problem may not have crept up if `signal -= confounds.dot(np.linalg.lstsq(confounds, signal)[0])` or `signal -= confounds.dot(np.linalg.pinv(confounds).dot(signal))` had been used instead of the lower-level QR decomp technique.
+","",""
+"issue_comment","563","nilearn","nilearn","eickenberg","2015-05-11 13:01:33","Why is it faster? Computing the decomposition vs computing the pinv can
+hardly be the problem. The re-multiplications afterwards are of exactly the
+same shape.
+
+On Mon, May 11, 2015 at 2:59 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> Yes, but the QR is significantly faster. The Leipzig people were impressed
+> at how fast this was.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/563#issuecomment-100898673.
+","",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-27 12:14:22","demo with synthetic data of confounds regression","96f2d5fb79fa9a4c4a1b5a3a89047d4d754c0e98",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 12:29:53","fix non-full rank confounds regression","c423ad871753257e0ad4244acff623ade854db5b",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 12:31:29","suppressed demo","1d1d461ba9caaba27a0bc01d36f0603c77086956",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:39:45","null eigenvalue threshold from float precision","99484c3bc1d3164f520d5ecad6ea85ef6a1cbd4f",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:48:08","added demo","f7677717aab01d355d7209dc2afa68e4654a421d",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:57:02","removed demo","b8d867841a41fd2d72b7880a97c9db49158dc411",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:59:12","updated threshold for zero","675dd7e2ca43fd893c322c7a4afa0dd5882544ea",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-05-09 07:36:53","softned precision in test confounds","581c063c8215c977e430b75724a247e2e11ef2f8",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-05-11 09:43:36","non-full rank regression for scipy 0.9, added test","0a838b69f1df2f953ddd5f81220220fd02037c94",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-05-11 10:01:09","updated with last changes in master","59eba16c131d31d6ce584b8bd3867f23710fe4b3",""
+"pull_request_commit","563","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-05-11 10:29:04","correct scipy version","40f7495a399fb62271efa57432a50923716b9164",""

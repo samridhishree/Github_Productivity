@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","575","nilearn","nilearn","dohmatob","2015-05-08 14:26:17","Fuzzing the plotting code, I find the following testcase fails
+
+```
+    for axis, direction in enumerate(""xyz""):
+        shape = [5, 6, 7]
+        shape[axis] = 1
+        img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
+        plot_stat_map(img, None, display_mode=direction)
+```
+
+`ValueError: Too many cuts requested for the data: n_cuts=7, data size=1`
+
+The culprit is the find_cut_slices function.
+
+A fix would be to return all the slices along the axis if there are at least as many requested n_slices as there are slices.
+","start issue","plot_stat_map (and probably plot_*) fails when display_mode axis has singleton dimension"
+"issue_closed","575","nilearn","nilearn","AlexandreAbraham","2015-05-11 07:51:49","","closed issue","plot_stat_map (and probably plot_*) fails when display_mode axis has singleton dimension"
+"issue_comment","575","nilearn","nilearn","GaelVaroquaux","2015-05-09 08:35:51","> Before I look into the code changes in more details. What do you exactly want
+> to happen when the number of cuts is too high compared to the size of the data
+> in the relevant axis ?
+
+I think that we should shoot a warning and display one cut per slice.
+","",""
+"issue_comment","575","nilearn","nilearn","lesteve","2015-05-09 00:50:48","A more self explanatory snippet:
+
+``` python
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+import nibabel as nib
+
+from nilearn import plotting
+
+img = nib.Nifti1Image(np.ones((5, 6, 7)), np.eye(4))
+
+plotting.plot_stat_map(img, None, display_mode='z', cut_coords=12)
+
+plt.show()
+```
+
+Before I look into the code changes in more details. What do you exactly want to happen when the number of cuts is too high compared to the size of the data in the relevant axis ?
+
+Out of interest, why is that a problem in your case? Do you have some data that is that really that small along an axis (can't remember the default number of cuts for sure but it's something like 7 or 12 I think)?
+","",""
+"issue_comment","575","nilearn","nilearn","dohmatob","2015-05-09 07:45:22","- Have a quick look at the comment at then end of the issue description. I'm afraid it answers you first question. Also the code (including comments) is worth 10 lines and my explanation might be longer (this would not be reasonable).
+- Do I have some data with some properties ? Yes, look at the test case above. More seriously, In real life for sure you'll one day have someone throw such data at your plotting API and watch it break.
+  Otherwise, then you must roll a docstring saying ""you're forbidden to have very few slices along any axis"".
+","",""

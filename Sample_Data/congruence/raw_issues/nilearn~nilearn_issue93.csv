@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","93","nilearn","nilearn","AlexandreAbraham","2013-07-29 11:57:07","I dump a lot niimages in my nilearn pipeline. Unfortunately, this takes a lot of disk space under nifti format because data is not masked and I don't want to gzip it because it is time consuming. The best way to save it is under the .npy form, along with the corresponding mask (ideally, a path to the mask). This way, check_niimg could unmask my images on the fly.
+
+I suggest to add a tuple (npy filepath / numpy array, mask niimage) as a niimage for compression purpose.
+","start issue","Tuple (.npy + mask niimage) as niimage"
+"issue_closed","93","nilearn","nilearn","GaelVaroquaux","2013-08-01 12:24:17","","closed issue","Tuple (.npy + mask niimage) as niimage"
+"issue_comment","93","nilearn","nilearn","GaelVaroquaux","2013-07-29 11:59:39","> I suggest to add a tuple (npy filepath / numpy array, mask niimage) as a
+> niimage for compression purpose.
+
+I'd rather not. This is an internal format that we don't want to expose
+to users. I'd rather rely on joblib and the shelve mechanism for this
+purpose. Which also means that none of this is exposed to the end user.
+","",""
+"issue_comment","93","nilearn","nilearn","GaelVaroquaux","2013-07-29 15:01:49","As I was telling Philippe, I see two kind of intermediate
+representations: some that make sens from a neuroscientific point of
+view, and these should absolutely be stored as nifti images, and some
+that are mere convenience for speed/caching reasons, and those should be
+easily recomputable from neuroscientific data, and thus rely on joblib.
+My analysis may be wrong, but I'll need a more precise usecase to be
+convinced.
+","",""
+"issue_comment","93","nilearn","nilearn","GaelVaroquaux","2013-08-01 12:24:17","I am closing this guy. I hope nobody feels bad about it.
+","",""
+"issue_comment","93","nilearn","nilearn","AlexandreAbraham","2013-08-01 12:27:13","No problem.
+","",""
+"issue_comment","93","nilearn","nilearn","pgervais","2013-07-29 13:29:12","We are touching the limits of joblib in that case. If I understand well, @AlexandreAbraham not only runs a given processing many times on the same set of masked images (which joblib is good for), but also runs several different processing on the same images. In the latter case, joblib is kind of awkward to use, even with the (still in progress) references. While I agree that providing a tuple as a niimg is not a good idea, using joblib for this is not (right now) a handy solution either.
+","",""

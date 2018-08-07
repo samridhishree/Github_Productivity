@@ -1,0 +1,54 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1424","nilearn","nilearn","salma1601","2017-03-31 14:12:17","`smoothing_fwhm` is hard-coded when calling function `connected_regions` in `RegionExtractor`,
+https://github.com/nilearn/nilearn/blob/master/nilearn/regions/region_extractor.py#L401
+so the default value `smoothing_fwhm=6.` of function `connected_regions` is systematically applied and this is not suitable for my mice images (voxel size is 0.2x0.2x0.2)
+
+Another point is that `min_region_size` is assumed to be an `int` and in my case it may be lower than 1.
+
+I can do a PR to try fix this","start issue","smoothing_fwhm passed to connected_regions in RegionExtractor hard coded: problem with mouse data"
+"issue_closed","1424","nilearn","nilearn","GaelVaroquaux","2017-06-15 16:51:07","","closed issue","smoothing_fwhm passed to connected_regions in RegionExtractor hard coded: problem with mouse data"
+"issue_comment","1424","nilearn","nilearn","GaelVaroquaux","2017-03-31 14:20:51","> I can do a PR to try fix this
+
+The first problem yes. The second one, I don't understand.
+","",""
+"issue_comment","1424","nilearn","nilearn","GaelVaroquaux","2017-03-31 14:32:34","Indeed, either the docs or the code, or both should be fixed. Kamalakar,
+what's your take?
+","",""
+"issue_comment","1424","nilearn","nilearn","salma1601","2017-03-31 14:27:03","If want 50 voxels as minimal, if I understand correctly the doc, I have to put min_region_size to `50 * (0.2 ** 3)` so it will be `min_region_size=.4`, not an int as said in the doc ","",""
+"issue_comment","1424","nilearn","nilearn","salma1601","2017-03-31 14:39:15",">It is not hard-coded if you import as a function, from nilearn.regions import connected_regions and use your own smoothing. I don't see a PR in this
+
+you mean I should use the function `connected_regions` and never use `RegionExtractor` ?","",""
+"issue_comment","1424","nilearn","nilearn","salma1601","2017-03-31 14:44:57","Yes but when I use `RegionExtractor` I can not set the smoothing_fwhm. So it smoothes my data at 6mm and I have no more regions :)","",""
+"issue_comment","1424","nilearn","nilearn","salma1601","2017-04-07 10:13:40",">I don't see a PR in this.
+
+@KamalakerDadi may be I was unclear. So first my mouse fMRI images have different range than human images, e.g.` print func_imgs[0].header.get_zooms()` gives `(0.2, 0.2, 0.2, 1.0)`. Now I am using DictionaryLearning to extract my networks, with a smoothing FWHM suitable for my data
+```Python
+from nilearn.decomposition import DictLearning
+
+dict_learn = DictLearning(n_components=20, smoothing_fwhm=.3, n_jobs=-3)
+dict_learn.fit(func_imgs)
+components_img = dict_learn.masker_.inverse_transform(dict_learn.components_)
+```
+At this point everything works fine. Now I want to keep only large enough regions
+```Python
+extractor = RegionExtractor(components_img, thresholding_strategy='ratio_n_voxels',
+    extractor='local_regions', min_region_size=.4)
+extractor.fit()
+```
+and here I have an error
+```Python
+ValueError: zero-size array to reduction operation maximum which has no identity
+```
+
+However when I set `smoothing_fwhm=.3` here
+```Python
+https://github.com/nilearn/nilearn/blob/master/nilearn/regions/region_extractor.py#L401
+```
+I get my regions extracted.","",""
+"issue_comment","1424","nilearn","nilearn","KamalakerDadi","2017-03-31 14:30:46","It is not hard-coded if you import as a function, ```from nilearn.regions import connected_regions``` and use your own smoothing. I don't see a PR in this.","",""
+"issue_comment","1424","nilearn","nilearn","KamalakerDadi","2017-03-31 14:42:15","Both I guess.","",""
+"issue_comment","1424","nilearn","nilearn","KamalakerDadi","2017-03-31 14:43:39",">you mean I should use the function connected_regions and never use RegionExtractor ?
+
+Please use it.","",""
+"issue_comment","1424","nilearn","nilearn","KamalakerDadi","2017-04-07 11:07:02","I agree with you. I was wrong in understanding. PR welcome please.
+Thanks","",""

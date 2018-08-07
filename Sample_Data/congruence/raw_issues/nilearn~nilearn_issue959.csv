@@ -1,0 +1,209 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","959","nilearn","nilearn","aabadie","2016-01-21 15:33:25","This should fix #736 but it's not fully functional. The problem is memory_profiler cannot be really trusted when a function increase the memory less than 1MiB. I also couldn't apply it on a real test.
+
+Here is an example (but it doesn't work) with it `test_masking.py`:
+
+``` python
+
+from nilearn._utils.testing import with_memory_usage, assert_memory_less_than
+
+@with_memory_usage
+def test_memory_usage_with_multi_epi_mask():
+    # As it calls intersect_masks, we only test resampling here.
+    # Same masks as test_intersect_masks
+    mask_a = np.zeros((400, 400, 1), dtype=np.bool)
+    mask_a[200:400, 200:400] = 1
+    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+
+    mask_b = np.zeros((800, 800, 1), dtype=np.bool)
+    mask_b[200:600, 200:600] = 1
+    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
+
+    mask_ab = np.zeros((400, 400, 1), dtype=np.bool)
+    mask_ab[200, 200] = 1
+
+   # arbitrary ground truth value...
+    test_mem = 2 * (mask_b_img.get_data().nbytes +
+                    mask_b_img.get_data().nbytes +
+                    mask_a_img.get_data().nbytes) / (1024 ** 2)
+    assert_memory_less_than(test_mem, 0.1,
+                            compute_multi_epi_mask,
+                            [mask_a_img, mask_b_img], threshold=1., opening=0,
+                            target_affine=np.eye(4),
+                            target_shape=(400, 400, 1))
+```
+
+Maybe an expert such as @AlexandreAbraham will have a better idea :)
+","start issue","[MRG] Memory check based on memory profiler"
+"issue_closed","959","nilearn","nilearn","lesteve","2016-02-04 14:54:12","","closed issue","[MRG] Memory check based on memory profiler"
+"pull_request_title","959","nilearn","nilearn","aabadie","2016-01-21 15:33:25","This should fix #736 but it's not fully functional. The problem is memory_profiler cannot be really trusted when a function increase the memory less than 1MiB. I also couldn't apply it on a real test.
+
+Here is an example (but it doesn't work) with it `test_masking.py`:
+
+``` python
+
+from nilearn._utils.testing import with_memory_usage, assert_memory_less_than
+
+@with_memory_usage
+def test_memory_usage_with_multi_epi_mask():
+    # As it calls intersect_masks, we only test resampling here.
+    # Same masks as test_intersect_masks
+    mask_a = np.zeros((400, 400, 1), dtype=np.bool)
+    mask_a[200:400, 200:400] = 1
+    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+
+    mask_b = np.zeros((800, 800, 1), dtype=np.bool)
+    mask_b[200:600, 200:600] = 1
+    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
+
+    mask_ab = np.zeros((400, 400, 1), dtype=np.bool)
+    mask_ab[200, 200] = 1
+
+   # arbitrary ground truth value...
+    test_mem = 2 * (mask_b_img.get_data().nbytes +
+                    mask_b_img.get_data().nbytes +
+                    mask_a_img.get_data().nbytes) / (1024 ** 2)
+    assert_memory_less_than(test_mem, 0.1,
+                            compute_multi_epi_mask,
+                            [mask_a_img, mask_b_img], threshold=1., opening=0,
+                            target_affine=np.eye(4),
+                            target_shape=(400, 400, 1))
+```
+
+Maybe an expert such as @AlexandreAbraham will have a better idea :)
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","[MRG] Memory check based on memory profiler"
+"pull_request_merged","959","nilearn","nilearn","lesteve","2016-02-04 14:54:12","[MRG] Memory check based on memory profiler","2d26376d97be13f78e4a026104d3f58acc7afede","Pull request merge from aabadie/nilearn:mem_check to nilearn/nilearn:master"
+"issue_comment","959","nilearn","nilearn","aabadie","2016-01-22 09:28:01","For the record, I pushed a test function that checks that the `_iter_check_niimg` doesn't do any memory copy (as suggested by @AlexandreAbraham). The memory usage is as expected.
+","",""
+"issue_comment","959","nilearn","nilearn","AlexandreAbraham","2016-01-22 12:08:46","That's great !
+
+I have another suggestion (not for your PR, in general). In nilearn, we often use weird coding patterns (I'm thinking of taking the sum of a numpy array to know if there is nan inside for example). It would be interesting to keep a performance test (time and memory usage) for some of these patterns.
+
+It is useful for other developers and, for example, we could bench the Nifti1Image format, on which we rely heavily, and thus spot if there is performance regression.
+
+Benching the I/O is also interesting for cluster computation: some design patterns may not be favorable on a cluster because of longer file access time.
+
+This is not a trivial work. What do you think?
+","",""
+"issue_comment","959","nilearn","nilearn","aabadie","2016-01-22 15:20:59","> I have another suggestion (not for your PR, in general). In nilearn, we often
+> use weird coding patterns (I'm thinking of taking the sum of a numpy array
+> to know if there is nan inside for example). It would be interesting to keep
+> a performance test (time and memory usage) for some of these patterns.
+
+For computation time testing, it's difficult because it depends on the speed of the cpu running the test. Using reference measures computed from the current master and stored in a dedicated file, we could compare the measures of a PR against them and raise an error in case of a too large difference.
+
+> Benching the I/O is also interesting for cluster computation: some design
+> patterns may not be favorable on a cluster because of longer file access
+> time.
+
+I see the point. I don't how one can check the underlying I/O system calls from Python.
+Maybe this could be done using a call to an external command like (only available on posix):
+
+``` bash
+# Return the number of system calls to read
+strace python -c ""some python code with I/O"" 2>&1 | grep read | wc -l
+# Return the number of system calls to write
+strace python -c ""some python code with I/O"" 2>&1 | grep write | wc -l
+```
+
+The output of the commands above could then be sent back to and analyzed be the global python test script.
+
+> This is not a trivial work.
+
+I agree, but it's not impossible.
+","",""
+"issue_comment","959","nilearn","nilearn","lesteve","2016-01-22 15:29:17","> >  This is not a trivial work.
+> 
+> I agree, but it's not impossible.
+
+scikit-learn tried to do these kind of performance monitoring at one point during a GSoC. From what I have heard, a significant amount of time was invested with little return because this is a lot of work to maintain the infrastructure to do it. From what I remember it was based on vbench which ended up changing its internals and breaking the work that was done on scikit-learn.
+","",""
+"issue_comment","959","nilearn","nilearn","lesteve","2016-01-22 15:30:25","You seem to have introduced a PEP8 (line too long). You can look at the Travis build output [here](https://travis-ci.org/nilearn/nilearn/jobs/104104951). The best is if you run ./continuous_integration/flake8_diff.sh in your local code.
+","",""
+"issue_comment","959","nilearn","nilearn","aabadie","2016-01-22 15:34:15","> You seem to have introduced a PEP8 (line too long)
+
+Indeed, I changed the configuration of my IDE flake8 to accept lines up to 80 characters...
+","",""
+"issue_comment","959","nilearn","nilearn","GaelVaroquaux","2016-01-22 15:59:23","> From what I remember it was based on vbench which ended up changing its
+> internals and breaking the work that was done on scikit-learn.
+
+Pandas is now using something different, and they are very happy with it.
+We should look at that. But nilearn is probably not the place to set this
+up; rather a bigger project, with more manpowerful.
+","",""
+"issue_comment","959","nilearn","nilearn","aabadie","2016-01-22 16:37:49","> But nilearn is probably not the place to set this up; rather a bigger project, with more manpowerful.
+
+scikit-learn ?
+","",""
+"issue_comment","959","nilearn","nilearn","aabadie","2016-01-22 16:40:26","> Pandas is now using something different, and they are very happy with it.
+
+Looking at their repos, it seems they are still using vbench. But I may have missed something.
+","",""
+"issue_comment","959","nilearn","nilearn","GaelVaroquaux","2016-01-22 16:42:14","> scikit-learn ?
+
+Yes. But let's first discuss this in an engineering meeting at the lab.
+Do you want to schedule one? (doodle?)
+","",""
+"issue_comment","959","nilearn","nilearn","aabadie","2016-01-22 17:13:02","> Do you want to schedule one? (doodle?)
+
+Sure. Let's do it next wednesday afternoon or thursday.
+","",""
+"issue_comment","959","nilearn","nilearn","aabadie","2016-02-02 13:48:01","Just for the record, I think this is PR is ready for a re-review (nearly mergeable).
+","",""
+"issue_comment","959","nilearn","nilearn","lesteve","2016-02-04 14:54:09","LGTM, let's merge this one and revisit potentially if we think we can improve it.
+","",""
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-01-22 15:36:57","I am not sure what 1e6 means and I think it is misleading since it actually means 1024 *\* 2 bytes.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-01-22 15:37:15","What's the point of having callable_obj=None by default?
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-01-22 15:38:34","why not do `memory_used = None` like you do for memory_usage?
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-01-22 15:39:44","Probably the same as the one I took as example here: https://github.com/nilearn/nilearn/pull/959/files#diff-84deb1797526e96db1bf5f1c72f508eaR36
+I'll remove the default parameter.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-01-22 15:42:30","I thought we agreed to check the used memory as measured by memory_profiler rather that the expected_value. Also from our little experiments I would say that setting the threshold at 10 MiB is more reasonable.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-01-22 15:50:03","Indeed this is not necessary.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-01-22 15:57:26","> I thought we agreed to check the used memory as measured by memory_profiler rather that the expected_value.
+
+I think that we didn't converge. Thinking of it, `expected_value` should be renamed to  `memory_limit` to be more in the spirit of the initial desired behaviour.
+
+> I would say that setting the threshold at 10 MiB is more reasonable.
+
+Agreed, will change.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-01-22 16:11:18","> I think that we didn't converge
+
+I should work on my impression of converging then :-). Given the %memit behaviour we saw, I would feel a lot more confident to check that the memory usage is not smaller than 10 MiB. You may need to change your test to make sure that the function uses some memory for example by creating the array inside the function if you want to make sure that something doesn't make any copy, e.g. in your test_iter_niimg stuff but that sounds fine to me.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-01-22 17:09:09","> Given the %memit behaviour we saw, I would feel a lot more confident to check that the memory usage is not smaller than 10 MiB
+
+I added an extra check one the memory is measured. You were right : with 10MiB objects, the measured memory was 0.0... It works as expected with larger objects.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-01-28 09:32:05","Maybe we don't really care about running memory_profiler tests on CircleCI, given that we are already running them on Travis.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'circle.yml')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-01-28 09:37:50","Yeah, I just wanted to compare the results across CI's (as the tests fail on travis). I'll revert this.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'circle.yml')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-01-28 12:49:03","Quickly looking at the memory_profiler code, it looks like timeout does nothing when memory usage is called with a tuple (func, args, kwargs).
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-01-28 13:05:48","I removed it.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-02-02 14:43:33","Is this still necessary? I seem to remember it was added when you tried to make the AppVeyor tests pass.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-02-02 14:50:12","Codacy disliked the previous code, if I remove the `del` line there's a flake8 issue on travis.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-02-02 14:51:03","This generates a flake8 issue on travis (non used variable). Replacing by `b'a' * size` makes codacy fails...
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(14, '', u'nilearn/tests/test_testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-02-02 15:37:36","FWIW I don't think codacy brings much to the table. I'll probably remove it at one point. You can use `return mem_offset` if you really care about getting rid of the flake8 warning.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","lesteve","2016-02-02 15:39:24","Use `return mem_use`
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(14, '', u'nilearn/tests/test_testing.py')"
+"pull_request_commit_comment","959","nilearn","nilearn","aabadie","2016-02-02 16:02:43","I updated this. Travis and Codacy should be happy now.
+","8bc3083da7a34c50ddc232d08823fb957aa841d0","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit","959","nilearn","nilearn","aabadie","2016-01-28 13:18:54","adding memory consumption function based on memory profiler + test","d253e8cdbfefcca66f19ce49e2c379547114a6fa",""
+"pull_request_commit","959","nilearn","nilearn","aabadie","2016-01-28 13:58:36","add memory profiling function with _iter_check_niimg function.","44d60ef028f4b5bd138cba567d6951e54164daca",""
+"pull_request_commit","959","nilearn","nilearn","aabadie","2016-01-28 13:59:53","activate testing with memory_profiler on travis","0bc0a870a219dbf488305571520e337b4c3e9d3e",""
+"pull_request_commit","959","nilearn","nilearn","aabadie","2016-02-02 08:18:40","trying to fix codacy","36b0290f32b5b5f66e524ff3e6a7147b8dc1a64c",""
+"pull_request_commit","959","nilearn","nilearn","aabadie","2016-02-02 10:42:27","trying to fix travis","d0bc2754c36c4b3ec006a9ac9fa4c4f391c98947",""
+"pull_request_commit","959","nilearn","nilearn","aabadie","2016-02-02 15:41:29","applying comments","8bc3083da7a34c50ddc232d08823fb957aa841d0",""

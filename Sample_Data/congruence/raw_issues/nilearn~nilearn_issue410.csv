@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","410","nilearn","nilearn","lesteve","2015-02-05 21:04:39","``` python
+from nilearn import datasets
+from nilearn.plotting import plot_stat_map
+localizer_dataset = datasets.fetch_localizer_calculation_task(n_subjects=1)
+
+plot_stat_map(localizer_dataset.cmaps[0], symmetric_cbar=True, vmax=10)
+```
+
+```
+UnboundLocalError                         Traceback (most recent call last)
+<ipython-input-4-c631cc1b5cd1> in <module>()
+----> 1 plot_stat_map(localizer_dataset.cmaps[0], symmetric_cbar=True, vmax=10)
+
+/home/lesteve/dev/nilearn/nilearn/plotting/img_plotting.pyc in plot_stat_map(stat_map_img, bg_img, cut_coords, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, draw_cross, black_bg, cmap, symmetric_cbar, dim, **kwargs)
+    637     vmin = -vmax
+    638 
+--> 639     negative_range = (stat_map_max <= 0)
+    640     positive_range = (stat_map_min >= 0)
+    641     if symmetric_cbar:
+
+UnboundLocalError: local variable 'stat_map_max' referenced before assignment
+```
+","start issue","plot_stat_map with symmetric_cbar != ""auto"" and vmax raises UnboundLocalError"
+"issue_closed","410","nilearn","nilearn","lesteve","2015-02-06 14:22:03","","closed issue","plot_stat_map with symmetric_cbar != ""auto"" and vmax raises UnboundLocalError"
+"issue_comment","410","nilearn","nilearn","GaelVaroquaux","2015-02-06 10:35:32","I am reopening this because no test has been committed.
+","",""
+"issue_comment","410","nilearn","nilearn","GaelVaroquaux","2015-02-06 10:39:42","> I'm on it
+
+Thanks. Make sure to use a small map to avoid the test taking long.
+
+One example of test that you can copy is:
+https://github.com/nilearn/nilearn/commit/346f1b45971903e74b9584094c7348f671fe8438
+","",""
+"issue_comment","410","nilearn","nilearn","lesteve","2015-02-06 14:22:03","Fixed via #414
+","",""
+"issue_comment","410","nilearn","nilearn","eickenberg","2015-02-05 21:28:53","Ooops, that one escaped me :)
+
+What is happening here is that due to the fact that `vmax` is specified and `symmetric_cbar != 'auto'`, the function thinks it is not necessary to find maximum and minimum of the stat map, but these values are still used later on. Will fix this asap.
+","",""
+"issue_comment","410","nilearn","nilearn","eickenberg","2015-02-05 21:42:37","Thanks for the catch! https://github.com/nilearn/nilearn/pull/411
+","",""
+"issue_comment","410","nilearn","nilearn","eickenberg","2015-02-06 10:35:59","I'm on it
+
+On Fri, Feb 6, 2015 at 11:35 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> I am reopening this because no test has been committed.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/410#issuecomment-73217490.
+","",""
+"issue_comment","410","nilearn","nilearn","eickenberg","2015-02-06 12:11:21","I was able to add 3 test cases covering both issues into an existing test loop which generates similar data. https://github.com/nilearn/nilearn/pull/414
+","",""
+"issue_comment","410","nilearn","nilearn","lesteve","2015-02-06 09:20:36","This was actually fixed in #412
+","",""

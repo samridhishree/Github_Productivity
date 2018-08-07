@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","443","nilearn","nilearn","bcipolli","2015-02-19 16:21:13","I am trying to visualize the spatial masks from within the MSDL atlas.  I made a simple loop to iterate over the masks, and hit an `IndexError`:
+
+**To reproduce:**
+
+``` python
+import matplotlib.pyplot as plt
+
+import nibabel
+
+from nilearn import datasets
+from nilearn.plotting import plot_roi
+from nilearn.image import iter_img
+
+
+msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+msdl_atlas_img = nibabel.load(msdl_atlas_dataset.maps)
+for mask_img in iter_img(msdl_atlas_img):
+    plot_roi(mask_img)
+plt.show()
+```
+
+**Current behavior:**
+![image](https://cloud.githubusercontent.com/assets/4072455/6270474/27a47ef8-b80f-11e4-9dbd-c1de95190fd5.png)
+
+**Notes:**
+Debugging, I found that the mask is empty.  This causes `ndimage.find_objects(mask)` to return an empty list, which is then indexed with index zero.  https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/find_cuts.py#L77 
+
+**One question, one suggestion:**
+- Question: Why is one of the masks from the dataset empty?  I didn't expect this for a dataset shipped with nilearn.
+- Suggestion: Make the code more robust.  First, issue a warning (perhaps in `_plot_img_with_bg`) if plotting an empty image.  Second, handle empty images more gracefully (either skipping plotting them and asserting at the beginning of `find_xyz_cut_coords` that the data is not empty, or by handling the empty mask case directly from within `find_xyz_cut_coords`).
+","start issue","IndexError thrown when plotting ROI of empty mask"
+"issue_closed","443","nilearn","nilearn","lesteve","2015-03-26 09:48:09","","closed issue","IndexError thrown when plotting ROI of empty mask"
+"issue_comment","443","nilearn","nilearn","lesteve","2015-03-26 09:47:58","I think this one has been fixed probably by #473.
+","",""
+"issue_comment","443","nilearn","nilearn","bcipolli","2015-02-19 16:43:22","Digging a little deeper, in fact the image is non-zero.  However, the maximum value is ~ 0.45, and the `activation_threshold` in `find_xyz_cut_coords` is passed as `0.5`.  So... this is a probabilistic atlas, and  `plot_stat_map` is a better method to use.  
+
+Two questions / suggestions: 
+- I suggest mentioning in the `fetch_msdl_atlas` that this is a probabilistic atlas.
+- I suggest mentioning how non-boolean images are thresholded in `plot_roi`, in the `plot_roi` docstring.  Indeed, I expected that images passed to `plot_roi` would plot data as `img.get_data().astype(bool)`, not this threshold approach.
+","",""

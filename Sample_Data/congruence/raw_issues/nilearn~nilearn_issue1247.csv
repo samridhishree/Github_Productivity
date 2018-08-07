@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1247","nilearn","nilearn","KamalakerDadi","2016-08-16 15:27:41","Attempts to Fix #1245 
+","start issue","Fixing empty list failure in RegionExtractor"
+"pull_request_title","1247","nilearn","nilearn","KamalakerDadi","2016-08-16 15:27:41","Attempts to Fix #1245 
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","Fixing empty list failure in RegionExtractor"
+"issue_comment","1247","nilearn","nilearn","GaelVaroquaux","2016-08-16 15:32:51","Overall, sounds good: not too intrusive.
+
+I think that you should use the stacklevel argument of warnings.warn.
+","",""
+"issue_comment","1247","nilearn","nilearn","GaelVaroquaux","2016-08-16 15:39:20","> stack_level=2 ?
+
+Probably. Try it out.
+","",""
+"issue_comment","1247","nilearn","nilearn","KamalakerDadi","2016-08-16 15:28:17","Ping @AlexandreAbraham @GaelVaroquaux . Does it sounds good ?
+","",""
+"issue_comment","1247","nilearn","nilearn","KamalakerDadi","2016-08-16 15:38:05","> I think that you should use the stacklevel argument of warnings.warn.
+
+stack_level=2 ?
+","",""
+"pull_request_commit_comment","1247","nilearn","nilearn","AlexandreAbraham","2016-08-17 07:13:41","Checking `len(all_regions_imgs)` is enough. Plus, checking `(label_maps == 0).all()` is wrong because this is a variable local to the for loop above so its value depends on the last component only.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","1247","nilearn","nilearn","KamalakerDadi","2016-08-17 07:15:59","Sure, will remove it.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","1247","nilearn","nilearn","AlexandreAbraham","2016-08-17 10:48:36","You should not rely on `label_maps` here either.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","1247","nilearn","nilearn","AlexandreAbraham","2016-08-17 13:10:14","Returning an empty image was a good idea. Maybe you could do something like:
+
+``` python
+        input_img = new_img_like(maps_img, np.zeros(maps_img.shape[:3] + (0,))
+```
+
+If we do that, we will have a truly empty 4d image. However, this may break what happens next, for example if you try to plot it with prob_atlas. We have to think about it.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","1247","nilearn","nilearn","KamalakerDadi","2016-08-17 13:11:37","> However, this may break what happens next, for example if you try to plot it with prob_atlas. We have to think about it.
+
+I thought the same and felt that returning given image as it is would be safe and valid.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","1247","nilearn","nilearn","AlexandreAbraham","2016-08-17 13:24:09","It is not valid as you are absolutely not returning what is described in the doc. Plus, the length of `regions_extracted_img` and `index_of_each_map` should be the same, which is not the case with your current code.
+
+I am not against returning special values in case of error to keep the pipeline running, but what you do here may be mlisleading for people.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","1247","nilearn","nilearn","KamalakerDadi","2016-08-17 13:32:09","Yes I agree, not consistent with doc & code. Ok I will change to return empty one.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","1247","nilearn","nilearn","AlexandreAbraham","2016-08-17 13:42:13","> Ok I will change to return empty one.
+
+Before wasting your precious time changing code, maybe we should wait for the input of Gaël? He is the one that knows the users best.
+","07db8214ad8a0f92f825326fad3bbbc0675f40d2","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit","1247","nilearn","nilearn","KamalakerDadi","2016-08-16 15:23:37","Fixing empty list failure in RegionExtractor","c9387d9bd937d108523db1eb828c3b236653b1d1",""
+"pull_request_commit","1247","nilearn","nilearn","KamalakerDadi","2016-08-16 15:52:45","stack level argument added","8b91738b542f8408bdf51ae96ea878dc2f0d3b52",""
+"pull_request_commit","1247","nilearn","nilearn","KamalakerDadi","2016-08-17 10:24:47","Addressed: removing unwanted check with label_maps","e14d6cd94ee80fb5af17db0ec12aa73098386194",""
+"pull_request_commit","1247","nilearn","nilearn","KamalakerDadi","2016-08-17 12:47:45","Addressed: changed label_maps to maps_img leading return given image as it is","875bbfc469041b1247e4764ff1c6e0381a33cbf0",""
+"pull_request_commit","1247","nilearn","nilearn","KamalakerDadi","2016-08-17 12:49:43","Removing unwanted change","3bc4b3af08e4a1b2dacbd6709cce390a204fcedf",""
+"pull_request_commit","1247","nilearn","nilearn","KamalakerDadi","2016-08-18 10:25:57","Addressed index return","07db8214ad8a0f92f825326fad3bbbc0675f40d2",""

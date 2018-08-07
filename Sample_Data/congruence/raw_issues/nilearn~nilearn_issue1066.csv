@@ -1,0 +1,38 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1066","nilearn","nilearn","dohmatob","2016-03-28 10:27:08","**Disclaimer:** I know `check_embedded_nifti_masker` is implicitly meant to be a low-level function, etc., etc.
+
+```
+Traceback (most recent call last):
+  File ""toto.py"", line 13, in <module>
+    Toto(memory=None).fit()
+  File ""toto.py"", line 10, in fit
+    self.masker_ = check_embedded_nifti_masker(self)
+  File ""/home/elvis/.local/lib/python2.7/site-packages/nilearn-0.2.3-py2.7.egg/nilearn/input_data/masker_validation.py"", line 53, in check_embedded_nifti_masker
+    new_masker_params['memory_level'] = max(0, estimator.memory_level - 1)
+AttributeError: 'Toto' object has no attribute 'memory_level'
+```
+
+Reproduce with:
+
+```
+from nilearn.input_data.masker_validation import check_embedded_nifti_masker
+
+
+class Toto(object):
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def fit(self, *args, **kwargs):
+        self.masker_ = check_embedded_nifti_masker(self)
+
+
+Toto(memory=None).fit()
+```
+","start issue","check_embedded_nifti_masker assumes estimator has attributes set"
+"issue_comment","1066","nilearn","nilearn","AlexandreAbraham","2016-08-02 09:58:34","What Evlis says is that we should test if the parameter is a masker and fail with a more meaningful error message if not.
+","",""
+"issue_comment","1066","nilearn","nilearn","KamalakerDadi","2016-08-02 09:54:01","If I am not wrong, this function is designed only for NiftiMasker or MultiNiftiMasker and arguments you have provided are related to either of the object.
+
+If I understand correctly, one can fix this by raising a meaningful error message if user did not provide a masker related object ? Any opinions ?
+","",""

@@ -1,0 +1,193 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","420","nilearn","nilearn","AlexandreAbraham","2015-02-10 10:22:16","For several people, the caching directory is seen as a big pile of junk that grows without able to clean specific masked datasets (as they are all identified by a hash). We should find a solution to make it clearer for the users.
+","start issue","Caching system is cryptic for some people"
+"issue_closed","420","nilearn","nilearn","AlexandreAbraham","2015-04-08 08:58:52","","closed issue","Caching system is cryptic for some people"
+"issue_comment","420","nilearn","nilearn","GaelVaroquaux","2015-02-10 13:13:28","> For several people, the caching directory is seen as a big pile of junk that
+> grows without able to clean specific masked datasets (as they are all
+> identified by a hash). We should find a solution to make it clearer for the
+> users.
+
+This has recently come up in joblib. I suggest prepending a very short
+description of the inputs to the hash in the directory name. Make
+the description of the inputs both short and meaningful will not be
+trivial.
+","",""
+"issue_comment","420","nilearn","nilearn","GaelVaroquaux","2015-02-10 13:28:18","> I think that it's mainly useful for dataset masking. However, we don't
+> know the which dataset is used at masking time. So I think that we
+> should let the user decide of this. Depending on the usage, I'm sure
+> than any user can come up with a unique ID.
+
+OK. Part of the problem will be addressed by a functionning cache
+replacement policy system in joblib.
+
+The other part of the problem is a general provenance/information problem
+that is so far an open problem in software (nobody has solved it in a
+good way).
+
+That said, the relevant information is in the joblib store: in each
+result directory there is a 'metadata.json'
+
+A function to crawl such information and give a good view of the store
+would probably be useful. For instance a 'list' method on the 'memory'
+object, that could take an optional function as an argument (in which
+case it would list only the content of the cache for this function.
+
+I think that this would be useful. Can you open an issue on the joblib
+tracker?
+","",""
+"issue_comment","420","nilearn","nilearn","AlexandreAbraham","2015-02-10 13:20:00","I think that it's mainly useful for dataset masking. However, we don't know the which dataset is used at masking time. So I think that we should let the user decide of this. Depending on the usage, I'm sure than any user can come up with a unique ID.
+","",""
+"issue_comment","420","nilearn","nilearn","AlexandreAbraham","2015-02-10 13:41:05","I don't think that people will bother crawling a lot of folders using such a function to clean their directory.
+","",""
+"issue_comment","420","nilearn","nilearn","GaelVaroquaux","2015-02-10 14:23:45","Then it's a problem we cannot solve.
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 10, 2015, 14:41, at 14:41, Alexandre Abraham notifications@github.com wrote:
+
+> I don't think that people will bother crawling a lot of folders using
+> such a function to clean their directory.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/420#issuecomment-73700197
+","",""
+"issue_comment","420","nilearn","nilearn","AlexandreAbraham","2015-02-10 15:57:18","I talked with Salma during the coffee break.
+1. In all examples, the maskers have `""nilearn_cache""` as cache directory. We should replace that by `""nilearn_cache/dataset_name""`. Because when users realize this fact, it's already too late and they have a huge cache directory.
+2. The other problem is when you mask a dataset of 200 subjects, and then change a parameter (typically smoothing). Even if the first problem is solved, you will end up will 400 folders with hashed names in your cache. Having a function that reads _metadata.json_ files is not helping because a script is still needed to parse the result and delete only a subset of the files. For this problem, we would need a 2-level cache like this:
+
+```
+nilearn_cache_adhd
+├ hash('filter_and_mask(all_params_but_filepath_smoothing_6)')
+│  ├ hash('filepath_1')
+│  ├ hash('filepath_2')
+│  └ ...
+└ hash('filter_and_mask(all_params_but_filepath_smoothing_8)')
+   ├ hash('filepath_1')
+   ├ hash('filepath_2')
+   └ ...
+```
+
+This is a quick suggestion, I haven't really thought about this.
+","",""
+"issue_comment","420","nilearn","nilearn","GaelVaroquaux","2015-02-10 16:21:21","> 1. In all examples, the maskers have ""nilearn_cache"" as cache directory. We
+>    should replace that by ""nilearn_cache/dataset_name"". Because when users
+>    realize this fact, it's already too late and they have a huge cache
+>    directory.
+
+Yes and no: there are common things across the different datasets, and
+the benefit of putting everything in the same directory is that these
+common things are not duplicated or recomputed.
+
+> 1. The other problem is when you mask a dataset of 200 subjects, and then
+>    change a parameter (typically smoothing). Even if the first problem is
+>    solved, you will end up will 400 folders with hashed names in your cache.
+>    Having a function that reads metadata.json files is not helping because a
+>    script is still needed to parse the result and delete only a subset of the
+>    files. For this problem, we would need a 2-level cache like this:
+> 
+> nilearn_cache_adhd
+> ├ hash('filter_and_mask(all_params_but_filepath_smoothing_6)')
+> │  ├ hash('filepath_1')
+> │  ├ hash('filepath_2')
+> │  └ ...
+
+That's always going to be custom and never going to scale, because you
+need to know which parameters should go where.
+
+From what I hear, all these problems are problems that we cannot solve.
+
+What we can do, is try to implement a cache replacement policy, and be
+able to limit the disk occupied by caching. This is on my radar.
+","",""
+"issue_comment","420","nilearn","nilearn","AlexandreAbraham","2015-02-10 16:41:30","> Yes and no: there are common things across the different datasets, and the benefit of putting everything in the same directory is that these common things are not duplicated or recomputed.
+
+Do you have something in mind? Because I can't think of one.
+
+> That's always going to be custom and never going to scale, because you need to know which parameters should go where.
+
+That works for the masker: the first level is everything but the filepath.
+
+> What we can do, is try to implement a cache replacement policy, and be able to limit the disk occupied by caching. This is on my radar.
+
+My guess is that people will get scared if things that used to run smoothly (because cached) become slow (because cache has been invalidated).
+","",""
+"issue_comment","420","nilearn","nilearn","GaelVaroquaux","2015-02-10 16:45:10","> Do you have something in mind? Because I can't think of one.
+
+Yes. Loading the haxby dataset and applying to it 2 different
+classifiers.
+
+> ```
+> That's always going to be custom and never going to scale, because
+> you need to know which parameters should go where.
+> ```
+> 
+> That works for the masker: the first level is everything but the filepath.
+
+Yes, but it means that you need to hand craft this everywhere, which is
+really what I am trying to avoid.
+
+> ```
+> What we can do, is try to implement a cache replacement policy, and
+> be able to limit the disk occupied by caching. This is on my radar.
+> ```
+> 
+> My guess is that people will get scared if things that used to run smoothly
+> (because cached) become slow (because cache has been invalidated).
+
+People have long stopped understanding how a computer works. There are
+caching mechanisms everywhere in a computer. Some day things are fast.
+Other days they are slow. The world is still a better place with caching
+:).
+","",""
+"issue_comment","420","nilearn","nilearn","AlexandreAbraham","2015-02-10 19:27:19","> Yes. Loading the haxby dataset and applying to it 2 different classifiers.
+
+I see no problem in changing `nilearn_cache` to `nilearn_cache/haxby` for that particular task.
+
+> Yes, but it means that you need to hand craft this everywhere, which is really what I am trying to avoid.
+
+I was just thinking of the masker for that point.
+
+> People have long stopped understanding how a computer works. There are caching mechanisms everywhere in a computer. Some day things are fast. Other days they are slow. The world is still a better place with caching :).
+
+I have no strong feeling about that. I just had several complaints about a `nilearn_cache` directory growing out of control and people not wanting to delete it by fear of losing all their cache.
+","",""
+"issue_comment","420","nilearn","nilearn","GaelVaroquaux","2015-02-12 07:17:08","> I see no problem in changing nilearn_cache to nilearn_cache/haxby for that
+> particular task.
+
+OK. Point taken. I agree with you. Sorry, I was being dumb. I would
+welcome a joblib cache per dataset as long as we don't have a cache
+replacement policy.
+
+> I was just thinking of the masker for that point.
+
+I am trying to minimize the amount of code that goes 
+
+> I have no strong feeling about that. I just had several complaints
+> about a nilearn_cache directory growing out of control and people not
+> wanting to delete it by fear of losing all their cache.
+
+That tells me we need cache replacement policy :). That's difficult work,
+but it is feasible, and it will solve many problems at once.
+","",""
+"issue_comment","420","nilearn","nilearn","AlexandreAbraham","2015-02-12 08:47:50","> OK. Point taken. I agree with you. Sorry, I was being dumb. I would welcome a joblib cache per dataset as long as we don't have a cache replacement policy.
+
+Cool, I'll do a PR to fix that.
+
+> I am trying to minimize the amount of code that goes
+
+I agree. Adding a subdirectory to nilearn_cache is basically the idea of a two level cache but handled at user level ;). I think it can be more useful to sensibilize users to this problem rather than doing everything for them.
+
+> That tells me we need cache replacement policy :). That's difficult work, but it is feasible, and it will solve many problems at once.
+
+I'm not sure that it will solve the general problem, but I guess that it's better than nothing ;).
+","",""
+"issue_comment","420","nilearn","nilearn","banilo","2015-02-12 08:49:52","Loosly related, how about an explicit caching-related example to make the various flavors and advantages clear in a neuroimaging context?
+","",""
+"issue_comment","420","nilearn","nilearn","GaelVaroquaux","2015-02-12 08:54:30","I'd rather rework completely the docs, before adding advanced
+documentation and examples. Do you want to take some time to brainstorm
+on reworking the docs? I think that it would be very useful.
+","",""
+"issue_comment","420","nilearn","nilearn","AlexandreAbraham","2015-02-12 09:23:15",":+1:
+","",""

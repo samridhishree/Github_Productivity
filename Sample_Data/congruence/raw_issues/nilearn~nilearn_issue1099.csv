@@ -1,0 +1,75 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1099","nilearn","nilearn","TheChymera","2016-05-18 00:57:37","I was just wondering how `nilearn.plotting.plot_stat_map` chooses the boundaries of the colormap. They seem to be very far apart - spanning up to five orders of magnitude, whereas my tstat data is mainly between +30 and -30. I know how to set the boundaries manually, but would it not be better if this could be auto-set (similarly to the `threshold` argument)?
+
+In case this feature doesn't exist (yet) - does nilearn have any simple way of displaying the maximum and minimum voxel values? or better yet, return all voxel values as a 1d array?
+","start issue","plot_stat_map colormap boundaries"
+"issue_comment","1099","nilearn","nilearn","GaelVaroquaux","2016-05-18 05:40:49","> I was just wondering how nilearn.plotting.plot_stat_map chooses the boundaries
+> of the colormap.
+
+They are chosen as the max of the absolute value of data.
+
+> In case this feature doesn't exist (yet) - does nilearn have any simple
+> way of displaying the maximum and minimum voxel values? or better yet,
+> return all voxel values as a 1d array?
+
+I would use nibabel for that.
+","",""
+"issue_comment","1099","nilearn","nilearn","GaelVaroquaux","2016-05-18 09:49:58","> nilearn.image.math_img should vive you min and max easily.
+
+Not convinced: it expects to return an image.
+","",""
+"issue_comment","1099","nilearn","nilearn","GaelVaroquaux","2016-05-18 12:51:48","If you don't have math_img, your version of nilearn is probably too old.
+You should update.
+","",""
+"issue_comment","1099","nilearn","nilearn","AlexandreAbraham","2016-05-18 09:48:49","`nilearn.image.math_img` should vive you min and max easily.
+","",""
+"issue_comment","1099","nilearn","nilearn","TheChymera","2016-05-18 12:40:08","Is that supposed to be a function?
+
+```
+In [1]: from nilearn import image
+
+In [2]: image.math_img()
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-2-a17fab5da446> in <module>()
+----> 1 image.math_img()
+
+AttributeError: 'module' object has no attribute 'math_img'
+```
+","",""
+"issue_comment","1099","nilearn","nilearn","grjd","2017-06-08 08:43:05","Hi,
+I got a bold image in normalize MNI space (2mm) when I try to plot the seed correlation from PCC as in the example (http://nilearn.github.io/auto_examples/03_connectivity/plot_seed_to_voxel_correlation.html) 
+I got pixels outside the brain figure.
+thanks!
+
+
+seed_based_correlation_img.to_filename('sbc_z.nii.gz')
+display = plotting.plot_stat_map(seed_based_correlation_img , threshold=0.3, dim='auto', display_mode='x')
+
+fslinfo sbc_z.nii.gz
+data_type FLOAT64
+dim1 79
+dim2 95
+dim3 79
+dim4 1
+![figure_4](https://user-images.githubusercontent.com/7142903/26919763-10cc7e6a-4c37-11e7-9784-67cea32cb735.png)
+[sbc_z.nii.gz](https://github.com/nilearn/nilearn/files/1060372/sbc_z.nii.gz)
+
+","",""
+"issue_comment","1099","nilearn","nilearn","KamalakerDadi","2017-06-08 10:03:20","Yes as @bthirion pointed your data has out of brain functional connectivity.
+You could do something like this to mask out of brain. This is just an idea not necessary that you should use this mask (icbm below).
+```python
+from nilearn import datasets
+from nilearn.input_data import NiftiMasker
+
+icbms = datasets.fetch_icbm152_2009()
+masker = NiftiMasker(mask_img=icbms.mask)
+
+data = masker.fit_transform('sbc_z.nii.gz')
+masked_sbc_z_img = masker.inverse_transform(data)
+
+display = plotting.plot_stat_map(masked_sbc_z_img,
+                                 threshold=0.3, dim='auto',
+                                 display_mode='x')
+```
+Hope this helps.","",""

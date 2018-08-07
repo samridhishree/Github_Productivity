@@ -1,0 +1,44 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","271","nilearn","nilearn","lesteve","2014-10-29 08:48:01","I just bumped into it while playing with CanICA:
+
+![canica_plot_outside_anatomy](https://cloud.githubusercontent.com/assets/1680079/4822837/83d74d70-5f47-11e4-8e07-75af211bdff7.png)
+
+The other slices look ok AFAICT:
+![canica_plot_0](https://cloud.githubusercontent.com/assets/1680079/4822848/aeeda69e-5f47-11e4-9a7e-84fe630ad6a0.png)
+
+To reproduce it:
+
+```
+$ ipython --matplotlib -i plot_canica_resting_state.py 
+```
+
+and then inside ipython:
+
+``` python
+plot_stat_map(nibabel.Nifti1Image(components_img.get_data()[..., 0],
+                                  components_img.get_affine()),
+              display_mode='z', cut_coords=[75])
+```
+
+Is that a known issue? Maybe the adhd dataset is not in the MNI space?
+","start issue","CanICA map outside of anatomy"
+"issue_closed","271","nilearn","nilearn","lesteve","2014-10-30 07:22:18","","closed issue","CanICA map outside of anatomy"
+"issue_comment","271","nilearn","nilearn","banilo","2014-10-29 08:57:14","A very simple reason might be that the template used for plot_stat_map (which one is it?) visualization is smaller than the gray matter mask that was to select the resting-state signals.
+","",""
+"issue_comment","271","nilearn","nilearn","lesteve","2014-10-29 09:22:10","By default plot_stat_map uses the MNI template for the anatomy.
+","",""
+"issue_comment","271","nilearn","nilearn","bthirion","2014-10-29 12:28:47","> Is that a known issue? Maybe the adhd dataset is not in the MNI space?
+> Apparently, the data you use has been warped to MNI space. But there are at least three possible prolems 
+> - There is not one MNI template, but several of them 
+> - the quality of the registration to the MNI space depends on the used algorithm/software 
+> - The EPI images may be distorted wrt the anatomical images. 
+>   For all these reasons, the kind of offset that you describe is not unexpected.
+","",""
+"issue_comment","271","nilearn","nilearn","lesteve","2014-10-29 13:35:10","By default we use nilearn/data/avg152T1_brain.nii.gz for the background image. According to the nilearn.datasets.load_mni152_template docstring it comes from FSL and I double-checked that they match (on my computer the FSL one is at /usr/share/data/fsl-mni152-templates/avg152T1_brain.nii.gz).
+
+FWIW in the FSL [doc](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases) it is called ""MNI152 standard-space T1-weighted average structural template image"".
+","",""
+"issue_comment","271","nilearn","nilearn","AlexandreAbraham","2014-10-29 15:35:17","This is not very surprising to me. I agree with Bertrand. ADHD has been preprocessed using SPM, maybe you can get a better mapping by using their template instead of FSL.
+","",""
+"issue_comment","271","nilearn","nilearn","lesteve","2014-10-30 07:22:18","OK I was just being curious. Thanks for the feed-back.
+","",""

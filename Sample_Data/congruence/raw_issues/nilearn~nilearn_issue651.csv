@@ -1,0 +1,1299 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","651","nilearn","nilearn","KamalakerDadi","2015-07-13 16:08:17","Fix #633 
+To Do List:
+- [x] Code
+- [x] Documentation
+- [x] Tests
+- [x] Example
+- Code design
+  - `class` named as `RegionExtractor` - to _extract regions_ from the maps and also extracts _subjects timeseries signals_ from those extracted regions by inheriting `NiftiMapsMasker`.
+    - function named as `threshold_img` to keep meaningful voxels for region extraction.
+    - function named as `connected_regions` to extract regions from thresholded images.
+-  `RegionExtractor`
+  - `fit()` extract regions.
+  - `transform()` regions to signals.
+    - example: `plot_extract_regions_canica_maps.py` 
+    - example: `plot_extract_regions_smith_atlas_networks.py`
+-  `threshold_img` - two different ways of thresholding. (integrated in `nilearn.image.image`)
+  1. `percentile` - `scoreatpercentile`.
+  2. `img_value` - based on voxel intensity value.
+     - example: `plot_extract_regions_statistical_maps.py`
+-  `connected_regions` - two different ways of extracting regions.
+  1. `local_regions` uses random walker method.
+  2. `connected_components` uses only labelling which labels based on unique features. 
+     - example: `plot_extract_regions_statistical_maps.py`
+","start issue","[MRG+1] Region Extractor"
+"issue_closed","651","nilearn","nilearn","AlexandreAbraham","2015-12-11 08:34:40","","closed issue","[MRG+1] Region Extractor"
+"pull_request_title","651","nilearn","nilearn","KamalakerDadi","2015-07-13 16:08:17","Fix #633 
+To Do List:
+- [x] Code
+- [x] Documentation
+- [x] Tests
+- [x] Example
+- Code design
+  - `class` named as `RegionExtractor` - to _extract regions_ from the maps and also extracts _subjects timeseries signals_ from those extracted regions by inheriting `NiftiMapsMasker`.
+    - function named as `threshold_img` to keep meaningful voxels for region extraction.
+    - function named as `connected_regions` to extract regions from thresholded images.
+-  `RegionExtractor`
+  - `fit()` extract regions.
+  - `transform()` regions to signals.
+    - example: `plot_extract_regions_canica_maps.py` 
+    - example: `plot_extract_regions_smith_atlas_networks.py`
+-  `threshold_img` - two different ways of thresholding. (integrated in `nilearn.image.image`)
+  1. `percentile` - `scoreatpercentile`.
+  2. `img_value` - based on voxel intensity value.
+     - example: `plot_extract_regions_statistical_maps.py`
+-  `connected_regions` - two different ways of extracting regions.
+  1. `local_regions` uses random walker method.
+  2. `connected_components` uses only labelling which labels based on unique features. 
+     - example: `plot_extract_regions_statistical_maps.py`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","[MRG+1] Region Extractor"
+"issue_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-08 16:32:37","> ping @GaelVaroquaux I am thinking of removing smith atlas networks example as
+> it shows just a basic extraction.
+
+I'd rather not.
+
+> If you are not agreeing upon this then I think it should be moved to
+> some where else. May be in General or Plotting ?
+
+Manipulating_visualizing is the right place.
+","",""
+"issue_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-09 18:41:53","> @GaelVaroquaux Can I change this [MRG + 1] ?
+
+Yes
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-20 08:00:10","Results so far:
+
+``` python
+import nibabel
+
+from nilearn import datasets
+from nilearn._utils import check_niimg
+from nilearn.image import iter_img, new_img_like
+from nilearn.decomposition.canica import CanICA
+
+import matplotlib.pyplot as plt
+from nilearn import plotting
+
+# ICA Decomposition
+adhd_dataset = datasets.fetch_adhd()
+func_filenames = adhd_dataset.func
+
+n_components = 5
+canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
+                memory=""nilearn_cache"", memory_level=5,
+                threshold=3., verbose=10, random_state=0)
+
+canica.fit(func_filenames)
+components_img = canica.masker_.inverse_transform(canica.components_)
+affine = components_img.get_affine()
+
+# Visualization
+for i, img in enumerate(iter_img(components_img)):
+    plotting.plot_stat_map(img, title=""IC %d"" % i,
+                           display_mode='z', cut_coords=1,
+                           colorbar=False)
+    plt.show()
+
+# Foreground Extraction and Connected components extraction
+from nilearn.region_extraction import SimpleThresholdExtractor
+# Foreground extraction using Voxel Ratio or Auto Extractor
+vre = SimpleThresholdExtractor.VoxelRatioExtractor()
+vre.transform(components_img)
+vre_regions = vre.regions_
+strategy = 'Voxel Ratio Extractor'
+
+for i_vre, _ in enumerate(vre_regions):
+    vre_reg = nibabel.Nifti1Image(vre_regions[i_vre],
+                                  affine)
+    plotting.plot_stat_map(vre_reg, title=""IC %d after %s "" % (i_vre, strategy),
+                           display_mode='z', cut_coords=1,
+                           colorbar=False)
+    plt.show()
+```
+
+## CANICA
+
+![untitled 1](https://cloud.githubusercontent.com/assets/11410385/8771805/06b37752-2ec6-11e5-91b9-497ebc00e973.png)
+
+## Voxel Ratio Threshold Extractor
+
+![vre](https://cloud.githubusercontent.com/assets/11410385/8771811/1533fdce-2ec6-11e5-8399-7cc9f38e5c7b.png)
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-20 08:02:59","Remarks:
+Random Walker Region Segmentation in progress
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-22 11:59:46","``` python
+import nibabel
+
+from nilearn import datasets
+from nilearn._utils import check_niimg
+from nilearn.image import iter_img, new_img_like
+from nilearn.decomposition.canica import CanICA
+
+import matplotlib.pyplot as plt
+from nilearn import plotting
+
+# ICA Decomposition
+adhd_dataset = datasets.fetch_adhd()
+func_filenames = adhd_dataset.func
+
+n_components = 4
+canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
+                memory=""nilearn_cache"", memory_level=5,
+                threshold=3., verbose=10, random_state=0)
+
+canica.fit(func_filenames)
+components_img = canica.masker_.inverse_transform(canica.components_)
+affine = components_img.get_affine()
+
+# Visualization
+for i, img in enumerate(iter_img(components_img)):
+    plotting.plot_stat_map(img, title=""IC %d"" % i,
+                           colorbar=False)
+    plt.show()
+
+from nilearn.region_extraction import SimpleThresholdExtractor
+# Foreground extraction using Voxel Ratio or Auto Extractor
+vre = SimpleThresholdExtractor.VoxelRatioExtractor(min_size=100)
+vre.transform(components_img)
+vre_regions = vre.regions_
+index = vre.index_
+strategy = 'Voxel Ratio Extractor'
+
+for i, each_4d in enumerate(iter_img(vre_regions)):
+    plotting.plot_stat_map(each_4d,
+                           title=""IC %d after %s "" % (index[i], strategy),
+                           colorbar=False)
+    plt.show()
+```
+
+Results picked manually for showing purpose:
+![git](https://cloud.githubusercontent.com/assets/11410385/8824838/e2bb673c-3079-11e5-9555-c46f73e975ac.png)
+","",""
+"issue_comment","651","nilearn","nilearn","bthirion","2015-07-22 12:08:14","Nice, thx ! 
+But the naming is a bit twisted. ""VoxelRatioExtractor"" ? ""Threshold of voxel ratio"" ?
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-22 12:18:45","At the moment I kept name as ""VoxelRatioExtractor"" but need to be discussed to fix a nice and convincing name. ""Threshold of voxel ratio"", I am trying to say that I applied threshold of `ratio` onto the non zero voxels before ""blobs extraction"" . The threshold strategy is actually adapted from `canica` script file.
+","",""
+"issue_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:24:56","> But the naming is a bit twisted. ""VoxelRatioExtractor"" ?
+
+This name is a remainder of the piece of code I gave to @KamalakerDadi. I take your remark as a compliment about my natural gift to find perfect names for objects (remember the NiftiBallsMasker?).
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-08-04 11:16:19","@AlexandreAbraham  I have added code snippet of yours to compute `threshold` using `ratio` of the number of voxels. Please see if it makes sense as how I included. Also, I kept `scoreatpercentile` as an option.
+","",""
+"issue_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 12:06:59","@KamalakerDadi, I have no time to test your code but the logic looks good to me. I switch into code nazi mode and nitpick on implementation details.
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-09 17:16:32","@GaelVaroquaux @AlexandreAbraham @lesteve I think it can be reviewable. For coverage increase, I have tried to include tests from skimage for the missing lines. But, still I see there are some missing lines. I will see it. Any comments on code, ported files and locations will be helpful. Thanks.
+","",""
+"issue_comment","651","nilearn","nilearn","lesteve","2015-11-10 12:40:53","> @GaelVaroquaux @AlexandreAbraham @lesteve I think it can be reviewable. For coverage increase, I have tried to include tests from skimage for the missing lines. But, still I see there are some missing lines.
+
+Not 100 % sure but I thought @GaelVaroquaux was of the opinion of not adding the scikit-image code in externals but rather only taking what we need and add it somewhere in nilearn.
+
+If we decide it's fine to add it in externals then we should not test it. Adding a .coveragerc is probably the way forward in order to ignore files from the coverage (note you probably need to tweak continuous_integration/install.sh in order to copy .coveragerc where we are running the tests from)
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 15:50:32","- We should consider a min_distance in mm too.
+- We should think of giving a minimum size in mm^3 instead of number of voxels to handle anisotropic data.
+
+Except these two comments, everything is addressed. I think I should discuss a bit more to address those. I have added region_extraction.rst in connectivity section. 
+
+if you have any comments let me know.
+
+ping @GaelVaroquaux @lesteve @AlexandreAbraham @bthirion 
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 15:56:02","As a side note, I really don't know how to convince coveralls. Any hints would be great.
+","",""
+"issue_comment","651","nilearn","nilearn","bthirion","2015-12-03 21:17:43","I think that If you want to define separation between local maxima is 
+metric space, you can no longer use scipy.ndimage.maximum_filter, 
+because the neighborhood you consider is no longer a parallelepipoid in 
+voxel space...
+So, while the concern is correct, I think that it is relatively hard to 
+handle it correctly without re-coding significant re-coding.
+
+A simple way to extend the function for the case of non-isotropic voxels 
+is to reproduce  the scipy.ndimage.maximum_filter API, where either a 
+'size' or a 'footprint' is used.
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-07 10:21:42","ping @AlexandreAbraham @lesteve 
+
+I think I have addressed your comments in a recent commit.
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-08 16:31:03","ping @GaelVaroquaux I am thinking of removing smith atlas networks example as it shows just a basic extraction. If you are not agreeing upon this then I think it should be moved to some where else. May be in General or Plotting ?
+","",""
+"issue_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-08 19:06:59","Anymore reviews/comments @GaelVaroquaux @lesteve @AlexandreAbraham @bthirion 
+","",""
+"issue_comment","651","nilearn","nilearn","lesteve","2015-07-17 10:36:30","Rather than saying ""imcomplete"" just put [WIP] at the beginning of your PR title to indicate this is not ready to merge.
+","",""
+"issue_comment","651","nilearn","nilearn","lesteve","2015-12-10 14:52:13","> I'm waiting for the green and merging :)
+
+Sounds good.
+","",""
+"issue_comment","651","nilearn","nilearn","banilo","2015-07-15 15:01:17","Why is the new python file camel-cased?
+","",""
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-13 16:10:12","Remove `only_gm`: we said that we should do it in a separate function.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-13 16:11:19","VoxelRatioExtractor previously inherited of BaseROIExtractor, hence the parameters here. It is not the case anymore so you can't call `super(VoxelRatioExtractor, self).__init__`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:17:54","how about calling this `data`as we usually do for non-niimg objects with imaging information. Map might give the impression that is a nibabel object
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:18:07","not explicit enough to me
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:20:30","better not call the variable the same name as the function
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:22:54","how about `compute_relative_threshold` as alternative name?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:24:43","why the underscore in the variable name?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:25:16","`np.any` conversion of the code might be faster (although probably not relevant here)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:25:28","mention that it is a list
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:33:47","I think you can loose the `view()`here. That seems to be mainly for type conversion and several access roads to a same array in memory in contexts where different dtypes/objects are necessary.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:35:12","Having a 4d image but keeping the time dimension in the first place is unusualy across the nilearn code base.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-07-15 15:36:19","error message for the None case?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region/AutoExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-20 08:24:58","This class is equivalent to the previous one. You don't need two of them.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-20 08:25:56","You don't need an empty line here. Plus, you should not use `CamelCase` for file names. In python, we use `snake_case`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-20 08:27:06","You should actually extract the regions, not set the ones that you don't want to 0. Meaning, if I give you a 3D map with 4 regions in it, you should output a 4D file with 4 scans and I should find one region per scan.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-20 09:06:44","Fixed
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-20 09:06:53","Ok I do it.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-20 09:07:09","Ok
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:35:24","Please fix file name.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:36:28","By convention in nilearn, the ""img"" suffix refers to nibabel.SpatialImage objects. You use a list here. Please remove this suffix as it can be troublesome for other devs.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:37:53","You should not call `label` twice. This is a computationally expensive function.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:38:32","Please use `_img` suffix here ;)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:39:22","Why do you create 3d images to concat them in a 4d? You can directly build the 4d image.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:40:57","We don't want to use this thresholding strategy.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:43:21","Be careful: data is 4D here so your threshold is based on the lenght of the first dimension. Plus, you need a brain mask to estimate the brain volume.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-22 12:44:19","I am converting to image format to be compatible with `concat_niimgs` otherwise it is complaining. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-22 12:48:21","I named the filename and ""Voxel_ratio_extractor"" to ""region_extractor"".
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 12:55:13","You didn't push it then.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 13:06:08","You don't need `concat_niimgs` at all.
+
+Here is a quick and dirty equivalent of your code:
+
+``` python
+    labels, n_labels = label(img_data)
+    labels_size = np.bincount(components.ravel())
+    labels_size = 0
+    regions = []
+    for label_id, label_size in enumerate(labels_size):
+        if label_size < min_size:
+            pass
+            img_data[components == label_assign] = 0
+        region = img_data.copy()
+        img_data[labels != label_id] = 0
+        regions.append(region[..., np.newaxis])
+    regions = np.concatenate(regions, axis=3)
+    regions_img = new_img_like(img, regions)
+return regions_img
+```
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-22 13:06:28","data and affine are contained in img...
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-23 08:23:05","Replace `len(maps_data)` by `mask_img.get_data().sum()`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/SimpleThresholdExtractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:06:06","We'll see naming later but `region_extraction/regionextractor.py` is a bit redundant. Also, we use `snake_case` as naming convention. So the name would be `region_extractor.py`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:07:18","Typo: separate. Also, you could just name it `extract_regions`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:08:17","Same remark as before. Suffix `img` is for images object (ie `SpatialImage` with `get_data` and `get_affine` methods).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:10:41","Also: why `img` and `img_data`? Only `img` is necessary, just call `img.get_data()` to get the data. (Note, maybe this is justified further, I haven't read all the code yet).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:12:30","This description is very obscure to me.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-26 21:12:54","`img_data` is the thresholded image taken as input in this function. I am calling `img` since I am using it to take affine and create a `new_img_like`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:13:17","This is not used.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:13:59","You don't need to copy the data since you don't modify it.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:15:19","You can do `region_img = new_img_like(img, (labels == label_id) * img.get_data())`
+By doing this:
+- the copy of data is implicit
+- you don't have to specify the affine. By default, `img.get_affine()` is taken.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:16:41","You don't have to go into so much details: we are trying to hide implementation from user.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:20:02","The main difference between the two strategies is that random walker will try to separate connected components into subregions based on seeds. We have to find names reflecting this behavior because ""random_walker"" won't speak to the users. Maybe `simple` and `seed_based`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:21:53","I think that we can be more restrictive using `check_niimg_4d`.
+@GaelVaroquaux : people will want to extract regions from simple 3d images too but, in that case, thresholding is not very meaningful. Should we create another object or do a special case here?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-07-26 21:22:40","'seed-based' does not convey the idea of connectedness/locality. would `growth` or `growing` work ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-07-26 21:23:44","> The main difference between the two strategies is that random walker will try
+> to separate connected components into subregions based on seeds. We have to
+> find names reflecting this behavior because ""random_walker"" won't speak to the
+> users. Maybe simple and seed_based.
+
+'connect_components', and 'hill_detection'?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-07-26 21:24:39","> I think that we can be more restrictive using check_niimg_4d.
+> @GaelVaroquaux : people will want to extract regions from simple 3d images too
+> but, in that case, thresholding is not very meaningful. Should we create
+> another object or do a special case here?
+
+Probably another object, but we need to discuss it. Basically, the
+question is: how will we document / explain this?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:24:46","`self.extractor not in extractor_methods` should be sufficient.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:35:30","You copy data too much...
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:37:51","This is not the strategy of the paper. We can discuss whether or not this strategy is pertinent though.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:41:12","Now that I know that `img_data` is `label_map`, this makes more sense to me. You should name it `label_data` in that case.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:42:23","There is also a way to pass the affine in order to take it into account.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-26 21:42:41","Yes, but as you know and as we saw that implemented it has some problems. Yes we can discuss. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-26 21:44:38","yes, that is what I mean saying a thresholded image. You are right, I have not made clear enough for you.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-26 21:45:31","which lines made its obscure. can you denote ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-26 21:46:29","Ok, then I remove all ""ref:"" related lines.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:47:32","Well, problems are meant to be solved ;). I gave you several options to solve them.
+Your solution here is a workaround to aboid the fact that you need the brain mask: you suppose that nonzero values are the only one not masked, which is wrong.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-07-26 21:48:17","Do that only one time at the end of the loop.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-07-27 08:27:28","`local_region_extraction` ? since we are separating components based upon their locality.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-07-29 11:09:48","> local_region_extraction ? since we are separating components based upon their
+> locality.
+
+local_regions?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 11:18:48","You can use `check_niimg_4d`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 11:20:52","`if self.mask is not None:` should be sufficient.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 11:21:37","You don't need to reinvent the wheel ;). What you want is `masking._load_mask_img`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 11:22:32","`self.masker_` may not exist yet here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 11:23:26","Why do you want to keep the transformed maps in your object?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 11:23:41","typo
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 11:57:40","Do not create an img here, it is useless.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 12:05:25","Your whole block is good but it can be factorized. It's better since it's shorter and you rely on nilearn's code for handling exceptions.
+
+``` python
+# First create the masker
+if isinstance(self.mask, NiftiMasker):
+    self.masker_ = clone(self.mask)
+else:
+    self.masker_ = NiftiMasker(mask_img=self.mask, ...)
+
+# Then fit
+if self.masker_.mask_img is None:
+    self.masker_.fit(maps_img)
+else:
+    self.masker_.fit()
+self.mask_img_ = self.masker_.mask_img_
+```
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 12:09:29","More explanation : the ""img"" object should be created at the very end of the pipeline. Also, I like to separate ""nifti world"" and ""data world"". Here, your function takes data as input and output niftis. Plus, you use `new_img_like` with a freshly new image, which makes the call to this function completely counterproductive.
+You should just do `regions.append(map_data)` and turn the data into niftis in the upper level function.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 12:10:06","Actually, you don't even need it. See below.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 12:10:21","See the comment below about factorization of this code.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 12:11:03","Do we really need this strategy?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 13:17:48","I think that this won't work as you exemple since `regions_accumulated is a list of list of Nifti1Image. You should obtain a 5D nifti.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 13:18:31","You probably want to use `extend` instead of `append`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 13:18:42","Should be in the `for` loop.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 13:20:01","You don't want to keep them.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 13:20:14","No, you should return the signals here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-04 13:20:47","Well, you probably just want to use the transform method of the Maps Masker, you don't need a `for` loop here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-08-05 09:23:06","I am hoping that if we also need to input 3D image ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 10:25:37","If you input 3D image, the line below will an exception. You can use `check_niimg(maps_img, atleast_4d=True)`. We need to discuss this but it's a minor detail, do not bother.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-08-05 11:59:33","To be honest, I really don't know. We were discussed that `percentile` strategy is same as `voxelratio` strategy. I can remove if it don't make any useful unless we are planned to make `canica` compatibility.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-08-05 15:21:25","@AlexandreAbraham Should I also implement `confounds` parameter here ? similar to `multipca.py`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 15:29:59","Yes. You just have to pass them to NiftiMapsMasker.transform anyway.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:33:14","Isn't this creating a novel dependency for nilearn. If yes, is that ok/worth it?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:36:59","""label point"" - WDYM?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 21:37:34","The corresponding skimage code will be added to nilearn/external. No additional dependency.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:39:29","perhaps rather `label_counts/label_cnts`?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:47:46","Shouldn't the parameters be listed in the docstring of `__init__`?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:49:45","Isn't it confusing to use the class variables here as names for the return values?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:53:23","perhaps some `np.where()` on mask_img_ instead?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:55:25","Isn't there a more elegant way to get the data in 3d brain space? for example by using `´mask_img_``as an index into a n empty 3d brain matrix...
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 21:57:46","It actually returns the size of each labelized region.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:57:56","There appears to be some confusion about class variable and return value in this PR.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 21:59:08","No, it is in the right place.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 21:59:43","Yes, they should be in an `Attributes` section.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-08-05 21:59:57","This calls `check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator,
+                       dtype=dtype` ...sure self.regions_ has the right shape if there is only one region?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 22:00:27","np.where is linear in the size of the mask. `.size` is instantaneous.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 22:01:20","If I get you well, this is exactly what `inverse_transform` does.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-08-05 22:04:39","There is no need to call `check_niimg` on data computer in the `fit`. Lots of details like that are wrong in this PR. I think that peer coding may be more efficient that mass commenting ;).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-08-11 12:39:50","I agree its not clear. What I mean is I am trying to tell that each voxel is assigned with unique label point of voxels in that particular region.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-08-11 12:41:08","Ok, I append the data and returns imgs at the end.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/region_extraction/regionextractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-02 12:55:50","'from ._rank_order import rank_order'
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/peak.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-10-05 12:30:11","Fix it, hopefully that should get Travis green and I'll take a closer look at your PR.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/peak.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-05 12:35:06","I also got reviews from @GaelVaroquaux on my overall PR. I am also fixing those. Then, may be you can take a look.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/peak.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:38:51","print(...)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:39:05","print(...)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:39:12","print(...)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:40:01","`reg_ext` makes me think of regular expressions. Maybe `extractor` is sufficient ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:42:45","Should we expose them all ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/__init__.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:43:58","Replace this block by:
+
+``` python
+single_map = (len(maps_img.shape) == 3)
+```
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:46:20","The `else` is not needed here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:48:50","This name is a bit verbose. `thresholding_strategy` is maybe better ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 13:50:00","ratio can be > 1 for `ratio_n_voxels`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 14:05:00","and if ratio is None?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-14 14:06:46","masking / unmasking is an expensive operation. Is it really necessary ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-16 07:53:28","Yes as an option, it could be also be useful as a seperate functions. If user, has cases like only one 3D map to be extracted. Not only that, we can also fit these functions in code base. But, Where ? I don't know now. Ideas are welcome.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/__init__.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-16 07:55:32","Before it was `threshold_strategy`. I changed this name to be more informative since we estimate certain threshold value from the voxels or data. May be I stick to old one `thresholding_strategy`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-16 07:59:41","`ratio is None`, then it takes default ratio value = 0.8. But, I haven't explicitly used this condition. Instead, I used the condition saying that `if threshold == auto` to pick default value.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-16 08:03:42","I used this just for my comfortability. Other alternatives for example, `new_img_like` ? Do you think ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 09:54:18","PEP8: `print(' (no space)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 09:56:11","Do not use a masker, especially if you estimate the mask on only one subject. Let CanICA do it.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 09:56:57","Set `memory_level=1`, there is absolutely no reason to increase its value here. It is for very specific cases.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 09:58:03","`regions_extracted` should be enough. Also, the comment above is useless.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 09:58:21","You don't use it.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 09:58:53","Edit: sorry I misread your code. `""subject_timeseries` would be a better name for the variable.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 10:04:17","You don't use ADHD here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 10:09:48","We probably don't want the original img_as_float function as it converts to float64. You can define your own above that converts to float32 and remove the dtype.py file.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 10:12:33","'cg_mg' may not work, you should do a try / except and downgrade to 'cg' then 'bf'.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 10:45:59","Use `check_niimg(maps_img, at_least_4d=True)` and forget about single_map case.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 10:48:07","Use `segment` or `extract` but not `break`.
+
+In the STMI paper, we use `foreground extraction` for the first step and `connected component extraction` for the second one. You may want to follow the same semantics.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 10:52:09","`regions` is enough.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 10:52:39","Use `check_niimg_3d`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 11:10:15","You should not return a list of niimgs.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 11:11:05","You don't need a NiftiMasker since you have to set the masked values to 0.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-22 11:12:43","I don't understand the pattern here: what is the purpose of fit? What is the purpose of transform? Shouldn't that be linked to NiftiMapsMasker somehow?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-23 15:44:41","Its already there. What are you referring to ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-23 15:45:59","I have no specific case but used in to call for `fit_transform`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-23 16:49:56","Ok. I would do this importing from sklearn. Do you think it is Ok for using like this ?
+
+``` python
+from sklearn.utils import as_float_array
+data = as_float_array(data)[..., np.newaxis]
+```
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-23 17:08:14"," I don't think so, this function should work for 3D mostly.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-10-28 14:47:26","I will change accordingly based on our discussions and push a new one.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-28 14:51:03","`at_least_4d=True` will turn your 3D data into 4D and make the things easier for you.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-10-29 10:10:18","``` python
+# Load the mask
+mask_img = masking._load_mask_img(mask_img)
+maps_data = maps_img.get_data()
+# Set to 0 values outside of the mask
+maps_data[np.logical_not(mask)] = 0.
+```
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 11:42:30","Usage of functional datasets will be removed in next commit.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 11:47:20","@AlexandreAbraham Do you think this would help to mask the data ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:24:51","A more correct formulation would be ""This example shows how to use RegionExtractor to extract connected brain regions from whole brain ICA maps and use them to estimate a connectome.""
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:26:36","just my appreciation but 0.5 seems a low threshold to me and 400 is a big min_size (I usually take 20/50 depending on the method used).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:27:28","Considering the memory required by time series, it is not a good idea to keep them in memory.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:27:50","`for subject_ts in subjects_ts` for example.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:30:12","I would name it `index_`. `identity` refers to the identity matrix.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:31:21","Why don't you use `plot_stat_map`?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:32:43","This is not informative for the user. Explain what the other strategy is if you really want to explain it here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:34:46","I guess that the purpose of this example is to explore all combinations of strategies for foreground and component extraction? It is not clear to me when I read the code but we can fix that afterward.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:08:19","`_load_mask_img` is an exception in nilearn. It takes an niimg as input and returns a tuple of (data, affine). This is because the type used to store niimg (nibabel.Nifti1Image) does not support boolean types. You should therefore write `mask_data, _ = masking._load_mask_img(mask_img)`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:08:21","Yes, this is exactly it! Thanks to `_load_mask_img` you can even write `maps[mask] = 0.`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:15:34","This is redundant with the previous parameter. The threshold depends on the type of the previous parameter:
+- float -> ratio_n_voxels
+- string ""XX%"" -> percentile
+- 'auto' -> automatic strategy
+- None -> no thresholding
+
+This is not only disturbing for the user but you will have to do complex checking to see if both parameters matches.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:17:06","This is not needed.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:19:33","We never talked about this one. Is that new?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:19:49","This is unclear.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:20:30","This variable is useless.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:23:19","I don't think that masking is necessary in both functions.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:34:21","Please use `iter_img` to iterate on maps.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:42:46","Recent version of the RW do not need this.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:43:09","Unnecessary variable.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:43:46","You should try the 3 modes : cg_mg, cg and bf.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:46:12","I think you don't need that if you have run RW before. Therefore it should go into the `else` statement.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:46:41","`index` is the wording to use here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:48:20","Please declare it at line 243 when you really need it for the sake of clarity.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:49:13","You don't need to delete it explicitely, Python will do it for you.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:49:50","Same remark as above.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:50:07","`index_`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:51:56","Using ""super"" is cleaner in this case.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:53:22","Since you take the mask into account for region extraction, you don't need it here.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:54:10","Plus, your object _is_ a NiftiMapsMasker so why do you declare a new one?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:54:51","Remove this whole block.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:57:21","It's already in NiftiMapsMasker: you don't need it.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 13:58:05","You don't need this function. If you call `fit` as in my previous comment, you will rely on NiftiMapsMasker.transform and you don't have to do anything.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 16:51:15","Thanks
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 16:53:25","The reason I used size=400 is to good sized blobs out of regions for visualization. Yes I agree threshold is small. Will optimize the parameters for better visualization. Could you give an idea if it also good to compare here RWE and CCE ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 16:55:07","I am in a state such that atlas maps should not be shown as statistical maps. Correct me If I am wrong. Except that I am Ok to show as `plot_stat_map`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 16:59:18","This design is such that if user wants foreground objects based on t-value then there is no need of any strategy. It just thresholds with the input value. I agree it is not more explicit. May be I would remove the line ? or give more explanation ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 17:04:22","Yes, @GaelVaroquaux and I were involved.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 17:13:30","If I see the percentile concept in `canica`, no where it says that percentile should be string. Infact, the doc explanation is given as considering `ratio_n_voxels` I believe but inner code used `scoreatpercentile`. I am bit skeptical between `percentile` and `ratio_n_voxels`. Better solution would be I guess to use the same doc as in `canica`. I agree it is not clear using multiple options in threshold. May be we would decide something convincible.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 17:14:14","Thanks and sorry I missed this `_`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 17:14:24","Thanks
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 17:15:53","Again @GaelVaroquaux and I was in discussion to have `mask_img` as an option.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-03 17:17:06","I had some problem with normalization when I was using smith atlas. I will check again.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-03 17:33:32","CanICA has only one thresholding strategy it does not use the percentile one. I thought of an approach similar to the one in `plot_prob_atlas`. However, if a float can be a ratio and a value at the same time, then yes, we need another parameter.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-04 13:10:39","@AlexandreAbraham U mean on data ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-04 13:17:48","Oh, yeah, you're in data. Nevermind ;)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-09 13:32:31","@AlexandreAbraham Here, `'cg_mg'` has a dependency called `pyamg`. By itself, it is downgrading to `mode='cg'` since we don't have installed `pyamg`. The reason which I am not `try`ing `mode='cg'`. Do you think should I still `try` 'cg'
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-11-09 20:39:28","Shouldn't the class  be referenced as  nilearn.regions.RegionExtractor? I would like as much as possible not to go more than one level deep. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-11-09 21:04:49","Same thing here: could you import canica from decomposition. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 13:45:58","Now I'm lost. I thought that we got rid of the ""string"" version of the threshold.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 13:48:14","default is `img_value`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 13:49:30","Now that this function is exposed to the user, you can't always convert to 4d. Removing `atleast_4d=True` should work.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 13:53:31","Should we do it automatically or leave this option to the user? Or maybe should we expect similar pov and raise an error if not? I am perfectly fine with the current behavior but I would also agree if we raise an error. I am against adding a new parameter that would make the function more complex. @GaelVaroquaux @lesteve 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(72, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 13:57:41","I think that we should not raise an error if the maps returned are empty: garbage in -> garbage out. We should maybe raise a warning but it has to be done in `check_threshold`. This whole block should be replaced by `threshold = check_threshold(...)`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 13:59:32","This line is critical for big data. We should open an issue to make this function scale to big data after your PR is merged.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 14:02:31","Never trust external code ;). I would feel better if all the cases were covered.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 14:02:41","This should be a warning.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 14:09:11","Is there any reason to keep these maps? I think that you should just discard them after region extraction.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-10 15:06:37","If I remember correctly, this we have discussed during our sitting.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 22:22:42","grammar...the second half-sentence semantically does not make sense
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 22:27:06","A...mapS
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 22:31:32","Yes but since the additon of `threshold strategy`, I just didn't know if the string thing still holds.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 22:32:15","Sure, `extmath.py` is the most appropriate spot for this function?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 22:53:57","word missing
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 22:55:10","missing captial letter
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 23:00:18","Why not handle this option at hte beginning, would that not reduce indentations?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 23:05:47","Explicitly float? Any type conversion aspects here? What if the nifti data is in int32?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-10 23:08:27","The value is casted to the type of the array automatically.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-11-10 23:09:22","Ok, good to know.
+
+2015-11-11 0:08 GMT+01:00 Alexandre Abraham notifications@github.com:
+
+> In nilearn/image/image.py
+> https://github.com/nilearn/nilearn/pull/651#discussion_r44480040:
+> 
+> > -                threshold = (""{0}%"").format(threshold)
+> > -            cutoff_threshold = check_threshold(threshold, img_data,
+> > -                                               percentile_calculate=scoreatpercentile,
+> > -                                               name='threshold')
+> > -    else:
+> > -        raise ValueError(""The input parameter 'threshold' is empty. ""
+> > -                         ""Please submit value which should be either float or ""
+> > -                         ""a string e.g. '90%' or simply number 90."")
+> >   +
+> > -    list_of_strategies = ['percentile', 'img_value']
+> > -    if thresholding_strategy not in list_of_strategies:
+> > -        message = (""'thresholding_strategy' should be given as ""
+> > -                   ""either of these {0}"").format(list_of_strategies)
+> > -        raise ValueError(message)
+> >   +
+> > -    img_data[np.abs(img_data) < cutoff_threshold] = 0.
+> 
+> The value is casted to the type of the array automatically.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/651/files#r44480040.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-11-11 22:38:53","Any clue where the beta=130 comes from ? This worries me.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-11-11 22:40:02","This docstring is probably not complete...
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-11-11 22:47:12","rather than 'mask nodes', I'd put 'nodes where mask is False', otherwise the docstring is a bit misleading. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-11-11 22:48:33","beta = 50 here ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-11-11 22:49:39","Thanks for the explanation, but it is hard to figure out where the default comes from.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-11-11 22:51:44","and for 3D images I guess ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-11-11 22:54:14","Note sure what you mean.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-11 22:54:24","Yes, yet another parameter... I tried changing it but the effect was small because it affects low values.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-11 22:54:58","It is scikit image code.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-11 22:56:01","I suggest we don't fix scikit image docstring. The goal is to be able to update this code with newer versions easily.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/externals/skimage/random_walker_segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-13 13:33:56","I think it should be because this function also includes to give threshold based on `scoreatpercentile`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-16 13:37:19","I think I have missed somehow in our conversation. Sorry. 
+Now, I remove `threshold_strategy` in class `RegionExtractor` and use this private function for thresholding.
+threshold = [float, 'auto']
+default: threshold = 'auto'
+
+``` python
+def _threshold_maps(maps, threshold):
+    """""" Automatic threshold function using ratio to the number of voxels
+    in the brain volume to keep the most prominent features of the maps
+    which lies above a certain threshold.
+    """"""
+    abs_maps = np.abs(maps)
+    ratio = None
+    if isinstance(threshold, float):
+        ratio = threshold
+    elif threshold == 'auto':
+        ratio = 1.
+    elif threshold is not None:
+        raise ValueError(""Threshold must be 'auto', ""
+                         "" or float. You provided %s."" %
+                         str(threshold))
+    raveled = abs_maps.ravel()
+    argsort = np.argsort(raveled)
+    n_voxels = (ratio * maps.size)
+    cutoff_threshold = raveled[argsort[- n_voxels]]
+    maps[abs_maps < cutoff_threshold] = 0.
+
+    return maps
+```
+
+@AlexandreAbraham 
+Question is to threshold with common float value on all maps or value with each individual map ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-18 09:45:30","Following our discussion, we have now 3 thresholding strategies:
+- `img_value`: it's a float
+- `percentile`: it can be a string, or be a float
+- `ratio_n_voxel`: it's a float
+
+So, if you remove `threshold_strategy`, we won't be able to differentiate between cases 1 and 3. I think you should just leave it as-is.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 08:43:27","seperate -> separate. Multiple occurences of this typo.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:31:09","You probably want to check that it is between 0 and 1 (not sure whether the equality are inclusive or not)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:32:09","I would not mention threshold_strategy here since it is not related to this function but to RegionExtractor.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:33:13","Also do this sanity check towards the top of the function. No need to do .get_data if threshold is not a float.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-11-24 09:34:10","threshold can be any positive floating point value between 0 and n_maps.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:34:52","None
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:36:18","remove the a before ""4D ..."". Also I think it is just 4D Nifti image, right?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:36:34","idem, remove the a before ""numpy array""
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:36:49","typo: identity
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:37:40","Add the value provided by the user in the error message.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:38:21","I would just call it allowed_extract_types or possible_extract_types
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-24 09:47:14","Yes, I will remove.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:49:44","meaningful variable names is always a good idea. Maybe something like map_3d?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:50:33","'auto' type doesn't exist any more
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-24 09:52:32","I will change it looks good.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:52:48","Just curious, what's the reason for this? Maybe you need to add a comment to make it more obvious.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:57:42","remove ""or path ..."" this is what 4D Niimg-like means
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 09:59:21","Remove ""an image or a filename of the"" and just starts with: ""Image containing ...""
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:05:29","This can be simplified, maybe something like:
+
+Mask to be applied to input data, passed to NiftiMasker.
+If set to None, no masking is applied
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:07:04","Maybe min_region_voxels or min_region_size?
+
+Also no need for ""size"" after default:
+int, default 50, optional
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:09:14","No need to say again that it is an integer that is what the line before is for.
+
+The whole thing can be simplified:
+Minimum number of voxels for a region to be kept. Useful to suppress small spurious regions.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:13:45","Niimg-like object
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:16:36","Not sure what you want to do with ""or"" but it's fine just to go to a new line so remove it. Same thing applies to ""or"" in other places.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:19:37","peak_local_smooth doesn't strike me as a great name.
+
+@AlexandreAbraham just curious, does it make sense to have peek_local_smooth != smoothing_fwhm in general?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-24 10:24:07","Ok, may be I would just use default as 6. to `peak_local_max` and then hide it being a parameter ?
+ping @GaelVaroquaux 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:26:17","Do not use capitals in function name.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/tests/test_region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-24 10:27:13","I used `peak_local_smooth` to differentiate with `NiftiMapsMasker` parameter `smooth_fwhm`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:28:40","Can we not do better than a smoke test, e.g. generate a few regions with gaussian + noise and make sure that we find the regions as we expect?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/tests/test_region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:28:56","no need to use passing in the function name
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/tests/test_region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 10:30:56","Idem as the previous test, hopefully we can do better than a smoke test for RegionExtractor.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/tests/test_region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 11:32:27","no need for the parentheses here
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 11:36:43","""Multi-line docstrings consist of a summary line just like a one-line docstring, followed by a blank line, followed by a more elaborate description"" from [PEP 0257](https://www.python.org/dev/peps/pep-0257/#multi-line-docstrings).
+
+That would be nice if you could fix this in other docstrings as well.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 11:46:09","Maybe simpler: "" -- %d regions extracted from %d ...""
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-24 11:49:09","This can be simplified with a list comprehension:
+
+``` python
+correlations = [np.corrcoeff(subject_ts.T) for subject_ts in subjects_timeseries]
+```
+
+I would use a plural (i.e. correlations rather than correlation) since this is a list.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-26 12:21:14","Oops, this need to be changed.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-30 09:29:44","New line after the imports for readability.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-11-30 09:34:27","I am changing the layout of the examples to suit it for notebooks style.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-30 14:04:11","maybe `[coords[-1]]` is more readable
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-11-30 14:05:18","still seperate -> separate. Please do a search and replace for seperat -> separat in all of your files.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-01 17:42:18","It doesn't feel like check_threshold really belong in _utils.extmath...
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-01 17:46:02","What was wrong with the old check_threshold code?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-01 17:52:12","Nothing was wrong. I just changed the location since we have travis failure problem and added block of code to check for `float` value. rest all is same as before.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-01 17:53:14","To make life easier for our future selves, you may want to indicate which file you took it or the fully qualified function name e.g. skimage.feature.peak.peak_local_max in this case.
+
+You can probably do something similar each function/file you took from scikit-image.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(45, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-01 17:53:45","This is very kind of you but maybe not that crucial.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-01 17:57:55","Why did you raise a question ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 07:12:46","You should add a test with an int threshold and one that checks the warning if the threshold is greater than the max value of the data. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 07:18:34","Because the current code has some oddities, for example the `elif isinstance(threshold, numbers.Real): pass` followed by `elif not isinstance(threshold, numbers.Real)`.
+
+There is no reason not to keep the same structure as before:
+
+``` python
+if isinstance(threshold, str):
+    ...
+elif isinstance(threshold, numbers.Real):
+    # Note that includes int in contrary to your current code
+else:
+    raise TypeError(...)
+```
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 07:20:13","Adding a test making sure that check_threshold works with numpy scalar would be great too.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-02 07:20:38","Even, I am not sure. Do you have any preferences ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 08:09:23","No strong opinions, maybe @GaelVaroquaux or @AlexandreAbraham have suggestions.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 08:30:19","Agreed with @lesteve : I think that it should be a private function, and be put close to where it is currently used.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-02 08:36:38","@GaelVaroquaux currently it is in `displays.py`. I have to use it outside of plotting modules which means I cannot escape being caught by travis. I am using it to check for valid thresholds in `threshold_img` in `image.py`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 08:57:02","Do we really need to create a figure? In other words: can't we use the default behavior of plot_prob_atlas?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 08:58:43","If we remove this, we can also remove the import of matplotlib, a bit higher.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:02:47","I think that this attribute should be called `regions_img_` as it is an niimg. Also, we should stress that it is actually a Nifti1Image object, rather than a niimg (as it cannot be a file name).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-02 09:03:06","Ok. I think it is not so important. I used it to show in bigger picture. I can remove.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:04:09","Is this still current? I have the impression that we are no longer defining such an attribute (and I think that it is a good thing).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:06:12","In terms of naming, I think that I would prefer 'regions_percentile_img' (and 'regions_value_img'). The rule is that every variable that is a 'niimg' ends with '_img'.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:08:14","Can you remove the for loop, and simple do two explicit calls to plot_stat_map (almost copy-pasted)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-02 09:09:51","As discussed with @GaelVaroquaux . this function will be symbolled as private and will move to new file `param_validation.py` in _utils.
+@AlexandreAbraham @lesteve 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:12:34","> As discussed with @GaelVaroquaux . this function will be symbolled as private
+> and will move to new file param_validation.py in _utils.
+
+If we put it in _utils, we don't need to make it private, as everything
+in _utils is private.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:19:15","In our codebase I suspect that we always use either indices=True or indices=False. If so, we should remove this option, and the unexplored branches corresponding to the value not used.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:21:40","We should remove the mode option, as it now has only one valid option.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:23:06","We can probably remove the option return_full_prob and only keep the value that we use.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/segmentation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:25:35","Let's do it like this. When manipulating data, it's so convenient not to have to resample images.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(72, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:28:51","I don't think that this conversion is a good idea. It will surprise users that '1' and '1.' give very different results.
+
+I think that we should simply remove the two lines above.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:31:14","The data is modified inplace after. Should we have a 'copy' here?
+
+Also, maybe we should use a nilearn._utils.niimg._safe_get_data to avoid a side effect.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-02 10:35:51","+1
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-02 13:36:04","It does work with numpy scalar:
+
+<pre>
+In [15]: a = np.zeros(10)
+
+In [17]: aa = a[0]
+
+In [19]: aa
+Out[19]: 0.0
+
+In [20]: type(aa)
+Out[20]: numpy.float64
+
+In [24]: isinstance(aa, float)
+Out[24]: True
+</pre>
+
+
+however, the right way to check for numbers is to do:
+
+<pre>
+import numbers
+isinstance(baz, numbers.Number)
+</pre>
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 15:01:25","> It does work with numpy scalar:
+
+Yep I know that but adding a test would be good to make sure it is always the case.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_extmath.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-02 15:03:49","@lesteve I have added. Please let me know if this not what you have expected ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 15:25:18","assert_equal yields slightly better error messages
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 15:28:31","~~Nitpick: probably less surprising to build an array from a list~~ **edit: ignore this**.
+
+I would do something like:
+
+``` python
+
+# Test with numpy scalar as argument
+threshold = 2.
+threshold_numpy_scalar = np.float64(threshold)
+
+assert_equal(
+    check_threshold(threshold, ...),
+    check_threshold(threshold_numpy_scalar, ...))
+```
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-02 15:33:35","This comment doesn't bring much information. Basically you are saying ""checks that we get the expected result"". What you should be saying is what this additional test adds, in this case something like ""Test for threshold provided as a percentile of the data (str ending with a %)"".
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/tests/test_param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 07:29:59","Can you remove the n_components variable, and simply pass the value ""5"" below, in an effort to simplify things for users.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 07:31:36","Can we use the new ConnectivityMeasure here or not?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 07:33:00","Also, maybe we should integrate this step in the for loop above, and not store a list of ""subjects_timeseries"", which I think that we don't use after. The idea would be to store a list of correlations only.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 07:49:08","> Can we use the new ConnectivityMeasure here or not?
+
+We were discussed to use numpy corr to keep it simple. But, still we can use our measures here. Should I stick to tangent measure ? 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 07:50:31","> We were discussed to use numpy corr to keep it simple. But, still we can use
+> our measures here. Should I stick to tangent measure ?
+
+Correlations are enough. I am wondering: which code is simpler: using
+numpy, or ConnectivityMeasure. In a sense, ConnectivityMeasure might
+introduce less concepts to the user: the API is still a fit_transform.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 07:54:15","In the reference documentation, I gave a reference to ConnectivityMeasure in nilearn saying that we have ready to compute object for functional connectivity measures.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 07:55:27","> In the reference documentation, I gave a reference to
+> ConnectivityMeasure in nilearn saying that we have ready to compute
+> object for functional connectivity measures.
+
+Great! What I am trying to figure out here is: how do we make this
+example simplest and best for the user.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 07:56:10","> In a sense, ConnectivityMeasure might introduce less concepts to the user: the API is still a fit_transform
+
+Ok, I will switch to ConnectivityMeasure kind = correlation and add few lines saying that we also have more robust measures like tangent embedding....
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 08:01:26","I have no clear opinion on which is simpler. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 08:03:37","> I have no clear opinion on which is simpler.
+
+Me neither, so I would like to try ConnectivityMeasure
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-03 09:18:15","Do you really need to declare the figure?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-03 09:33:06","`threshold` and `threshold_strategy` contain redundant information.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-03 09:54:53","We should think of giving a minimum size in mm^3 instead of number of voxels to handle anisotropic data.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-03 09:55:17","The code above can be replaced by `scoreatpercentile`.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 09:55:31","Not mandatory.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-03 09:56:15","We should consider a `min_distance` in mm too.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(23, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 09:57:48","U mean explanation is not so clear ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-03 10:02:14","In theory, you're completely right. 
+In practice, I'm not so sure: people are really not used to thinking in terms of 'I expect brain areas of size at least 200mm^3', and actually more easily think in terms of voxel counts. This is obvious when you look at the SPM interface.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 10:03:15","> In practice, I'm not so sure: people are really not used to thinking in terms
+> of 'I expect brain areas of size at least 200mm^3', and actually more easily
+> think in terms of voxel counts. This is obvious when you look at the SPM
+> interface.
+
+How about we fix that ;).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-12-03 10:43:02","nice...that's very clear
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-12-03 10:44:05","space at the end of line not needed, if line break follows.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-12-03 10:44:29","could be nice to explain the threshold parameter somehow
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-12-03 10:46:13","""(DMN)"" ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","banilo","2015-12-03 10:54:03","the variable name `image` typically refers to a nifti-like object, not to an array. Perhaps consider shifting to `image_data`or something like that to increase code consistency.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(18, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 13:50:11","> How about we fix that ;).
+
+I didn't get your comments exactly. Are you talking about documentation change or code change ?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-03 13:57:25","> ```
+> How about we fix that ;).
+> ```
+> 
+> I didn't get your comments exactly. Are you talking about documentation change
+> or code change ?
+
+Community change; via a code change, as suggested by @AlexandreAbraham
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 14:13:44","This code comes from scikit-image and is inside ndimage.py where image has a different meaning. I think we should avoid changing the code we took from scikit-image to make our life easier in the future if we want to track future scikit-image versions.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(18, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 17:34:12","It's probably better to use a more unique marker to delimit the included snippet.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(39, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 17:35:39","Maybe that's OK actually, this just means until the end of the cell. Let's just hope that the end-before tries to find the first occurence of the pattern.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(39, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 17:40:54","What difference do you have in mind between float and real number? The first line is to indicate types, you should be as terse as possible, e.g. float or str. More details can be specified in the section below.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 17:42:57",":confused: about ""or just a real number as 99"". Is this still applicable?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-03 17:44:18","No, I will change it.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 17:45:06","Just say function on this line and then below something like 
+
+""Percentile function for example scipy.stats.scoreatpercentile""
+
+Also maybe, call the parameter percentile_func which seems slightly better than percentile_calculate.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/_utils/param_validation.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 17:57:59","Again I am not sure which difference you make between float and number.
+
+Also I am a bit confused, it doesn't look like there is anything like the behaviour described by this doc this in the code.
+
+Also thresholding_strategy doesn't seem to be used, or am I missing something here?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-03 18:19:46","still a seperat -> separat
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 07:51:53","Based on the CircleCI rendering, it seems to be working as we would like:
+https://circle-artifacts.com/gh/nilearn/nilearn/870/artifacts/0/home/ubuntu/nilearn/doc/_build/html/connectivity/region_extraction.html
+
+So I guess that it is OK.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(39, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 07:53:27","You don't need to import sym_to_vec, you are not using it.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 07:56:54","Can you use a plot_stat_map here instead of plot_anat + add_contours
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 07:57:27","Can you use add_overlay here, instead of add_contours (and same thing below).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 07:59:36","Maybe it would be better if you retrieved these indices from the region_index list.
+
+And then you could do a for loop over them below.
+
+The reason I am asking this is that I have the impression that not all regions of the original map are shown.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 08:00:57","You need a shorted title: as you can see from the rendering, it's too long.
+https://circle-artifacts.com/gh/nilearn/nilearn/870/artifacts/0/home/ubuntu/nilearn/doc/_build/html/auto_examples/connectivity/plot_extract_regions_smith_atlas_networks.html
+
+Also, I would disable the colorbar.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 08:01:23","I would like to have this figure first, before the others.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 08:02:47","This example should be moved to the manipulating_visualizing section of the examples.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 08:05:12","With the new notebook-style examples, it would be useful to add this plotting just after the code that does the thresholding. That way when people look at the example, they see the results immediately.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 08:06:05","I would be good to use the same display_mode and cut_coords all throughout the example, to give some visual consistency.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","GaelVaroquaux","2015-12-04 13:19:12","You should probably call this _threshold_maps_ratio to be more explicit that it is not a general function.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-04 15:53:06","`min_size = min_size / (affine[0] * affine[1] * affine[2])`
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(119, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-04 16:01:48","but... (affine[0]\* affine[1] \* affine[2]) is a vector... (=0 most of the time...)
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(119, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:34:19","min_region_size=1350 mm^3
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:35:58","that the threshold in voxels units depends on the resolution of the image. Please see the
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:44:32","threshold=.5 represents the expected proportion of voxels included in the regions (i.e. with a non-zero value in one  of the maps).
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:45:29","Each brain region is assigned a color and...
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:46:24","Why not simply: ""Here, we use the object called ...""
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:46:40","measured
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:48:48","The first step
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:49:07","the second step
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:49:58","'time series' rather than 'timeseries'
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:50:47","Maybe: ""we compute the mean correlation across all subjects""
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:52:24","...that DMN regions are...
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'doc/connectivity/region_extraction.rst')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:54:27","np has already been imported.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:55:28","I think that this import can be avoided by relying on nilearn.plotting utilities.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_canica_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 22:59:24","Do we need to plot _all_ figures ? the result is a bit messy.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'examples/connectivity/plot_extract_regions_smith_atlas_networks.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-07 23:06:06","Since there is on single image, how comes we obtain overlapping regions ? I don't figure out this behaviour.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(68, '', u'examples/manipulating_visualizing/plot_extract_rois_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","KamalakerDadi","2015-12-08 19:10:01","I have no perfect answer to commit. It is just that in the statistical map we have regions overlapped regions extracted in different 3D maps. This caused visualization a bit unnormal. Code wise I think there is no problem causing these overlaps. 
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(68, '', u'examples/manipulating_visualizing/plot_extract_rois_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-08 21:08:17","We took a look. The regions are not overlapping. Matlotlib does some interpolation for the display of the contours and they look like they are overlapping even if they're not.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(68, '', u'examples/manipulating_visualizing/plot_extract_rois_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","bthirion","2015-12-08 21:18:28","Vale.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(68, '', u'examples/manipulating_visualizing/plot_extract_rois_statistical_maps.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-10 13:14:51","My understanding is that self.treshold can be an int in the 'ratio_n_voxels' case. In any case you should probably not do the parameter checking here since _threshold_maps_ratio already has some.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-10 13:15:51","You don't need parentheses around the ""...""
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-10 13:19:40","Maybe you want to use numbers.Real rather than float since threshold can be an int.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-10 13:20:20","You can use n_maps here rather than maps.shape[-1]
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-10 13:22:06","You can remove object, i.e. just Nifti1Image
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","lesteve","2015-12-10 13:28:23","Import not used ... maybe check other imports
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-10 13:30:19","Shouldn't we say niimg object or something like that?
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit_comment","651","nilearn","nilearn","AlexandreAbraham","2015-12-10 13:50:21","The problem is the same in canica.py (line 159). I suggest that we leave it like that and then do a PR to fix both classes at once.
+","83f2c29091567d3e005d670e2617b8d9a9eccc38","(None, '', u'nilearn/regions/region_extractor.py')"
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-07-13 16:02:28","Added an incomplete code of AutoExtractor to show a progress","ecac0595b63c4139e70df75e0ffd5338289c2059",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-07-19 18:17:31","A simple threshold extractor
+Voxel Ratio Extractor or Auto threshold extractor","0c809b488fb4a9a34acd0b0be914e32a6038b81d",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-07-20 08:09:47","Remove obsolete file","a1a9b9750c7c61f8e8857727cf5fe7b2b66480f1",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-07-22 11:54:53","Simple code for a Voxel Ratio Region Extraction","26b45754898348454979d609adf39dd4cebb1c62",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-07-26 20:24:02","Made code more simplified limiting to one class for two methods and
+added documentation for upto now parameters or arguments.","20ac84c2be13eaafa561493617c21f29343d6388",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-07-29 13:01:03","Addressed some recent comments. Making code a bit looks nicer and
+meaningful documentation","e5a2ddadb79ac74a63b44f3735c0ee503626a8f0",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-07-30 12:14:48","Preliminary changes committed to shift to new branch","6c01cc53a90afdcabcc8aca10e9896eb1d73de57",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-08-04 11:08:59","Integrated NiftiMapsMasker with Region Extractor","1d3c3c95dfc45347faf773f5d573f87b13ae2aa3",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-09-09 18:39:22","Addressed almost all the comments and made changes to the documentation
+and changed/removed the names of the conflict in class variables and return
+variables","6fa81f3ca79c9055e6f29fe6be34b4f2234b9855",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-09-16 15:31:38","Made code factorization and functions more usable privately","f18c662afa460974f5622144be0ae9ff6ff9f54a",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-09-18 11:23:33","Added an example which works for 3D map
+Made code factorization and adaptability to useable functions","36696defb4ee3d2ed354393a2e40bb72fa1f3510",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-09-23 10:45:41","Added another example showing a canica maps region extraction","9f0d3fb8593e2861f383aa7184e7ce6e1a09997a",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-09-24 15:03:24","Added tests and made some modifications in main class object and functions","2286e6c65d53e003568381a94db5423394dfbe08",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-09-25 15:31:51","Added new files and nilearn external dependencies","889e3c34506da01a4a05340c422be20a56dae878",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-10-12 13:52:48","Addressed Gael's reviews and comments","998f0293394235214de660a0444167d3bd52d2bd",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-10-12 14:12:07","Trying to fix Travis failure","47b66d6139384d21ae2ca1b4b86147a0334e6581",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-10-13 08:01:58","Trying to fix some failures","6289af2c478030cb0a0f9d33261eda6376ee14c3",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-10-16 12:09:00","Fixed comments made by Alex","cf26fcdc8942b4b8e16b95adcca548412663f3cc",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-10-16 13:15:16","An example shows region extraction using Smith Atlas RSN10","902e266ad027769f462c4b08ee101f75458889f3",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-10-16 14:46:50","Changed accordingly ""thresholding_strategy"" in tests files.","b6a3156618b811dcec9e58c2e994b9d5849b985f",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-10-27 10:14:16","Fixed comments naming for the functions, removing dtype file from skimage","60ed33404dfa08afe14c9c2aaa796c2d17594a5a",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-02 22:33:00","Addresssed comments: changed design for fit and transform utilising NiftiMapsMasker.
+and comments made by Alex.","0475577d6082541c0b75b1a3665c0236a922750d",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-03 09:30:01","Corrected mistakes","659753b59d09c38a1462e073fa94744c50ad6ba2",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-08 18:41:04","Addressed comments, threshold_img, connected_regions, tests for skimage","755780e1780497b31d1e2e30a634b34800f2b137",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-08 20:11:33","Minor changes","bee579bc0ae87c2a6188155a31b26fd44cfea8c6",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-09 13:16:22","Ported code check_threshold from displays to extmath
+check_threshold is basically data operation function on a valid thresholds.","e719df27f0f2d39376b89c8248a732f1a85c6c3f",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-09 14:22:18","Trying to increase coverage
+Adding tests files for missing lines in skimage random walker","650347858460269ac50099b7c05eb60318a1744c",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-19 12:08:55","Addressed comments and trying to make coverage pass on external code","96c35e6cd89cf3ba1dced800f82bd5253b93a906",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-23 11:54:37","Addressed comments made nby Gael","42e438b6b78ec870e176a17b14f73ac0fdc9d874",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-23 14:38:17","Trying to fix coverage decrease lines of code","c431eaae66d70feace287969fe019380e9b646c7",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-23 18:51:37","Coverage","925bd6642d92fa05070564c809b36e0b43e23e7c",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-23 21:00:23","Trying to increase coverage again","9f05b7981beb3dd09f33ec3fabd0cb208c98ead2",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-11-26 08:03:51","Addressed Loic comments
+Documenation corrected
+more specific tests in region extractor","a7a171748348898e190ac584d47cbf32ffe68500",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-01 22:14:44","Addressed Gael comments, examples suited for notebooks style","9e9a5920535e9a72cf06cf16b9fdc5d95d5a6731",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-02 14:28:12","check_threshold into new location and addressed comments for enhancement","235e5529f9eb0a941b0712b6562308a936cd326f",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-03 15:39:05","Added notebook example and documentation and some comments are addressed","b851452bfc933f78ee1c4e42188744a8c5f14c52",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-07 10:08:51","Addressed region size in voxel volume, statistical maps example in manipulating visualizing","8a13a4de58d75689b9c1a7072b63376ff62e2750",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-08 17:19:44","Addressed comments made by Bertrand","8f8738f9d4b88d82b5c68ce134d90f407f2d539d",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-08 17:43:23","Changed min_region_size documentation in RegionExtractor","0e4831673877ae78606d889c68307bcaf38b2633",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-09 15:58:57","Version inclusions","00bea9eecc84ff9e0d4b7caa9fc70dfa4b8fd74d",""
+"pull_request_commit","651","nilearn","nilearn","KamalakerDadi","2015-12-10 14:17:32","Addressed comments made by Loic","83f2c29091567d3e005d670e2617b8d9a9eccc38",""

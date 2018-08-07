@@ -1,0 +1,45 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1566","nilearn","nilearn","vukovicnikola","2017-11-20 17:36:08","If I run a simple fit using, for example: 
+```
+cv = StratifiedKFold(n_folds=2,y=y)
+
+decoder = SpaceNetClassifier(cv=cv, memory=""nilearn_cache"", penalty='tv-l1', memory_level=2, n_jobs=2, verbose=1, screening_percentile=20, mask= './mni_152_gm.nii')
+decoder.fit(X, y)
+```
+
+According to the [Reference](http://nilearn.github.io/modules/generated/nilearn.decoding.SpaceNetClassifier.html),  there should be a decoder.alpha_ attribute. However, this does not exist when I inspect the decoder.
+
+How to get the decoding accuracy without the best alpha from cv? Were there changes to SpaceNetClassifier since the reference page was last updated?","start issue","No alpha_ attribute in SpaceNetClassifier decoder"
+"issue_closed","1566","nilearn","nilearn","vukovicnikola","2017-11-21 22:24:56","","closed issue","No alpha_ attribute in SpaceNetClassifier decoder"
+"issue_comment","1566","nilearn","nilearn","bthirion","2017-11-20 18:40:06","Sorry, I don't see the issue. Can you reproduce it on one of the examples provided with nilearn, e.g. 
+http://nilearn.github.io/auto_examples/02_decoding/plot_mixed_gambles_space_net.html#sphx-glr-auto-examples-02-decoding-plot-mixed-gambles-space-net-py ?","",""
+"issue_comment","1566","nilearn","nilearn","bthirion","2017-11-20 22:31:59","Really weird. Can you reproduce on the datasets provided as examples ?
+Are there some cross-validation folds with constant data ?","",""
+"issue_comment","1566","nilearn","nilearn","bthirion","2017-11-21 16:31:40","Hm. T am realizing that plot_haxby_space_net.py is broken. Yet, this was not detected by CircleCI...
+Don't understand what's going on here.","",""
+"issue_comment","1566","nilearn","nilearn","MadsJensen","2017-11-20 18:47:33","@bthirion Hi just ran the example you mentioned above (just downloaded the .py and ran it). I get ""infs"" in the ""decoder.cv_scores""  and I have no ""decoder.alpha_"" either. 
+
+Python = 3.5
+nilearn = 0.4
+scikit-learn = 0.19.0
+
+","",""
+"issue_comment","1566","nilearn","nilearn","MadsJensen","2017-11-20 19:46:50","@KamalakerDadi  Great thanks for the clarification. But what about the ""inf"" in the cv_scores_ ? Is that expected? (Sorry I don't know the details of the SpaceNet algorithm.) ","",""
+"issue_comment","1566","nilearn","nilearn","MadsJensen","2017-11-21 18:38:18","ok, let's know if there is anything you would like from our side (@vukovicnikola or me) . 
+
+","",""
+"issue_comment","1566","nilearn","nilearn","KamalakerDadi","2017-11-20 19:23:19","Sorry, for being so late in updating SpaceNet documentation. The documentation needs to be updated. `alpha_` is not an attribute.
+
+The attribute you are interested in is
+ `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+        Best model parameters (alpha, l1_ratio) saved for the different
+        cross-validation folds.","",""
+"issue_comment","1566","nilearn","nilearn","KamalakerDadi","2017-11-20 19:58:06",">But what about the ""inf"" in the cv_scores_ ? Is that expected? (Sorry I don't know the details of the SpaceNet algorithm.)
+
+I don't know the algorithm very well too. But, pointing towards to look more closely into it. I can update your question soon.
+","",""
+"issue_comment","1566","nilearn","nilearn","KamalakerDadi","2017-11-21 22:09:33",">In detail, somebody whould check whether -\infty comes from numerical divergence --which should not occur-- or is a default value in the grid
+
+Values are coming from while computing test score for model given weight maps 'w'. This line
+https://github.com/nilearn/nilearn/blob/e34697bc22ee0061bbb548c89246cd814f23153a/nilearn/decoding/space_net.py#L259. I guess values are in the grid","",""
+"issue_comment","1566","nilearn","nilearn","KamalakerDadi","2017-11-21 22:19:38","Yes, except that the some of the documentation should be fixed which I will do it soon.","",""

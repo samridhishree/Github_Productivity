@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1521","nilearn","nilearn","grjd","2017-10-05 07:24:52","Hi,
+apologies if this is not the proper forum for making this question. I wonder if it is possible to compute the Ward clustering for a set of fmri images. In the [example](http://nilearn.github.io/auto_examples/03_connectivity/plot_rest_clustering.html), fit_transform computes the mask and extracts the time-series for one fmri nifti image. 
+Is it possible to extract the time series for a set of images? 
+
+```
+#func_filename being a list with 2 or more images
+fmri_masked = nifti_masker.fit_transform(func_filename)
+```","start issue","ward clustering more than one image"
+"issue_comment","1521","nilearn","nilearn","bthirion","2017-10-06 06:37:34","If the question is about computing the Ward clustering, you can replace the input 4D image by a list of 3D image. That should work (this is called a niimg in Nilearn jargon).","",""
+"issue_comment","1521","nilearn","nilearn","grjd","2017-10-06 09:38:10","It is about Ward clustering for a list of 4D images, rather than 1 4D image an in the  [example](http://nilearn.github.io/auto_examples/03_connectivity/plot_rest_clustering.html)
+Passing a list of 4D nifits as below doesnt work, guess as KamalakerDadi says need to do fit_transform in a loop for each image but then i would get a list of fmri_masked objects
+```
+nifti_masker = input_data.NiftiMasker(...)
+fmri_masked = nifti_masker.fit_transform([4Dnifti1,....4Dniftin)
+mask = nifti_masker.mask_img_.get_data().astype(bool)
+```","",""
+"issue_comment","1521","nilearn","nilearn","KamalakerDadi","2017-10-05 09:05:11","As I mentioned in your previous issue #1510 . You can either use the WIP PR #1370 .
+It is direct you just have to use define parameters for ```Parcellations``` objects and use ```fit_transform``` on list of images. ```fit``` will extract parcellations or ward rois. ```transform``` will extract timeseries signals.
+
+Or
+
+If you want to follow the existing [example](http://nilearn.github.io/auto_examples/03_connectivity/plot_rest_clustering.html), then it is also possible. Few steps are required.
+
+You have to use ```NiftiLabelsMasker``` and give ward parcellations built on your fMRI images as input in parameter ```labels_img```.
+
+Then, use ```fit_transfrom``` in a loop over each fmri image.
+
+Example: of how ```NiftiLabelsMasker``` can be used is in [here](http://nilearn.github.io/auto_examples/03_connectivity/plot_signal_extraction.html#sphx-glr-auto-examples-03-connectivity-plot-signal-extraction-py). But, you have to loop over the each fmri image.","",""

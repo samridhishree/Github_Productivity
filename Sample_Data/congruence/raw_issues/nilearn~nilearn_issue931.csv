@@ -1,0 +1,34 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","931","nilearn","nilearn","KamalakerDadi","2016-01-07 09:24:44","As per the latest release 1.5.0 matplotlib, taking zero in upper or lower level, simply ignores the masking values for colormap matplotlib contour fillings. As you can reproduce using this snippet:
+
+``` python
+from nilearn import datasets
+from nilearn import plotting
+
+atlas = datasets.fetch_atlas_msdl()
+plotting.plot_prob_atlas(atlas.maps, view_type='filled_contours', display_mode='z', cut_coords=1)
+```
+
+![old_code](https://cloud.githubusercontent.com/assets/11410385/12151399/43b07c80-b4af-11e5-8a8b-3bfe758a73e7.png)
+
+Here is a fix, I think:
+Following discussions from https://github.com/matplotlib/matplotlib/issues/5477,
+contour fillings levels should be given as (lower, upper) and what we need I believe in our case is that we force to append each upper level to `inf` to be well adapted to new code release with matplotlib. Correct me if I miss something in the discussion.
+
+We can resume to normal mode by forcing upper level always to infinity at Line 543 in `displays.py`. 
+`levels.append(0.)` to `levels.append(numpy.inf)` for this type of problem.
+![new_code](https://cloud.githubusercontent.com/assets/11410385/12154059/9d6e3722-b4bd-11e5-9924-c161a3647d52.png)
+","start issue","Discussion for a bug fix: view_type='filled_contours' bug in plot_prob_atlas plotting function"
+"issue_closed","931","nilearn","nilearn","AlexandreAbraham","2016-01-07 14:43:47","","closed issue","Discussion for a bug fix: view_type='filled_contours' bug in plot_prob_atlas plotting function"
+"issue_comment","931","nilearn","nilearn","AlexandreAbraham","2016-01-07 10:19:53","+1
+","",""
+"issue_comment","931","nilearn","nilearn","AlexandreAbraham","2016-01-07 12:20:18","More precision on this problem. In matplotlib <1.5, asking to color the levels [1., 0.] colors all values above one. It works because of a bug in matplotlib with decreasing values. The contour code has changed in 1.5 and now giving non increasing list of levels yields an unexpected behavior (the actual Picasso painting at the top of this issue). So the proposition of Kamalakar makes the code compliant with matplotlib and solves the problem for 1.5 without impacting the behavior in previous versions.
+
+@KamalakerDadi if you a PR, it will be merged ASAP.
+","",""
+"issue_comment","931","nilearn","nilearn","AlexandreAbraham","2016-01-07 12:30:19","Awesome!
+","",""
+"issue_comment","931","nilearn","nilearn","KamalakerDadi","2016-01-07 09:26:09","ping @AlexandreAbraham
+","",""
+"issue_comment","931","nilearn","nilearn","KamalakerDadi","2016-01-07 12:29:50","Yup, I am on it.
+","",""

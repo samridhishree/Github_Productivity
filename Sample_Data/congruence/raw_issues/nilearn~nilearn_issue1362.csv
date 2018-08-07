@@ -1,0 +1,201 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1362","nilearn","nilearn","arthurmensch","2017-01-23 14:02:25","This is a long-standing issue, that we have already tried to adress without success.
+
+```python
+
+from nilearn.datasets import fetch_adhd
+from sklearn.externals.joblib import Memory
+from nilearn.input_data import MultiNiftiMasker
+
+mem = Memory(cachedir='joblib')
+mem.clear()
+
+dataset = fetch_adhd().func[:2]
+
+masker = MultiNiftiMasker(n_jobs=2, memory=mem).fit(dataset)
+masker.transform(dataset)
+masker = MultiNiftiMasker(n_jobs=1, memory=mem).fit(dataset)
+masker.transform(dataset)
+
+```
+
+yields
+
+```
+/opt/miniconda3/bin/python /home/arthur/work/repos/nilearn/examples/test.py
+/opt/miniconda3/lib/python3.5/site-packages/sklearn/externals/joblib/logger.py:77: DeprecationWarning: The 'warn' function is deprecated, use 'warning' instead
+  logging.warn(""[%s]: %s"" % (self, msg))
+WARNING:root:[Memory(cachedir='joblib/joblib')]: Flushing completely the cache
+/home/arthur/work/repos/nilearn/nilearn/_utils/cache_mixin.py:272: UserWarning: memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
+  warnings.warn(""memory_level is currently set to 0 but ""
+________________________________________________________________________________
+[Memory] Calling nilearn.masking.compute_multi_background_mask...
+compute_multi_background_mask([ '/home/arthur/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz',
+  '/home/arthur/data/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz'], n_jobs=2, memory=Memory(cachedir='joblib/joblib'), target_shape=None, verbose=0, target_affine=None)
+________________________________________________________________________________
+[Memory] Calling nilearn.image.image._compute_mean...
+_compute_mean(<nibabel.nifti1.Nifti1Image object at 0x7f22ac2f9f60>, target_shape=None, smooth=False, target_affine=None)
+________________________________________________________________________________
+[Memory] Calling nilearn.image.image._compute_mean...
+_compute_mean(<nibabel.nifti1.Nifti1Image object at 0x7f22ac2f9d30>, target_shape=None, smooth=False, target_affine=None)
+_____________________________________________________compute_mean - 0.4s, 0.0min
+_____________________________________________________compute_mean - 0.4s, 0.0min
+____________________________________compute_multi_background_mask - 1.6s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.image.resampling.resample_img...
+resample_img(<nibabel.nifti1.Nifti1Image object at 0x7f22ad366908>, target_shape=None, interpolation='nearest', copy=False, target_affine=None)
+_____________________________________________________resample_img - 0.0s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.nifti_masker.filter_and_mask...
+filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f22ac307f98>, <nibabel.nifti1.Nifti1Image object at 0x7f22ac307160>, { 'detrend': False,
+  'high_pass': None,
+  'low_pass': None,
+  'smoothing_fwhm': None,
+  'standardize': False,
+  't_r': None,
+  'target_affine': None,
+  'target_shape': None}, confounds=None, copy=True, memory=Memory(cachedir='joblib/joblib'), verbose=0, memory_level=1)
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.nifti_masker.filter_and_mask...
+filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f22ac307eb8>, <nibabel.nifti1.Nifti1Image object at 0x7f22ac307780>, { 'detrend': False,
+  'high_pass': None,
+  'low_pass': None,
+  'smoothing_fwhm': None,
+  'standardize': False,
+  't_r': None,
+  'target_affine': None,
+  'target_shape': None}, confounds=None, copy=True, memory=Memory(cachedir='joblib/joblib'), verbose=0, memory_level=1)
+__________________________________________________filter_and_mask - 1.6s, 0.0min
+__________________________________________________filter_and_mask - 1.6s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.nifti_masker.filter_and_mask...
+filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f22ac3072b0>, <nibabel.nifti1.Nifti1Image object at 0x7f22ac2f9a90>, { 'detrend': False,
+  'high_pass': None,
+  'low_pass': None,
+  'smoothing_fwhm': None,
+  'standardize': False,
+  't_r': None,
+  'target_affine': None,
+  'target_shape': None}, confounds=None, memory=Memory(cachedir='joblib/joblib'), memory_level=1, verbose=0, copy=True)
+__________________________________________________filter_and_mask - 1.0s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.nifti_masker.filter_and_mask...
+filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f22ac344c18>, <nibabel.nifti1.Nifti1Image object at 0x7f22ac2f9a90>, { 'detrend': False,
+  'high_pass': None,
+  'low_pass': None,
+  'smoothing_fwhm': None,
+  'standardize': False,
+  't_r': None,
+  'target_affine': None,
+  'target_shape': None}, confounds=None, memory=Memory(cachedir='joblib/joblib'), memory_level=1, verbose=0, copy=True)
+__________________________________________________filter_and_mask - 1.0s, 0.0min
+
+Process finished with exit code 0
+```
+This indicates that the cached mask function is not properly recalled the second time.
+
+With the following monkey-patch, it works properly:
+
+```python
+import nibabel
+from nibabel import Nifti1Image as NibabelNifti1Image
+from nibabel import load as nibabel_load
+import numpy as np
+
+
+def load(filename, **kwargs):
+    img = nibabel_load(filename, **kwargs)
+    img.__class__ = Nifti1Image
+    return img
+
+
+class Nifti1Image(NibabelNifti1Image):
+    def __getstate__(self):
+        state = {'dataobj': np.asarray(self._dataobj),
+                 'header': self.header,
+                 'affine': self.affine,
+                 'extra': self.extra}
+        return state
+
+    def __setstate__(self, state):
+        new_self = Nifti1Image(dataobj=state['dataobj'],
+                               affine=state['affine'],
+                               header=state['header'],
+                               extra=state['extra'])
+        self.__dict__ = new_self.__dict__
+
+
+def monkey_patch_nifti_image():
+    nibabel.load = load
+
+from nilearn.datasets import fetch_adhd
+from sklearn.externals.joblib import Memory
+from nilearn.input_data import MultiNiftiMasker
+
+monkey_patch_nifti_image()
+
+mem = Memory(cachedir='joblib')
+mem.clear()
+
+dataset = fetch_adhd().func[:2]
+
+masker = MultiNiftiMasker(n_jobs=2, memory=mem).fit(dataset)
+masker.transform(dataset)
+masker = MultiNiftiMasker(n_jobs=1, memory=mem).fit(dataset)
+masker.transform(dataset)
+```
+
+
+```
+/opt/miniconda3/bin/python /home/arthur/work/repos/nilearn/examples/test.py
+/opt/miniconda3/lib/python3.5/site-packages/sklearn/externals/joblib/logger.py:77: DeprecationWarning: The 'warn' function is deprecated, use 'warning' instead
+  logging.warn(""[%s]: %s"" % (self, msg))
+WARNING:root:[Memory(cachedir='joblib/joblib')]: Flushing completely the cache
+/home/arthur/work/repos/nilearn/nilearn/_utils/cache_mixin.py:272: UserWarning: memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
+  warnings.warn(""memory_level is currently set to 0 but ""
+________________________________________________________________________________
+[Memory] Calling nilearn.masking.compute_multi_background_mask...
+compute_multi_background_mask([ '/home/arthur/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz',
+  '/home/arthur/data/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz'], n_jobs=2, verbose=0, target_shape=None, target_affine=None, memory=Memory(cachedir='joblib/joblib'))
+________________________________________________________________________________
+[Memory] Calling nilearn.image.image._compute_mean...
+_compute_mean(<__main__.Nifti1Image object at 0x7f3ea9140cf8>, target_affine=None, target_shape=None, smooth=False)
+________________________________________________________________________________
+[Memory] Calling nilearn.image.image._compute_mean...
+_compute_mean(<__main__.Nifti1Image object at 0x7f3ea9140f98>, target_affine=None, target_shape=None, smooth=False)
+_____________________________________________________compute_mean - 1.2s, 0.0min
+_____________________________________________________compute_mean - 1.2s, 0.0min
+____________________________________compute_multi_background_mask - 3.3s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.image.resampling.resample_img...
+resample_img(<__main__.Nifti1Image object at 0x7f3eaa1aa8d0>, copy=False, target_affine=None, target_shape=None, interpolation='nearest')
+_____________________________________________________resample_img - 0.0s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.nifti_masker.filter_and_mask...
+filter_and_mask(<__main__.Nifti1Image object at 0x7f3ea9140fd0>, <__main__.Nifti1Image object at 0x7f3ea914b7f0>, { 'detrend': False,
+  'high_pass': None,
+  'low_pass': None,
+  'smoothing_fwhm': None,
+  'standardize': False,
+  't_r': None,
+  'target_affine': None,
+  'target_shape': None}, copy=True, verbose=0, memory=Memory(cachedir='joblib/joblib'), confounds=None, memory_level=1)
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.nifti_masker.filter_and_mask...
+filter_and_mask(<__main__.Nifti1Image object at 0x7f3ea914b828>, <__main__.Nifti1Image object at 0x7f3ea914b048>, { 'detrend': False,
+  'high_pass': None,
+  'low_pass': None,
+  'smoothing_fwhm': None,
+  'standardize': False,
+  't_r': None,
+  'target_affine': None,
+  'target_shape': None}, copy=True, verbose=0, memory=Memory(cachedir='joblib/joblib'), confounds=None, memory_level=1)
+__________________________________________________filter_and_mask - 1.8s, 0.0min
+__________________________________________________filter_and_mask - 1.6s, 0.0min
+
+Process finished with exit code 0
+```
+
+Integrating the patch in nilearn does not break any test. Should I try to merge this ? I guess we should do a non regression test based on the code snippet above.
+
+The issue is pretty preocuppying as all users are likely to have double-size masking cache on their disk","start issue","Nifti1Image design prevents efficient caching"

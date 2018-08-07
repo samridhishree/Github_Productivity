@@ -1,0 +1,143 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","276","nilearn","nilearn","banilo","2014-11-09 15:51:52","tries to address #235
+","start issue","Parallel() for CanICA class"
+"issue_closed","276","nilearn","nilearn","lesteve","2014-11-21 14:00:09","","closed issue","Parallel() for CanICA class"
+"pull_request_title","276","nilearn","nilearn","banilo","2014-11-09 15:51:52","tries to address #235
+","35c1805993c33e67a394193c7cae9a3f38a7607f","Parallel() for CanICA class"
+"pull_request_merged","276","nilearn","nilearn","lesteve","2014-11-21 14:00:09","Parallel() for CanICA class","2ac9dd093f20a7912ac30908cde553f58322096f","Pull request merge from banilo/nilearn:par_ica to nilearn/nilearn:master"
+"issue_comment","276","nilearn","nilearn","bthirion","2014-11-11 10:43:37","LGTM otherwise.
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-11 14:39:18","ok, thx.
+","",""
+"issue_comment","276","nilearn","nilearn","AlexandreAbraham","2014-11-11 18:01:49","Have you timed the code on a real life exemple ? In particular, I would like to know if the time bottleneck is in the MultiPCA part or the ICA part. My intuition is that we lose more time in MultiPCA but I may be wrong. I think we should parallelized both.
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-12 08:15:06","In the examples I used for the testing MultiPCA took longer than CanICA.
+","",""
+"issue_comment","276","nilearn","nilearn","AlexandreAbraham","2014-11-12 17:10:26","Do you have an approximate ratio between the two?
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-13 20:44:27","On my laptop in CanICA.fit()...
+- MultiPCA.fit() argument takes ~14s
+- Parallel(..fastica...) also takes ~14s if n_jobs=1, which is then reduced as a function of the number of jobs
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-19 07:59:49","Should I perform other/more specific timing tests?
+","",""
+"issue_comment","276","nilearn","nilearn","GaelVaroquaux","2014-11-19 08:42:26","With regards to timing, this feature is especially useful if some of the earlier steps have been cached. In this case, the for loop that Danilo has parallelized is the bottleneck.
+
+The situation in which the earlier steps have been cached happens typically when bootstrapping across subjects. I am currently melting down drago doing that.
+","",""
+"issue_comment","276","nilearn","nilearn","lesteve","2014-11-19 10:15:33","FWIW some timings I did using `%run -p -s cumulative plot_canica_resting_state.py`:
+
+|  | n_jobs=1 | n_jobs=2 | n_jobs=4 | n_jobs=8 |
+| --- | --- | --- | --- | --- |
+| PR total | 91.3 | 55.3 | 38.1 | 35.5 |
+| PR canica.fit | 87.3 | 51.1 | 34.0 | 30.3 |
+| PR multi_pca.fit | 31.0 | 19.8 | 14.7 | 14.7 |
+|  |  |  |  |  |
+| master total | 80.8 | 70.8 | 67.4 | 65.8 |
+| master canica.fit | 76.6 | 66.8 | 63.1 | 61.7 |
+| master multi_pca.fit | 31.0 | 19.7 | 16.0 | 14.8 |
+
+so I guess a quick and dirty summary would be that the canica.fit run time is divided by 2 with 8 cores thanks to this PR.
+
+_Edit_: oh and BTW this when the previous steps had been cached already as @GaelVaroquaux mentioned.
+","",""
+"issue_comment","276","nilearn","nilearn","lesteve","2014-11-19 10:39:33","Also now that you are familiar with rebase, would you mind squashing a few of your commits. Some of them don't have great commit messages :wink:
+","",""
+"issue_comment","276","nilearn","nilearn","GaelVaroquaux","2014-11-19 10:53:36","> FWIW some timings I did using %run -p -s cumulative plot_canica_resting_state.py:
+
+Nice timing, and IMHO quite convincing that this is a useful
+functionality
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-19 16:01:38","Ok, I should have addressed all comments. I hope the squashing was correct this way?
+","",""
+"issue_comment","276","nilearn","nilearn","lesteve","2014-11-19 17:13:58","> Ok, I should have addressed all comments. I hope the squashing was correct this way?
+
+Almost, I would just edit the commit message to remove a few unnecessary things like ""new things"" etc... 
+
+You can do that with `git commit --amend` and then `git push -f yourbranch`.
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-20 12:32:54","Commits squashed and renamed now!
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-21 13:56:46","Challenge accomplished.
+","",""
+"issue_comment","276","nilearn","nilearn","lesteve","2014-11-21 14:00:06","Great stuff, thanks!
+","",""
+"issue_comment","276","nilearn","nilearn","lesteve","2014-11-21 14:06:37","@banilo btw I don't know what the github magic words are but I know that if you use ""Fix #issueNumber"" in the PR description it will close the issue automatically when the PR is merged.
+
+More info [here](https://github.com/blog/1506-closing-issues-via-pull-requests)
+","",""
+"issue_comment","276","nilearn","nilearn","banilo","2014-11-21 14:09:01","Cool, thx.
+
+2014-11-21 15:06 GMT+01:00 Loïc Estève notifications@github.com:
+
+> @banilo https://github.com/banilo btw I don't know what the github
+> magic words are but I know that if you use ""Fix #issueNumber"" in the PR
+> description it will close the issue automatically when the PR is merged.
+> 
+> More info here
+> https://github.com/blog/1506-closing-issues-via-pull-requests
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/276#issuecomment-63973826.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"pull_request_commit_comment","276","nilearn","nilearn","bthirion","2014-11-11 09:38:54","Please keep this comment. 
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-19 08:21:03","For completeness, the comment is still there (a few lines above)
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","GaelVaroquaux","2014-11-19 08:38:32","If you cannot pass a random_state, you cannot do parallel computing: the random number generation will be duplicated in all the child process, and thus the for loop won't do different initialization.
+
+You should use parallel computing only for versions of scikit-learn above 0.12
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-19 08:39:39","I reckon we should use n_jobs=1 in this case I understand correctly what @GaelVaroquaux said in #235:
+
+> Thus we can parallelize the loop only for scikit-learn > 0.13 (I suggest setting n_job to one else)
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","GaelVaroquaux","2014-11-19 08:39:57","We cannot have parallel computing on by default in examples. On windows boxes it can lead to a fork bomb.
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'plot_canica_resting_state.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","GaelVaroquaux","2014-11-19 08:40:47","Yes
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-19 10:29:18","I reckon the ica_maps_ variable name should be changed because of the for loop -> Parallel restructuring. You could also do the `[2]` and `.T` here. Maybe something like
+
+``` python
+
+results = Parallel(...)
+ica_maps_gen_ = (result[2].T for result in results)
+```
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-19 10:36:24","I believe you could use `min` with a `key` argument here something like (not tested and dependent on another comment above):
+
+``` python
+ica_maps_and_sparsities = ((ica_maps, np.sum(np.abs(ica_map)).max()) for ica_maps in ica_maps_gen_)
+ica_maps, sparsity = min(ica_maps_and_sparsities, key=operator.itemgetter(-1))
+```
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","banilo","2014-11-19 15:42:18","Nice trick, good to know.
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-19 17:07:26","It looks like `os` is not used anywhere in this file
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-19 17:08:24","Simpler to just leave n_jobs unspecified, i.e. no need to modify this file.
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'plot_canica_resting_state.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-20 15:36:51","Not only is it not PEP8 compliant but this creative alignment makes it really hard to parse this statement, what about something like
+
+``` python
+
+        ica_maps_and_sparsities = [(ica_map,
+                                    np.sum(np.abs(ica_map), axis=1).max())
+                                   for ica_map in ica_maps_gen_]
+```
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-20 15:36:54","I believe you can replace square brackets by parentheses here, i.e. use a generator rather than a list comprehension.
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","276","nilearn","nilearn","lesteve","2014-11-21 10:02:34","Another PEP8 warning. You can use `from distutils.version import LooseVersion` to shorten it. I would even do something like:
+
+``` python
+if (LooseVersion(sklearn.__version__) > LooseVersion('0.12')):
+```
+","35c1805993c33e67a394193c7cae9a3f38a7607f","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit","276","nilearn","nilearn","banilo","2014-11-21 13:57:38","Parallelization of CanICA","35c1805993c33e67a394193c7cae9a3f38a7607f",""

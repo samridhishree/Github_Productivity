@@ -1,0 +1,56 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1413,nilearn,nilearn,KamalakerDadi,2017-03-12 10:37:38,"Users who have 1.5 version have troubles building their documentation. 
+
+```python
+../examples/02_decoding/plot_haxby_anova_svm.py failed to execute correctly:Traceback (most recent call last):
+  File ""/home/kamalakar/Kamalakar/work/nilearn/doc/sphinxext/sphinx_gallery/gen_rst.py"", line 450, in execute_code_block
+    exec(code_block, example_globals)
+  File ""<string>"", line 16, in <module>
+  File ""/home/kamalakar/Kamalakar/work/nilearn/nilearn/plotting/img_plotting.py"", line 986, in plot_stat_map
+    **kwargs)
+  File ""/home/kamalakar/Kamalakar/work/nilearn/nilearn/plotting/img_plotting.py"", line 172, in _plot_img_with_bg
+    colorbar=colorbar)
+  File ""/home/kamalakar/Kamalakar/work/nilearn/nilearn/plotting/displays.py"", line 512, in init_with_figure
+    return cls(cut_coords, axes, black_bg, **kwargs)
+  File ""/home/kamalakar/Kamalakar/work/nilearn/nilearn/plotting/displays.py"", line 459, in __init__
+    self._init_axes(**kwargs)
+  File ""/home/kamalakar/Kamalakar/work/nilearn/nilearn/plotting/displays.py"", line 936, in _init_axes
+    ax.set_facecolor(facecolor)
+AttributeError: 'Axes' object has no attribute 'set_facecolor'
+```
+```set_facecolor``` seems to be implemented from matplotlib 2.0 but not from 1.5 if I understood correctly.
+
+Can anybody see this problem ? It would be great if you could try at some time. Thanks.
+",start issue,CircleCI build crashes with matplotlib 1.5
+2,issue_closed,1413,nilearn,nilearn,KamalakerDadi,2017-03-16 09:51:19,,closed issue,CircleCI build crashes with matplotlib 1.5
+3,issue_comment,1413,nilearn,nilearn,GaelVaroquaux,2017-03-12 14:25:40,"Are you sure that this happens on master?
+
+I merged a PR from @arthurmensch a week ago that fixes this:
+https://github.com/nilearn/nilearn/pull/1395
+",,
+4,issue_comment,1413,nilearn,nilearn,GaelVaroquaux,2017-03-12 18:33:47,Good point! I just pushed a fix to master.,,
+5,issue_comment,1413,nilearn,nilearn,GaelVaroquaux,2017-03-13 19:12:16,"Indeed. I pushed a new fix :)
+",,
+6,issue_comment,1413,nilearn,nilearn,KamalakerDadi,2017-03-12 15:52:40,">Are you sure that this happens on master?
+
+Yes, it happened to me on master. When I hacked a bit code to check for >= 2.0, it succeeded.
+
+How do I see on which version of matplotlib is CircleCI build running ?",,
+7,issue_comment,1413,nilearn,nilearn,KamalakerDadi,2017-03-13 09:46:06,">Good point! I just pushed a fix to master.
+
+Missed at Line935 https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L935",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1414,nilearn,nilearn,chrisfilo,2017-03-13 16:25:19,"Currently, CanICA has the option `standardize` set to True by default. This means intensity and variance normalization. According to [this work](http://mialab.mrn.org/software/gift/publications/2010_OHBM_Elena_ICAPrenormalization_submitted.pdf), variance normalization is detrimental for the stability of ICA components. Shouldn't we change this argument to take the following options:
+
+- `False`
+- `'intensity only'` (new default)
+- `True` (intensity and variance standardization - old default)",start issue,ICA and variance normalization
+2,issue_closed,1414,nilearn,nilearn,chrisfilo,2017-03-13 16:43:35,,closed issue,ICA and variance normalization
+3,issue_comment,1414,nilearn,nilearn,GaelVaroquaux,2017-03-13 16:38:17,"> Currently, CanICA has the option `standardize` set to True by default. This means intensity and variance normalization. According to [this work](http://mialab.mrn.org/software/gift/publications/2010_OHBM_Elena_ICAPrenormalization_submitted.pdf), variance normalization is detrimental for the stability of ICA components.
+
+I don't buy this result. AFAIK packages other than GIFT do variance normalization.
+
+I think that the optimality of this choice depends on what you are doing.
+
+",,

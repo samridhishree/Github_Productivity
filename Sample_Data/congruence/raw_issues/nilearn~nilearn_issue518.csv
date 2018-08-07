@@ -1,0 +1,25 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","518","nilearn","nilearn","AlexandreAbraham","2015-03-23 09:34:12","A recent change (python3?) have broken the support of resuming. Also, the code can fail if server does not support resuming, like `craddock_2012` for example.
+
+We have to:
+- Fix the code
+- Add more security check to rely on classical download if resuming fails without error
+","start issue","Resuming is broken"
+"issue_closed","518","nilearn","nilearn","AlexandreAbraham","2015-03-25 14:54:46","","closed issue","Resuming is broken"
+"issue_comment","518","nilearn","nilearn","GaelVaroquaux","2015-03-23 09:37:24","> The question is: do we add tests for that? I think that this would not
+> be trivial at all
+
+If it's really nasty to test, let's not test it.
+","",""
+"issue_comment","518","nilearn","nilearn","AlexandreAbraham","2015-03-23 09:36:02","I may have ran into this problem this week-end when I was not supposed to work and I may have already fixed it. The question is: do we add tests for that? I think that this would not be trivial at all (due to the fact that we have to basically mock everything).
+","",""
+"issue_comment","518","nilearn","nilearn","AlexandreAbraham","2015-03-23 09:58:48","OK, let's add details for the record.
+
+For `fetch_craddock_2012` and `fetch_localizer_calculations`, resuming is not supported. But, instead of raising error 206 saying that they do not support it, they just resend the whole file. The problem is that, on our side, we are unaware of the original size of the file and just trust the server.
+
+Luckily, server who support resuming add a ""Content-range"" header with the size already downloaded and the total size of the file. We now rely on that header.
+
+A good thing would be to behave like browsers : pre-allocate the size of the file and keep track of total size and already downloaded file. But that would mean to create a metadata file and a layer of complexity over the fetcher so I won't do it.
+","",""
+"issue_comment","518","nilearn","nilearn","AlexandreAbraham","2015-03-25 14:54:46","Fix by #521.
+","",""

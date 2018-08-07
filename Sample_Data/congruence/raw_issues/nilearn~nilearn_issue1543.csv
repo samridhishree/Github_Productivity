@@ -1,0 +1,23 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1543","nilearn","nilearn","GaelVaroquaux","2017-11-08 17:55:44","nilearn.plotting.plot_matrix is a new matrix plotting function for matrices.
+
+It is often interesting to reorder connectivity matrices to make blocks more apparent. One trick that works well is to perform a hierarchical clustering on the matrix and reorder with it (it's used a lot by the Oxford group, for instance in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3690655/)
+
+With the recent scipy versions, this is easily doable:
+* applying scipy's average linkage clustering to the matrix
+  https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.average.html#scipy.cluster.hierarchy.average
+* using the reordering as follows:
+  https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.optimal_leaf_ordering.html#scipy.cluster.hierarchy.optimal_leaf_ordering
+
+We should add an option to plot_matrix that does it automatically for users, and applies the reordering to the labels.
+
+Points to consider:
+
+* Probably raise an error if there are no labels given, as then the reordering is not visible to the user, and hence a source of possible confusion
+* Raise an comprehensible error if the scipy version is too old and the optimal_leaf_ordering function does not exists
+* Should we expose the different linkage (single, complete, average)? We could have a ""reorder"" keyword argument, by default set to ""False"", and that could take as options (True, ""single_linkage"", ""complete_linkage"", ""average_linkage""). I tend to believe that average linkage should be the default, as it is often better behaved, but we should benchmark this on the data.","start issue","Add optional reordering of matrix to plot_matrix"
+"issue_comment","1543","nilearn","nilearn","bthirion","2017-11-08 20:50:17","+1 for that one. I would have thought that 'complete linkage' is preferable, but that's just a gut feeling.","",""
+"issue_comment","1543","nilearn","nilearn","mjboos","2017-11-15 14:01:35","I could give this a go.
+Since there are already two differing opinions on the type of linkage, we should probably expose it as an option.
+
+On which data would you test which type of linkage is a good default?","",""

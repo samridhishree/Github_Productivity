@@ -1,0 +1,173 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","379","nilearn","nilearn","gciccarelli3","2015-02-01 01:30:03","Is this possible?  I only see true/false, and I only see this option for plot_stat_map, not plot_glass_brain for instance.
+
+Yet, I can manipulate all the colormap properties fine:
+
+f, axarr = plt.subplots(20)  
+f.set_size_inches(10,40)  #(width, length)[inches]
+
+nilearn.plotting.plot_glass_brain(os.path.join(file_path, file_name), 
+                                  axes=axarr[0], cmap=cmx.rainbow, vmin=-8, vmax=8, threshold = 4)
+","start issue","Show colorbar with plot_glass_brain?"
+"issue_closed","379","nilearn","nilearn","lesteve","2015-02-27 13:18:20","","closed issue","Show colorbar with plot_glass_brain?"
+"issue_comment","379","nilearn","nilearn","GaelVaroquaux","2015-02-01 09:38:27","No, colorbar are not possible with plot_glass_brain. We had an internal
+discussion and ruled against it. The reason is that plot_glass_brain
+applies a max intensity projection, and thus we feel that it is not a
+quantitative way of looking at the maps.
+
+However, if you can make a strong case, we can be convinced otherwise.
+","",""
+"issue_comment","379","nilearn","nilearn","GaelVaroquaux","2015-02-01 14:58:36","> One possible compromise: add the colorbar argument in plot_glass_brain but set
+> it to False by default?
+
++1
+","",""
+"issue_comment","379","nilearn","nilearn","GaelVaroquaux","2015-02-03 10:51:18","> Ah it does ring a bell now that the threshold is applied to the maps
+> before the max intensity projection is applied. I don't think having
+> the colorbar graying logic makes any sense in plot_glass_brain.
+
+I am not sure that I follow you: that threshold will still be the
+smallest value that can be observed. Thus, I don't see why it is not
+relevant to display it.
+","",""
+"issue_comment","379","nilearn","nilearn","lesteve","2015-02-01 14:41:16","One possible compromise: add the colorbar argument in plot_glass_brain but set it to False by default?
+","",""
+"issue_comment","379","nilearn","nilearn","lesteve","2015-02-01 17:14:04","Actually colorbar is available in plot_img already through the kwargs, it is just a bit unfortunate that it doesn't appear very explicitly in the function arguments. This could be fixed very easily, do you mind opening a separate issue about that?
+","",""
+"issue_comment","379","nilearn","nilearn","lesteve","2015-02-03 10:16:54","Hmm I thought this was going to be trivial, but it looks like this has some unexpected interaction with the threshold logic in the graying of the colorbar. Adding this one to the upcoming sprint.
+
+``` python
+from nilearn import datasets
+from nilearn import plotting
+
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    [""left vs right button press""],
+    n_subjects=2,
+    get_tmaps=True)
+localizer_tmap_filename = localizer_dataset.tmaps[1]
+
+plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+                          colorbar=True)
+```
+
+![plot_glass_brain_with_colorbar](https://cloud.githubusercontent.com/assets/1680079/6018323/1137d186-ab96-11e4-81dc-bcf37669f261.png)
+
+For completeness the diff:
+
+``` diff
+diff --git a/nilearn/plotting/img_plotting.py b/nilearn/plotting/img_plotting.py
+index 0e044a6..52d6629 100644
+--- a/nilearn/plotting/img_plotting.py
++++ b/nilearn/plotting/img_plotting.py
+@@ -609,7 +609,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+
+
+ def plot_glass_brain(stat_map_img,
+-                     output_file=None, display_mode='ortho',
++                     output_file=None, display_mode='ortho', colorbar=False,
+                      figure=None, axes=None, title=None, threshold='auto',
+                      annotate=True,
+                      black_bg=False,
+@@ -633,6 +633,8 @@ def plot_glass_brain(stat_map_img,
+             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+             'z' - axial, 'ortho' - three cuts are performed in orthogonal
+             directions.
++        colorbar : boolean, optional
++            If True, display a colorbar on the right of the plots.
+         figure : integer or matplotlib figure, optional
+             Matplotlib figure used or its number. If None is given, a
+             new figure is created.
+@@ -673,7 +675,7 @@ def plot_glass_brain(stat_map_img,
+                                 figure=figure, axes=axes, title=title,
+                                 annotate=annotate,
+                                 black_bg=black_bg, threshold=threshold,
+-                                cmap=cmap, colorbar=False,
++                                cmap=cmap, colorbar=colorbar,
+                                 display_factory=display_factory,
+                                 **kwargs)
+
+```
+","",""
+"issue_comment","379","nilearn","nilearn","lesteve","2015-02-03 10:49:45","Ah it does ring a bell now that the threshold is applied to the maps before the max intensity projection is applied. I don't think having the colorbar graying logic makes any sense in plot_glass_brain.
+","",""
+"issue_comment","379","nilearn","nilearn","lesteve","2015-02-03 10:59:22","> threshold will still be the smallest value that can be observed
+
+Agreed. I guess my comment was with the above plot in mind where the colorbar vmin will be above the threshold (by construction there will be no value in the glass brain below the threshold). You are right that you could pass vmin=0 to plot_glass_brain in which case it would make sense to show the threshold.
+","",""
+"issue_comment","379","nilearn","nilearn","lesteve","2015-02-17 17:31:07","Maybe that's one you could investigate @banilo. After all you wrote the colorbar threshold greying ;-)
+","",""
+"issue_comment","379","nilearn","nilearn","gciccarelli3","2015-02-01 13:30:19","(1) Any time a plot/image/graphic has colors that correspond to something,
+it should be possible to denote the meaning of those colors.  The universal
+way would be with a customizeable and label-able colorbar (labels meaning
+both the numeric or categorical ticks but also the colorbar title (e.g. ""t
+stats"" or ""COPES"" ).  This goes for every single plot/image/graphic
+function within nilearn, not just plot_glass_brain or plot_stat_map.
+(2) Yes, it's a max intensity projection, and we should know what those
+intensities are- quantitatively.
+(3) Since so much functionality is already built in to plot_glass_brain
+(e..g., change color map, apply threshold, and apply min/max to colormap),
+a logical and needed extension to make sure a viewer, not someone with the
+code, understands what they see, is to encapsulate the numerical
+description of the colors.  Otherwise, almost literally, I could set these
+parameters and come up with very different displays.  Note that vmin and
+vmax, are crucial for comparing separately plotted brains.
+(4) Without a colorbar, what could have been one of the most useful
+functions for exploratory brain analysis, precisely because three cuts
+would show a lot of any possible activity as opposed to needing many
+slices, becomes a novelty rather than a research tool.  My two step
+workflow was glass_brain to get a sense of where things are and then
+specific cuts for exactly the reason that you mentioned- cuts are need to
+precisely localize the activity.
+(5) To ease the nilearn plotting user communities transition to nilearn
+plotting commands from matplotlib plotting.  It seemed natural that all
+matplotlib functionality would be inherited by any nilearn plotting
+commands- that actually is what led me to try vmin and vmax and colormap
+changing.
+
+Behind the scenes, emotional appeal story:  I'm an experienced matlab user,
+who could have replicated much of the plotting I needed in matlab in less
+time than it took me to figure out any one of the steps needed to actually
+plot an image, using just matlab and and the brain load command from spm.
+I also fully admit that I don't have the cool background template for
+plot_glass_brain, and some other functionality in nilearn.  My research
+adviser is a matlab to python convert, and strongly pushes python and its
+community, so I've been giving it a good faith try this past semester.
+Yet, I constantly run up against features that _almost_ work perfectly in
+the python ecosystem.  I commend you and all the developers for this
+toolbox, and the many, many others out there.  It's fantastic that there is
+such a vibrant opensource scientific computing community.  I just want you
+to know that matlab is that standard to which I'm holding python for
+visualization.  You'll know you (as in the python community) has won me
+over when I hold matlab's functionality to the python standard.
+
+On Sun, Feb 1, 2015 at 4:38 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> No, colorbar are not possible with plot_glass_brain. We had an internal
+> discussion and ruled against it. The reason is that plot_glass_brain
+> applies a max intensity projection, and thus we feel that it is not a
+> quantitative way of looking at the maps.
+> 
+> However, if you can make a strong case, we can be convinced otherwise.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/379#issuecomment-72358088.
+","",""
+"issue_comment","379","nilearn","nilearn","gciccarelli3","2015-02-01 16:57:24","Absolutely fine with me!  I would add it to plot_img too, as it's supposed
+to be a general plotting function, as well as any other plot function, but
+I know you have to prioritize.
+
+On Sun, Feb 1, 2015 at 9:58 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > One possible compromise: add the colorbar argument in plot_glass_brain
+> > but set
+> > it to False by default?
+> 
+> +1
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/379#issuecomment-72367885.
+","",""

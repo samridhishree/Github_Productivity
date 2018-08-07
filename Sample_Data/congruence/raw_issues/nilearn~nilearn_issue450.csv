@@ -1,0 +1,82 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","450","nilearn","nilearn","bcipolli","2015-02-20 17:12:52","I have a loop where I iteratively update subplots in two different figures.  
+
+``` python
+import matplotlib.pyplot as plt
+
+from nilearn import datasets
+from nilearn.plotting import plot_glass_brain, plot_stat_map
+from nilearn.image import index_img, iter_img
+
+n_maps = 3
+msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+maps_img = msdl_atlas_dataset.maps
+fh1 = plt.figure()
+fh2 = plt.figure()
+for ii, img in enumerate(iter_img(index_img(maps_img, range(n_maps)))):
+    ax1 = fh1.add_subplot(n_maps, 1, ii)
+    plot_glass_brain(img, axes=ax1, title='test')
+
+    ax2 = fh2.add_subplot(n_maps, 1, ii)
+    plot_stat_map(img, axes=ax2, title='test')
+plt.show()
+```
+
+Here's what I got:
+![image](https://cloud.githubusercontent.com/assets/4072455/6305384/b4792cea-b8df-11e4-883f-ddf403fea117.png)
+and
+![image](https://cloud.githubusercontent.com/assets/4072455/6305375/a8f4eada-b8df-11e4-9f06-e50341a61389.png)
+
+Seems like user error, but when I tried a workaround (setting each figure to the current figure), this worked like a champ:
+
+``` python
+import matplotlib.pyplot as plt
+
+from nilearn import datasets
+from nilearn.plotting import plot_glass_brain, plot_stat_map
+from nilearn.image import index_img, iter_img
+
+n_maps = 3
+msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+maps_img = msdl_atlas_dataset.maps
+fh1 = plt.figure()
+fh2 = plt.figure()
+for ii, img in enumerate(iter_img(index_img(maps_img, range(n_maps)))):
+    plt.figure(fh1.number)
+    ax1 = fh1.add_subplot(n_maps, 1, ii)
+    plot_glass_brain(img, axes=ax1, title='test')
+
+    plt.figure(fh2.number)
+    ax2 = fh2.add_subplot(n_maps, 1, ii)
+    plot_stat_map(img, axes=ax2, title='test')
+plt.show()
+```
+
+This outputs properly:
+
+![image](https://cloud.githubusercontent.com/assets/4072455/6305497/879558e2-b8e0-11e4-8dce-d22f485a3317.png)
+and
+![image](https://cloud.githubusercontent.com/assets/4072455/6305495/7ff2de70-b8e0-11e4-816f-f69b86290b07.png)
+
+Note that this happens with `plot` if i use `matplotlib.pyplot.plot(..)` instead of `ax1.plot(..)`.  So I suspect the fix is to reference plotting functions off the given axis, rather than from pyplot.
+","start issue","Plotting functions require figure to be current figure, in addition to axes parameter."
+"issue_closed","450","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:45:51","","closed issue","Plotting functions require figure to be current figure, in addition to axes parameter."
+"issue_comment","450","nilearn","nilearn","GaelVaroquaux","2015-02-20 19:15:59","> Note that this happens with plot if i use matplotlib.pyplot.plot(..)
+> instead of ax1.plot(..). So I suspect the fix is to reference plotting
+> functions off the given axis, rather than from pyplot.
+
+Well, it's more complicated than this, since we create separate axis
+inside the axis you give. The way this should probably be done is to grab
+the figure handle corresponding to the axis you give, use this figure
+handle to create the new axes, and then hopeful everything would work.
+
+Do you want to try and implement this?
+","",""
+"issue_comment","450","nilearn","nilearn","bcipolli","2015-02-20 19:21:28","> Do you want to try and implement this?
+
+Thanks for the tips, and very relevant--I'm hitting issues in this code with the way axes are being generated (causing matplotlib to throw errors).
+
+I'll give it a try and update here if I'm able to use this info to overcome the current issue I've hit (using `plot_stat_map` in a subplot, passing the `axes` parameter).
+","",""
+"issue_comment","450","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:45:51","Fixed in #451 
+","",""

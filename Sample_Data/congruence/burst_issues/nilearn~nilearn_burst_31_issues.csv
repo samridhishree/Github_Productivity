@@ -1,0 +1,745 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,127,nilearn,nilearn,eickenberg,2013-11-08 12:51:57,"In IPython, if you type
+
+import nilearn
+
+and then
+
+nilearn.[TAB]
+
+you find numpy, scipy and sklearn, which are imported in nilearn/nilearn/__ init __.py
+
+I was wondering whether it would be possible to add selected, non memory intensive submodules in order to facilitate exploring the package.
+
+When trying to add e.g. 
+
+import io
+
+to nilearn/nilearn/__ init __.py, suddenly all sorts of other modules appear to be loaded, so I didn't go ahead and make this a pull request directly: The import seems difficult to control.
+
+So if there is a way to control precisely which submodules should be visible and there is a consensus on which ones these should be, I think this could be a useful addition.
+",start issue,Make nilearn tab complete navigateable?
+2,issue_closed,127,nilearn,nilearn,eickenberg,2014-03-19 17:35:39,,closed issue,Make nilearn tab complete navigateable?
+3,issue_comment,127,nilearn,nilearn,GaelVaroquaux,2013-11-08 15:36:05,"> Asking the question the other way round: Is there any submodule of
+> nilearn that shouldn't be loaded on import ?
+
+I wonder if we should load nilearn submodules on import. I don't think so
+because it leads to tight coupling that mean that if something, somewhere
+is broken, nothing in nilearn is usable. We can easily add it afterward,
+if we find that we should focus more on usability than portability.
+Removing it as an afterthought, on the other side, would be breaking
+compatibility.
+",,
+4,issue_comment,127,nilearn,nilearn,GaelVaroquaux,2013-11-08 18:15:16,"> Would importing a restricted amount of basic functionality, well
+> segmented, minimally susceptible to coupling, be OK?
+
+I'd rather have consistency: everything the same.
+
+> Alternatively, could we have a function init() or explore() which
+> imports the submodules such that one can explore them? [possibly to be
+> called if an IPython interpreter session is detected, but I admit this
+> could lead to trouble]
+
+That's a hack. Hacks are bad: they give bad habits and eventually break.
+
+> My worry is that non-explorability may potentially waste time for users
+> that are looking to explore their data quickly in an interpreter session
+> and are not sure of the exact naming of the commands. 
+
+I agree, and this is why we have to keep the option open to change our minds. However I want to get a better feeling of where nilearn is going before switching to an ""import everything"" strategy.
+",,
+5,issue_comment,127,nilearn,nilearn,eickenberg,2013-11-08 13:02:21,"OK, cool, I'll do that.
+
+Asking the question the other way round: Is there any submodule of nilearn that _shouldn't_ be loaded on import ?
+",,
+6,issue_comment,127,nilearn,nilearn,eickenberg,2013-11-08 16:52:03,"I totally agree that there is this risk in general.
+
+Would importing a restricted amount of basic functionality, well segmented, minimally susceptible to coupling, be OK?
+
+Alternatively, could we have a function init() or explore() which imports the submodules such that one can explore them? [possibly to be called if an IPython interpreter session is detected, but I admit this could lead to trouble]
+
+My worry is that non-explorability may potentially waste time for users that are looking to explore their data quickly in an interpreter session and are not sure of the exact naming of the commands. 
+",,
+7,issue_comment,127,nilearn,nilearn,eickenberg,2013-11-09 15:57:36,"i have to take away the import first
+
+On Saturday, November 9, 2013, bthirion wrote:
+
+> +1 for merging
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/nilearn/nilearn/issues/127#issuecomment-28128703
+> .
+",,
+8,issue_comment,127,nilearn,nilearn,AlexandreAbraham,2013-11-08 13:00:06,"You have to use a scope to avoid unwanted imports. For example, you can avoid numpy and scipy autocompletion by doing, in **init**.py:
+
+```
+def _check_dependencies():
+    try:
+        import numpy
+    except ImportError:
+        print 'Numpy could not be found, please install it properly to use nilearn.'
+
+    try:
+        import scipy
+    except ImportError:
+        print 'Scipy could not be found, please install it properly to use nilearn.'
+
+    try:
+        import sklearn
+    except ImportError:
+        print ('Scikit-learn could not be found,'
+               ' please install it properly to use nilearn.')
+
+_check_dependencies()
+```
+",,
+9,issue_comment,127,nilearn,nilearn,AlexandreAbraham,2013-11-08 13:05:51,"I think that _utils is reserved to internal stuff.
+",,
+10,issue_comment,127,nilearn,nilearn,AlexandreAbraham,2013-11-08 18:29:57,"This issue is not a nilearn issue. For its autocompletion, ipython builds a tree of all modules (and their associated submodules). The process is not automatic as it can take some time, there must be some cron-like thing involved. So if you just install nilearn, you won't get the completion. However, you can force ipython to rebuild the tree with magic command %rehashx. We've checked: Michael can autocomplete nilearn easily now.
+
+So, I'm +1 for merging the PR (scoping numpy, scipy and the sklearn) but there is no need to import all submodules.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,166,nilearn,nilearn,eickenberg,2014-02-21 12:34:30,"The automatic cropping function nilearn.image.crop_img discards all outer slices of the data array that are equal to zero and adjusts the affine transform accordingly.
+Using this function on an anat file I would like to crop didn't work as well as it should due to very small nonzero values outside the brain which impede the cropper from cropping closer. A relative threshold of 10^-15 \* np.abs(img.get_data()).max() instead of exact zero should solve the problem, but the question is whether this functionality is wanted.
+",start issue,Cropping again :)
+2,issue_closed,166,nilearn,nilearn,eickenberg,2014-03-19 17:34:46,,closed issue,Cropping again :)
+3,issue_comment,166,nilearn,nilearn,AlexandreAbraham,2014-02-24 23:10:32,"I would prefer a 'tol' parameter that can be set by the user. I don't like magic constant even if your proposition seems reasonable.
+",,
+4,issue_comment,166,nilearn,nilearn,GaelVaroquaux,2014-02-25 05:47:04,"I agree with Alex. It would be good if the cropping function took a parameter. Maybe 'threshold'?
+",,
+5,issue_comment,166,nilearn,nilearn,eickenberg,2014-02-25 05:55:22,"i totally agree. that is what my pr will contain. i was planning to make it
+a relative (""rtol"") tthreshold. which requires evaluating a max beforehand.
+any objections to this?
+
+On Tuesday, February 25, 2014, Gael Varoquaux notifications@github.com
+wrote:
+
+> I agree with Alex. It would be good if the cropping function took a
+> parameter. Maybe 'threshold'?
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHubhttps://github.com/nilearn/nilearn/issues/166#issuecomment-35976916
+> .
+",,
+6,issue_comment,166,nilearn,nilearn,GaelVaroquaux,2014-02-25 05:56:46,"> i was planning to make it a relative (""rtol"") tthreshold. which
+> requires evaluating a max beforehand. any objections to this?
+
+No, this sounds perfectly reasonnable.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,175,nilearn,nilearn,eickenberg,2014-03-19 18:13:15,"Addressing issue https://github.com/nilearn/nilearn/issues/174
+
+Proposed is a test to show that resample_img doesn't do what one would expect it to do when a 4D affine is given and no target shape specified. It keeps the old shape, leading to potentially a total loss of the relevant data from field of view.
+
+Remedy to follow
+",start issue,nilearn.image.resample_img given 4D affine but not target_shape behaviour to be changed
+2,issue_closed,175,nilearn,nilearn,GaelVaroquaux,2014-04-22 09:39:26,,closed issue,nilearn.image.resample_img given 4D affine but not target_shape behaviour to be changed
+3,pull_request_title,175,nilearn,nilearn,eickenberg,2014-03-19 18:13:15,"Addressing issue https://github.com/nilearn/nilearn/issues/174
+
+Proposed is a test to show that resample_img doesn't do what one would expect it to do when a 4D affine is given and no target shape specified. It keeps the old shape, leading to potentially a total loss of the relevant data from field of view.
+
+Remedy to follow
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,nilearn.image.resample_img given 4D affine but not target_shape behaviour to be changed
+4,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-25 10:19:17,"@eickenberg : I agree with your analysis on the decision tree of the function and the proposed fix.
+
+If you could proceed to applying your changes without any changes to the tests, it would be great. Thanks!
+",,
+5,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-25 10:27:35,"> The case ""3x3 transformation matrix + shape given"" is not treated neither in
+> the old nor in the proposed version.
+> 
+> It seems very ambiguous. Where would you place the origin? In this case
+> I would raise an exception...
+
+Yes.
+
+> @GaelVaroquaux could you comment on @bthirion's proposition to impose the
+> different behaviours using an explicit argument?
+
+I'd rather not.
+",,
+6,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-25 10:34:46,"> Well if you want to resample to a given size and shape, then you might
+> still provide a valid affine (with any translation vector) but then use
+> shape= 'minimal_bbox' to trigger a resampling with fixed FOV.
+
+But the translation vector is hard to compute. Such a function is in
+practice very hard to use. I find it counter intuitive to give a random
+translation vector and then tell the function to ignore it. I find it
+much more natural to not give a translation vector at all.
+
+> I think we should not go into multiple conventions for spatial
+> transforms to encode your use case otherwise we will have to spend some
+> time explaining people what this means and what it does.
+
+I think that this is a theoretical argument and that people haven't had
+any difficulty using this code. It's success compared to alternative
+resampling implementation tell us that the API is not too poorly defined.
+
+We could have a separate function for 3x3 and 4x4 transformations, but a
+lot of the code would be shared.
+",,
+7,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-25 10:50:11,"> In the usecases I can imagine, the 3x3 matrix never comes from nowhere. It
+> would most often come from a 4x4 matrix cropped to 3x3.
+
+No, it often comes from nowhere. For instance you want to work on a voxel
+size of (3 x 3 x 4), eg to reduce your dataset. You don't care about the
+offset, you just want to specify the voxel size.
+",,
+8,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 15:12:35,"Re the ""tricky ting"":could you please mention it in the ""notes"" section of the docstring.
+",,
+9,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 18:48:58,"The idea of cropping/uncropping for resampling is an excellent one. I'd love to have it in, but let's keep it for another time. Do you want to add an enhancement issue, so that we don't forget about this?
+",,
+10,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-28 00:06:14,"Ok is because we need to support old versions of scikit-learn I which this function was not present. Could you simply use assert_raises. Thanks
+
+<div>-------- Original message --------</div><div>From: eickenberg notifications@github.com </div><div>Date:27/03/2014  15:54  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Cc: Gael Varoquaux gael.varoquaux@normalesup.org </div><div>Subject: Re: [nilearn] nilearn.image.resample_img given 4D affine but not
+  target_shape behaviour to be changed (#175) </div><div>
+</div>The CI is failing because sklearn.utils.assert_raise_message seemingly cannot be imported in the particular environement used by Travis (everything passes on two Ubuntus here with sklearn installed)
+
+—
+Reply to this email directly or view it on GitHub.
+",,
+11,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-10 09:44:12,"> I am very bad at Gimp/inkscape etc, so I'll try to code one :)
+
+That's the spirit!
+",,
+12,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 12:46:31,"My comments before merge are the following:
+- Add your name to the author list of the resampling.py file
+- Investigate to see if you can use the np.pad function in the tests
+- A couple of sentences of description of the example.
+- Restyle the function definition of test_resampling_result_axis_permutation
+
+Optional but desired: integrate the example in the user documentation: building_blocks/data_preparation.html#resampling
+
+This is great work. Thanks a lot!
+",,
+13,issue_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-22 09:39:26,"I have merged by rebase. @eickenberg : I have improved a bit the docs, and specifically linking to the example, you can have a look in the following commit: https://github.com/nilearn/nilearn/commit/5532a1b13a98f3bce10eae4e5be27af42c39470e
+",,
+14,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-15 20:36:57,"Could I get a verdict on the example I added to the example galery? It may not live up to standards. I didn't use real images.
+",,
+15,issue_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 21:05:22,"Good job. I did not run the tests because I could not with my personal laptop, but I tried to review as carefully as possible and everything seems OK.
+
+I wonder if every use case handled by the code is actually useful, but I guess the proposed modifications made it more robust and convenient at least for some cases.
+",,
+16,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:12:39,"Thanks @VirgileFritsch for the review!
+",,
+17,issue_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-17 15:50:15,"> Could I get a verdict on the example I added to the example galery? It may not live up to standards. I didn't use real images.
+
+It is nice and I have nothing against it, except:
+1. the colors change between the reference and the transformed images.
+2. I would rather like plotting the four images on a grid so that I do not have to move the windows to browse them :) (Also I think it is more convenient for the documentation to have only one figure to handle)
+",,
+18,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-17 17:31:54,"Addressed color change by adding an equal `vmax` everywhere. However, placing everything in subplots, 2x2 makes it look somewhat ugly, so I removed that part again. Actually I coded this example so that it is visible in the online galery and wasn't expecting anybody to run it locally ... Maybe I am mistaken
+",,
+19,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-17 17:33:16,"My primary concern with the example is its clarity and whether it is sufficiently complex. The bounding box examples all happen in mm space, which is simple, even if the voxels do not live in mm space
+",,
+20,issue_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-18 12:35:22,":+1: for merging.
+",,
+21,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-21 16:33:08,"all points addressed. Thanks @GaelVaroquaux for the review.
+",,
+22,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-22 16:26:53,"Ah, cool, thanks! I wasn't sure whether or not to use some sort of tag in the .rst file.
+",,
+23,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-20 09:41:04,"Problem fixed, but this may call for a change of the decision tree structure inside resample_img (some branches may be useless), see comment in commit 2
+",,
+24,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-20 21:31:30,"if you know what affine you need, it should choose a box containing the
+data, not use the old shape. if this smells like a yagni feature we can
+always just raise an exception
+
+On Thursday, March 20, 2014, bthirion notifications@github.com wrote:
+
+> Please clarify the use case, this is unclear to me.
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHubhttps://github.com/nilearn/nilearn/pull/175#issuecomment-38220738
+> .
+",,
+25,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-20 22:29:26,"A usecase of the scenario 4D target affine given, but not target shape, is that we need our image to be indexed according to the coordinate system defined by the affine (eg when resampling a functional image to an anatomical image), but we do not need more voxels than strictly necessary to see the data (which eg may be spatially very restricted wrt to the size of the anatomical).
+
+If this usecase is questionable, then the 3D target affine given and no target shape needs to be reexamined as well.
+
+In any case, what nilearn was doing up until now, which is using the old shape of the functional file for the resampled image,  does not make any sense at all (cf the test I added in the first commit). So either we remove the optionality of the arguments target_affine and target_shape, or raise if affine 4D given and not target shape, or we make it do sensible things if some data are missing. The latter case is what is implemented now.
+",,
+26,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-21 08:59:21,"Gaël and I discussed the necessity of raising an exception if none of the data points to be transformed is in the positive orthant of the target affine.
+
+This should also be the case then for transformations with prescribed shape, in which case some refactoring of the decision tree in the function is necessary (this is the case anyway).
+
+Another possibility we have is to warn if only part of the data will be visible in the positive orthant of the affine. This functionality can detect unwanted croppings, but may become annoying if cropping was intended. I would like to hear your opinion on this before making the changes.
+
+All of these propositions are easy to implement - I just want to make sure I'm doing the right thing.
+",,
+27,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-21 15:11:45,"The beginning of the function regulates some cases:
+
+target shape given but not target affine ==> raise
+target shape given but not with exactly 3 entries ==> raise
+neither target shape nor target affine given ==> return img or copy of img
+if target affine is really close to affine and shapes identical ==> return img or copy of img
+
+This leaves us in the situation where there is definitely a target affine given which is different from the current one. I'll now describe how things were, how they are now, and how I think they should be.
+
+Status was: (Starting from l205, after the intro)
+- if no target shape given, put original shape as target shape (<-- the useless behaviour we discussed)
+- if affine shape is (3, 3), estimate bounding box, which includes estimating affine offset (origin) and shape (whether it is given or not).
+
+So affine shape (3, 3) overrides target_shape = orig_shape whether it was specified or not
+
+Status in PR:
+- if no target shape given, then if affine shape is (4, 4), estimate bounding box sensibly, keeping origin defined by affine, and including all data that is in positive orthant of affine. Else set target shape to original shape (<--- this case will always be overwritten now)
+- if affine shape is (3, 3) do what is done above
+
+So here, as we see, even if temporarily target shape is set to original shape, it will never stay that way, so this branch should be removed.
+
+My proposition:
+- calculate bounding box of data under the new affine
+- if 4D affine is given, then if any of the 3 max values of the bounding box is < 0, raise BoundingBoxException, because whether shape is given or not, none of the data will be seen, since none of it is in the positive orthant of the given affine.
+  (- optionally: if 4D affine is given, and any of the min values of the bounding box are < 0, possibly warn that some data will be cropped)
+- if 4D affine is given and no shape specified, calculate shape using bounding box
+- if 3D affine is given and no shape specified, calculate shape and affine origin using bounding box
+- proceed to resampling
+
+One case is missing totally. What if 3D affine is given and shape specified? This should possibly raise an Exception, since we don't know how the user would like the origin placed ...
+",,
+28,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-21 21:22:33,"Thanks! I was just about to put the result of our conversation here right now
+",,
+29,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-25 10:26:51,"The case ""3x3 transformation matrix + shape given"" is not treated neither in the old nor in the proposed version.
+
+It seems very ambiguous. Where would you place the origin? In this case I would raise an exception...
+
+@GaelVaroquaux could you comment on @bthirion's proposition to impose the different behaviours using an explicit argument?
+",,
+30,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-25 10:47:08,"In the usecases I can imagine, the 3x3 matrix never comes from nowhere. It would most often come from a 4x4 matrix cropped to 3x3.
+
+Another tricky thing that comes to my mind is the following: Assume you want to transform image 1 to the space of image 2 and you decide that you would like a minimal bounding box around image 1. The question now is, intuitively, would you want the newly calculated translation vector to respect the voxel space (ie the discretisation grid) of image 2? In this case you need the translation vector and the bounding box will lie within a voxel of the optimal bounding box which disrespects the voxel space.
+
+If I am not expressing myself clearly, please let me know :)
+",,
+31,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-26 08:38:05,"Code refactored. Some differences with respect to what was planned:
+- bounding box cannot be calculated for 3x3 transformation matrix using get_bounds. It has to be embedded in a 4x4 transformation matrix first
+- as a consequence, the refactored part of the code reads like this (but see extensive comments as well):
+
+1) Make a private target_affine_ containing target_affine if it is 4x4 or embedding target_affine if it is 3x3
+2) Calculate bounding box
+3) Update target_affine_ and bounding box if target_affine is 3x3
+4) If target_shape is not given, calculate it from bounding box
+5) Check whether data can be seen after transformation to target_affine [This checks only whether there exists an axis along which all voxel index values would be negative for the transformed data]
+
+I also added to the preliminaries that 3x3 transformation matrix and given shape raises an exception.
+",,
+32,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-26 10:19:38,"Re the ""tricky thing"" I mentioned 2 posts up: If anybody ever needs this, it is easily done in two steps: resample_img given 4x4 transformation matrix followed by a call to the crop_img function. This respects the voxel grid and the bounding box is as close as possible without cropping nonzero data.
+",,
+33,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-26 15:39:01,"Prose is up.
+",,
+34,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-26 15:43:46,"Also (not that I want to complicate things, just being rigorous), resampling may be sped up by cropping away anything unnecessary before the resampling step, as we did transparently with the masker (https://github.com/nilearn/nilearn/commit/b45a266ff06481f415f5b9ff1d257d89a3e2dc9f).
+
+If I am not mistaken, this step would fit completely transparently into resample_img as well. This may be better kept for another time, though.
+",,
+35,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-27 11:03:24,"Thanks for the comments. Added some stronger tests. Will take care of cosmetics next.
+
+Even stronger tests are possible, but these definitely caught the bugs.
+",,
+36,issue_comment,175,nilearn,nilearn,eickenberg,2014-03-27 14:54:56,"The CI is failing because sklearn.utils.assert_raise_message seemingly cannot be imported in the particular environement used by Travis (everything passes on two Ubuntus here with sklearn installed)
+",,
+37,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-10 08:57:25,"I am very bad at Gimp/inkscape etc, so I'll try to code one :)
+",,
+38,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-11 12:26:07,"I added an example visualizing some transforms.
+The problem I see is that the code is maybe doing something contravariant to what I am explaining. I did my best to avoid that, though.
+",,
+39,issue_comment,175,nilearn,nilearn,eickenberg,2014-04-11 12:32:01,"test_canica_square_img failed on one of the two test builds
+",,
+40,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 18:52:05,"I think that you have a logic problem here (missing '_' on the left hand side of the equation).
+
+The fact that no test fails is probably telling us that our test suite is too light.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+41,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-03-26 18:53:44,"Ouch! Thanks!
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+42,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-03-26 18:54:37,"OK, I prefer writing the failing test before correcting this
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+43,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 18:55:45,"> OK, I prefer writing the failing test before correcting this
+
+Definitely good policy! Thanks a lot for caring about code quality.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+44,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:00:18,"Actually, I am wondering if it is not simply telling us that this branch of the 'if' is not useful.
+
+I believe that target_affine_ is used to compute the bouding box, however, if the shape is (3, 3), the bounding box is recomputed. So I think that the 2 if statements that follow each other could be merged in one, and the variable target_affine_ is not necessary.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+45,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:08:34,"OK, after reading completely and slowly the full code of the function, my conclusions are:
+- The typo you put in matters. The code is indeed currently wrong, which tells me that our test suite is incomplete
+- I still believe that the 2 successive if statements should be merged, because there is no point computing the bounds twice when the shape is 3 x 3.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+46,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:09:42,"I am dense, horribly dense, and slow... Forget point 2 above...
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+47,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:10:41,"Maybe we shouldn't be testing our resampling code with 'eye' as an affine.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+48,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:13:23,"Also, PEP8 tells you that the 'd' in '4D' should not be capitalized.
+
+And you know how important it is to follow the Book.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+49,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:15:33,"I think that a comment more explicit, that does not refer to a 'now' (ie before was different) but more to the expected behavior, would be good here.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+50,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:16:50,"sklearn.utils.testing has an assert_raises_message, which is what I think you are looking for.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+51,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-03-26 19:17:12,"Unecessary empty line.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+52,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-03-27 12:50:07,"This test is only to see whether an error is raised if the transformed data does not lie within the possible voxel space defined by target_affine.
+
+Will make function PEP8 compliant
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+53,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:14:03,"Why is the import here if commented?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(11, '', u'nilearn/image/tests/test_resampling.py')"
+54,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-15 20:17:43,"These tests could be uncommented when sklearn backward compatibility is removed. Bad practice? (I thought this could raise attention to old forms of testing, since this often goes unnoticed in the future). I have no problem removing it if it is confusing/ugly/not the done thing
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(11, '', u'nilearn/image/tests/test_resampling.py')"
+55,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:26:02,"Isn't the syntax `[.., 0]` more conventional? (or is it less? or equally?).
+I do not know actually, but would like to ;)
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+56,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-15 20:29:30,"I guess I could use it. The fact that I know exactly how many axes I have and that they are not too many (<=3~4) made me use [:, :, 0]. But this is feeling, not convention. I don't know if there are conventions
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+57,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-15 20:30:54,"In the past stuff like `[..., 0, :]` has played evil tricks on me, so I have not used it whenever possible. Again, personal preference, not convention. I am happy to change it.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+58,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:32:13,"_geometric_ transformation?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+59,pull_request_commit_comment,175,nilearn,nilearn,AlexandreAbraham,2014-04-15 20:32:33,"Generally, I use the syntax `[..., 0]` when `ndim > 4`. It is more convenient but it is less informative and more error prone. For example here, you know immediatly that the data is 3D. If the data becomes 4D because of an error, then an error will be raised here.
+
+Plus, in the particular case of imshow, I like to know exactly which dimensions are displayed.
+
+So I prefer `[:, :, 0]` in this case.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+60,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:32:55,"image (lowercaps ""i"")
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+61,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-15 20:34:23,"good point
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+62,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-15 20:34:31,"thanks
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+63,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:35:25,"Need to update `target_affine` argument description accordingly.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+64,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:41:21,"Affine _shape_ should be (4, 4)
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+65,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:44:34,"`data.shape` has not been checked, so `data.shape[:3]` could fail.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(105, '', u'nilearn/image/resampling.py')"
+66,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:46:01,"Is the call to `np.array` necessary?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+67,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:47:17,"Indentation.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+68,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:51:57,"Unnecessary ""will"". ""Pad"" (uppercase ""P"").
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+69,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:52:36,""""""" on a new line
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+70,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:55:55,"I do not like this because if `len(args) % 2 == 1`, it is probably an error from the user. Allowing him to avoid specifying only the second padding value of the last axis is weird --> why the ""max"" value and not the ""min""? why the last axis only would be concerned?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+71,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:58:21,"I was told that this abbreviation is not OK and that we should better use a mere ""import nibabel"". But as far as I am concerned, I tend to use ""import nibabel as nb"" in my own code (by habit).
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+72,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 20:59:15,"+1 could be on the previous line.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+73,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 21:00:19,"I can find no `affine2` so `affine1` could simply be `affine`.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+74,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-15 21:02:01,"OK. Thanks for explanation.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+75,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:05:53,"OK, kept the current version
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+76,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:06:11,"addressed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+77,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:06:27,"addressed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+78,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:07:16,"Did the update, realized that a big description is in ""Notes"", removed the update and added a ""(see Notes)"" 
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+79,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:07:27,"addressed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+80,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:08:35,"Not addressed, because `check_niimg` is used in `resample_img`. Although `check_niimg` does not check for image size, if we wanted to check, it should probably be there, right?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(105, '', u'nilearn/image/resampling.py')"
+81,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:08:56,"removed call to `np.array`
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+82,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:09:18,"indented properly
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/resampling.py')"
+83,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:09:28,"addressed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+84,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:10:51,"adressed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+85,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:11:23,"replaced by a `ValueError` if bad number of arguments is passed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+86,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:11:43,"changed nb -> nibabel
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+87,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:12:01,"was did
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+88,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-16 11:12:18,"gave all affines explicit names
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+89,pull_request_commit_comment,175,nilearn,nilearn,VirgileFritsch,2014-04-17 15:03:45,"I guess not because your use case is more restrictive, but since a lot of things would break with, say, 2D nii images, I think you can ignore my comment ;)
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(105, '', u'nilearn/image/resampling.py')"
+90,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-17 15:08:44,"Except in flatworld
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(105, '', u'nilearn/image/resampling.py')"
+91,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 11:43:34,"How much of this function boils down to np.resize?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(26, '', u'nilearn/image/tests/test_resampling.py')"
+92,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 11:45:03,"There should not be an empty line here. Also, I believe that the comment that you put above the function definition should be put right after it. (Python style conventions).
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+93,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 11:45:43,"Please comment a bit more and tell us what we should learn from the example in the docstring.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+94,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-21 11:48:27,"This function does _zero-padding_ of an `np.ndarray`. As far as I can tell, `np.resize` just makes a new array of desired size and fills it with the ravelled original data, repeating if necessary. Not sure how I could use it for this.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(26, '', u'nilearn/image/tests/test_resampling.py')"
+95,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-21 11:49:22,"as a comment or as a doc string?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+96,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-21 11:52:41,"This is where it becomes tricky. Describing the images I can definitely underline exactly what the function is supposed to do, but maybe the example is too simple: I chose mm space to be represented by `np.eye(4)`. The data are described by a different affine, from which I then transform to millimeter space using 3 different techniques. Can this cause a potential confusion between the target space of the transformation and millimeter space? This is my worry, but I am not entirely sure how to do this better.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+97,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 12:29:20,"> This function does zero-padding of an np.ndarray. As far as I can tell,
+> np.resize just makes a new array of desired size and fills it with the
+> ravelled original data, repeating if necessary. Not sure how I could
+> use it for this.
+
+Good point. How about np.pad?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(26, '', u'nilearn/image/tests/test_resampling.py')"
+98,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 12:30:12,"> as a comment or as a doc string?
+
+As you whish. If it were not a test, I would say a docstring, but in
+tests, docstrings are printed by nosetest, so they may be
+counterproductive.
+
+G
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+99,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 12:42:13,"I think that your example is good. I think that you just need one or two more lines in the header describing what it does. Maybe you could put a voxel size of 1.5 if you want to avoid having 1mm = 1voxel. But in general I think that it is good. Actually I think that it should be linked to in the documentation, in building_blocks/data_preparation.html#resampling and the images should be included.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+100,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-21 15:31:19,"I checked in IPython and I don't have `np.pad` :) -- it is a new feature in 1.7. What are the backwards compatibility requirements with regards to numpy?
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(26, '', u'nilearn/image/tests/test_resampling.py')"
+101,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-21 15:33:39,"addressed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'nilearn/image/tests/test_resampling.py')"
+102,pull_request_commit_comment,175,nilearn,nilearn,GaelVaroquaux,2014-04-21 15:34:33,"> I checked in IPython and I don't have np.pad :) -- it is a new feature in 1.7.
+> What are the backwards compatibility requirements with regards to numpy?
+
+OK, that answers my question. No need to look further.
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(26, '', u'nilearn/image/tests/test_resampling.py')"
+103,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-04-21 16:30:36,"Addressed
+",5dc268c263a105ee66e02a8cbd0fe948e2e0b765,"(None, '', u'plot_affine_transformation.py')"
+104,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-19 18:08:29,"Created a test showing that new bounding box after resampling using 4D affine, but without specifying new shape can completely miss the data.",70b9f961e894212d856c0f7a7504b57e48b23836,
+105,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-20 09:37:28,fixed shape adaptation problem,e63b3cbcd9e606c00a86a2ae785cbcca1f0375d2,
+106,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-20 09:49:58,added test for new shape,d124028b4bcb2652bed13035ca9154b4d44180d8,
+107,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-25 18:20:03,"TDD, provided cases where Exceptions should be raised. Added BoundingBoxException",61865e54db9b6ba529fcea959750475534da9bee,
+108,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-26 08:30:47,"Refactored resample_img, raising appropriate exceptions when necessary",5f18d1ad806461f0047504598e3a03d88970b597,
+109,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-26 15:38:19,Added documentation,d35722bc58bde516f0674289b5486eae11278013,
+110,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-27 08:35:57,Wrote failing test for 3x3 affine issue,d00a702359896b3d702eb97afc2ff279d206b40b,
+111,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-27 11:00:09,Added tests for axis permutation matrices,b9d9ae39e606607df7fe25cf07dda801da60a1cb,
+112,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-27 11:00:34,Tests passing,437e260ed0d9452c7319b91a009c33b8f7b5eeec,
+113,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-27 13:00:31,Addressing Gael's comments,1b6569848e850db9ad9fc139f9940eaa82ccedc4,
+114,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-27 13:06:25,Removed target_affine_ by overwriting target_affine and setting missing_offset=True/False,a4c600c8e644f7a295454d8c5a04c89a22e0a5ef,
+115,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-03-28 10:08:37,Commented assert_raise_message and added assert_raises in order to be compliant with backwards compatibility requirements wrt sklearn,764855a9506c24ef06f67c745ed89eecefecda61,
+116,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-11 12:23:22,added an example for visualizing affine transform,d21e17529f9e358e30d51a6674aeec8fe9519510,
+117,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 08:37:44,elaborated on bounding box error,02aba54a00e3a9d64f65b4894ce11df0c1b1a662,
+118,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 08:38:58,Image image typo,46c93e1050b93226e16ae70c9684ab8a137b6c35,
+119,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:21:10,embellished docstring,0969429e985743fc899b19ee784ddc9c22aed3a9,
+120,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:33:36,corrected error message,9cc78545cc42faaef1022ed6aaba4de2f84c7eeb,
+121,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:35:37,"removed docstring embellishment, added reference to notes",444a99250e23ac89d10705c59baf3ea6dbfc93fb,
+122,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:38:47,removed np.array(list) where not necessary,052d851f608dafe374f9f7d3f633b9e757caf0e8,
+123,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:39:24,indentation,8991db07857eccdd8e92e1f44e4e2a271ab74264,
+124,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:40:13,typo docstring pad,c4928b84d1766b44c351c8f589a0f4a9c8b0b429,
+125,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:42:22,raised exception in padding instead of fumbling parameters to the right number,cfbada088ccf6c66c048cd1fbf9c5e52b6f77b9b,
+126,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:43:29,nb --> nibabel,69a848e369aa18f9254b381536fd3ea5437dee53,
+127,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:49:59,squeezed operations,8aacb366e5a78b0ca11b40cb59b8b13a37f1ce9b,
+128,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 09:59:26,"affine1 -> source_affine, made target_affine_*x* explicit",3480c29ecfc4f669f4f0f50f6441f32206be387c,
+129,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-16 11:10:42,pad docstring,6733734d978ad7959322bc6ae233f038f271ea68,
+130,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-17 17:27:45,added vmax in plots to fix colors,20066175f089bb6f85f21e3b5a2ac76601f910c6,
+131,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-21 15:33:17,transferred comment before test into test,89929f5789c53f574634868fc1ab44b272c9f30a,
+132,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-21 16:07:57,Separated mm space affine from first transformation affine to avoid confusion,91cf308070c2296ecb452187b07a0cd38a1830a7,
+133,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-21 16:27:12,Added explanation to example,d9fd0408071fbb7a9a51279254de07e6418fe45a,
+134,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-21 16:30:14,added reference to example in docs,d8fae6f1fd24bff56bcd6cf8f04505ea811f7704,
+135,pull_request_commit,175,nilearn,nilearn,eickenberg,2014-04-21 16:32:19,added name to authors,5dc268c263a105ee66e02a8cbd0fe948e2e0b765,
+136,pull_request_commit_comment,175,nilearn,nilearn,eickenberg,2014-03-20 09:39:46,"This line may be obsolete (it is called if the affine shape is 3x3, but is in this case overwritten later)
+",e63b3cbcd9e606c00a86a2ae785cbcca1f0375d2,"(17, 218, u'nilearn/image/resampling.py')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,168,nilearn,nilearn,eickenberg,2014-02-25 08:25:10,"Adressing issue https://github.com/nilearn/nilearn/issues/166
+
+Added rtol=1e-6 to crop_img. Setting this to 0 would revert this back to the ""0-tolerance"" way it was.
+
+Test included
+",start issue,Added relative tolerance to cropping
+2,issue_closed,168,nilearn,nilearn,GaelVaroquaux,2014-03-19 10:35:52,,closed issue,Added relative tolerance to cropping
+3,pull_request_title,168,nilearn,nilearn,eickenberg,2014-02-25 08:25:10,"Adressing issue https://github.com/nilearn/nilearn/issues/166
+
+Added rtol=1e-6 to crop_img. Setting this to 0 would revert this back to the ""0-tolerance"" way it was.
+
+Test included
+",56dc23fdb6f4458f7e90723565080af1f443ed2a,Added relative tolerance to cropping
+4,pull_request_merged,168,nilearn,nilearn,GaelVaroquaux,2014-03-19 10:35:52,Added relative tolerance to cropping,dcb2c3bd0c5301f4f84f4b450447b734e9bd9609,Pull request merge from eickenberg/nilearn:cropping to nilearn/nilearn:master
+5,issue_comment,168,nilearn,nilearn,eickenberg,2014-02-26 08:41:39,"As referred to in the issue, the present adaptation requires evaluating the maximum norm. Contrary to the previous version which checked only equality to 0, this makes a floating point copy of the image instead of only one binary one and leads to higher memory consumption.
+
+@AlexandreAbraham's first remark was this, along with the proposition to evaluate the infinity norm using max(array.max(), -array.min()) and identifying threshold passing using a logical or on negative or positive threshold passing.
+
+This makes 2-3 binary copies instead of the equivalent of around 8-9 for the floating point absolute value. A clear gain in memory usage, but a potential loss in code readability. Where do we set the tradeoff?
+",,
+6,issue_comment,168,nilearn,nilearn,GaelVaroquaux,2014-03-05 12:11:10,"I don't think that the loss in readability for @AlexandreAbraham 's suggestion will be substantial. I would favor giving it a try.
+",,
+7,issue_comment,168,nilearn,nilearn,eickenberg,2014-03-05 15:06:15,"Like this for example?
+
+What about the default value for rtol? 0 or 1e-6?
+",,
+8,issue_comment,168,nilearn,nilearn,GaelVaroquaux,2014-03-05 16:55:14,"Small comment on inlining the two temporary arrays for fast garbage collection. Aside from that, :+1: for merge from my side.
+",,
+9,issue_comment,168,nilearn,nilearn,eickenberg,2014-03-05 17:01:42,"Two temporary arrays now inline.
+
+Is default rtol=1e-6 OK, or is 0. to be preferred in order to have exact same behaviour as before?
+",,
+10,issue_comment,168,nilearn,nilearn,GaelVaroquaux,2014-03-05 18:05:22,"> Is default rtol=1e-6 OK, or is 0. to be preferred in order to have exact same
+> behaviour as before?
+
+How about cutting the pear in two ( :) ). Would 1e-8 work for your
+usecase?
+",,
+11,issue_comment,168,nilearn,nilearn,GaelVaroquaux,2014-03-18 23:18:16,"@eickenberg : could you just check my last question and hopefully finish this PR so that we merge it?
+
+It will make your own code easier to have this guy merged in.
+",,
+12,issue_comment,168,nilearn,nilearn,eickenberg,2014-03-19 09:16:43,"1e-8 works for me.
+Do I revert to one commit before or not (trade off btw nice looking code and some memory saving)
+",,
+13,issue_comment,168,nilearn,nilearn,eickenberg,2014-03-19 10:30:02,"reverted to more memory saving setting (which remains very readable) and changed rtol to 1e-8
+",,
+14,pull_request_commit_comment,168,nilearn,nilearn,GaelVaroquaux,2014-03-05 16:51:31,"Using in here an 'np.abs(data) < rtol \* infinity_norm' would be more memory friendly for two reasons. First you would avoid having two temporary buffers and you would have only one. Second, it would be garbage collected very quickly, whereas here you have to wait for the function to exit to have garbage collection kick in.
+",56dc23fdb6f4458f7e90723565080af1f443ed2a,"(None, '', u'nilearn/image/image.py')"
+15,pull_request_commit_comment,168,nilearn,nilearn,GaelVaroquaux,2014-03-05 16:54:15,"Actually, maybe my first point is wrong, because of the different dtypes (the masks use 8 bytes, while the data uses probably 32 or 64 bytes). I would just inline the two arrays and not take in account my idea of using the abs. Sorry for the noise.
+",56dc23fdb6f4458f7e90723565080af1f443ed2a,"(None, '', u'nilearn/image/image.py')"
+16,pull_request_commit_comment,168,nilearn,nilearn,eickenberg,2014-03-05 16:55:22,"This is almost what I had before. The key argument against it was that np.abs(data) creates a float array which is 8 times larger than a bool/byte array of the same size.
+
+Before I had saved these absolute values to a variable, making them persist for longer. So your proposition seems like the golden middle between the two.
+",56dc23fdb6f4458f7e90723565080af1f443ed2a,"(None, '', u'nilearn/image/image.py')"
+17,pull_request_commit_comment,168,nilearn,nilearn,GaelVaroquaux,2014-03-05 17:51:16,"> This is almost what I had before. The key argument against it was that np.abs
+> (data) creates a float array which is 8 times larger than a bool/byte array of
+> the same size.
+
+Yes. I figured that in the mean time, and decided it was a bad idea.
+Sorry for the noise. I am slow. Maybe it's worth putting a comment on
+this design decision, to avoid reiterating this discussion.
+
+G
+",56dc23fdb6f4458f7e90723565080af1f443ed2a,"(None, '', u'nilearn/image/image.py')"
+18,pull_request_commit,168,nilearn,nilearn,eickenberg,2014-02-25 08:19:25,Added relative tolerance to cropping,990e0782613a785b1a93ab800e762ad5d169f54f,
+19,pull_request_commit,168,nilearn,nilearn,eickenberg,2014-03-05 14:49:55,Merge branch 'master' of github.com:nilearn/nilearn into cropping,4ce20110a07cd4908fe7982d49accda5cde29c3d,
+20,pull_request_commit,168,nilearn,nilearn,eickenberg,2014-03-05 15:04:11,refactored threshold passing evaluation to use less memory,b5b4a8a1488e8bd72a99b3969e85068da0fab975,
+21,pull_request_commit,168,nilearn,nilearn,eickenberg,2014-03-05 16:59:19,Inlined threshold checking,816b9bcf25d4047fcdf1ef14fbdb3401ba1dd599,
+22,pull_request_commit,168,nilearn,nilearn,eickenberg,2014-03-19 10:28:20,changed rtol to 1e-8 and saved some memory by avoiding np.abs,56dc23fdb6f4458f7e90723565080af1f443ed2a,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,173,nilearn,nilearn,VirgileFritsch,2014-03-19 15:53:15,"Replacement of the permuted F-test with a t-test to afford one-sided tests.
+Two-sided tests equivalent to F-tests can still be performed (setting the `two_sided_test` argument to `True`). The example shows how to perform a one-sided test and the opposite test with one single call the permuted OLS (thus reducing the computation costs by two).
+
+The unitary tests are a bit more tricky due to the absence of a simple function performing a massively univariate t_test in the presence of covariates.
+",start issue,NF: One/two-sided tests in permuted OLS (replace F-test with t-test)
+2,issue_closed,173,nilearn,nilearn,VirgileFritsch,2014-04-28 12:17:36,,closed issue,NF: One/two-sided tests in permuted OLS (replace F-test with t-test)
+3,pull_request_title,173,nilearn,nilearn,VirgileFritsch,2014-03-19 15:53:15,"Replacement of the permuted F-test with a t-test to afford one-sided tests.
+Two-sided tests equivalent to F-tests can still be performed (setting the `two_sided_test` argument to `True`). The example shows how to perform a one-sided test and the opposite test with one single call the permuted OLS (thus reducing the computation costs by two).
+
+The unitary tests are a bit more tricky due to the absence of a simple function performing a massively univariate t_test in the presence of covariates.
+",d02ce1783248340737db82dc753bec149f83a3cc,NF: One/two-sided tests in permuted OLS (replace F-test with t-test)
+4,pull_request_merged,173,nilearn,nilearn,VirgileFritsch,2014-04-28 12:17:36,NF: One/two-sided tests in permuted OLS (replace F-test with t-test),40fbf016f760e88269b2012ac932493ff7f9e7b8,Pull request merge from VirgileFritsch/nilearn:permuted_ols_tstat to nilearn/nilearn:master
+5,issue_comment,173,nilearn,nilearn,VirgileFritsch,2014-04-18 12:32:52,"If @GaelVaroquaux is okay with the coverage, I propose to merge since @bthirion approved already.
+",,
+6,issue_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-21 14:10:45,"With regards to test coverage, I suspect that you did not remove the '.coverage' file, and thus it is reporting overly optimistic coverage.
+
+I do find that line 200 of permuted_least_squares is not tested and to check this, you can replace it by something that raises an exception. The tests run fine. I really think that I'd like this to be tested, as I am worried that a fairly important behavior goes untested.
+",,
+7,issue_comment,173,nilearn,nilearn,VirgileFritsch,2014-04-23 15:00:48,"You were right, the .coverage was messing up things! Great thing that you saw this. I am impressed with the quality of the review. Thanks a lot :)
+
+I addressed all your comments in the last commit. Lines that remain untested correspond to warnings that are not really important. They could even mostly be converted in a verbose mode.
+",,
+8,issue_comment,173,nilearn,nilearn,VirgileFritsch,2014-04-24 15:10:32,"One comment was forgotten, so I addressed it.
+
+@bthirion voted +1 on this (https://github.com/nilearn/nilearn/pull/173#issuecomment-38631068). @GaelVaroquaux ok? (since you reviewed it ;)
+",,
+9,issue_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-24 21:03:42,"Great job! :+1: for merge.
+
+Feel free to merge. I made a comment about a warning. If you have an idea on how to improve it, it would be great. But elsewhere just merge without worrying about it.
+
+You don't need an extra review, merge when you are ready.
+
+Thanks a lot.
+",,
+10,pull_request_commit_comment,173,nilearn,nilearn,bthirion,2014-03-20 21:10:59,"only positive effects
+
+-> negative effects are tested in another test. 
+Actually I'm not sure I understand what this sentence means.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'doc/building_blocks/searchlight.rst')"
+11,pull_request_commit_comment,173,nilearn,nilearn,VirgileFritsch,2014-03-25 17:00:29,"I mean an effect and its ""opposite"".
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'doc/building_blocks/searchlight.rst')"
+12,pull_request_commit_comment,173,nilearn,nilearn,VirgileFritsch,2014-03-25 17:06:43,"It seems to me that we often go back on the questions of 1) testing contrasts, 2) having confounding variables in the model. I heard Gael saying that scikit-learn's API for linear models was not optimal. Would it be improved to take 1 and 2 into account, I would be glad to simplify the current tests.
+That said, I am aware we should not modify a general library such as scikit-learn to address the need of a more specific one (here nilearn). But, if it turns out that the use case involving 1 and 2 is more and more encountered, maybe it would be worth to have a discussion about it to be considered in scikit-learn.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(18, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+13,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-03-25 17:09:03,"> maybe it would be worth to have a discussion about it to be considered in
+> scikit-learn.
+
+This is really a nilearn question, not a scikit-learn question. Contrasts
+have no meaning in scikit-learn. We are going to have to come up with our
+own API here.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(18, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+14,pull_request_commit_comment,173,nilearn,nilearn,VirgileFritsch,2014-03-25 17:10:34,"Many tests are required (intercept/no intercept, covars/no covars, multivariate targets/tested variates).
+If we decide to have both an F- and a t-test, there would be twice as many tests, and the code would be harder to maintain.
+I advocate keeping the code simple for now by only considering t-test and see if this is enough for users.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(94, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+15,pull_request_commit_comment,173,nilearn,nilearn,VirgileFritsch,2014-03-25 17:11:44,"I do not like the code above but did not find any simplest way to remove the minus sign in the colorbar's ticks.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'plot_haxby_mass_univariate.py')"
+16,pull_request_commit_comment,173,nilearn,nilearn,VirgileFritsch,2014-03-25 17:13:01,"Ok. That's a major contribution then.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(18, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+17,pull_request_commit_comment,173,nilearn,nilearn,bthirion,2014-03-25 22:34:23,"The sign-swapping approach is used only when you test the intercept. When you test other covariates, you simply use a permutation.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(45, '', u'doc/building_blocks/searchlight.rst')"
+18,pull_request_commit_comment,173,nilearn,nilearn,bthirion,2014-03-25 22:39:10,"independently
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+19,pull_request_commit_comment,173,nilearn,nilearn,VirgileFritsch,2014-03-26 09:38:45,"Yes, this is explained in the footnote. Here, I do not mention _sign_ swapping, but swapping the _signal values_. Former wording was ""exchange[ing] the signal value"" but was corrected to ""swap[ping] the signal value"" in commit 9223931ed397589ce58178461634313012e16e60 so as to follow a recommendation by a PR reviewer. 
+",d02ce1783248340737db82dc753bec149f83a3cc,"(45, '', u'doc/building_blocks/searchlight.rst')"
+20,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-21 13:58:11,"I would add "": both positive and negative effects are considered; the null hypothesis is that the effect is zero."".
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+21,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-21 13:59:48,"And here I would add ""The null hypothesis is that the effect is zero or negative"".
+
+I think that it is very important to be super explicit here, as this is a place where people might get things wrong and then come to false conclusions on their data.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+22,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-21 14:00:12,"Same remarks.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+23,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-21 14:05:19,"F scores or T scores?
+",d02ce1783248340737db82dc753bec149f83a3cc,"(28, '', u'plot_haxby_mass_univariate.py')"
+24,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-21 14:06:08,"How about you do not remove the minus sign? It's not the end of the world and having a simpler example is a good thing for beginners.
+",d02ce1783248340737db82dc753bec149f83a3cc,"(None, '', u'plot_haxby_mass_univariate.py')"
+25,pull_request_commit_comment,173,nilearn,nilearn,VirgileFritsch,2014-04-23 12:29:16,"F-scores is OK for this part of the code (we compare 1. analytic p-values corresponding to F-scores given by f_regression ; 2. p-values corresponding to t-scores computed from permuted data)
+",d02ce1783248340737db82dc753bec149f83a3cc,"(28, '', u'plot_haxby_mass_univariate.py')"
+26,pull_request_commit,173,nilearn,nilearn,VirgileFritsch,2014-03-19 15:33:47,NF: One/two-sided tests in permuted OLS (replace F-test with t-test),d62c42ffccaa9e78418b23ed656304c0498d09b0,
+27,pull_request_commit,173,nilearn,nilearn,VirgileFritsch,2014-03-19 15:54:22,permuted OLS: clean example (matplotlib colorbar stuffs),a2944057fe2a4c126d64ed450cd3902a7a81fb3c,
+28,pull_request_commit,173,nilearn,nilearn,VirgileFritsch,2014-03-26 09:43:14,Typos,0b311ca660cfc19474f82338d7ad28e89967da4c,
+29,pull_request_commit,173,nilearn,nilearn,VirgileFritsch,2014-03-26 09:44:06,Typos (2),c1d8b72e9a83a8f1e2685b8b9c1fef7d5f70fbd0,
+30,pull_request_commit,173,nilearn,nilearn,VirgileFritsch,2014-04-23 14:57:55,Permuted OLS: code coverage + associated bug fix + cosmit.,3464302143240b48268bc86e0d06bb4896b87490,
+31,pull_request_commit,173,nilearn,nilearn,VirgileFritsch,2014-04-24 15:02:18,"Permuted OLS: simplify example.
+
+The minus sign is not removed in some of the figure ticks for which
+it should be. However, the code is simpler by about five lines.",ebf277b41fadc9a96ef0cb33ac57abf79641844b,
+32,pull_request_commit,173,nilearn,nilearn,VirgileFritsch,2014-04-28 11:58:19,Permuted OLS: DOC: improve warning message.,d02ce1783248340737db82dc753bec149f83a3cc,
+33,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-24 21:01:08,"I am not sure that I understand completely the message of this warning. If I ran code and I got it, I wouldn't really know what happened and how to fix it.
+",3464302143240b48268bc86e0d06bb4896b87490,"(60, 429, u'nilearn/mass_univariate/permuted_least_squares.py')"
+34,pull_request_commit_comment,173,nilearn,nilearn,GaelVaroquaux,2014-04-24 20:55:59,"Thanks!
+",ebf277b41fadc9a96ef0cb33ac57abf79641844b,"(None, None, None)"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,170,nilearn,nilearn,GaelVaroquaux,2014-03-06 13:01:25,"In the news bar, we should add an entry on the frontiers paper. This is done by editing the jinja template. Affecting this to @AlexandreAbraham, as he is the first author of the paper.
+",start issue,Add a news on the frontiers paper
+2,issue_closed,170,nilearn,nilearn,GaelVaroquaux,2014-03-19 05:48:06,,closed issue,Add a news on the frontiers paper
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,171,nilearn,nilearn,AlexandreAbraham,2014-03-06 15:20:33,"Address issue #170. I don't like the rendering of the text, suggestions are welcome.
+",start issue,Add a news for frontiers paper.
+2,issue_closed,171,nilearn,nilearn,GaelVaroquaux,2014-03-19 05:47:43,,closed issue,Add a news for frontiers paper.
+3,pull_request_title,171,nilearn,nilearn,AlexandreAbraham,2014-03-06 15:20:33,"Address issue #170. I don't like the rendering of the text, suggestions are welcome.
+",15d43b75361447d89410edc30e898ce278feb887,Add a news for frontiers paper.
+4,pull_request_merged,171,nilearn,nilearn,GaelVaroquaux,2014-03-19 05:47:43,Add a news for frontiers paper.,3e698a284053336f50853569353a1a297e551099,Pull request merge from AlexandreAbraham/nilearn:frontiers_news to nilearn/nilearn:master
+5,issue_comment,171,nilearn,nilearn,AlexandreAbraham,2014-03-06 15:47:52,"@GaelVaroquaux ping!
+",,
+6,issue_comment,171,nilearn,nilearn,GaelVaroquaux,2014-03-06 17:00:04,"Pong
+",,
+7,issue_comment,171,nilearn,nilearn,GaelVaroquaux,2014-03-06 17:02:59,"Looks great. I would just make it shorter. For instance, you can remove the author and the title, and simply make the 'journal article' clickable. Also, I would replace 'journal article' by 'paper'.
+",,
+8,issue_comment,171,nilearn,nilearn,GaelVaroquaux,2014-03-06 17:03:23,"Once you make these changes, merge without waiting for my feedback. Thanks!
+",,
+9,issue_comment,171,nilearn,nilearn,GaelVaroquaux,2014-03-18 23:17:23,"@AlexandreAbraham : do you think that you could wrap this guy up?
+",,
+10,issue_comment,171,nilearn,nilearn,AlexandreAbraham,2014-03-19 01:12:20,"You can merge it if you think the diff is OK. If you don't I'll do it tomorrow after checking that the website is OK (I've launch a rebuild) so that I'll be able to merge it and push the new website version.
+",,
+11,pull_request_commit,171,nilearn,nilearn,AlexandreAbraham,2014-03-06 15:18:08,Add a news for frontiers paper.,0084725019d4dd4c35cf05b3b0ae36560e1028e8,
+12,pull_request_commit,171,nilearn,nilearn,AlexandreAbraham,2014-03-19 01:05:47,Adress comments,15d43b75361447d89410edc30e898ce278feb887,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,174,nilearn,nilearn,eickenberg,2014-03-19 17:42:13,"Status quo:
+resample_img will not calculate a new bounding box for the data and will keep exactly the same shape as the original data. This leads, in several cases I have had, to completely empty views on the data. A test will follow.
+
+Proposition:
+Act similarly to resample_img given a 3D affine. In this case, this coordinate origin is unknown and nilearn calculates a bounding box around the data and sets the new origin to one corner of this box.
+Given a 4D affine, resample_img should also recalculate a bounding box in order to be sure to contain the full data that were to be transformed. However, the coordinate origin should be adopted from the given affine.
+
+How does this sound?
+",start issue,"resample_img given 4D affine and no target shape does not ""do the right thing"""
+2,issue_closed,174,nilearn,nilearn,eickenberg,2014-05-29 13:40:04,,closed issue,"resample_img given 4D affine and no target shape does not ""do the right thing"""
+3,issue_comment,174,nilearn,nilearn,eickenberg,2014-05-29 13:40:04,"Ah, yes. I closed the PR, but not this issue.
+",,

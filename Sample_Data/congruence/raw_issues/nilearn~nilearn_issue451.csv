@@ -1,0 +1,54 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","451","nilearn","nilearn","bcipolli","2015-02-20 22:59:27","See #450 for details.  @GaelVaroquaux 's suggestion seems to work well.  Note that there's also some slight whitespace tweaks for PEP8 compatibility.
+
+I'm not familiar enough with matplotlib to understand how to add a regression test for this; any pointers / suggestions are welcome!
+
+See #450 for code to test this fix.
+","start issue","Bugfix: Add axes on figure of received axes, not on current figure."
+"issue_closed","451","nilearn","nilearn","lesteve","2015-02-23 07:06:44","","closed issue","Bugfix: Add axes on figure of received axes, not on current figure."
+"pull_request_title","451","nilearn","nilearn","bcipolli","2015-02-20 22:59:27","See #450 for details.  @GaelVaroquaux 's suggestion seems to work well.  Note that there's also some slight whitespace tweaks for PEP8 compatibility.
+
+I'm not familiar enough with matplotlib to understand how to add a regression test for this; any pointers / suggestions are welcome!
+
+See #450 for code to test this fix.
+","b726df26001ce61ec99fb7457ec859a5835fc0bc","Bugfix: Add axes on figure of received axes, not on current figure."
+"pull_request_merged","451","nilearn","nilearn","lesteve","2015-02-23 07:06:44","Bugfix: Add axes on figure of received axes, not on current figure.","ab1eadbf6b5a90b29bd15ea2c7beb48845eeadf8","Pull request merge from bcipolli/nilearn:issue-450 to nilearn/nilearn:master"
+"issue_comment","451","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:33:25","LGTM.
+
+Regarding the test, a bit of explanation about matplotlib.
+
+`from matplotlib import pyplot as plt`
+
+If you use a plotting function like `plt.plot`, the plot will be added to the current figure that you can access with `plt.gcf()`. 
+
+So, if I take your original code and simplify it (I didn't run this code :P), we could do:
+
+```
+import matplotlib.pyplot as plt
+import nibabel
+import numpy as np
+from nilearn.plotting import plot_glass_brain
+
+
+maps_img = nibabel.Nifti1Image(np.random,random((10, 10, 10)), np.eye(4))
+fh1 = plt.figure()
+fh2 = plt.figure()
+ax1 = fh1.add_subplot(1, 1, 1)
+# Note: pl.gcf()== fh2 because it is the last figure created.
+assert(pl.gcf() == fh2)
+# Since we gave ax1, the figure should be plotted in fh1.
+# Before your fix it was plot in fh2.
+slicer = plot_glass_brain(maps_img, axes=ax1, title='test')
+# Test it
+assert(slicer.axes[0].get_figure() == fh1)
+```
+","",""
+"issue_comment","451","nilearn","nilearn","bcipolli","2015-02-22 15:27:58","Great.  I will add a test and update.
+","",""
+"issue_comment","451","nilearn","nilearn","bcipolli","2015-02-22 16:48:37","I added a test (thanks @AlexandreAbraham for the starting point!) and did a bit of drive-by linting in the test file.
+","",""
+"issue_comment","451","nilearn","nilearn","AlexandreAbraham","2015-02-22 16:56:04","LGTM, great work!
+","",""
+"pull_request_commit","451","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-20 22:54:53","Add axes on figure of received axes, not on current figure.","6c2126d08d6c6306df13924b173aec736296d078",""
+"pull_request_commit","451","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-22 16:40:19","Add regression test for #450.","39dd0edd151d3d45b19be676baf09ba4cfac9899",""
+"pull_request_commit","451","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-22 16:40:34","PEP8 linting","b726df26001ce61ec99fb7457ec859a5835fc0bc",""

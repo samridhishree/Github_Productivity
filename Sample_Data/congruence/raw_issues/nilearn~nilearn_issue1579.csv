@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1579","nilearn","nilearn","michaelbernier","2017-11-30 04:23:29","Hello,
+
+I've got some issues with plot_prob_atlas and the MSDL atlas. Some regions seems to be missing, and the contours from plot_prob_atlas have an offset with the color regions.. The same code works well with an atlas with freesurfer labels (integers instead of probabilities).
+
+```
+atlas = datasets.fetch_atlas_msdl()
+atlas_nii=image.load_img(atlas['maps'])
+
+display = plotting.plot_prob_atlas(atlas_nii, view_type='filled_contours', display_mode='ortho', threshold=0.0001, 
+                                   linewidths=2.0, cut_coords=[5,-20,10], cmap='gist_rainbow',
+                                   alpha=0.25, black_bg=False)
+
+for img in image.iter_img(atlas_nii):
+    display.add_contours(img, linewidths=1., levels=[0.1], colors=['black'])
+```
+MSDL:
+![image](https://user-images.githubusercontent.com/1392234/33412844-0aa89f88-d55c-11e7-99a3-7328f6befc85.png)
+
+What I expected:
+![image](https://user-images.githubusercontent.com/1392234/33412881-3efcfbd0-d55c-11e7-8baf-0a3107fb5dd5.png)
+
+
+Freesurfer-ish:
+![image](https://user-images.githubusercontent.com/1392234/33412855-1e0d286e-d55c-11e7-9f1a-615e2f46794f.png)
+
+
+
+","start issue","MSDL plot_prob_atlas plotting issues"
+"issue_comment","1579","nilearn","nilearn","michaelbernier","2017-11-30 19:00:02","I've tried an alternative approach, and so far, I've managed to pinpoint the ""levels"" parameter as a culprit for the weird offset between the contours and filled_contours. I absolutely have to absolutely put ""0.1"". It seems to mainly affect the contours computation, and to be related to probabilistic data (maybe some internal threshold?). 
+
+There are still regions missing (39 regions are computed, which is what we expect). Playing with the threshold (putting a very small float) did not change the story..
+
+```
+n_colors= atlas_nii.shape[3]
+node_colors = [plt.cm.spectral(i / float(n_colors)) for i in range(n_colors)]
+
+display = plotting.plot_anat(cut_coords=[5,-20,10], black_bg=False)
+
+for img, i in zip(image.iter_img(atlas_nii), range(n_colors)):
+    display.add_contours(img, linewidths=2., levels=[0.1], filled=True, alpha=0.3,    
+                         colors=[node_colors[i][0:3]])
+    
+    display.add_contours(img, linewidths=1., levels=[0.1], colors=['black'])
+```
+![func_atlas_1](https://user-images.githubusercontent.com/1392234/33449173-fe211504-d5d5-11e7-9075-4daf95a23d8c.png)
+
+```
+n_colors= atlas_nii.shape[3]
+node_colors = [plt.cm.spectral(i / float(n_colors)) for i in range(n_colors)]
+
+display = plotting.plot_anat(cut_coords=[5,-20,10], black_bg=False)
+
+for img, i in zip(image.iter_img(atlas_nii), range(n_colors)):
+    display.add_contours(img, linewidths=2., levels=[0.01], filled=True, alpha=0.3,    
+                         colors=[node_colors[i][0:3]])
+    
+    display.add_contours(img, linewidths=1., levels=[0.01], colors=['black'])
+```
+![func_atlas_1](https://user-images.githubusercontent.com/1392234/33449234-2dfd975c-d5d6-11e7-9d63-75858cc592a8.png)
+
+","",""
+"issue_comment","1579","nilearn","nilearn","KamalakerDadi","2017-11-30 16:21:49","So far I didn't find a valid reason about why some regions are missing ? May be there is some tight bounding box calculation for levels parameters to display contours. I will see if I can find a solution for this.","",""
+"issue_comment","1579","nilearn","nilearn","KamalakerDadi","2017-12-01 06:29:47","Actually there is nothing like some regions are missed. All regions are plotted. It is just that there are regions not networks and regions are hiding somwhere in different slices of the brain. 
+
+Yes, as @bthirion said paper has dense networks but MSDL maps shipped with Nilearn has been post-processed to regions. Hence, I see no surprise in not matching with the expected plot in your mind.
+
+As you can see in the attachment that they are actually regions not networks.
+
+[maps.pdf](https://github.com/nilearn/nilearn/files/1520626/maps.pdf)
+
+I don't see any issue here.
+","",""

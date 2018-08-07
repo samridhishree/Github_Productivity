@@ -1,0 +1,59 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1264","nilearn","nilearn","salma1601","2016-09-06 20:19:54","Each time a explicitely cache a function with `Memory` from `sklearn.joblib.externals` I got an ugly warning
+
+> DeprecationWarning: Changing the shape of non-C contiguous array by
+> descriptor assignment is deprecated. To maintain
+> the Fortran contiguity of a multidimensional Fortran
+> array, use 'a.T.view(...).T' instead
+
+Is there a way to solve it ?
+","start issue","is there a way to avoid joblib Deprecation Warning"
+"issue_closed","1264","nilearn","nilearn","GaelVaroquaux","2017-11-06 21:13:12","","closed issue","is there a way to avoid joblib Deprecation Warning"
+"issue_comment","1264","nilearn","nilearn","GaelVaroquaux","2017-11-06 21:13:12","Closing this as we won't fix it in the nilearn codebase. It will just disappear by itself :)","",""
+"issue_comment","1264","nilearn","nilearn","aabadie","2016-09-06 20:43:19","This warning was fixed in upstream Joblib in [this PR](https://github.com/joblib/joblib/pull/309). I think this fix is also in the latest version of scikit-learn.
+Maybe updating scikit-learn would solve your issue.
+","",""
+"issue_comment","1264","nilearn","nilearn","aabadie","2016-09-06 20:53:55","Just verified and scikit-learn 0.17.1 (latest stable release) contains the fix so consider upgrading your installed version.
+
+```
+pip install scikit-learn --upgrade
+```
+
+or 
+
+```
+conda update scikit-learn
+```
+
+if you use anaconda.
+","",""
+"issue_comment","1264","nilearn","nilearn","aabadie","2016-09-07 07:55:52","@salma1601, my bad, my scikit-learn installation was ""partched"" with a more recent version of joblib (0.10.0) which itself contains the fix.
+The default scikit-learn installation (0.17.1) still uses 0.9.4, sorry. The next release of scikit-learn should be out by the end of this month.
+","",""
+"issue_comment","1264","nilearn","nilearn","lesteve","2016-09-08 07:55:41","In the mean time, if you find them really annoying, you can get rid of the warnings by either use the `warnings` module in your script or set the `PYTHONWARNINGS` environment variable. Something like this after your imports in your script (some package modify the warnings filters at import time which can override the filter you are trying to set) should work:
+
+``` py
+import warnings
+warnings.simplefilter('ignore', DeprecationWarning)
+```
+","",""
+"issue_comment","1264","nilearn","nilearn","KamalakerDadi","2016-09-06 20:41:14","As far as warnings, I don't think there is a way.
+
+But, you can ignore the warnings by catch the warnings and tell to ignore them. Watch at Neurovault fetcher PR particularly example to make sense of what I am talking. Feel free to close it if you think this issue still not be kept hold.
+","",""
+"issue_comment","1264","nilearn","nilearn","salma1601","2016-09-06 21:27:18","I just upgraded sklearn to 0.17.1
+
+``` Python
+In [1]: import sklearn
+In [2]: sklearn.__version__
+Out[2]: '0.17.1
+```
+
+but I still got the warnings
+","",""
+"issue_comment","1264","nilearn","nilearn","salma1601","2016-09-06 21:35:30","It is strange because I have the old version of the file joblib `hashing` file (not tacking into account the mentioned PR) although I upgraded sklearn
+","",""
+"issue_comment","1264","nilearn","nilearn","salma1601","2016-09-07 16:45:26","Ok thanks for the explanations !
+","",""
+"issue_comment","1264","nilearn","nilearn","salma1601","2016-09-08 08:38:43","Ok, thanks !
+","",""

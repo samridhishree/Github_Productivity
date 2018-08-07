@@ -1,0 +1,173 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","592","nilearn","nilearn","Titan-C","2015-05-20 11:50:09","Here I update to sphinx-gallery with the backreferences solution.
+So now it is possible to use an rst template to document classes and functions including at the end the link to examples using them.
+A question of design. Since now this documentation generation is done with default sphinx extention autodoc. It becomes a dependency to have it in the included extensions in the conf.py file.(Not an issue since it was already used by nilearn). But because it is an automatic process all automatic documented classes will try to have the backreferences to example, which might not exist. This issues a warning to during `make`. To workaround this warning scikit-learn and now in this PR, there is an extra action in conf.py that touches non-existing backreference example files so that one does not get the include warning. Question:
+- Is this the good way for the user to proceed?(I'll write documentation for this procedure in sphinx-gallery)
+- Alternative: have this action as default in sphinx-gallery and require user to always have autodoc extension always loaded?
+
+Massive renaming in files because:
+Since the new naming convention for sphinx-gallery image prefix sphx-glr image references are updated.
+Since naming convention for example references is to include the target dir, this references are also updated.
+","start issue","[MRG+1] Backreferences template from sphinx-gallery"
+"issue_closed","592","nilearn","nilearn","GaelVaroquaux","2015-11-28 10:33:15","","closed issue","[MRG+1] Backreferences template from sphinx-gallery"
+"pull_request_title","592","nilearn","nilearn","Titan-C","2015-05-20 11:50:09","Here I update to sphinx-gallery with the backreferences solution.
+So now it is possible to use an rst template to document classes and functions including at the end the link to examples using them.
+A question of design. Since now this documentation generation is done with default sphinx extention autodoc. It becomes a dependency to have it in the included extensions in the conf.py file.(Not an issue since it was already used by nilearn). But because it is an automatic process all automatic documented classes will try to have the backreferences to example, which might not exist. This issues a warning to during `make`. To workaround this warning scikit-learn and now in this PR, there is an extra action in conf.py that touches non-existing backreference example files so that one does not get the include warning. Question:
+- Is this the good way for the user to proceed?(I'll write documentation for this procedure in sphinx-gallery)
+- Alternative: have this action as default in sphinx-gallery and require user to always have autodoc extension always loaded?
+
+Massive renaming in files because:
+Since the new naming convention for sphinx-gallery image prefix sphx-glr image references are updated.
+Since naming convention for example references is to include the target dir, this references are also updated.
+","6c9e894c07a0b6c6fe280f0cb284551c45bea3ab","[MRG+1] Backreferences template from sphinx-gallery"
+"pull_request_merged","592","nilearn","nilearn","GaelVaroquaux","2015-11-28 10:33:15","[MRG+1] Backreferences template from sphinx-gallery","a065c94d946fc88eeae91039158ceed7613b5235","Pull request merge from Titan-C/nilearn:backref_template to nilearn/nilearn:master"
+"issue_comment","592","nilearn","nilearn","lesteve","2015-06-02 12:04:38","> To workaround this warning scikit-learn and now in this PR, there is an extra action in conf.py that touches non-existing backreference example files so that one does not get the include warning
+
+Just wondering wheter there is a way to have some logic in the jinja2 template to say that if the .examples file exists include it otherwise don't bother. Seems slightly better than creating empty .examples files. By the way I am not sure about the ordering of  gen_gallery versus the 'autodoc-process-docstring' step. Imagine you start from a clean state, are all the .examples file created empty during the 'autodoc-process-docstring' and then gen_gallery comes along and generates non-empty .examples file or is it the other way around? I think what I am trying to say is that it does seem a bit fragile.
+
+> Since naming convention for example references is to include the target dir, this references are also updated.
+
+That makes the naming a bit too redundant: example_auto_examples_... Just wondering whether there is an easy but generic way to remove auto_examples from the reference name.
+
+Also you need to rebase on master and fix the merge conflicts.
+","",""
+"issue_comment","592","nilearn","nilearn","Titan-C","2015-06-02 12:26:34","> . By the way I am not sure about the ordering of gen_gallery versus the 'autodoc-process-docstring' step.
+
+Sphinx gallery does its job first creating the .example files. 'autodoc-process-docstring' is executed afterwards everytime it finds the include directive to the example file
+
+> That makes the naming a bit too redundant: example_auto_examples_
+
+Yes, I agree on the redundancy. At some point I tested to rename it to sphx_glr_auto_example_ or to remove completely the example_ prefix, but I could not agree with myself on which to prefer so I left it that way. I support the fact to have the full target name on the reference starting from the sphinx source folder, so to our convention the gallery sits in auto_examples_. That way is was easier to link to the images and references. To put an additional prefix to it might not be necessary anymore, example_ was used because all paths where used taken the inside of the gallery folder as reference, so having the prefix became valuable. As a generic option I would rather remove example_ prefix than the first folder auto_example
+","",""
+"issue_comment","592","nilearn","nilearn","Titan-C","2015-06-02 12:39:56","rebase done
+","",""
+"issue_comment","592","nilearn","nilearn","Titan-C","2015-06-02 12:40:47","rebase done
+","",""
+"issue_comment","592","nilearn","nilearn","lesteve","2015-06-02 13:19:24","> As a generic option I would rather remove example_ prefix than the first folder auto_example
+
+I am not sure, it feels like the reference name should look more like the example python file than the generated rst in auto_examples. Also it'd be good to have some consistency between the generated image name and the reference name. At the moment the two of them have grown further apart.
+
+> Sphinx gallery does its job first creating the .example files. 'autodoc-process-docstring' is executed afterwards everytime it finds the include directive to the example file
+
+Surely this can't be true, 'autodoc-process-docstring' doesn't know anything about example files which are sphinxgallery specific. The only way this can work if the autodoc-process-string creates all example files as empty and then sphinxgallery comes along, parses the example scripts and overrides the .examples files. Just curious, is the ordering guaranteed ? Does it depend on the ordering of `extensions` in conf.py ?
+
+More importantly, it seems that you haven't included the backreferences.py module in this PR (i.e. sphinxext/sphinxgallery/backreferences.py) is that on purpose?
+","",""
+"issue_comment","592","nilearn","nilearn","Titan-C","2015-06-02 13:41:15","> I am not sure, it feels like the reference name should look more like the example python file than the generated rst in auto_examples. Also it'd be good to have some consistency between the generated image name and the reference name. At the moment the two of them have grown further apart.
+
+For the consistency with image names I wanted to put it as prefix sphx_glr, then the path to the python example. That way is more consistent.
+
+> Surely this can't be true, 'autodoc-process-docstring' doesn't know anything about example files which are sphinxgallery specific. 
+> 
+> Just curious, is the ordering guaranteed ? Does it depend on the ordering of extensions in conf.py ?
+
+Yes the ordering is guaranteed. As each one is assigned a different event in the sphinx build. It does not depend in the ordering of the extensions in conf.py but to which build step it was assigned. Sphinx-gallery happens when the builder is started(outputs rst files, image files, .example files), but the autodoc file touch is when rst files are parsed.
+So autodoc is completely independent of sphinx-gallery, it only tries to include a matching example file to every module it has to document. If it can't find the file a warning is issued, and in our case the missing file is touched and so no warning issued.
+
+> More importantly, it seems that you haven't included the backreferences.py module in this PR (i.e. sphinxext/sphinxgallery/backreferences.py) is that on purpose?
+
+This is a glitch in my update script as it does not git add new files. I'll fix it
+","",""
+"issue_comment","592","nilearn","nilearn","lesteve","2015-06-29 07:08:27","This needs a rebase on master actually.
+","",""
+"issue_comment","592","nilearn","nilearn","Titan-C","2015-11-24 18:49:59","This one is rebased on master and has the latest release of Sphinx-Gallery.
+Some examples already have the notebook style. All seem to be running now.
+
+There is one link that is not working and I hesitate to change.
+
+https://github.com/nilearn/nilearn/blame/master/doc/connectivity/functional_connectomes.rst#L138-L142
+file `examples/manipulating_visualizing/plot_probabilistic_atlas.py` does not exist. On same folder there is one `plot_prob_atlas.py`, but since there the following figure does not match the file either nor can I find mention of the function stated before the link I'm not sure.
+
+you can preview the website in
+
+http://scikit-learn.byethost7.com/nilearn/
+","",""
+"issue_comment","592","nilearn","nilearn","Titan-C","2015-11-24 19:00:39","Side question. How does the circleci work. Can I see the sphinx output there? the rendered documentation?
+","",""
+"issue_comment","592","nilearn","nilearn","KamalakerDadi","2015-11-24 19:43:24","@Titan-C Thanks for reporting.
+
+`examples/manipulating_visualizing/plot_probabilistic_atlas.py` does not exist since the name `plot_probabilistic_atlas` is renamed as `plot_overlay` to avoid conflicting with `plot_prob_atlas`. Both `plot_overlay` and `plot_prob_atlas` exists in Nilearn.
+
+Could you please change this
+ see the :ref:`corresponding example <example_manipulating_visualizing_plot_probabilistic_atlas.py>`
+
+to this
+see the :ref:`corresponding example <example_manipulating_visualizing_plot_overlay.py>`
+
+Then I think it will work. Please let me know. If it doesn't ?
+","",""
+"issue_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-25 12:42:19","@Titan-C : the circle-ci web interface does not give you links to artifacts unless you are administrator :(.
+
+But here is the link to the latest build of your PR:
+https://circle-artifacts.com/gh/nilearn/nilearn/733/artifacts/0/home/ubuntu/nilearn/doc/_build/html/auto_examples/index.html
+","",""
+"issue_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-25 13:02:13","+1 for merge. This is simply great. Thank you very @Titan-C 
+
+Does anyone wants to have a look, or should I merge?
+","",""
+"issue_comment","592","nilearn","nilearn","KamalakerDadi","2015-11-25 14:14:16","> Does anyone wants to have a look, or should I merge?
+
+I want to have a look. I will give my call by end of day.
+","",""
+"issue_comment","592","nilearn","nilearn","Titan-C","2015-11-25 14:45:04","> @Titan-C : the circle-ci web interface does not give you links to artifacts unless you are administrator :(.
+> 
+> But here is the link to the latest build of your PR:
+> https://circle-artifacts.com/gh/nilearn/nilearn/733/artifacts/0/home/ubuntu/nilearn/doc/_build/html/auto_examples/index.html
+
+That's cool. Then I would need to manually upload the builds to my test website
+","",""
+"issue_comment","592","nilearn","nilearn","lesteve","2015-11-26 10:11:42","@Titan-C just curious, is there an example that renders as notebook in https://circle-artifacts.com/gh/nilearn/nilearn/733/artifacts/0/home/ubuntu/nilearn/doc/_build/html/auto_examples/index.html. I haven't found any yet.
+","",""
+"issue_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-26 10:16:45","@lesteve 
+https://circle-artifacts.com/gh/nilearn/nilearn/733/artifacts/0/home/ubuntu/nilearn/doc/_build/html/auto_examples/decoding/plot_haxby_different_estimators.html#sphx-glr-auto-examples-decoding-plot-haxby-different-estimators-py
+
+And actually we can see that from a layout / styling perspective, the code line and the output of the script appear as visually similar, which can be confusing for the users. We will need to change this.
+","",""
+"issue_comment","592","nilearn","nilearn","lesteve","2015-11-26 10:22:18","Thanks a lot.
+
+> And actually we can see that from a layout / styling perspective, the code line and the output of the script appear as visually similar,
+
+There is an issue about that already https://github.com/sphinx-gallery/sphinx-gallery/issues/44
+","",""
+"issue_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-26 10:27:40","> There is an issue about that already sphinx-gallery/sphinx-gallery#44
+
+OK :)
+","",""
+"issue_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-26 10:40:35","> There is an issue about that already sphinx-gallery/sphinx-gallery#44
+
+I pushed a quick fix:
+https://github.com/sphinx-gallery/sphinx-gallery/pull/72
+
+we can backport in nilearn.
+","",""
+"issue_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-28 10:33:13","Merging this guy, and backporting the latest sphinx-gallery, to have the new style.
+","",""
+"pull_request_commit_comment","592","nilearn","nilearn","lesteve","2015-11-23 08:34:05","Ideally we should stick with a released version. @Titan-C any reason why this is not 0.0.11?
+","6c9e894c07a0b6c6fe280f0cb284551c45bea3ab","(None, '', u'doc/sphinxext/sphinxgallery/__init__.py')"
+"pull_request_commit_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-25 12:43:57","Not a blocker to merge this PR, but should this be in sphinx_gallery itself? It seems that it's something that people can easily get wrong.
+","6c9e894c07a0b6c6fe280f0cb284551c45bea3ab","(41, '', u'doc/conf.py')"
+"pull_request_commit_comment","592","nilearn","nilearn","Titan-C","2015-11-25 14:36:37","I was also thinking about it. In general you don't need this. It is only to remove some warnings of sphinx as it runs autosummary. 
+","6c9e894c07a0b6c6fe280f0cb284551c45bea3ab","(41, '', u'doc/conf.py')"
+"pull_request_commit_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-25 14:37:51","> > +def touch_example_backreferences(app, what, name, obj, options, lines):
+> 
+> I was also thinking about it. In general you don't need this. It is only to
+> remove some warnings of sphinx as it runs autosummary.
+
+If it's easy to add, I think you should (though not in this PR)
+","6c9e894c07a0b6c6fe280f0cb284551c45bea3ab","(41, '', u'doc/conf.py')"
+"pull_request_commit_comment","592","nilearn","nilearn","GaelVaroquaux","2015-11-28 10:39:00","I just realized: why was this file deleted?
+","6c9e894c07a0b6c6fe280f0cb284551c45bea3ab","(8, '', u'doc/sphinxext/copy_sphinxgallery.sh')"
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-05-20 08:27:52","Update to sphinx-gallery release 0.0.9-dev1","6243b0c2f136c49f47e9660b390baf8d25c5b31c",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-05-20 08:32:26","Include example backrefences in templates","64ae4ebd9be6c8020251d5faf9015865981c7443",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-05-20 11:28:38","Fixes to embed template autodocs to use backreferences","9f92a784eafb081cbe2385230c8289d3addae104",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-05-29 08:59:22","Install sphinx-gallery v0.0.10","4816a90e4e3f715baa99cfd2251bfbd9611b997a",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-06-02 13:45:46","copy_sphinxgallery defaults in git adding the module folder by default","94449666965aceff55b57b3f383e293c0b34c3fb",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-10-23 14:44:55","Update to Sphinx-Gallery 0.0.11 to use notebook examples
+
+Delete copy gallery is on the release","c01587a55ea6cc8b5d5d8ec2fe5a839b8034fe31",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-10-23 15:50:55","Update image names with sphx_glr prefix","6b1858d385b07cb06adee41d954e005343701c8b",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-10-23 15:54:58","Update reference names to use sphx_glr prefix","7b5dfa2a35e5eff67b0b51369e1ca640b9961246",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-11-24 15:53:18","Update to public release of Sphinx-Gallery v0.0.11","cfc773b5b42125d3a21b7077148d80b770314170",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-11-24 15:58:20","Rename to sphinx_gallery module","83ba236c7b9157ba359bff6e40bc9e8f086f1d8b",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-11-24 18:35:59","Fixing links","5dcc50ab588afc75cc9360a6bfe3261968dbee71",""
+"pull_request_commit","592","nilearn","nilearn","Titan-C","2015-11-24 20:10:43","Fix one more link","6c9e894c07a0b6c6fe280f0cb284551c45bea3ab",""

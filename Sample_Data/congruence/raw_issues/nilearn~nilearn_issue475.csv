@@ -1,0 +1,15 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","475","nilearn","nilearn","bcipolli","2015-03-01 15:54:09","In a previous PR, I pushed for turning printing off inside tests, to make test output more manageable.  I still think this is the right thing.  However, coveralls also shows that printing is no longer being tested.  This can hide some bugs that users could hit immediately (especially as the examples tend to use verbose output).  E.g.
+https://coveralls.io/builds/1973818/source?filename=nilearn%2Fdecoding%2Fsearchlight.py#L171
+
+I suggest enabling printing on the travis-ci run specific to `coveralls`.  I wanted to see if others agreed and, if so, I also wanted to ask about the best way to handle it.  This is a major source of ""uncovered"" code in `nilearn`.
+","start issue","Should verbose output be tested?  If so, how?"
+"issue_closed","475","nilearn","nilearn","lesteve","2015-03-26 09:43:05","","closed issue","Should verbose output be tested?  If so, how?"
+"issue_comment","475","nilearn","nilearn","bcipolli","2015-03-01 15:55:09","Just to put it out there, if coverage was desired, I only had these ideas to start:
+1. Migrate away from `print`: Some of the code uses a `logger` object already, that wraps the `verbose` check (e.g. `nilearn/group_sparse_covariance.py`).  All of the `print` statements could be migrated to using the `logger` object, and a simple check could be made within the `logger` object to see if coveralls is being run (similar to how mock is checked within some `datasets` code, but hopefully done without having to pass a flag).  The downside is that some places in the code have more than just a `print` statement inside the `verbose` check, and this would not trigger those blocks.  And those tend to be more complex code (so in more need of test coverage).
+2. Tests currently explicitly pass `verbose=0`.  They could pass import some value or function from `nilearn._utils.testing`, and pass that instead.  The value / function could do the same check as above (perhaps, an environment variable).  One downside of this is that outsiders looking to contribute would be unlikely to figure out they need to do this.
+","",""
+"issue_comment","475","nilearn","nilearn","AlexandreAbraham","2015-03-12 10:27:10","I would say: no we don't want to test it. My experience is that verbosity is enhanced using users feedback. A basic test could be to ensure that increasing verbosity increases the number of output lines but I don't think that it's necessary.
+","",""
+"issue_comment","475","nilearn","nilearn","lesteve","2015-03-26 09:43:05","Agreed, closing this one.
+","",""

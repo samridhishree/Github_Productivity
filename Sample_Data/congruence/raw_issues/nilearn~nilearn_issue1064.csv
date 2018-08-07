@@ -1,0 +1,187 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1064","nilearn","nilearn","fliem","2016-03-24 08:02:50","I think this one is related to changes introduced in #963.
+When regressing out confouds from a signal with standardize=False, correlations between the signal and the confounds still presist (3rd panel), while they are eliminated if standardize=True (2nd panel). 
+Is that expected behaviour?
+
+```
+import numpy as np
+from nilearn.signal import clean
+import matplotlib.pyplot as plt
+
+r=[]
+r_w_std=[]
+r_no_std=[]
+for i in range(1000):
+    X=np.random.rand(100,1)
+    c = X + np.random.rand(100,1)
+    X_w_std = clean(X, detrend=False, standardize=True, confounds=c)
+    X_no_std = clean(X, detrend=False, standardize=False, confounds=c)                                
+
+    r.append(np.corrcoef(X.T,c.T)[1,0])
+    r_w_std.append(np.corrcoef(X_w_std.T,c.T)[1,0])
+    r_no_std.append(np.corrcoef(X_no_std.T,c.T)[1,0])
+
+f, (ax1, ax2,ax3) = plt.subplots(3)
+ax1.hist(r)
+ax1.set_title('original correlation (signal x confound)')
+ax2.hist(r_w_std)
+ax2.set_title('correlation after confound regression (standardize=True)')
+ax3.hist(r_no_std)
+ax3.set_title('correlation after confound regression (standardize=False)')
+plt.tight_layout()
+plt.show()
+```
+
+![confounds](https://cloud.githubusercontent.com/assets/5772811/14011445/e92780c4-f19e-11e5-9812-b33630f2df78.png)
+","start issue","correlation with confounds after confound regression"
+"issue_comment","1064","nilearn","nilearn","eickenberg","2016-03-24 08:41:26","This may have to do with the fact that uncorrelated != orthogonal.
+Uncorrelated is basically orthogonal after centering.
+""Removing the confounds"" means orthogonalizing with respect to them.
+
+If I am not completely wrong, working in the standardized setting makes
+these notions equivalent again, because the data are then centered. This
+would explain your observation.
+
+On Thu, Mar 24, 2016 at 9:02 AM, fliem notifications@github.com wrote:
+
+> I think this one is related to changes introduced in #963
+> https://github.com/nilearn/nilearn/pull/963.
+> When regressing out confouds from a signal with standardize=False,
+> correlations between the signal and the confounds still presist (3rd
+> panel), while they are eliminated if standardize=True (2nd panel).
+> Is that expected behaviour?
+> 
+> import numpy as np
+> from nilearn.signal import clean
+> import matplotlib.pyplot as plt
+> 
+> r=[]
+> r_w_std=[]
+> r_no_std=[]
+> for i in range(1000):
+>     X=np.random.rand(100,1)
+>     c = X + np.random.rand(100,1)
+>     X_w_std = clean(X, detrend=False, standardize=True, confounds=c)
+>     X_no_std = clean(X, detrend=False, standardize=False, confounds=c)
+> 
+> ```
+> r.append(np.corrcoef(X.T,c.T)[1,0])
+> r_w_std.append(np.corrcoef(X_w_std.T,c.T)[1,0])
+> r_no_std.append(np.corrcoef(X_no_std.T,c.T)[1,0])
+> ```
+> 
+> f, (ax1, ax2,ax3) = plt.subplots(3)
+> ax1.hist(r)
+> ax1.set_title('original correlation (signal x confound)')
+> ax2.hist(r_w_std)
+> ax2.set_title('correlation after confound regression (standardize=True)')
+> ax3.hist(r_no_std)
+> ax3.set_title('correlation after confound regression (standardize=False)')
+> plt.tight_layout()
+> plt.show()
+> 
+> [image: confounds]
+> https://cloud.githubusercontent.com/assets/5772811/14011445/e92780c4-f19e-11e5-9812-b33630f2df78.png
+> 
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/1064
+","",""
+"issue_comment","1064","nilearn","nilearn","eickenberg","2016-03-24 09:53:07","Why do you say ""correctly""? Isn't this a question of convention/consensus?
+Is there one? I guess there is, and it is probably what you mention, but I
+never know these things.
+
+If you want centeredness in the end to depend on whether there was a
+constant confound, you cannot do the following: center, do confound
+removal, add center back - because that would disrespect the constant
+regressor or any other on that doesn't have zero sum.
+
+What you could do it divide the signal into m\mathbb{1} + \bar s, where
+\bar s = (s - m), where s is the signal and m is its mean. Then you can
+orthogonalize \bar s wrt centered drifts and m\mathbb{1} wrt
+\mathbb{1}\mathbb{1}^T C where C are the confounds. If there is any one
+that has a constant part, then this projected version will go to 0,
+otherwise not. These would be two separate orthogonalizations, so it may be
+a little weird ...
+
+Isn't that a bit complicated? Wouldn't it be better to keep the simplest
+possible thing, which is orthogonalization, and explain it very clearly
+along with how to about obtaining alternative ways of removing drifts,
+instead of having the software guess at what the user wants?
+
+On Thursday, March 24, 2016, salma1601 notifications@github.com wrote:
+
+> I think this one is related to changes introduced in #963
+> https://github.com/nilearn/nilearn/pull/963.
+> 
+> @fliem https://github.com/fliem You are right.
+> I think we should discuss about the use cases and what we expect from
+> setting standardize=False and detrend=False. Here is my point
+> - If no confounds to be removed, I expect my raw signal, non centred
+>   and with its original variance
+> - If confounds to be removed, I expect them to be removed correctly,
+>   i.e. _centred confounds orthogonal to centred signal_. I don't expect
+>   my signal variance to be manipulated apart from this operation. The tricky
+>   part is about the mean. I personally don't expect my output signal to be
+>   centred when setting detrend=False, unless a constant confound is
+>   included among the confounds.
+> 
+> What do you think @fliem https://github.com/fliem @AlexandreAbraham
+> https://github.com/AlexandreAbraham @GaelVaroquaux
+> https://github.com/GaelVaroquaux ?
+> 
+> —
+> You are receiving this because you commented.
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/1064#issuecomment-200752662
+","",""
+"issue_comment","1064","nilearn","nilearn","eickenberg","2016-03-24 09:56:14","Just a thought: I guess a baseline constant also goes along with a baseline
+variance - it doesn't make sense to have a baseline of 35000 and unit
+variance. I'm not saying this is done. It's just a comment.
+
+On Thu, Mar 24, 2016 at 10:54 AM, Alexandre Abraham <
+notifications@github.com> wrote:
+
+> For me, this is the same problem as #374
+> https://github.com/nilearn/nilearn/issues/374, ie should we consider a
+> ""baseline"" for the signal or not.
+> 
+> When using a high-pass filter, the constant part of the signal (very low
+> trend) is removed too. FSL avoid this by taking into account a ""baseline""
+> for the signal. Basically, it boils down to remove the constant trend,
+> apply the filtering and add the trend back again.
+> 
+> Here we have the same problem. Should we consider a ""baseline"" for the
+> signal somehow?
+> 
+> Honestly, I have no idea on what is the best thing to do.
+> 
+> —
+> You are receiving this because you commented.
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/1064#issuecomment-200763458
+","",""
+"issue_comment","1064","nilearn","nilearn","AlexandreAbraham","2016-03-24 09:54:15","For me, this is the same problem as #374, ie should we consider a ""baseline"" for the signal or not.
+
+When using a high-pass filter, the constant part of the signal (very low trend) is removed too. FSL avoid this by taking into account a ""baseline"" for the signal. Basically, it boils down to remove the constant trend, apply the filtering and add the trend back again.
+
+Here we have the same problem. Should we consider a ""baseline"" for the signal somehow?
+
+Honestly, I have no idea on what is the best thing to do.
+","",""
+"issue_comment","1064","nilearn","nilearn","salma1601","2016-03-24 09:29:16","> I think this one is related to changes introduced in #963.
+
+@fliem You are right.
+I think we should discuss about the use cases and what we expect from setting `standardize=False` and `detrend=False`. Here is my point
+- If no confounds to be removed, I expect my raw signal, non centred and with its original variance
+- If confounds to be removed, I expect them to be removed correctly, i.e. **centred confounds orthogonal to centred signal**.  I don't expect my signal variance to be manipulated apart from this operation.
+  The tricky part is about the mean. I personally don't expect my output signal to be centred when setting `detrend=False`, unless a constant confound is included among the confounds.
+
+What do you think @fliem @AlexandreAbraham @GaelVaroquaux ? 
+","",""
+"issue_comment","1064","nilearn","nilearn","salma1601","2016-03-24 10:18:08",">  Wouldn't it be better to ... explain it very clearly along with how to about obtaining alternative ways of removing drifts, instead of having the software guess at what the user wants?
+
+Explaining can be a possible solution, but intuition is important for me. I already get caught in this trap with the ADHD dataset: since linear trend and constant confounds are included in the confounds files, I used `detrend=False`, and since I care about variances, I set `standardize=False`. This gave unexpected results...
+From my personal point (for what it is, just to explain my point), intuition for me is not the math part nor the software coding part behind the tool, but what people will use the tool for in the most ""standard"" cases. But I agree that setting `detrend=False` is not that standard :).
+","",""

@@ -1,0 +1,67 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","922","nilearn","nilearn","banilo","2015-12-18 10:29:20","...trace back is:
+
+``` python
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-44-802cef648458> in <module>()
+----> 1 plotting.find_xyz_cut_coords(nib.load(roi_paths[2]))
+
+/git/nilearn/nilearn/plotting/find_cuts.py in find_xyz_cut_coords(img, mask, activation_threshold)
+     90         return .5 * np.array(data.shape)
+     91     mask = largest_connected_component(mask)
+---> 92     slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
+     93     my_map = my_map[slice_x, slice_y, slice_z]
+     94     mask = mask[slice_x, slice_y, slice_z]
+```
+
+The image on which this crashes is attached.
+
+[dmpfc-3.nii.zip](https://github.com/nilearn/nilearn/files/66476/dmpfc-3.nii.zip)
+","start issue","find_xyz_cut_coords crashes on some compact binary images"
+"issue_closed","922","nilearn","nilearn","lesteve","2016-01-13 12:33:32","","closed issue","find_xyz_cut_coords crashes on some compact binary images"
+"issue_comment","922","nilearn","nilearn","AlexandreAbraham","2015-12-20 13:43:48","As all functions working on img directly (not niimg), it assumes that the input has the right dimension. This has been done because this function is not ""opened to public"". So, two options:
+- you use the regular way to load your image, meaning `check_niimg_3d` (instead of `nibabel.load`). It will convert your 4d image to 3d automatically
+- We call `check_niimg_3d` at the beginning of `find_xyz_cut_coords`. It will then work natively on all niimgs.
+","",""
+"issue_comment","922","nilearn","nilearn","AlexandreAbraham","2015-12-20 14:04:12","Well, a small computational overhead because we check the input data, that's all.
+","",""
+"issue_comment","922","nilearn","nilearn","AlexandreAbraham","2016-01-07 12:16:36","@banilo I think this is important for 0.2.2. Are you working on it?
+","",""
+"issue_comment","922","nilearn","nilearn","bthirion","2015-12-18 21:57:45","The issue is that the image that you provided is 4D (with the last dimension=1). if you remove the last dimension form your image, it is OK.
+plotting.find_xyz_cut_coords(nib.four_to_three(nib.load('dmpfc-3.nii'))[0])
+
+Should we support this kind of case ?
+","",""
+"issue_comment","922","nilearn","nilearn","banilo","2015-12-19 22:28:17","Ok, merci pour le conseil.
+
+It would be nice to support the case because the 3D and Pseudo-4D images contain the same information and the optimal x, y and z cut planes can be expected to be the same. That appears intuitive to me.
+","",""
+"issue_comment","922","nilearn","nilearn","GaelVaroquaux","2015-12-20 14:02:45","These days it is exposed to the public. We should probably add a checker
+in the input. Is there a downside?
+","",""
+"issue_comment","922","nilearn","nilearn","GaelVaroquaux","2015-12-20 14:08:17","> Well, a small computational overhead because we check the input data,
+
+It's probably tiny compared to the time of the funtion.
+
+@banilo: do you want to do a PR?
+","",""
+"issue_comment","922","nilearn","nilearn","banilo","2015-12-20 14:13:21","Sure, I'd be happy to.
+
+As the find_\* function is probably typically called for plotting, it should
+not be called excessively and thus not typically cause a big overhead.
+
+2015-12-20 15:08 GMT+01:00 Gael Varoquaux notifications@github.com:
+
+> > Well, a small computational overhead because we check the input data,
+> 
+> It's probably tiny compared to the time of the funtion.
+> 
+> @banilo: do you want to do a PR?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/922#issuecomment-166119067.
+","",""
+"issue_comment","922","nilearn","nilearn","banilo","2016-01-08 22:07:40","I will do it this weekend
+","",""

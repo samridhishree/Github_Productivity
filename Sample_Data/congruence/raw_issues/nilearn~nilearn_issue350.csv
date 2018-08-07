@@ -1,0 +1,38 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","350","nilearn","nilearn","bcipolli","2015-01-15 16:05:59","When resuming download, the reported time estimate can be extremely short.  It seems to include ALL downloaded bytes, not just the ones downloaded in the current session, and so thinks it was REALLY FAST to get the previously downloaded chunk.
+
+**Steps to reproduce:**
+
+```
+Nautilus:examples bcipolli$ python plot_nifti_simple.py 
+Dowloading data from http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz ...
+Downloaded 265007637 of 697388519 bytes (38.0%, 14.1min remaining)  
+```
+
+CTRL-C to stop, then restart:
+
+```
+Nautilus:examples bcipolli$ python plot_nifti_simple.py 
+Dowloading data from http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz ...
+Downloaded 268754944 of 697388519 bytes (38.54%,   13.1s remaining)  
+```
+","start issue","When resuming data download, estimated time remaining is miscalculated"
+"issue_closed","350","nilearn","nilearn","lesteve","2015-01-18 13:50:40","","closed issue","When resuming data download, estimated time remaining is miscalculated"
+"issue_comment","350","nilearn","nilearn","AlexandreAbraham","2015-01-15 16:43:11","Hey Ben,
+
+> parameters total_size and t0 are said to be optional, but they don't have default args.
+
+As said above in a comment, I took this code somewhere and adapted it for our usage. I removed a lot of unused code and forgot to update the dosctring. We don't need to make these parameters optionals.
+
+Feel free to refactor this code.
+","",""
+"issue_comment","350","nilearn","nilearn","bcipolli","2015-01-15 16:36:57","I am using this, so happy to make a simple fix.  I noticed that there are a few small issues in `nilearn/datasets.py:_chunk_report':
+https://github.com/nilearn/nilearn/blob/master/nilearn/datasets.py#L89
+- parameters `total_size` and `t0` are said to be optional, but they don't have default args.
+- No default `t0` is actually suggested, and passing any non-meaningful value will output a non-meaninful remaining time.
+- If `total_size=None` is passed, the `stderr.write` has no trailing whitespace.
+
+It seems best to me to eliminate the idea that these args can be optional.  The codepath isn't used (and therefore not tested) anyway.
+
+Alternately, I could implement things to make those _actually_ optional arguments, and add code for when `t0` is not specified (but `total_size` is).
+","",""

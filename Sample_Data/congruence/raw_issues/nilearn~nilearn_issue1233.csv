@@ -1,0 +1,114 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1233","nilearn","nilearn","salma1601","2016-08-10 04:53:32","I was presenting the mean connectivity matrix for `kind='tangent'` and one guy wanted to see how much it differs from individual connectivities. So I refitted my `ConnectivityMeasure` with `kind='covariance'` to show him.
+I think this is very counter-intuitive. I have a proposition to tackle this but I don't know if it's the good one:
+- change the output of the `fit_transform` for `kind='tangent'` to covariances. This would have the benefit to homogenize the output for all kinds to individual connectivity matrices
+- add an attribute `deviations_` that will give the  actual output of `fit_transform` for kind='tangent'
+
+I am hesitating whether it would be of benefit to define this attribute for the remaining kinds (just subtracting the mean from the individual connectivities)
+","start issue","ConnectivityMeasure(kind='tangent') is misleading"
+"issue_closed","1233","nilearn","nilearn","KamalakerDadi","2017-05-03 12:57:09","","closed issue","ConnectivityMeasure(kind='tangent') is misleading"
+"issue_comment","1233","nilearn","nilearn","GaelVaroquaux","2016-08-10 16:37:29",">   • add an attribute deviations_ that will give the actual output of
+>     fit_transform for kind='tangent'
+
+That's not a good option, because it means that the object can no longer
+be used in a pipeline, which is what I think we really want.
+","",""
+"issue_comment","1233","nilearn","nilearn","GaelVaroquaux","2016-08-10 17:43:29","> Ok so may be add a covariances_ attribute ?
+
+I don't like very much the idea of putting too much state in the object.
+It is hidden to the user and not very discoverable.
+
+I'd much rather prefer having the inverse_transform reconstruct
+covariances from the corresponding displacement vectors. In addition, it
+matches the idea that inverse_transform would also undo an optional
+vectorization.
+","",""
+"issue_comment","1233","nilearn","nilearn","GaelVaroquaux","2016-08-11 20:47:45","> So again back to this: what about outputting the deviations from means for all
+> kinds of connectivities (as it is done for 'tangent', meaning just subtracting
+> the mean_ from the individual matrices for all kinds but 'tangent'. Then the
+> connectivity matrices can be computed with the inverse_transform
+
+I'd rather not. Only tangent embedding needs this, as the rest rely on a
+Euclidean space.
+
+> The benefit for it is outputting objects of the same nature for all
+> kinds. I am having a hard time with the namings in my example, as I
+> loop over all kinds
+
+Actually, I would rather that you did not loop of the kinds: it makes the
+code difficult to read for a beginner. I would rather have 3 sub
+sections, and 3 different comments on them, with, ideally, 3 dedicated
+visualizations.
+","",""
+"issue_comment","1233","nilearn","nilearn","GaelVaroquaux","2016-08-11 21:09:21","> People have to be aware that the output of 'tangent' are not connections.
+
+Maybe it's that we should use a more explicit term for 'tangent'.
+Something that ""tangent_deviation"", or related. That way it's explicitely
+written in the code that it's a deviation.
+","",""
+"issue_comment","1233","nilearn","nilearn","GaelVaroquaux","2016-08-12 05:42:57",">   • at the fit, compute connectivities_ which are the individual connectivity
+>     matrices, for tangent they are covariances -> to be plotted and watched,
+>     with a nice positive diagonal
+
+I don't like that: it is hidden from the user, only the rest of our
+pipeline which is explicite.
+","",""
+"issue_comment","1233","nilearn","nilearn","GaelVaroquaux","2016-08-12 13:19:26","> At least, having different objects for tangent and the rest looks like a good
+> idea to me. One class per type of covariance is fine for me, because I tend to
+> overdesign things, but I'm not sure if it's a good idea.
+
+I'd rather not. These really are two aspects of the same thing. Let's not
+make the design complex for purity reasons.
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-10 17:34:39","Ok so may be add a `covariances_` attribute ?
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-10 18:27:48","Ok. I don't know if I will be able to do a PR on that. The inverse_transform looks difficult for me.
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-11 20:44:41","So again back to this: what about outputting the deviations from means for all kinds of connectivities (as it is done for 'tangent', meaning just subtracting the `mean_` from the individual matrices for all kinds but 'tangent'. Then the connectivity matrices can be computed with the inverse_transform
+The benefit for it is outputting objects of the same nature for all kinds. I am having a hard time with the namings in my example, as I loop over all kinds
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-11 21:06:55","> Actually, I would rather that you did not loop of the kinds: it makes the code difficult to read for a beginner. I would rather have 3 sub sections, and 3 different comments on them, with, ideally, 3 dedicated visualizations.
+
+Ok
+But even when I don't loop I don't like that we output things of different natures by the same object. I am not talking for math, it's rather for the reality. People have to be aware that the output of 'tangent' are not connections.
+May be I am giving myself a headache, but I feel like this ConnectivityMeasure is not well done
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-11 21:46:12","Yes but its mean_ will not be a deviation !
+I am back to the idea of adding an attribute
+- at the fit, compute `connectivities_` which are the individual connectivity matrices, for `tangent` they are covariances -> to be plotted and watched, with a nice positive diagonal
+- transform: this is transformation to vector space $R^p$, and for `tangent` this is the displacement who lives in the vector space -> to be used in statistical tests, and classification
+- inverse transform: just back from vector to matrix, without any diabolic rescaling -> useful for p-values plotting
+
+This is what seems the most natural to me, and the most easy to explain. I don't want to frighten people with deviations, I just want them to know what to input and what is their output
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-12 05:56:24","I think I am not getting well your argument. When you say pipeline, are you thinking to something specific in chaining operations or something like that ?
+I don't understand why it bothers you for ConnectivityMeasure while this is the way GroupSparseCov works, isn't it ?
+Could you please be more explicit in your explanation ? 
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-12 06:02:37","Ah I think I understand, you mean in the examples we are going to use directly fit_transform not fit ?
+
+Well, if we advertise ConnectivityMeasure only for multisubjects, doesn't it make sense that the visible output is the one useful for tests and classification ?
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-12 09:00:33","You mean having something like a BaseCovarianceEstimator, which will give the covariances, which are the base for all the connectivity kinds, and than derivate correlation, partial correlation and tangent from this base estimator with new classes inheriting from the BaseCovarianceEstimator ?
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-12 09:10:49","> At least, having different objects for tangent and the rest looks like a good idea to me
+
+I think separating tangent is a good idea, and I am in favour of really changing the design of this ConnectivityMeasure. If I am stacked so much in the examples and the namings than I think there is a problem that can not be solved just by customizing the examples.
+
+Again I am a humble user and don't know design, but I like your idea, so +1 for `BaseConnectomesEstimator` and `TangentConnectomesEstimator`
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-12 13:49:00","OK, so I understand there is no good solution to handle the tangent stuff. I am going to add to the example something like
+
+``` python
+tangent_measure = ConnectivityMeasure(kind='tangent')
+individual_deviations = tangent_measure.fit_trasnform(subjects, vectorize=True)
+individual_connectivity_matrices = tangent_measure.inverse_transform(individual_deviations)
+```
+
+to show how we can extract the individual covariances. Seems to me things are the other way round, but I want to move.
+","",""
+"issue_comment","1233","nilearn","nilearn","salma1601","2016-08-14 12:03:39","I was thinking of a compromise: putting `vectorize` to True by default. This is useful for second-level analyses, which is compatible with the strategy of teaching `ConnectivityMeasure` for multi-subjects. If they want to recover individual matrices, they do the `inverse_transform`. This way, the complexity of the tangent model is completely hidden, and outputs are homogeneous across kinds.
+While we are on it, I was also thinking of adding `discard_diagonal` to `ConnectivityMeasure`, for practical reasons :
+- Fisher Z-transform gives nan on the diagonal 1.,
+- t-tests  display an ugly Runtime warning when one coefficient is the same across all subjects
+","",""

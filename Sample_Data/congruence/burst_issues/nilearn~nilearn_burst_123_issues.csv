@@ -1,0 +1,209 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,881,nilearn,nilearn,ainafp,2015-12-02 17:41:06,"Missing attributes in BaseSpaceNet (nilearn/decoding/space_net.py) and some other issues.
+Fixes issue #848
+",start issue,[WIP] SpaceNet documentation (docstrings) is being completed / improved
+2,issue_closed,881,nilearn,nilearn,KamalakerDadi,2017-11-30 17:00:51,,closed issue,[WIP] SpaceNet documentation (docstrings) is being completed / improved
+3,pull_request_title,881,nilearn,nilearn,ainafp,2015-12-02 17:41:06,"Missing attributes in BaseSpaceNet (nilearn/decoding/space_net.py) and some other issues.
+Fixes issue #848
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,[WIP] SpaceNet documentation (docstrings) is being completed / improved
+4,issue_comment,881,nilearn,nilearn,ainafp,2015-12-02 18:03:08,"To check the shapes of w_, ymean_, Xmean_, Xstd_
+",,
+5,pull_request_commit_comment,881,nilearn,nilearn,banilo,2015-12-03 10:28:21,"...""of X ACROSS samples""?
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+6,pull_request_commit_comment,881,nilearn,nilearn,banilo,2015-12-03 10:29:59,"n_classes-1 is only true for 2 classes? Does this really also hold for one-versus-rest scenarios?
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+7,pull_request_commit_comment,881,nilearn,nilearn,banilo,2015-12-03 10:32:15,"Style
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+8,pull_request_commit_comment,881,nilearn,nilearn,ainafp,2015-12-03 10:37:38,"not sure. That's why I added the ""to check"" comment.
+@dohmatob what do you think?
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+9,pull_request_commit_comment,881,nilearn,nilearn,ainafp,2015-12-03 10:38:04,"What do you mean?
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+10,pull_request_commit_comment,881,nilearn,nilearn,banilo,2015-12-03 11:03:10,"What does ""On mask model coefficients"" mean, it may not be clear to everybody. Perhaps instead: `Masked model coefficients`?
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+11,pull_request_commit_comment,881,nilearn,nilearn,dohmatob,2015-12-03 13:43:11,"I think it's a typo. It should indeed be something like: ""On mask model
+coefficients""
+
+On Thu, Dec 3, 2015 at 12:03 PM, Danilo Bzdok notifications@github.com
+wrote:
+
+> In nilearn/decoding/space_net.py
+> https://github.com/nilearn/nilearn/pull/881#discussion_r46538268:
+> 
+> > ```
+> >  `coef_` : ndarray, shape (n_classes-1, n_features)
+> >      Coefficient of the features in the decision function.
+> > ```
+> > 
+> > +
+> > -    `coef_img_` : nifti image
+> > -        On mask model coefficients
+> 
+> What does ""On mask model coefficients"" mean, it may not be clear to
+> everybody. Perhaps instead: Masked model coefficients?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/881/files#r46538268.
+
+## 
+
+Elvis Dohmatob,
+_sent from my  potato..._
+http://dohmatob.blogspot.fr/, https://team.inria.fr/parietal/elvis/,
+https://github.com/dohmatob
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+12,pull_request_commit_comment,881,nilearn,nilearn,dohmatob,2015-12-03 13:48:34,"Yes @danilo is right. So, shape `w_` should be documented as
+- `(1, n_features + 1)` for two class classification problems (i.e `n_classes = 2`)
+- `(n_classes, n_features + 1)` for `n_classes > 2`, and
+- `(n_features,)` for regression
+
+Document `coef_` as:
+- `(1, n_features)` for two class classification problems (i.e `n_classes = 2`)
+- `(n_classes, n_features)` for `n_classes > 2`, and
+- `(n_features,)` for regression
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+13,pull_request_commit_comment,881,nilearn,nilearn,dohmatob,2015-12-03 13:49:50,"I agree it should be mentioned that this stats are across samples.
+
+On Thu, Dec 3, 2015 at 11:28 AM, Danilo Bzdok notifications@github.com
+wrote:
+
+> In nilearn/decoding/space_net.py
+> https://github.com/nilearn/nilearn/pull/881#discussion_r46534946:
+> 
+> > ```
+> >      Scores (misclassification) for each alpha, and on each fold
+> > 
+> >  `screening_percentile_` : float
+> >      Screening percentile corrected according to volume of mask,
+> >      relative to the volume of standard brain.
+> > ```
+> > 
+> > +
+> > -    `w_` : ndarray, shape (n_classes-1, n_features) #TODO: check shapes
+> > -        Model weights
+> >   +
+> > -    `ymean_` : array, shape (n_samples,)
+> > -        Mean of prediction targets
+> >   +
+> > -    `Xmean_` : array, shape (n_features,)
+> > -        Mean of X samples
+> >   +
+> > -    `Xstd_` : array, shape (n_features,)
+> > -        Standard deviation of X samples
+> 
+> ...""of X ACROSS samples""?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/881/files#r46534946.
+
+## 
+
+Elvis Dohmatob,
+_sent from my  potato..._
+http://dohmatob.blogspot.fr/, https://team.inria.fr/parietal/elvis/,
+https://github.com/dohmatob
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+14,pull_request_commit_comment,881,nilearn,nilearn,ainafp,2015-12-04 12:29:25,"ok I extend changes to `coef_` and  `intercept_`
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+15,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 13:50:04,"and ... ?
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+16,pull_request_commit_comment,881,nilearn,nilearn,ainafp,2015-12-04 13:51:25,"oops
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+17,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 13:56:40,"3D array of mask values
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+18,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 13:57:08,"and...
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+19,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 13:58:54,"Alpha values considered for selection of the best one
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+20,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 13:59:17,"and...
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+21,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 13:59:38,"same as above
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+22,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 13:59:54,"...
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+23,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 14:00:22,"Each pair is the list...
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+24,pull_request_commit_comment,881,nilearn,nilearn,bthirion,2015-12-04 14:00:35,"...
+",a2737116f86e389a16c09ad9fa88f040b5a9ad33,"(None, '', u'nilearn/decoding/space_net.py')"
+25,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-02 17:43:49,missing docs on attributes for space net added WIP,291d84f6fd937a49d84f388aaf7d14f9d7c54dce,
+26,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-02 18:01:53,added more attributes WIP,79f033ef131e3eedd85b8b5392a1f034bcd3ea3e,
+27,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-04 12:32:51,modified shapes of attributes + some typos,93e1b9882e450292278a2ee5b07b49b96376083c,
+28,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-04 13:02:37,changes extended to SpaceNetRegressor and SpaceNetClassifier,1a68d18d70a96e5bfb7c407c54acea19f80c38a0,
+29,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-02 17:43:49,missing docs on attributes for space net added WIP,380e08079a01c718d9f934ed6eeb0b66bd573b4d,
+30,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-02 18:01:53,added more attributes WIP,bec92e6fa6ea5a871512cbbbe3df50ef18e6036a,
+31,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-04 12:32:51,modified shapes of attributes + some typos,bc985c3fad95ca12b4f9711892555f8a12defb03,
+32,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-04 13:02:37,changes extended to SpaceNetRegressor and SpaceNetClassifier,306546676be0c92d4e936f70c84c3def88d794b3,
+33,pull_request_commit,881,nilearn,nilearn,ainafp,2015-12-04 14:09:24,some typos fixed,a2737116f86e389a16c09ad9fa88f040b5a9ad33,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1573,nilearn,nilearn,KamalakerDadi,2017-11-23 16:16:12,"Still need to check if anything is missing. Otherwise reviewable.
+
+Thanks for reviewing.",start issue,[MRG] DOC: SpaceNet
+2,issue_closed,1573,nilearn,nilearn,GaelVaroquaux,2017-11-30 16:38:42,,closed issue,[MRG] DOC: SpaceNet
+3,pull_request_title,1573,nilearn,nilearn,KamalakerDadi,2017-11-23 16:16:12,"Still need to check if anything is missing. Otherwise reviewable.
+
+Thanks for reviewing.",9dc1d9f1e2c707e77ba66d5dfed827fdb4d1e9b5,[MRG] DOC: SpaceNet
+4,pull_request_merged,1573,nilearn,nilearn,GaelVaroquaux,2017-11-30 16:38:42,[MRG] DOC: SpaceNet,60ee7bb16f4271a51287f00f50782fa746104158,Pull request merge from KamalakerDadi/nilearn:doc_space to nilearn/nilearn:master
+5,issue_comment,1573,nilearn,nilearn,codecov[bot],2017-11-23 20:47:31,"# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=h1) Report
+> Merging [#1573](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/1d90db33cbb864b2413647ea771edc25245c8ff7?src=pr&el=desc) will **increase** coverage by `<.01%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1573/graphs/tree.svg?width=650&token=KpYArSdyXv&height=150&src=pr)](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1573      +/-   ##
+==========================================
++ Coverage   94.45%   94.45%   +<.01%     
+==========================================
+  Files         125      125              
+  Lines       15348    15349       +1     
+==========================================
++ Hits        14497    14498       +1     
+  Misses        851      851
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/decoding/space\_net.py](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=tree#diff-bmlsZWFybi9kZWNvZGluZy9zcGFjZV9uZXQucHk=) | `94.7% <100%> (+0.01%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=footer). Last update [1d90db3...9dc1d9f](https://codecov.io/gh/nilearn/nilearn/pull/1573?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+6,pull_request_commit_comment,1573,nilearn,nilearn,KamalakerDadi,2017-11-23 21:27:14,"What is the right way to say about -infs in cv_scores_ as ?
+I would like to add a note here about -inf values",9dc1d9f1e2c707e77ba66d5dfed827fdb4d1e9b5,"(89, '', u'nilearn/decoding/space_net.py')"
+7,pull_request_commit_comment,1573,nilearn,nilearn,bthirion,2017-11-23 22:36:11,values of the mask image,9dc1d9f1e2c707e77ba66d5dfed827fdb4d1e9b5,"(None, '', u'nilearn/decoding/space_net.py')"
+8,pull_request_commit_comment,1573,nilearn,nilearn,bthirion,2017-11-23 22:45:18,same comment here.,9dc1d9f1e2c707e77ba66d5dfed827fdb4d1e9b5,"(None, '', u'nilearn/decoding/space_net.py')"
+9,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-02 17:43:49,missing docs on attributes for space net added WIP,c4cc4f64a631783b99c25e1cef8caa08229333f9,
+10,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-02 18:01:53,added more attributes WIP,ca0ad4e7c5eb27f79fd076eca3159908202d3052,
+11,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-04 12:32:51,modified shapes of attributes + some typos,8e5ad2ce44a08fdba77081a3d7560ed68fb5dbe1,
+12,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-04 13:02:37,changes extended to SpaceNetRegressor and SpaceNetClassifier,c640555751a8522f9340cf7b2800f304f262795a,
+13,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-02 17:43:49,missing docs on attributes for space net added WIP,0464308f2305eba499fa727c367fb9dd9c66e0f5,
+14,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-02 18:01:53,added more attributes WIP,e703284e3d9bdda9de10428335a8a917c8808674,
+15,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-04 12:32:51,modified shapes of attributes + some typos,93c043a9091487e826a0476f9e4b2dae004a04ca,
+16,pull_request_commit,1573,nilearn,nilearn,ainafp,2015-12-04 13:02:37,changes extended to SpaceNetRegressor and SpaceNetClassifier,626c0c992db4853181cf9d46be121fc68460d03b,
+17,pull_request_commit,1573,nilearn,nilearn,KamalakerDadi,2017-11-23 16:14:14,[WIP] DOC: SpaceNet,484206f56d23af3c8f15ea792e8739d4c49ce05d,
+18,pull_request_commit,1573,nilearn,nilearn,KamalakerDadi,2017-11-23 20:47:09,Fixing sphinx failure,4f9ebc31ef0143e715dc96ca90254fa25cce92ac,
+19,pull_request_commit,1573,nilearn,nilearn,KamalakerDadi,2017-11-24 12:06:25,Addressed comment: Improve wording on mask_,9dc1d9f1e2c707e77ba66d5dfed827fdb4d1e9b5,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,848,nilearn,nilearn,dohmatob,2015-11-21 17:09:43,"At least the following attributes have no documentation in the docstring:  `best_model_params_` and `alpha_grids_`
+",start issue,Undocumented SpaceNet attributes
+2,issue_closed,848,nilearn,nilearn,KamalakerDadi,2017-11-30 17:01:21,,closed issue,Undocumented SpaceNet attributes
+3,issue_comment,848,nilearn,nilearn,ainafp,2015-12-02 17:16:03,"I'm on this one. 
+
+Few issues found already:
+- `cv_scores_` shape was wrongly documented
+- `alpha_grids_` doc missing
+- `best_model_params_` doc missing and format list(list()) to be changed to ndarray
+- `alpha_` is no longer an attribute
+- `all_coef_ , classes_ , coef_img_ , mask_ , memory_ , n_classes_ , w_ , ymean_ , Xmean_ , Xstd_` attributes are missing
+",,
+4,issue_comment,848,nilearn,nilearn,banilo,2015-11-21 17:55:47,"Good! Additionally, it is perhaps not sufficiently clear whether and how specifying a list to `l1_ratios` performs hyperparameter tuning. The practical question could be what the difference is to running `SpaceNet*` wrapped by sklearn's GridSearchCV.
+",,

@@ -1,0 +1,82 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1107","nilearn","nilearn","TheChymera","2016-06-01 02:12:26","I am using [`plotting.plot_stat_map`](https://nilearn.github.io/modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map) to create some figures which I include in LaTeX presentations. I am doing this with pythontex, which automatically generates figures at the correct resolution and allows me to specify font sizes to match my document via [`matplotlibrc`](http://matplotlib.org/users/customizing.html).
+
+Sadly this does not seem to affect the text size in the the aforementioned plotting function from nilearn. I assume this is because of some idiosyncrasy of the plotting which rasterizes the text behind the scenes. Do you know if this is the case? And more importantly, do you know how I can change the font size? Presentations have low resolution, so the text on my figures is disproportionally huge. 
+","start issue","Specify font size for plotting.plot_stat_map"
+"issue_closed","1107","nilearn","nilearn","GaelVaroquaux","2016-06-07 14:21:39","","closed issue","Specify font size for plotting.plot_stat_map"
+"issue_comment","1107","nilearn","nilearn","lesteve","2016-06-01 14:19:09","I know nothing about pythontex, I am not sure I understand your question fully and I presume the problem you are describing is not specific to nilearn. Here is a work-around that should let you set the font size:
+
+The display object you get back from the `plot_stat_map` call has a `title` method which you can pass the size into, so something like this should work:
+
+``` python
+
+display = plot_stat_map(...)
+display.title('Your title', size=30)
+```
+","",""
+"issue_comment","1107","nilearn","nilearn","TheChymera","2016-06-01 15:40:08","@lesteve I ask this question here because it is to the best of my knowledge specific to nilearn - I have not yet encountered any other package for the plots of which matplotlibrc fails to take effect. 
+
+```
+display = plot_stat_map(...)
+display.title('Your title', size=30)
+```
+
+this seems to add a _second_ title on top of the one I pass to the plotting function. It's a bit of a hack, but ok...
+However I am also (or rather especially) looking to change the font size of the color bar tick labels and the L/R labels. Any idea how I could do that?
+","",""
+"issue_comment","1107","nilearn","nilearn","TheChymera","2016-06-03 00:29:18","Ok, `matplotlibrc` did not take effect on the colorbar labels, because I had forgotten to take another set of `matplotlibrc` settings out of the wrapper I wrote for `plot_stat_map`. so that works now.
+
+Setting the title with:
+
+```
+display = plot_stat_map(...,title=False)
+display.title('Your title', size=30)
+```
+
+works, and setting the annotation font size with
+
+```
+display = plot_stat_map(...annotate=False)
+display.annotate(size=30)
+```
+
+Works as well. Now, before I call this completely solved. Is there any way to set these sizes in the function call, or tweak them via one of the many `matplotlibrc` parameters? It's weird to have to explicitly not set stuff first, just to then be able to set it correctly with a separate call....
+","",""
+"issue_comment","1107","nilearn","nilearn","lesteve","2016-06-07 14:01:02","Basically nilearn has some default size for these things that completely ignore matplotlibrc. I am not sure whether it should care about matplotlibrc to be honest.
+
+If I am following correctly, the general request seems to be more something like ""how do I generate a nilearn plot that looks good for slides (looks like you care about title, L/R annotations and colorbar ticks mostly)""? Maybe @AlexandreAbraham @eickenberg @mrahim or @GaelVaroquaux have some suggestions about that.
+","",""
+"issue_comment","1107","nilearn","nilearn","GaelVaroquaux","2016-06-07 14:21:33","> If I am following correctly, the general request seems to be more
+> something like ""how do I generate a nilearn plot that looks good for
+> slides (looks like you care about title, L/R annotations and colorbar
+> ticks mostly)""? Maybe @AlexandreAbraham @eickenberg @mrahim or
+> @GaelVaroquaux have some suggestions about that.
+
+Use the lower-level commands, as you are already doing. The high-level
+functions cannot catter for all the usecases.
+","",""
+"issue_comment","1107","nilearn","nilearn","TheChymera","2016-06-07 14:57:17","@GaelVaroquaux Actually in this case they could, since you could forward `**kwargs` to the base matplotlib commands you use for these elements (as you do for some of the others). This was probably just an oversight when the function was written, but sadly I am still unfamiliar with the code and can't make time to fix it now.
+
+For the time being, I wrote [a short wrapper](https://github.com/TheChymera/chyMRI/blob/master/plotting.py#L51-L75) to allow `nilearn.plotting.plot_stat_map` plots to scale ~properly.
+
+@lesteve I can't see any reason why anything using matplotlib should disregard `matplotlibrc`. And it's not just about slides, but about making the figures look _great_ at _any other_ dpi - not just that of a ""normal"" monitor. HIDPI, poster, presentation, booklet, flyer, all these formats need (or at least benefit from) different scaling, best handled via matplotlibrc.
+","",""
+"issue_comment","1107","nilearn","nilearn","GaelVaroquaux","2016-06-07 15:10:45","> @GaelVaroquaux Actually in this case they could, since you could forward
+> **kwargs to the base matplotlib commands you use for these elements (as you do
+> for some of the others).
+
+There are forwarded to the imshow command.
+
+> This was probably just an oversight,
+
+It's not: routing the arguments to different underlying commands would be
+incomprehensible, not to mention hard to implement. 
+
+> @lesteve I can't see any reason why anything using matplotlib should
+> disregard matplotlibrc. And it's not just about slides, but about
+> making the figures look good at any other dpi except that of a ""normal""
+> monitor. HIDPI, poster, presentation, booklet, flyer, all these formats
+> need different scaling, best handled via matplotlibrc.
+
+Use svg/pdf output, and not changing figure size.
+","",""

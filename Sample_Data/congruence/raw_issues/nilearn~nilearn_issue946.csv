@@ -1,0 +1,134 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","946","nilearn","nilearn","AlexandreAbraham","2016-01-14 00:49:30","Solves the same problem as #880. Fix #873.
+
+Here is my version of the fix. I didn't tested it extensively but, on the toy script below, it works. The code is super ugly because of the need to switch between seed representation (triplet) and coord_transform one (3 lists of coordinates).
+
+I'm convinced that a better to do it exists but I am too tired to figure it out.
+
+Test script:
+
+``` python
+from nilearn.input_data import NiftiSpheresMasker
+import numpy as np
+import nibabel
+
+
+data = np.random.random((3, 3, 3))
+mask = np.zeros((3, 3, 3))
+mask[1, 1, 1] = 1
+affine = np.eye(4) * 1.2
+seed = (1.4, 1.4, 1.4)
+
+masker = NiftiSpheresMasker([seed], radius=0.1,
+                            mask_img=nibabel.Nifti1Image(mask, affine))
+masker.fit_transform(nibabel.Nifti1Image(data, affine))
+```
+","start issue","Fix problem of small radius"
+"issue_closed","946","nilearn","nilearn","AlexandreAbraham","2016-02-04 00:30:41","","closed issue","Fix problem of small radius"
+"pull_request_title","946","nilearn","nilearn","AlexandreAbraham","2016-01-14 00:49:30","Solves the same problem as #880. Fix #873.
+
+Here is my version of the fix. I didn't tested it extensively but, on the toy script below, it works. The code is super ugly because of the need to switch between seed representation (triplet) and coord_transform one (3 lists of coordinates).
+
+I'm convinced that a better to do it exists but I am too tired to figure it out.
+
+Test script:
+
+``` python
+from nilearn.input_data import NiftiSpheresMasker
+import numpy as np
+import nibabel
+
+
+data = np.random.random((3, 3, 3))
+mask = np.zeros((3, 3, 3))
+mask[1, 1, 1] = 1
+affine = np.eye(4) * 1.2
+seed = (1.4, 1.4, 1.4)
+
+masker = NiftiSpheresMasker([seed], radius=0.1,
+                            mask_img=nibabel.Nifti1Image(mask, affine))
+masker.fit_transform(nibabel.Nifti1Image(data, affine))
+```
+","b1d1d21c9fa17b1cd83d8090d43b2a2f2fa18ff1","Fix problem of small radius"
+"pull_request_merged","946","nilearn","nilearn","AlexandreAbraham","2016-02-04 00:30:41","Fix problem of small radius","01fceffb2460005de5bfacb1b8a9317f7da761d2","Pull request merge from AlexandreAbraham/nilearn:fix_small_radius to nilearn/nilearn:master"
+"issue_comment","946","nilearn","nilearn","AlexandreAbraham","2016-01-14 12:43:01","> I have a warning when running my example: SparseEfficiencyWarning: Changing the sparsity structure of a csr_matrix is expensive. lil_matrix is more efficient. 
+
+Yeah, it can be solved with one line.
+
+> Also, I'm wondering if it is better to check if the seed coordinates are inside the mask before continuing. 
+> In the current case, the error message is unclear seed empty.
+
+I do it. However, a masked seed is not a showstopper for me: the rest of the sphere can contain unmasked voxels.
+","",""
+"issue_comment","946","nilearn","nilearn","AlexandreAbraham","2016-01-28 15:18:08","I have fixed the Travis failure. However, this failure was due to the fact that scikit learn crashes if we give a mask with only one voxel unmasked to the neighbor graph estimator... There is probably a bug under the hood.
+","",""
+"issue_comment","946","nilearn","nilearn","AlexandreAbraham","2016-01-28 15:34:17","> If you can isolate the scikit-learn bug, it would be great to report it upstream. 
+
+Added on my todo list.
+
+> Did you remove the warning?
+
+Yes.
+","",""
+"issue_comment","946","nilearn","nilearn","AlexandreAbraham","2016-02-02 16:21:34","Build triggered again.
+","",""
+"issue_comment","946","nilearn","nilearn","AlexandreAbraham","2016-02-03 14:32:16","Now it's becoming funny.
+
+In this build: https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.577
+- build failed on Python 2.7
+- build successful on Python 3.4
+
+In this one: https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.575
+- build successful on Python 2.7
+- build cancelled on Python 3.4
+
+So, the tests are not intrinsically broken but it seems to introduce some hazardous segfaults in appveyor... I don't know what to do.
+","",""
+"issue_comment","946","nilearn","nilearn","AlexandreAbraham","2016-02-03 14:57:58","> Is it the always same test that is segfaulting?
+
+There is no segfault in the tests, it's at the end of the tests.
+
+See other people as troubled as we are:
+https://github.com/dart-lang/test/issues/356
+","",""
+"issue_comment","946","nilearn","nilearn","AlexandreAbraham","2016-02-04 00:30:29","OK. Looking at the history, the problem on AppVeyor seems to happen quite often. I'm going to merge this one but we should investigate this problem at some point.
+","",""
+"issue_comment","946","nilearn","nilearn","bthirion","2016-01-17 08:26:49","You could ass teh script as a new test. Besides this, LGTM.
+","",""
+"issue_comment","946","nilearn","nilearn","GaelVaroquaux","2016-02-03 14:35:41","Is it the always same test that is segfaulting?
+","",""
+"issue_comment","946","nilearn","nilearn","lesteve","2016-02-03 14:40:30","> In this build: https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.577
+> 
+>    build failed on Python 2.7
+
+The tests actually seem to run fine with the output:
+
+```
+Ran 387 tests in 228.284s
+ OK (SKIP=1)
+```
+
+I have seen that happening from time to time, but it tends to go away if you kick off another AppVeyor build.
+
+> In this one: https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.575
+> 
+> build cancelled on Python 3.4
+
+No idea why the build was cancelled.
+","",""
+"issue_comment","946","nilearn","nilearn","aabadie","2016-02-03 14:51:17","> No idea why the build was cancelled.
+
+New jobs requests can cancel previously started jobs. You probably pushed a new commit to that branch (or another PR was updated in the mean time). Maybe we can change this settings on appveyor.
+","",""
+"issue_comment","946","nilearn","nilearn","mrahim","2016-01-14 12:07:21","Nice.
+I have a warning when running my example: `SparseEfficiencyWarning: Changing the sparsity structure of a csr_matrix is expensive. lil_matrix is more efficient. `
+
+Also, I'm wondering if it is better to check if the seed coordinates are inside the mask before continuing. 
+In the current case, the error message is unclear `seed empty`.
+","",""
+"pull_request_commit_comment","946","nilearn","nilearn","banilo","2016-01-17 23:35:56","comment meaning may remain obscure
+","b1d1d21c9fa17b1cd83d8090d43b2a2f2fa18ff1","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit","946","nilearn","nilearn","AlexandreAbraham","2016-01-14 00:45:37","Fix problem of small radius","8f98754bee50342d4ca519d0191c2c7b46964d64",""
+"pull_request_commit","946","nilearn","nilearn","AlexandreAbraham","2016-01-18 11:52:26","Address comments and add tests","3096a69c3f1d2c0daf95bc89fef65348ed21913e",""
+"pull_request_commit","946","nilearn","nilearn","AlexandreAbraham","2016-01-28 15:13:27","Fix Python 2.7 failure","d25f3eaf3d3038eedab24f03c077a80a177c1f09",""
+"pull_request_commit","946","nilearn","nilearn","AlexandreAbraham","2016-01-29 16:04:09","Fix PEP8 violations","b1d1d21c9fa17b1cd83d8090d43b2a2f2fa18ff1",""

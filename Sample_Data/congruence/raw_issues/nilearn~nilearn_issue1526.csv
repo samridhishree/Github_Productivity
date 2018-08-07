@@ -1,0 +1,106 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1526","nilearn","nilearn","ebridge2","2017-10-13 14:26:19","http://nilearn.github.io/auto_examples/03_connectivity/plot_multi_subject_connectome.html#sphx-glr-auto-examples-03-connectivity-plot-multi-subject-connectome-py
+
+I am following the above tutorial for plotting connectomes overlaid onto a brain. Are there any tutorials for how to plot a connectome given only a 3d parcellation file, where intensities indicate the true region label? I see this tutorial only supports the case where one has a 4D nifti image, where I assume each individual dimension is a particular ROI probability map (from the tutorial anyway? this is not made explicitly clear to me from reading the documentation so i may be mistaken). 
+
+I have tried the following the convert my 3d image into the appropriate format:
+
+```
+des_dat = desim.get_data()  # desim is a 3d Nifti1Image representing the desikan parcellation loaded by nibabel, where each intensity represents the label a voxel is part of
+labs = np.unique(des_dat)
+labs = labs[labs != 0]
+print(len(labs))
+des_4ddat = np.stack([np.asarray(des_dat == lab).astype('float64') for lab in labs], axis=3)
+print(des_4ddat.shape)  # 182x218x182x70
+des_parcels = nb.Nifti1Image(dataobj=des_4ddat, header=desim.header, affine=desim.affine)
+regions_imgs = image.iter_img(des_parcels)
+coords_connectome = [nip.find_xyz_cut_coords(img) for img in regions_imgs]
+
+nip.plot_connectome(dwi_connectome, coords_connectome,
+                    edge_threshold='90%', title=title)
+```
+
+But this throws the following error:
+```
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-48-6ddb0e56bcf5> in <module>()
+      5 title = 'DWI Megamean Connectome'
+      6 nip.plot_connectome(dwi_megamean, coords_connectome,
+----> 7                     edge_threshold='90%', title=title)
+
+/home/eric/Documents/research/ndmg-repos/env-ndmg/local/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in plot_connectome(adjacency_matrix, node_coords, node_color, node_size, edge_cmap, edge_vmin, edge_vmax, edge_threshold, output_file, display_mode, figure, axes, title, annotate, black_bg, alpha, edge_kwargs, node_kwargs, colorbar)
+   1242                       edge_threshold=edge_threshold,
+   1243                       edge_kwargs=edge_kwargs, node_kwargs=node_kwargs,
+-> 1244                       colorbar=colorbar)
+   1245 
+   1246     if output_file is not None:
+
+/home/eric/Documents/research/ndmg-repos/env-ndmg/local/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in add_graph(self, adjacency_matrix, node_coords, node_color, node_size, edge_cmap, edge_vmin, edge_vmax, edge_threshold, edge_kwargs, node_kwargs, colorbar)
+   1368                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
+   1369                               vmin=edge_vmin, vmax=edge_vmax,
+-> 1370                               **edge_kwargs)
+   1371             # To obtain the brain left view, we simply invert the x axis
+   1372             if ax.direction == 'l':
+
+/home/eric/Documents/research/ndmg-repos/env-ndmg/local/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in _add_lines(self, line_coords, line_values, cmap, vmin, vmax, **kwargs)
+    410             this_kwargs.update(kwargs)
+    411             xdata, ydata = start_end_point_2d.T
+--> 412             line = lines.Line2D(xdata, ydata, **this_kwargs)
+    413             self.ax.add_line(line)
+    414 
+
+/home/eric/Documents/research/ndmg-repos/env-ndmg/local/lib/python2.7/site-packages/matplotlib/lines.pyc in __init__(self, xdata, ydata, linewidth, linestyle, color, marker, markersize, markeredgewidth, markeredgecolor, markerfacecolor, markerfacecoloralt, fillstyle, antialiased, dash_capstyle, solid_capstyle, dash_joinstyle, solid_joinstyle, pickradius, drawstyle, markevery, **kwargs)
+    347         self.set_linestyle(linestyle)
+    348         self.set_drawstyle(drawstyle)
+--> 349         self.set_linewidth(linewidth)
+    350 
+    351         self._color = None
+
+/home/eric/Documents/research/ndmg-repos/env-ndmg/local/lib/python2.7/site-packages/matplotlib/lines.pyc in set_linewidth(self, w)
+    987         ACCEPTS: float value in points
+    988         """"""
+--> 989         w = float(w)
+    990         if self._linewidth != w:
+    991             self.stale = True
+
+/home/eric/Documents/research/ndmg-repos/env-ndmg/local/lib/python2.7/site-packages/numpy/ma/core.pyc in __float__(self)
+   4288         """"""
+   4289         if self.size > 1:
+-> 4290             raise TypeError(""Only length-1 arrays can be converted ""
+   4291                             ""to Python scalars"")
+   4292         elif self._mask:
+
+TypeError: Only length-1 arrays can be converted to Python scalars
+```
+
+My coordinates seem to be valid (the left-most panel plots properly) but there looks to be an error stemming from matplotlib somewehere. I am left with the following figure:
+
+![image](https://user-images.githubusercontent.com/8883547/31552422-7735cd3c-b005-11e7-839c-347e004240b0.png)
+","start issue","Extracting connected label regions on 3d Image fails?"
+"issue_comment","1526","nilearn","nilearn","banilo","2017-10-13 19:26:33","Looks like retrieving the centers of mass from each of your parcels first and using these as coordinates can be part of the trick.","",""
+"issue_comment","1526","nilearn","nilearn","ebridge2","2017-10-13 19:30:58","I'm pretty sure I did that though? My centers of mass seem correct","",""
+"issue_comment","1526","nilearn","nilearn","KamalakerDadi","2017-10-13 19:44:05",">Are there any tutorials for how to plot a connectome given only a 3d parcellation file, where intensities indicate the true region label? I
+
+Following this [tutorial](http://nilearn.github.io/auto_examples/03_connectivity/plot_signal_extraction.html#sphx-glr-auto-examples-03-connectivity-plot-signal-extraction-py), what we are missing in the tutorial is extracting coordinates on 3D labels based atlas image and plotting connectome. The below code helps to do the missing parts.
+
+```python
+from nilearn.image import load_img, new_img_like
+from nilearn.plotting import find_xyz_cut_coords
+from nilearn.plotting import plot_connectome
+
+atlas_img = load_img(dataset.maps)
+atlas_data = atlas_img.get_data()
+labels = np.unique(atlas_data)
+
+coords = []
+for label_id in labels:
+    if label_id == 0:
+        continue
+    each_roi_data = (atlas_data == label_id)
+    each_roi_img = new_img_like(atlas_img, each_roi_data, affine=atlas_img.get_affine())
+    coords.append(find_xyz_cut_coords(each_roi_img))
+
+plot_connectome(correlation_matrix, coords)
+
+```","",""

@@ -1,0 +1,49 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","165","nilearn","nilearn","VirgileFritsch","2014-02-18 16:45:44","In examples (e.g. plot_haxby_searchlight.py), we often do something like:
+
+``` python
+fmri_img = nibabel.load(dataset_files.func)
+
+### Restrict to faces and houses ################################
+condition_mask = np.logical_or(conditions == 'face')
+fmri_img = nibabel.Nifti1Image(fmri_img.get_data()[..., condition_mask],
+                               fmri_img.get_affine().copy())
+
+### Mask data ###############################################
+mask_img = nibabel.load(dataset_files.mask)
+nifti_masker = NiftiMasker(mask=mask_img)
+fmri_masked = nifti_masker.fit_transform(fmri_img)
+```
+
+It would be simpler to provide `condition_mask` directly to the NiftiMasker to avoid creating a temporary image.
+
+On top of making things easier to use, one important consideration is that some preprocessings performed by the NiftiMasker (such as detrending) might need the complete time serie to be accurate.
+The NiftiMasker should then of course be able to choose whether it has to process the whole time serie or only the desired volumes according to the preprocessings that have to be performed. In the first case, is it important not to have masked the data before, while computation time would be saved in the second case (potentially a lot).
+","start issue","NiftiMasker should ""time-mask"" 4D volumes"
+"issue_closed","165","nilearn","nilearn","lesteve","2015-02-12 10:07:09","","closed issue","NiftiMasker should ""time-mask"" 4D volumes"
+"issue_comment","165","nilearn","nilearn","GaelVaroquaux","2014-02-18 17:36:51","Agreed with the general idea. I would just not call it condition_mask because that refers to the notion of condition which is not common to all datasets. 
+
+<div>-------- Original message --------</div><div>From: Virgile Fritsch notifications@github.com </div><div>Date:18/02/2014  17:45  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Subject: [nilearn] NiftiMasker should ""time-mask"" 4D volumes (#165) </div><div>
+</div>In examples (e.g. plot_haxby_searchlight.py), we often do something like:
+
+fmri_img = nibabel.load(dataset_files.func)
+
+### Restrict to faces and houses
+
+condition_mask = np.logical_or(conditions == 'face')
+fmri_img = nibabel.Nifti1Image(fmri_img.get_data()[..., condition_mask],
+                               fmri_img.get_affine().copy())
+
+### Mask data
+
+mask_img = nibabel.load(dataset_files.mask)
+nifti_masker = NiftiMasker(mask=mask_img)
+fmri_masked = nifti_masker.fit_transform(fmri_img)
+It would be simpler to provide condition_mask directly to the NiftiMasker to avoid creating a temporary image.
+
+On top of making things easier to use, one important consideration is that some preprocessings performed by the NiftiMasker (such as detrending) might need the complete time serie to be accurate.
+The NiftiMasker should then of course be able to choose whether it has to process the whole time serie or only the desired volumes according to the preprocessings that have to be performed. In the first case, is it important not to have masked the data before, while computation time would be saved in the second case (potentially a lot).
+
+—
+Reply to this email directly or view it on GitHub.
+","",""

@@ -1,0 +1,24 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","358","nilearn","nilearn","banilo","2015-01-20 09:00:03","Inverse_transform() of decompositions in sklearn (factor analysis, PCA, FastICA, etc.) usually perform some dot product of the provided loadings with the model components. That is, a single array of the size of one component is returned.
+
+Inverse_transform() of MultiPCA and CanICA appear to apply each provided loading to one of the components individually and then return a list of nifti images of that. What's the rationale?
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/decomposition/multi_pca.py#L337
+","start issue","MultiPCA/CanICA: behavior of inverse_transform() not sklearn-like"
+"issue_comment","358","nilearn","nilearn","GaelVaroquaux","2015-01-20 09:16:25","> Inverse_transform() of MultiPCA and CanICA appear to apply each provided
+> loading to one of the components individually and then return a list of nifti
+> images of that. What's the rationale?
+
+That's probably because iter_img didn't exist. We should probably change
+that.
+","",""
+"issue_comment","358","nilearn","nilearn","bcipolli","2015-02-21 01:02:58","I believe both `transform` and `inverse_transform` expect lists.  If you pass `transform` an image, it will fail.  If you pass `inverse_transform` a 2D array, it will iterate as described above.
+
+I suggest the best solution is for each function to handle the non-list case more consistently.  I prefer that each is smart enough to wrap the objects in a list (then unwrap upon returning).  But I'm also cool with forcing `inverse_transform` to fail when it does not receive a list of 2D component loadings.
+","",""
+"issue_comment","358","nilearn","nilearn","bcipolli","2015-02-21 01:21:14","Or, given @ GaelVaroquaux 's comment, perhaps simply eliminating the requirement that a list is passed is the best.  You can `transform` / `inverse_transform` images easily in a list comprehension using `iter_img` now. 
+
+Would be happy to take care of this, I'm using this code right now.
+","",""
+"issue_comment","358","nilearn","nilearn","AlexandreAbraham","2015-04-17 07:40:59","I think the problem of objects embedding a masker should be raised for milestone 0.2.
+","",""

@@ -1,0 +1,92 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","928","nilearn","nilearn","aabadie","2016-01-06 15:51:55","I found this overlapping text in the online documentation (see https://nilearn.github.io/manipulating_visualizing/manipulating_images.html#fetching-open-datasets). I took this opportunity to fix the full dataset example.
+","start issue","DOC: fixing overlapping text and wrong example"
+"issue_closed","928","nilearn","nilearn","lesteve","2016-01-07 12:04:14","","closed issue","DOC: fixing overlapping text and wrong example"
+"pull_request_title","928","nilearn","nilearn","aabadie","2016-01-06 15:51:55","I found this overlapping text in the online documentation (see https://nilearn.github.io/manipulating_visualizing/manipulating_images.html#fetching-open-datasets). I took this opportunity to fix the full dataset example.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","DOC: fixing overlapping text and wrong example"
+"pull_request_merged","928","nilearn","nilearn","lesteve","2016-01-07 12:04:14","DOC: fixing overlapping text and wrong example","4c97c4be2ccbe686bd3a03dc079af924618aeb3d","Pull request merge from aabadie/nilearn:fix_doc to nilearn/nilearn:master"
+"issue_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 16:01:51","In general the changes look right, but I don't think that we should be running downloads during doctests.
+","",""
+"issue_comment","928","nilearn","nilearn","aabadie","2016-01-06 16:25:29","> In general the changes look right, but I don't think that we should be running downloads during doctests.
+
+I pushed the change. Waiting for CI's.
+","",""
+"issue_comment","928","nilearn","nilearn","lesteve","2016-01-06 17:03:40","Could the text overlap not be fixed at the HTML level rather than in the rst, e.g. by setting overflow-x on the pre class in the CSS ? Not a CSS expert so there might be a better way to do it.
+
+Here is a snapshot to explain what the text overlap issue actually looks like:
+![nilearn_text_overlap](https://cloud.githubusercontent.com/assets/1680079/12148600/9cdd24da-b49f-11e5-83f9-de6edff4170b.png)
+","",""
+"issue_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 17:06:15","> Could the text overlap not be fixed at the HTML level rather than in
+> the rst, e.g. by setting overflow-x on the pre class in the CSS ? Not a
+> CSS expert so there might be a better way to do it.
+
+Any change on CSS needs to be validated thoroughly, as it affects the
+whole documentation. These things are tricky.
+
+Backporting some CSS from scipy-lectures to nilearn would probably fix
+this, as a lot of effort went into designing a very good CSS for the code
+block in scipy-lectures. But this is a certain amount of work.
+","",""
+"issue_comment","928","nilearn","nilearn","lesteve","2016-01-06 17:47:31","> Any change on CSS needs to be validated thoroughly, as it affects the whole documentation. These things are tricky. 
+
+Makes sense.
+","",""
+"issue_comment","928","nilearn","nilearn","aabadie","2016-01-07 09:54:19","@lesteve, @GaelVaroquaux, for the record about the overlap issue, using `# doctest: +NORMALIZE_WHITESPACE` works with the output on 2 lines.
+","",""
+"issue_comment","928","nilearn","nilearn","lesteve","2016-01-07 10:35:49","LGTM, I'll wait for CircleCI green light, and I'll merge this one.
+","",""
+"issue_comment","928","nilearn","nilearn","lesteve","2016-01-07 12:04:10","Merging, thanks !
+","",""
+"pull_request_commit_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 15:59:12","Was removing the doctest skip intentional? This will trigger a download of the data while doctesting, which is probably something that we want to avoid.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 16:01:10","Same remark about skipping the doctest. It's probably a bad idea not to skip them, as it will entail heavy downloads on travis.
+
+Another option would be to mock or modify dataset downloads while testing. I'm open to it, but it requires much more work.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","aabadie","2016-01-06 16:11:11","> Was removing the doctest skip intentional?
+
+Yes, I just wanted to be sure the example was valid when running `make test-doc`. I can revert this change.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 16:13:18","> Yes, I just wanted to be sure the example was valid when running make
+> test-doc.
+
+Make sense. I wonder if we can have multiple modes. It probably goes in
+the direction of mocking the downloaders. @AlexandreAbraham might have an
+idea on this.
+
+> I can revert this change.
+
+It would be good.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","AlexandreAbraham","2016-01-06 16:15:48","Depending on which level you want to mock the downloader, it may not be as easy as it seems.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 16:20:08","> Depending on which level you want to mock the downloader, it may not be
+> as easy as it seems.
+
+I was thinking on a very high level: returning meaningful paths without
+any download. The next step would even be to put some generated data in
+these meaningful paths.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","AlexandreAbraham","2016-01-06 16:26:23","Returning meaningful paths is already what we do in the tests. We can easily generate data in them. However, we sometimes have to generate file with meaningful content (XML) and this is the most difficult part to handle. I mean that we can't automatically mock everything. Some dataset loader requires specific code and we should think of a good way to put that out of the tests  in order to use it elsewhere.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 16:28:30","Are we already returning paths without downloading the doctests? If so we
+shouldn't need to skip that part?
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","AlexandreAbraham","2016-01-06 16:37:34","If you call `nilearn.datasets.tests.test_utils.setup_mock`, the function `fetch_haxby` will return existing paths to empty files.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","GaelVaroquaux","2016-01-06 16:39:49","Alex Abadie: do you want to try to set this up, and thus remove the
+skips?
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","aabadie","2016-01-06 16:44:48","Sure :)
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","lesteve","2016-01-06 16:48:34","PEP8 two spaces before an inline comment. Just saying.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","lesteve","2016-01-06 16:57:20","I would remove the three dots here
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit_comment","928","nilearn","nilearn","aabadie","2016-01-07 09:50:36","@GaelVaroquaux @AlexandreAbraham, I gave a try to `setup_mock` but it doesn't work like this out of the box and would require a bit more work (I cannot evaluate how many).
+I reverted the change and now skip the doctest for this. The mock thing could be part of another PR I think.
+","c515f4e020b6ed6dcb58c731c40ea5e396512a91","(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+"pull_request_commit","928","nilearn","nilearn","aabadie","2016-01-06 15:49:55","fixing overlapping text and wrong example","b2f3a4d69b04ac27e39e2e62c95935293319ccf0",""
+"pull_request_commit","928","nilearn","nilearn","aabadie","2016-01-06 16:14:02","skip doc test in order to avoid too much download.","434d385401abfdbf5f3a1ec645a059de595e1dad",""
+"pull_request_commit","928","nilearn","nilearn","aabadie","2016-01-06 21:03:05","using mock version of haxby fetcher with doctest","93e2123a174b50dffccd2d068f6347b1fb7a1677",""
+"pull_request_commit","928","nilearn","nilearn","aabadie","2016-01-07 09:44:59","reverting mock and skip test","c515f4e020b6ed6dcb58c731c40ea5e396512a91",""

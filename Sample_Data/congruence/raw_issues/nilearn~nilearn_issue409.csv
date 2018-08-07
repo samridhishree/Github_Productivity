@@ -1,0 +1,61 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","409","nilearn","nilearn","lesteve","2015-02-05 20:49:19","One for @eickenberg, linked to #293.
+
+``` python
+import nibabel as nib
+
+from nilearn import datasets
+from nilearn.plotting import plot_stat_map
+localizer_dataset = datasets.fetch_localizer_calculation_task(n_subjects=1)
+cmap_filename = localizer_dataset.cmaps[0]
+img = nib.load(cmap_filename)
+# 
+plot_stat_map(img, colorbar=False)
+
+# Now making the img data all positive
+data = img.get_data()
+data[data < 0] = 0
+plot_stat_map(img, colorbar=False)
+```
+
+This affects plot_haxby_searchlight.py and plot_roi_extraction.py.
+
+We should probably add tests for combinations of img data positivity/negativity/none of the above and colorbar=False/True.
+
+The error:
+
+```
+ValueError                                Traceback (most recent call last)
+<ipython-input-1-0b497f4599c2> in <module>()
+     10 data = img.get_data()
+     11 data[data < 0] = 0
+---> 12 plot_stat_map(img, colorbar=False)
+     13 
+
+/home/lesteve/dev/nilearn/nilearn/plotting/img_plotting.pyc in plot_stat_map(stat_map_img, bg_img, cut_coords, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, draw_cross, black_bg, cmap, symmetric_cbar, dim, **kwargs)
+    662                                vmin=vmin, vmax=vmax, colorbar=colorbar,
+    663                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+--> 664                                **kwargs)
+    665 
+    666     return display
+
+/home/lesteve/dev/nilearn/nilearn/plotting/img_plotting.pyc in _plot_img_with_bg(img, bg_img, cut_coords, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, draw_cross, black_bg, bg_vmin, bg_vmax, interpolation, display_factory, cbar_vmin, cbar_vmax, **kwargs)
+    110     if (cbar_vmax is not None) or (cbar_vmin is not None):
+    111         if not hasattr(display, '_cbar'):
+--> 112             raise ValueError(""Specified colorbar bounds, but there is no""
+    113                              "" colorbar. Set colorbar=True to avoid this""
+    114                              "" error message."")
+
+ValueError: Specified colorbar bounds, but there is no colorbar. Set colorbar=True to avoid this error message.
+```
+
+```
+```
+","start issue","plot_stat_map with colorbar=False raises ValueError when data is all positive"
+"issue_closed","409","nilearn","nilearn","lesteve","2015-02-06 09:21:29","","closed issue","plot_stat_map with colorbar=False raises ValueError when data is all positive"
+"issue_comment","409","nilearn","nilearn","eickenberg","2015-02-05 21:56:29","https://github.com/nilearn/nilearn/pull/412
+
+Yeah that exception didn't make sense at all. It was actually migrated from a public function `plot_stat_map` to a private part and thus caused this weirdness.
+","",""
+"issue_comment","409","nilearn","nilearn","lesteve","2015-02-06 09:21:29","Fixed via #412.
+","",""

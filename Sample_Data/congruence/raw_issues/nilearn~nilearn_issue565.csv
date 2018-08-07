@@ -1,0 +1,97 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","565","nilearn","nilearn","KamalakerDadi","2015-04-29 20:58:54","I suspect that the argument threshold is not behaving properly as what it should when trying to plot plot_probabilistic_atlas.py without vmin and vmax. (default threshold = 1e-06)
+
+Code Snippet: same as plot_probabilistic but few changes
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn import datasets, image, plotting
+
+atlas_data = datasets.fetch_msdl_atlas()
+atlas_filename = atlas_data.maps
+
+fig = plt.figure(figsize=(4, 5.4), facecolor='k')
+display = plotting.plot_stat_map(image.index_img(atlas_filename, 1),
+                                                   figure=fig,colorbar=False)
+display.add_overlay(image.index_img(atlas_filename, 8),
+                                cmap=plotting.cm.black_pink)
+display.add_overlay(image.index_img(atlas_filename, 25),
+                                cmap=plotting.cm.black_green)
+display.add_overlay(image.index_img(atlas_filename, 13),
+                               cmap=plotting.cm.black_red)
+plt.show()
+```
+
+Case1: Few atlas maps (08, 13, 25, 26) are behaved properly without ""vmin"" and ""vmax"" and ""without any threshold"" as shown below in the figures
+![figure_1](https://cloud.githubusercontent.com/assets/11410385/7400353/8e31bc60-eebc-11e4-917b-500bbf16c1da.png)
+
+Case 2: With ""threshold = None""
+Code Snippet:
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn import datasets, image, plotting
+
+atlas_data = datasets.fetch_msdl_atlas()
+atlas_filename = atlas_data.maps
+
+display = plotting.plot_stat_map(image.index_img(atlas_filename, 4),
+                                                   colorbar=False,
+                                                   title=""DMN nodes in MSDL atlas"")
+display.add_overlay(image.index_img(atlas_filename, 8),
+                                cmap=plotting.cm.black_pink,threshold=None)
+display.add_overlay(image.index_img(atlas_filename, 13),
+                                cmap=plotting.cm.black_red,threshold=None)
+display.add_overlay(image.index_img(atlas_filename, 25),
+                                cmap=plotting.cm.black_green,threshold=None)
+plt.show()
+```
+
+![figure_2](https://cloud.githubusercontent.com/assets/11410385/7400457/5469b2a2-eebd-11e4-83d9-4bbd0d10450b.png)
+
+Case 3: When chosen same atlas maps compared with Case 1, we miss blobs here.
+Code Snippet:
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn import datasets, image, plotting
+
+atlas_data = datasets.fetch_msdl_atlas()
+atlas_filename = atlas_data.maps
+
+display = plotting.plot_stat_map(image.index_img(atlas_filename, 4),
+                                                   colorbar=False,
+                                                   title=""DMN nodes in MSDL atlas"")
+display.add_overlay(image.index_img(atlas_filename, 8),
+                                cmap=plotting.cm.black_pink)
+display.add_overlay(image.index_img(atlas_filename, 13),
+                                cmap=plotting.cm.black_red)
+display.add_overlay(image.index_img(atlas_filename, 25),
+                                cmap=plotting.cm.black_green)
+plt.show()
+```
+
+![figure_3](https://cloud.githubusercontent.com/assets/11410385/7400915/8ee1d6c8-eec0-11e4-833f-98f7629e4703.png)
+","start issue","values in each atlas map are not well synchronised with threshold when using display.add_overlay "
+"issue_closed","565","nilearn","nilearn","KamalakerDadi","2015-05-13 20:44:44","","closed issue","values in each atlas map are not well synchronised with threshold when using display.add_overlay "
+"issue_comment","565","nilearn","nilearn","GaelVaroquaux","2015-05-08 13:26:04","> Closed #565.
+
+Why did you close this? Is this not a problem?
+","",""
+"issue_comment","565","nilearn","nilearn","GaelVaroquaux","2015-05-11 21:06:13","Kamalakar: case 2 does not seem surprising to me: you are doing overlays without a threshold.
+
+Case 3 does seem wrong. Is it still the case after the fix that we did together last week?
+","",""
+"issue_comment","565","nilearn","nilearn","GaelVaroquaux","2015-05-11 21:08:47","> There is no problem with Case 3. Its rectified. The problem is only with
+> threshold=None.
+
+Then we can close it. Hurray!
+","",""
+"issue_comment","565","nilearn","nilearn","KamalakerDadi","2015-05-08 13:37:06","There are two problems in this: vmin, vmax and threshold.
+I think vmin, vmax problem is solved but threshold problem we were trying to address issue #557 .
+I thought its a replication of the issues. That's the reason to close. 
+","",""
+"issue_comment","565","nilearn","nilearn","KamalakerDadi","2015-05-08 13:37:55","Ok, May be I will reopen this and I will check both this issue & issue #557 together.
+","",""
+"issue_comment","565","nilearn","nilearn","KamalakerDadi","2015-05-11 21:08:10","There is no problem with Case 3. Its rectified. The problem is only with threshold=None.
+","",""

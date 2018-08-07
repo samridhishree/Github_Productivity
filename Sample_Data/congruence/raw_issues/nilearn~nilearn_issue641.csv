@@ -1,0 +1,60 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","641","nilearn","nilearn","chrplr","2015-07-10 08:52:26","Hello
+
+First, note that the doc string of NiftiMapsMasker is a bit misleading: 
+
+maps_img: Niimg-like object
+    Region definitions, as one image of labels.
+
+This seems copied from NiftiLabelsMasker, no?
+
+Second, my code incidently tried to use a NiftiMapsMasker to extract data in a single ROI, that is with a single image in maps_roi.
+
+This yielded the following error: 
+
+```
+/home/chrplr/.local/lib/python2.7/site-packages/nilearn-0.1.3-py2.7.egg/nilearn/input_data/nifti_maps_masker.pyc in fit_transform(self, imgs, confounds)
+    197 
+    198     def fit_transform(self, imgs, confounds=None):
+--> 199         return self.fit().transform(imgs, confounds=confounds)
+    200 
+    201     def transform(self, imgs, confounds=None):
+
+/home/chrplr/.local/lib/python2.7/site-packages/nilearn-0.1.3-py2.7.egg/nilearn/input_data/nifti_maps_masker.pyc in fit(self, X, y)
+    138                    _utils._repr_niimgs(self.maps_img)[:200],
+    139                    verbose=self.verbose)
+--> 140         self.maps_img_ = _utils.check_niimg_4d(self.maps_img)
+    141 
+    142         if self.mask_img is not None:
+
+/home/chrplr/.local/lib/python2.7/site-packages/nilearn-0.1.3-py2.7.egg/nilearn/_utils/niimg_conversions.pyc in check_niimg_4d(niimg, return_iterator)
+    235     Its application is idempotent.
+    236     """"""
+--> 237     return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator)
+    238 
+    239 
+
+/home/chrplr/.local/lib/python2.7/site-packages/nilearn-0.1.3-py2.7.egg/nilearn/_utils/niimg_conversions.pyc in check_niimg(niimg, ensure_ndim, atleast_4d, return_iterator)
+    169 
+    170     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
+--> 171         raise DimensionError(len(niimg.shape), ensure_ndim)
+    172 
+    173     if return_iterator:
+
+DimensionError: Data must be a 4D Niimg-like object but you provided a 3D image. See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+```
+
+Why not allow a single map?
+Well, I will use  'apply_mask'...
+
+Chris
+","start issue","NiftiMapsMasker docstring on maps_img/ and why does it only accepts 4D-niimg as maps_img?"
+"issue_closed","641","nilearn","nilearn","lesteve","2015-07-17 05:12:57","","closed issue","NiftiMapsMasker docstring on maps_img/ and why does it only accepts 4D-niimg as maps_img?"
+"issue_comment","641","nilearn","nilearn","AlexandreAbraham","2015-07-10 09:35:12","You can try that:
+
+`NiftiMapsMasker([my_single_map])`
+
+We prohibit single images because we are afraid that people use it in the wrong way.
+
+Thanks for spotting the documentation problem!
+","",""

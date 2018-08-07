@@ -1,0 +1,40 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1280","nilearn","nilearn","banilo","2016-09-19 08:27:06","The group of the NiftiMaskers does not appear to handle well the case where just one set of coefficients or weights is being inverse transformed, such as X(500), and require explicit reformatting into X(1, 500) by np.newaxis. Otherwise it throughs:
+
+``` python
+
+---------------------------------------------------------------------------
+IndexError                                Traceback (most recent call last)
+<ipython-input-30-185bafd9f726> in <module>()
+----> 1 masker.inverse_transform(grid_est.best_estimator_.coef_)
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/input_data/nifti_labels_masker.pyc in inverse_transform(self, signals)
+    287         return signal_extraction.signals_to_img_labels(
+    288             signals, self.labels_img_, self.mask_img_,
+--> 289             background_label=self.background_label)
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/regions/signal_extraction.pyc in signals_to_img_labels(signals, labels_img, mask_img, background_label, order)
+    191                 num = labels_dict.get(label, None)
+    192                 if num is not None:
+--> 193                     data[i, j, k, :] = signals[:, num]
+    194 
+    195     return new_img_like(labels_img, data, target_affine)
+
+IndexError: too many indices for array
+```
+
+I think, this could be 1) tricky to newcomers and 2) requires incudling n=1 as a special case in script pipelines.
+","start issue","masker.inverse_transform() does not handle single inputs well"
+"issue_comment","1280","nilearn","nilearn","GaelVaroquaux","2016-10-25 18:20:58","I really don't like special cases. They give imprecise semantics, and
+lead to creeping bugs that get unnoticed. We used to have such special
+cases in scikit-learn and removed them based on a general feeling of the
+dev team.
+
+The proper fix would be a better error message that suggests what is
+wrong and proposes the newaxis solution.
+","",""
+"issue_comment","1280","nilearn","nilearn","KamalakerDadi","2016-10-25 18:23:07","> The proper fix would be a better error message that suggests what is
+> wrong and proposes the newaxis solution.
+
++1
+","",""

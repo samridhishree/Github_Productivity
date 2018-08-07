@@ -1,0 +1,47 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1154","nilearn","nilearn","KirstieJane","2016-06-24 15:27:10","I was struggling trying to plot just one single slice but eventually (with help from @theChymera and Google) I figured out that the code requires `cut_coords` to be tuple (as stated already in the doc string) and that for a tuple containing only a single element python **_requires the number to be followed by a comma**_.
+
+I was stuck on this for a while so I added a note on this to the doc string for all the functions in `img_plotting.py`.
+
+```
+""A single slice requires a comma to make the input a tuple, eg: (10.0,).""
+```
+
+I hope this is helpful!
+","start issue","added sentence to doc string"
+"pull_request_title","1154","nilearn","nilearn","KirstieJane","2016-06-24 15:27:10","I was struggling trying to plot just one single slice but eventually (with help from @theChymera and Google) I figured out that the code requires `cut_coords` to be tuple (as stated already in the doc string) and that for a tuple containing only a single element python **_requires the number to be followed by a comma**_.
+
+I was stuck on this for a while so I added a note on this to the doc string for all the functions in `img_plotting.py`.
+
+```
+""A single slice requires a comma to make the input a tuple, eg: (10.0,).""
+```
+
+I hope this is helpful!
+","cfd7ac8014bc55ccfd423b7ed516e060607f6906","added sentence to doc string"
+"issue_comment","1154","nilearn","nilearn","AlexandreAbraham","2016-06-24 20:14:20","So, the `cut_coords` parameter has always raised problems. For me, the main trouble is that `cut_coords` can take a parameter that is not a set of coordinates (ie the number of slices).
+
+I am not in favor of adding a line in the doc because the distinction between (1) and (1,) is a very basic error in Python. My opinion on that is:
+- either create a `n_slices` parameter. By doing this, `cut_coords` will never take an integer so therewill be no confusion
+- or improve the error message. If an integer is given when `cut_coords` is waiting for a list, we can raise an error containing the line you've put in the doc.
+","",""
+"issue_comment","1154","nilearn","nilearn","AlexandreAbraham","2016-07-09 14:26:37","Hi Kirstie,
+
+I am still not convinced by the formulation. It gives me the impression that this is a special nilearn case, whereas it is just some Python basics. However, I am still not fond of the `cut_coords` parameter so I think that I am biased.
+
+Can the doc gurus @banilo and @GaelVaroquaux decide on this point?
+","",""
+"issue_comment","1154","nilearn","nilearn","KirstieJane","2016-06-24 20:45:26","I think the most intuitive use would be to either pass an integer (I agree with @AlexandreAbraham that it's not ideal but I think the documentation is clear enough) or a set of (x, y, z) coordinates where you just wouldn't show the other two slices.
+
+The two solutions that @AlexandreAbraham has proposed both require restructuring the code. The first because `n_slices` doesn't exist as an option (yet?) and the second because at the moment there is no error if you pass a single number in parentheses, eg: `cut_coords=(10)`. You simply get 10 images rather than the slice at (eg) `x=10`. You can't tell which input the user meant: the code runs, but at one point instead of three separate slices at `x=10`, `x=20` and `x=30` I got three images with 10, 20 and then 30 slices each!
+
+If updating the doc string to make it usable to new adopters isn't acceptable then feel free to close the PR - I'm very sorry I didn't open an issue first! I didn't think adding documentation would be controversial.
+","",""
+"issue_comment","1154","nilearn","nilearn","KirstieJane","2016-08-08 13:04:12","My slow response this time @GaelVaroquaux! I think using a list makes sense. I don't feel confident editing the code to do that though - I had a look but I can't follow the code well enough to know that I'd caught all the locations in which it would have to be changed.
+
+Sorry again for opening a pull request without an issue. Feel free to close this one!
+","",""
+"pull_request_commit","1154","nilearn","nilearn","KirstieJane","2016-06-24 15:20:08","added sentence to doc string
+
+Added note that python requires a comma to make a tuple with a single
+element.","cfd7ac8014bc55ccfd423b7ed516e060607f6906",""

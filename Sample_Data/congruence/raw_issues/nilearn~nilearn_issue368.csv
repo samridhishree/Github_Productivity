@@ -1,0 +1,226 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","368","nilearn","nilearn","gciccarelli3","2015-01-24 14:14:24","Hi,
+
+My T1 image does not plot when in scanner space.  I have to register to MNI in order to plot.  I don't want to do that specifically because I want to see activation and anatomy for each subject without registration distortion.
+
+file_name = 'T1_001.nii.gz' #error because of rotations
+nilearn.plotting.plot_img(os.path.join(file_path, file_name ))
+
+ValueError: Cannot reorder the axes: the image affine contains rotations
+","start issue","plot_img fails:  Cannot reorder the axes: the image affine contains rotations"
+"issue_closed","368","nilearn","nilearn","lesteve","2015-02-06 09:19:27","","closed issue","plot_img fails:  Cannot reorder the axes: the image affine contains rotations"
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-24 14:28:44","Indeed, that's probably because we are using reoder_img without allowing
+rotations. We should change this default value.
+
+Thanks for reporting
+","",""
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-24 14:33:54","> So, is there a workaround, or should I just wait?
+
+No workaround. This is a bug (or rather misfeature) from our side. I
+cannot tackle it right now, but the solution is rather simple. Hopefuly
+we will fix it in the next few days.
+","",""
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-24 21:12:00","> Maybe calling `resample_img` with a diagonal matrix as affine before
+> calling `plot_img` could do the trick.
+
+Actually that's a good point. Inserting the following lines would do the
+trick:
+
+<pre>
+from nilearn import image
+file_name = 'T1_001.nii.gz'
+img = image.reorder_img(os.path.join(file_path, file_name), resample='continuous')
+nilearn.plotting.plot_img(img)
+</pre>
+","",""
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-25 14:27:37","> Thanks! This worked. I do see the ""resample"" option. Does this mean the
+> images should be taken with a grain of salt because the values are being
+> changed before being plotted? Whereas if it it just worked, then this
+> resampling, and therefore changed values would not be an issue?
+
+You are never looking at the number of your data matrix. There is always
+resampling and interpolation in visualization, unless one pixel of your
+screen represents one voxel of your data matrix.
+
+While your remark is true, I think that it is important to _always_ keep
+in mind that a visualization system is not neutral to what it does to the
+data.
+","",""
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-25 15:28:34","> Completely agree. I was thinking in the vein of queryable data (e.g., if I
+> clicked on an element, would the displayed values be the original matrix).
+
+For these purposes, I would advise using fslview.
+
+> Don't get me wrong, I appreciate the solution. I always want to know
+> exactly what I'm doing, as much as possible, so I can field questions
+> from supervisors.
+
+If your data is a set of labels, rather than continuous use should use
+""resample='nearest'""
+","",""
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-29 20:24:39","> A not so great alternative is to add the resample argument to all the
+> plotting functions since we don't know which resampling between
+> 'nearest' or 'continuous' is appropriate, unless of course we go down
+> the way of having some shoddy logic to decide which one is the most
+> likely, for example based on the number of unique values in the array
+
+We _need_ to make this work. People don't want to have to resample, they
+want things to 'just work'. In addition 99% of them won't know which
+resampling method to use, so forcing make a choice is not solving the
+problem. We can add a warning.
+
+And with regards to which resampling method: plot_roi should use
+'nearest', the others a continuous resampling. That's exactly the reason
+why we separated these function.
+","",""
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-29 21:29:07","I strongly believe in the 80 / 20 rule: we address most of the problems,
+and we leave the others not addressed. Some people will have such a
+problem, but it requires them to work with data that actually need
+resampling (which is a tiny fraction), and in a very unusual situation.
+And, if we don't solve the problem for them, the only consequence is that
+they will have some strange aliasing in their visualization.
+
+I don't think that, for now, such a case is worth spending too much time.
+We need to keep in mind that we are working with a fixed budget, and that
+we need to maximize the impact of nilearn with this fixed budget. That
+means making nilearn usable for end-user problem solving for a maximum of
+people.
+","",""
+"issue_comment","368","nilearn","nilearn","GaelVaroquaux","2015-01-30 06:28:02","> We already have heuristics in nilearn that are quite hazardous. A
+> resampling= 'auto' for one function seems feasible. A heuristic could
+> be: dtype == int and n_labels < 500 and n_connected_components < 500.
+> No strong feelings about this one.
+
+That sounds like a reasonnable approach to me for a generic function like
+'plot_img'.
+","",""
+"issue_comment","368","nilearn","nilearn","gciccarelli3","2015-01-24 14:32:34","So, is there a workaround, or should I just wait?  I'm really new at
+nilearn, and haven't done too much digging.  I downloaded yesterday
+specifically to help with brain visualization.
+
+Thanks.
+
+On Sat, Jan 24, 2015 at 9:28 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> Indeed, that's probably because we are using reoder_img without allowing
+> rotations. We should change this default value.
+> 
+> Thanks for reporting
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/368#issuecomment-71319381.
+","",""
+"issue_comment","368","nilearn","nilearn","AlexandreAbraham","2015-01-24 21:04:34","Maybe calling `resample_img` with a diagonal matrix as affine before
+calling `plot_img` could do the trick.
+
+On 1/24/15, Gael Varoquaux notifications@github.com wrote:
+
+> > So, is there a workaround, or should I just wait?
+> 
+> No workaround. This is a bug (or rather misfeature) from our side. I
+> cannot tackle it right now, but the solution is rather simple. Hopefuly
+> we will fix it in the next few days.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/368#issuecomment-71319631
+","",""
+"issue_comment","368","nilearn","nilearn","gciccarelli3","2015-01-25 14:08:42","Thanks!  This worked.  I do see the ""resample"" option.  Does this mean the
+images should be taken with a grain of salt  because the values are being
+changed before being plotted?  Whereas if it it just worked, then this
+resampling, and therefore changed values would not be an issue?
+
+On Sat, Jan 24, 2015 at 4:12 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > Maybe calling `resample_img` with a diagonal matrix as affine before
+> > calling `plot_img` could do the trick.
+> 
+> Actually that's a good point. Inserting the following lines would do the
+> trick:
+> 
+> <pre>
+> from nilearn import image
+> file_name = 'T1_001.nii.gz'
+> img = image.reorder_img(os.path.join(file_path, file_name),
+> resample='continuous')
+> nilearn.plotting.plot_img(img)
+> </pre>
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/368#issuecomment-71337522.
+","",""
+"issue_comment","368","nilearn","nilearn","gciccarelli3","2015-01-25 14:33:53","Completely agree.  I was thinking in the vein of queryable data (e.g., if I
+clicked on an element, would the displayed values be the original matrix).
+These plots seem static, so then it really is the usual viewer beware
+caveat.  Don't get me wrong, I appreciate the solution.  I always want to
+know exactly what I'm doing, as much as possible, so I can field questions
+from supervisors.
+
+On Sun, Jan 25, 2015 at 9:27 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > Thanks! This worked. I do see the ""resample"" option. Does this mean the
+> > images should be taken with a grain of salt because the values are being
+> > changed before being plotted? Whereas if it it just worked, then this
+> > resampling, and therefore changed values would not be an issue?
+> 
+> You are never looking at the number of your data matrix. There is always
+> resampling and interpolation in visualization, unless one pixel of your
+> screen represents one voxel of your data matrix.
+> 
+> While your remark is true, I think that it is important to _always_ keep
+> in mind that a visualization system is not neutral to what it does to the
+> data.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/368#issuecomment-71375056.
+","",""
+"issue_comment","368","nilearn","nilearn","AlexandreAbraham","2015-01-27 14:19:57",">  if I clicked on an element, would the displayed values be the original matrix
+
+As said by Gaël, you can save your image into a Nifti file and visualize it with fslview. pynax (see my repos) can also be used to do that. However, it is not compatible with current plotting functions in nilearn but it shouldn't be too much work.
+","",""
+"issue_comment","368","nilearn","nilearn","AlexandreAbraham","2015-01-30 00:00:58","We already have heuristics in nilearn that are quite hazardous. A `resampling='auto'` for one function seems feasible. A heuristic could be: `dtype == int and n_labels < 500 and n_connected_components < 500`. No strong feelings about this one.
+","",""
+"issue_comment","368","nilearn","nilearn","lesteve","2015-01-29 19:30:16","So what do we want to do with this one, just have a better error message mentioning to use reorder_img with the `resample` argument set in order to force resampling when the image has an affine with rotations ? 
+
+A not so great alternative is to add the `resample` argument to all the plotting functions since we don't know which resampling between 'nearest' or 'continuous' is appropriate, unless of course we go down the way of having some shoddy logic to decide which one is the most likely, for example based on the number of unique values in the array (not 100 % convinced atm) ...
+","",""
+"issue_comment","368","nilearn","nilearn","lesteve","2015-01-29 21:18:28","> And with regards to which resampling method: plot_roi should use 'nearest', the others a continuous resampling. That's exactly the reason why we separated these function.
+
+OK that makes sense but then how do we cater for use cases like this [one](https://github.com/nilearn/nilearn/pull/270), basically using plot_img (so no reasonable default) to plot of a segmentation of the brain (data is a set of labels). Should plot_roi be used instead?
+
+The thing is that the [doc](http://nilearn.github.io/building_blocks/plotting.html) mentions that plot_img comes with no specific presets.
+","",""
+"issue_comment","368","nilearn","nilearn","gciccarelli3","2015-01-29 20:32:44","""People don't want to have to resample, they
+want things to 'just work'. ""
+
+YES!
+
+On Thu, Jan 29, 2015 at 3:24 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > A not so great alternative is to add the resample argument to all the
+> > plotting functions since we don't know which resampling between
+> > 'nearest' or 'continuous' is appropriate, unless of course we go down
+> > the way of having some shoddy logic to decide which one is the most
+> > likely, for example based on the number of unique values in the array
+> 
+> We _need_ to make this work. People don't want to have to resample, they
+> want things to 'just work'. In addition 99% of them won't know which
+> resampling method to use, so forcing make a choice is not solving the
+> problem. We can add a warning.
+> 
+> And with regards to which resampling method: plot_roi should use
+> 'nearest', the others a continuous resampling. That's exactly the reason
+> why we separated these function.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/368#issuecomment-72097422.
+","",""

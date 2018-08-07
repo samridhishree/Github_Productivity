@@ -1,0 +1,94 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","914","nilearn","nilearn","salma1601","2015-12-15 22:56:24","I have 2 little issues with `symmetric_split`:
+1) the type of the output changes if `symmetric_split` is True or False
+
+``` Python
+from nilearn import datasets
+atlas = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-1mm', symmetric_split=True)
+type(atlas['labels']), type(atlas['maps'])
+```
+
+(list, nibabel.nifti1.Nifti1Image)
+
+``` Python
+atlas = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-1mm', symmetric_split=False)
+type(atlas['labels']), type(atlas['maps'])
+```
+
+(numpy.ndarray, str)
+2) the parameter `symmetric_split` is allowed to be True for `'sub-maxprob-thr25-1mm'` but 
+
+``` Python
+datasets.fetch_atlas_harvard_oxford('sub-maxprob-thr25-1mm', symmetric_split=True)
+```
+
+throws an error `RuntimeError: data type not supported`.  May be not allowing for subcortical atlases as their labels already contain the information right/left
+","start issue","fetch_atlas_harvard_oxford and symmetric_split"
+"issue_closed","914","nilearn","nilearn","AlexandreAbraham","2016-02-03 13:22:45","","closed issue","fetch_atlas_harvard_oxford and symmetric_split"
+"issue_comment","914","nilearn","nilearn","AlexandreAbraham","2015-12-16 17:31:15","> the type of the output changes if symmetric_split is True or False
+
+You're right, I'll fix it.
+
+> the parameter symmetric_split is allowed to be True for 'sub-maxprob-thr25-1mm' but [...]
+
+Already splitted atlases should not be splitted again. The atlas you plot is actually not modified in our but the list of labels is modified even when it should not be. The code for that is quite horrible, I will rewrite it.
+
+However, I have no RuntimeError, could you give me the trace of the error?
+","",""
+"issue_comment","914","nilearn","nilearn","AlexandreAbraham","2015-12-17 08:12:05","> and what about the right/left labels, is there a mismatch ?
+
+Like I said, the labels returned by the function when `symmetric_split=True` are wrong.
+","",""
+"issue_comment","914","nilearn","nilearn","salma1601","2015-12-16 13:54:36","I have another question @AlexandreAbraham 
+
+``` Python
+atlas = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-1mm', symmetric_split=True)
+```
+
+`print(atlas.labels[:5])` gives the right regions
+
+``` Python
+['Background', 'Frontal Pole, right part', 'Insular Cortex, right part', 'Superior Frontal Gyrus, right part', 'Middle Frontal Gyrus, right part']
+```
+
+while `print(atlas.labels[-5:])` gives the left regions 
+
+``` Python
+['Planum Polare, left part', ""Heschl's Gyrus (includes H1 and H2), left part"", 'Planum Temporale, left part', 'Supracalcarine Cortex, left part', 'Occipital Pole, left part']
+```
+
+but when plotting they seem to me inverted because I expected the intensity growing from 0 for the Background to its maximum in occipital regions. Did I get something wrong ?
+
+``` Python
+from nilearn import plotting
+plotting.plot_stat_map(atlas.maps)
+```
+
+![ho_atlas](https://cloud.githubusercontent.com/assets/7080143/11842318/3336b2e6-a403-11e5-98be-06b0e8800a17.png)
+","",""
+"issue_comment","914","nilearn","nilearn","salma1601","2015-12-16 17:57:58","> You're right, I'll fix it
+
+Thanks ! and what about the right/left labels, is there a mismatch ?
+
+> could you give me the trace of the error?
+
+RuntimeError                              Traceback (most recent call last)
+<ipython-input-181-aac264309bdf> in <module>()
+----> 1 datasets.fetch_atlas_harvard_oxford('sub-maxprob-thr25-1mm', symmetric_split=True)
+
+/home/sb238920/CODE/Parietal/nilearn/nilearn/datasets/atlas.py in fetch_atlas_harvard_oxford(atlas_name, data_dir, symmetric_split, resume, verbose)
+    259     # ndimage.find_objects output contains None elements for labels
+    260     # that do not exist
+--> 261     found_slices = (s for s in ndimage.find_objects(atlas)
+    262                     if s is not None)
+    263     middle_ind = (atlas.shape[0] - 1) // 2
+
+/usr/lib/python2.7/dist-packages/scipy/ndimage/measurements.pyc in find_objects(input, max_label)
+    267         max_label = input.max()
+    268 
+--> 269     return _nd_image.find_objects(input, max_label)
+    270 
+    271 
+
+RuntimeError: data type not supported
+","",""

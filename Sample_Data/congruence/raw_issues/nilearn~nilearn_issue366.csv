@@ -1,0 +1,119 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","366","nilearn","nilearn","bcipolli","2015-01-22 18:18:08","Another developer-focused code change that I found I needed when doing Python 2.6 / Python 3.x support.
+
+**Expectation:**
+- It is possible to completely turn off output.
+
+**Current behavior:**
+- A number of dataset download functions print, even at `verbosity=0`
+
+**Notes:**
+Currently, the tests print a lot of output during testing.  This makes viewing test output very challenging--I have to search/scroll for error information, and even getting to the final output requires a lot of scrolling.
+
+**Proposed solutions:**
+Either:
+- Define a schema for what verbosity means (0=silent, 1=errors, 2=warnings, 3=standard user output, 4=debug info, etc.), and use it
+
+or
+- Instead of passing a verbosity, pass a logger from the `logging` module.
+- Create a `nilearn._utils.logger` object in the `nilearn._utils.__init__' file, that will be the default logger.
+
+I would prefer the second solution; I think anyone wanting to actually manipulate the logging would either know the `logging` module, or would ""get"" it pretty quickly (it's not hard)
+
+Again, this is a developer-side feature that I'm happy to implement in order to make my own life easier.
+","start issue","Verbosity=0 should mean silent"
+"issue_closed","366","nilearn","nilearn","lesteve","2015-02-02 08:23:02","","closed issue","Verbosity=0 should mean silent"
+"issue_comment","366","nilearn","nilearn","GaelVaroquaux","2015-01-22 18:26:09",">   • It is possible to completely turn off output.
+
+Agreed.
+
+>   • A number of dataset download functions print, even at verbosity=0
+
+This is wrong and should not be like this, indeed (but for long-running
+function, default should be to print some sane progress, and thus default
+should not be verbose=0).
+
+>   • Define a schema for what verbosity means (0=silent, 1=errors,
+>   2=warnings, 3 =standard user output, 4=debug info, etc.), and use it
+
+Well, this is the standard logging behavior in Python, but this is not
+what we want, as we want also an indication of progress. verbosity=1
+should display a bit of progress, verbosity=2 more,... This is important
+when running a lot of computation/long run jobs. Also, we use a pattern
+of decreasing verbosity when combining methods one into the other. That
+way the progress of each nested for loop can always be seen.
+
+Also, warnings and errors should always be displayed unless they are
+absolutely harmless. We need user to see these.
+
+> I would prefer the second solution; I think anyone wanting to actually
+> manipulate the logging would either know the logging module,
+
+This is not the way I see it. Only geeks know the logger module. Beside,
+it does not implement well the pattern of decreasing verbosity, which is
+really useful.
+","",""
+"issue_comment","366","nilearn","nilearn","GaelVaroquaux","2015-01-24 15:04:29",">   • Make any print that isn't currently within an if verbosity > ... statement
+>     check for verbosity > 0
+
+Definitely.
+
+>   • Increment all other verbosity checks by one.
+
+For those that are not right. But when you do this, check that the
+default verbosity is still meaningful, ie that long-running operations
+still print a bit of progress by default.
+","",""
+"issue_comment","366","nilearn","nilearn","GaelVaroquaux","2015-01-24 18:32:35","> Just curious, how is Python 3 support related to verbosity?
+
+My guess: print statements :)
+","",""
+"issue_comment","366","nilearn","nilearn","GaelVaroquaux","2015-01-24 18:43:59","> ```
+> My guess: print statements :)
+> ```
+> 
+> Sure but what I don't understand is why Python 3 support would be dependent on
+> this issue.
+
+Granted. It just requires touching the same lines, and thus would raise
+conflicts in version control if dealt with in parallel.
+","",""
+"issue_comment","366","nilearn","nilearn","GaelVaroquaux","2015-01-26 08:43:10","> Removing the -s flag from the nosetests command should revert to the default
+> nosetests behaviour which is to capture stdout, maybe it does help a bit.
+
+We do not want to be using this by default in the continuous integration,
+as it does swallow useful info.
+
+The right path indeed is to clean up verbosity. This is definitely
+useful.
+","",""
+"issue_comment","366","nilearn","nilearn","bcipolli","2015-01-24 14:05:59","OK, so the change I propose is:
+- Make any `print` that isn't currently within an `if verbosity > ...` statement check for `verbosity > 0`
+- Increment all other verbosity checks by one.
+
+That seems like the simplest change.  Glad to hear if something more complex is desired.
+
+Need to address this issue, to complete the `Python 3.x` support.
+","",""
+"issue_comment","366","nilearn","nilearn","lesteve","2015-01-24 18:30:17","> Need to address this issue, to complete the Python 3.x support.
+
+Just curious, how is Python 3 support related to verbosity?
+","",""
+"issue_comment","366","nilearn","nilearn","lesteve","2015-01-24 18:39:19","> > > Need to address this issue, to complete the Python 3.x support.
+> > 
+> > Just curious, how is Python 3 support related to verbosity?
+> 
+> My guess: print statements :)
+
+Sure but what I don't understand is why Python 3 support would be dependent on this issue.
+","",""
+"issue_comment","366","nilearn","nilearn","bcipolli","2015-01-24 21:17:17","Debugging test failures with all the print statements is laborious.
+","",""
+"issue_comment","366","nilearn","nilearn","lesteve","2015-01-26 08:22:54","> Debugging test failures with all the print statements is laborious.
+
+Removing the `-s` flag from the nosetests command should revert to the default nosetests behaviour which is to capture stdout, maybe it does help a bit.
+","",""
+"issue_comment","366","nilearn","nilearn","lesteve","2015-01-26 08:47:38","> We do not want to be using this by default in the continuous integration, as it does swallow useful info.
+
+That was more a tip for running tests locally.
+","",""

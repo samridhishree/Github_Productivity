@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1339","nilearn","nilearn","salma1601","2016-12-08 10:07:50","I am using `_fetch_file` to fetch a html located at
+https://central.xnat.org/data/experiments
+but during the download it fails to compute the size of the file
+> Downloaded 807561 of ? bytes. ...done. (4 seconds, 0 min)
+
+Also, the file itself is strange. When I save it manually its is a table but with the fetcher it has lines that look like this
+>{""ResultSet"":{""Result"":[{""project"":""CENTRAL_OASIS_CS"",""xsiType"":""fs:asegRegionAnalysis"",""ID"":""OAS1_0422_MR1_ASEG"",""insert_date"":""2007-10-04 12:23:04.0"",""label"":""OAS1_0422_MR1_ASEG"",""date"":"""",""URI"":""/data/experiments/OAS1_0422_MR1_ASEG""}","start issue","a question about datasets.utils._fetch_file"
+"issue_comment","1339","nilearn","nilearn","AlexandreAbraham","2016-12-08 10:18:31","> but during the download it fails to compute the size of the file
+
+Servers are not forced to send the file in the download header. Most of them do, but it happens that it doesn't.
+
+> Also, the file itself is strange. 
+
+I can investigate that during lunch but it would be far easier if you can make a small script that reproduces the problem ;)","",""
+"issue_comment","1339","nilearn","nilearn","salma1601","2016-12-08 11:10:01","Yes sorry
+```Python
+from nilearn.datasets.utils import _fetch_file
+url = 'https://central.xnat.org/data/experiments.html'
+html_file = _fetch_file(url, '/tmp', verbose=1)
+```
+>Downloading data from https://central.xnat.org/data/experiments.html ...
+Downloaded 807561 of ? bytes. ...done. (4 seconds, 0 min)
+
+Then
+```Python
+from lxml import html
+html_page = html.parse(html_file)
+root = html_page.getroot()
+print root.getchildren()
+```
+gives 
+>[<Element body at 0x7f503a169260>]
+
+and 
+```Python
+root.text_content()
+```
+is a huge string with many dictionarie 
+>{""project"":""ISMRMRD"",""xsiType"":""xnat:mrSessionData"",""ID"":""CENTRAL_E07685"",""insert_date"":""2015-07-23 13:57:20.427"",""label"":""MR"",""date"":"""",""URI"":""/data/experiments/CENTRAL_E07685""},{""project"":""XNATSlicerTest"",""xsiType"":""xnat:mrSessionData"",""ID"":""CENTRAL_E05843"",""insert_date"":""2013-01-16 12:45:22.94"",""label"":""UCLA_1297"",""date"":""2006-01-31"",""URI"":""/data/experiments/CENTRAL_E05843""}], ""totalRecords"": ""3895"",""title"": ""Matching experiments""}
+
+When I do the same thing with my file loaded manually. The results are different. For instance the `root.getchildren()` gives two elements `[<Element head at 0x7f503a169368>, <Element body at 0x7f503a1693c0>]`
+
+I don't know if this is a useful information, but also tried 
+```Python
+import urllib2
+request = urllib2.Request(url, headers={""Accept"": ""text/html""})
+u = urllib2.urlopen(request)
+```
+and at this time I succeded to parse it correctly with `xml.etree.ElementTree`, when I add the `headers={""Accept"": ""text/html""}`","",""

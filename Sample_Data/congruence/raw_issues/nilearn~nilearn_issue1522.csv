@@ -1,0 +1,147 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1522","nilearn","nilearn","grjd","2017-10-09 14:18:37","Hi,
+When I call to fit_transform for a MNI normalized 4D nifti,
+I got the error: '_ExtractionFunctor' object has no attribute '__name__'
+
+> masker.fit_transform(nifti_img) 
+
+> masker = NiftiLabelsMasker(background_label=0, detrend='True', high_pass=0.01,
+>          labels_img='/usr/local/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
+>          low_pass=0.1, mask_img=None, memory=Memory(cachedir=None),
+>          memory_level=3, resampling_target='data', smoothing_fwhm=8,
+>          standardize='True', t_r=2.5, verbose=5)
+
+and the nifti_img.shape is  (79, 95, 79, 120)","start issue","_ExtractionFunctor' object has no attribute '__name_"
+"issue_comment","1522","nilearn","nilearn","bthirion","2017-10-09 21:25:30","Can you reproduce this behavior with a simpler images (e.g. a times series of length 2) ? If yes, can you share it ?
+Thx.","",""
+"issue_comment","1522","nilearn","nilearn","bthirion","2017-10-19 11:52:58","Can you provide a public script that yields the error ?
+It's possible that we've been a bit too flexible with memory_level.","",""
+"issue_comment","1522","nilearn","nilearn","grjd","2017-10-09 16:18:15","hi,
+Just calling extract_timeseries_from_mask(masker, epi_file), with 
+
+> masker = NiftiLabelsMasker(background_label=0, detrend='True', high_pass=0.01,
+>          labels_img='/usr/local/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
+>          low_pass=0.1, mask_img=None, memory=Memory(cachedir=None),
+>          memory_level=3, resampling_target='data', smoothing_fwhm=8,
+>          standardize='True', t_r=2.5, verbose=5)
+
+> def extract_timeseries_from_mask(masker, epi_file):
+>     ''' extract time series from mask object'''
+>     time_series = []
+>     for i in range(0, len(epi_file)):
+>         print('........Extracting image %d / %d', (i,len(epi_file) ))
+>         ts = masker.fit_transform(epi_file[i])
+>         if ts.shape[0] == 120:
+>             warnings.warn(""The time series number of points is 120, removing 4 initial dummy volumes"", Warning)
+>             ts = ts[4:120]   
+>         time_series.append(ts)         
+>     print('Number of features:', len(time_series), 'Feature dimension:', time_series[0].shape)      
+>     #time_series[i].shape=(116, 4) (subjects x time x regions)
+>     return time_series
+> 
+and a nifti file (too big to upload, for now)
+data_type      INT16
+dim1           79
+dim2           95
+dim3           79
+dim4           120
+datatype       4
+pixdim1        2.000000
+pixdim2        2.000000
+pixdim3        2.000000
+pixdim4        2.500000
+cal_max        0.0000
+cal_min        0.0000
+file_type      NIFTI-1+
+
+
+
+The output error:
+
+--> 153 time_series = afmri.extract_timeseries_from_mask(masker, epi_file_list)
+    154 pdb.set_trace()
+    155 print('Time series dimensions =%d x %d x %d', (len(time_series),time_series[0].shape[0],time_series[0].shape[1]))
+
+/Users/jaime/github/code/production/fmri/analysis_fmri.py in extract_timeseries_from_mask(masker, epi_file)
+    254     for i in range(0, len(epi_file)):
+    255         print('........Extracting image %d / %d', (i,len(epi_file) ))
+--> 256         ts = masker.fit_transform(epi_file[i])
+    257         if ts.shape[0] == 120:
+    258             warnings.warn(""The time series number of points is 120, removing 4 initial dummy volumes"", Warning)
+
+/usr/local/lib/python2.7/site-packages/nilearn/input_data/nifti_labels_masker.pyc in fit_transform(self, imgs, confounds)
+    190         """""" Prepare and perform signal extraction from regions.
+    191         """"""
+--> 192         return self.fit().transform(imgs, confounds=confounds)
+    193
+    194     def _check_fitted(self):
+
+/usr/local/lib/python2.7/site-packages/nilearn/input_data/base_masker.pyc in transform(self, imgs, confounds)
+    174         self._check_fitted()
+    175
+--> 176         return self.transform_single_imgs(imgs, confounds)
+    177
+    178     def fit_transform(self, X, y=None, confounds=None, **fit_params):
+
+/usr/local/lib/python2.7/site-packages/nilearn/input_data/nifti_labels_masker.pyc in transform_single_imgs(self, imgs, confounds)
+    258             memory=self.memory,
+    259             memory_level=self.memory_level,
+--> 260             verbose=self.verbose)
+    261
+    262         self.labels_ = labels_
+
+/usr/local/lib/python2.7/site-packages/sklearn/externals/joblib/memory.pyc in __call__(self, *args, **kwargs)
+    360
+    361     def __call__(self, *args, **kwargs):
+--> 362         return self.func(*args, **kwargs)
+    363
+    364     def call_and_shelve(self, *args, **kwargs):
+
+/usr/local/lib/python2.7/site-packages/nilearn/input_data/base_masker.pyc in filter_and_extract(imgs, extraction_function, parameters, memory_level, memory, verbose, confounds, copy)
+     96     region_signals, aux = cache(extraction_function, memory,
+     97                                 func_memory_level=2,
+---> 98                                 memory_level=memory_level)(imgs)
+     99
+    100     # Temporal
+
+/usr/local/lib/python2.7/site-packages/nilearn/_utils/cache_mixin.pyc in cache(func, memory, func_memory_level, memory_level, shelve, **kwargs)
+    225                           "" (parameter memory). Caching deactivated for ""
+    226                           ""function %s."" %
+--> 227                           (memory_level, func.__name__),
+    228                           stacklevel=2)
+    229     else:
+
+AttributeError: '_ExtractionFunctor' object has no attribute '__name__'","",""
+"issue_comment","1522","nilearn","nilearn","grjd","2017-10-16 16:25:05","Yes, I am trying to extract timeseries from a list of images using the H-O atlas.
+The error is when I call to fit_transform using the masker below. attached the image trimmed.
+
+NiftiLabelsMasker(background_label=0, detrend='True', high_pass=0.01,
+         labels_img='/usr/local/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
+         low_pass=0.1, mask_img=None, memory=Memory(cachedir=None),
+         memory_level=3, resampling_target='data', smoothing_fwhm=8,
+         standardize='True', t_r=2.5, verbose=5)
+[w0022_fMRI-trim.nii.gz](https://github.com/nilearn/nilearn/files/1388340/w0022_fMRI-trim.nii.gz)
+","",""
+"issue_comment","1522","nilearn","nilearn","grjd","2017-10-18 12:07:54","Hi,
+I figured out what was the problem. If the NiftiLabelsMasker has the memory_level argument different than 1  returns the error.
+","",""
+"issue_comment","1522","nilearn","nilearn","KamalakerDadi","2017-10-09 15:40:18","Not obvious to see what's going on. If you could provide minimal script to reproduce the error it would be very beneficial.
+It would even be very easier if you can share some how your ""nifti_img"" as well.
+Thank you providing this.","",""
+"issue_comment","1522","nilearn","nilearn","KamalakerDadi","2017-10-10 15:48:55","If I understood correctly you are trying to extracting timeseries signals on a list of fmri images using Harvard Oxford atlas. I made a small script which does this. If this works then I think there might be a problem in your function ```extract_timeseries_from_mask```.
+
+Small script is [here](https://gist.github.com/KamalakerDadi/4dced93c6d05148edfe2479e8b6bbe9b)
+Hope this clears your error.","",""
+"issue_comment","1522","nilearn","nilearn","KamalakerDadi","2017-10-13 20:19:18","@grjd Can you update do you still see the error ?","",""
+"issue_comment","1522","nilearn","nilearn","KamalakerDadi","2017-10-20 08:03:26","The arguments ```memory_level``` and ```memory``` acts simultaneously in all Masker objects supported by joblib. ```memory``` is the path to store the results in the memory and ```memory_level``` is like storing more results returned from deeper functions or helper functions in the API.
+
+You specified ```memory_level=3``` and have not specified ```memory```, it looks for cached path and hence returns the error. Before error there should be a warning like this.
+```python
+nilearn/_utils/cache_mixin.py:298: UserWarning: Caching has been enabled (memory_level = 3) but no Memory object or path has been provided (parameter memory). Caching deactivated for function filter_and_extract.
+  **kwargs)
+nilearn/input_data/base_masker.py:91: UserWarning: Caching has been enabled (memory_level = 3) but no Memory object or path has been provided (parameter memory). Caching deactivated for function smooth_img.
+  memory_level=memory_level)(
+```
+If you want to do more aggressive storage in memory such as higher the number in ```memory_level``` then I recommend to give the location to store the memory in argument ```memory```.
+
+","",""

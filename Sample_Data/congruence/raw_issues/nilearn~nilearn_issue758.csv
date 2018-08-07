@@ -1,0 +1,175 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","758","nilearn","nilearn","MartinPerez","2015-08-08 17:02:59","@GaelVaroquaux I added the fetch_atlas_aal function following example from the other atlas downloaded as requested in #706 
+
+For now I implemented the download of the SPM12 version, any other SPM version would require to hardcode reference to a lot matlab files. I dont know if this would actually be useful for the users, but can implement it if you want. What do you think?
+","start issue","added aal atlas download and updated reference.rst"
+"issue_closed","758","nilearn","nilearn","lesteve","2015-08-21 11:58:45","","closed issue","added aal atlas download and updated reference.rst"
+"pull_request_title","758","nilearn","nilearn","MartinPerez","2015-08-08 17:02:59","@GaelVaroquaux I added the fetch_atlas_aal function following example from the other atlas downloaded as requested in #706 
+
+For now I implemented the download of the SPM12 version, any other SPM version would require to hardcode reference to a lot matlab files. I dont know if this would actually be useful for the users, but can implement it if you want. What do you think?
+","490c0bba540405d888e9592b2bb07e0614642953","added aal atlas download and updated reference.rst"
+"pull_request_merged","758","nilearn","nilearn","lesteve","2015-08-21 11:58:45","added aal atlas download and updated reference.rst","cf8b48c63ac8d5fe2e69aa194bcab258efd96200","Pull request merge from MartinPerez/nilearn:aal_atlas_download to nilearn/nilearn:master"
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-09 20:10:01","added test
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-17 11:40:32","@AlexandreAbraham I fixed all the comments, and about the naming I finally changed anat for maps, which i think follow the convention behind the other atlases.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-17 11:41:45","I realized that when it comes to what to return there is no standard across atlases, some return directly a nibable.Niftiimage while others return the file name, with respect to labels, some just return a list while I am returning a dictionary... Should this be reported as an issue?
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-17 11:53:55","> about the naming I finally changed anat for maps
+
+This is misleading: your atlas cannot be trated by NiftiMapsMasker, it should be fed to NiftiLabelsMasker.
+
+> some return directly a nibable.Niftiimage while others return the file name
+
+When a Nifti1Image is returned, it is probably that some processing of the atlas was required. However, this doesn't matter as both are niimgs and can be processed by all nilearn functions.
+
+> some just return a list while I am returning a dictionary
+
+Well, a list can be seen as an ""int to string"" dictionary :P. I think that we should return dictionaries everywhere.
+
+> Should this be reported as an issue?
+
+Yes! We definitely need to harmonize the naming conventions and return types. However, I have no time to do it. Let's merge your PR and then solve the problem of the naming.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-17 14:49:57","sorry i didnt understand the first comment, so what should I name it finally?
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-17 22:02:45","I don't know.
+","",""
+"issue_comment","758","nilearn","nilearn","bthirion","2015-08-18 20:30:23","Regarding the naming: maybe label_masks or multi_mask ?
+","",""
+"issue_comment","758","nilearn","nilearn","bthirion","2015-08-18 22:00:34","No other comment atm.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-19 09:31:59","I changed the import and the name to multi_mask then
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-19 10:39:39","For me, it's even worse. People will try to stick it into the MultiNiftiMasker and wonder why it doesn't work.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-19 10:42:28","@AlexandreAbraham  What if we use then something like ""regions"" and clarify in the documentation what people are supposed to do with the file?
+
+All these problems with the naming, seem to me like something coming from problems in conventions in the rest of the framework, I think this should be opened as another issue and will likely lead to renaming the output of other atlases.
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-19 10:48:43","Yes, any naming like ""atlas"", ""regions"" or even ""label_masks"" is fine with me. I just don't want it to collide with other maskers name. We'll change it afterward when we'll agree on the right vocabulary.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-19 11:16:47","Ok the name is 'regions' now
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-20 08:10:13","You have failing tests.
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-20 08:19:57","Seems like your failing test is related to the test, which is normal because ot tries to load an empty XML file. Take a look at the harvard oxford fetch function: we create a dummy XML file to avoid this kind of crash.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-20 09:00:13","thank you for the tip @AlexandreAbraham, I think I fixed the test now following your advice.
+","",""
+"issue_comment","758","nilearn","nilearn","lesteve","2015-08-20 11:31:39","It's getting there but you still have an error for Python 2.6 due to the fact that the `.iter` method is new in python 2.7. It looks like `.getiterator` although deprecated works for all the python versions we care about.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-20 13:13:46","@lesteve thanks for the advice. The checks seem to be fine finally.
+","",""
+"issue_comment","758","nilearn","nilearn","lesteve","2015-08-20 13:31:47","Do we want to have fetch_atlas_aal_spm_12 exposed in `nilearn/datasets/__init__.py`?
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-20 14:58:07","@lesteve I made the changes you pointed out, except for the description and exposing the function in `__init__`. I await your confirmation on what to do about that.
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-20 15:06:56","Yes we want a description if possible (not mandatory, you can skip it or make it short), and yes it should be exposed like the others :).
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-20 15:26:36","ok exposed it and added the description file, but im not sure is snough to add aal_spm_12.rst to descriptions folder?
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-20 15:29:49","Yes it is. This line `fdescr = _get_dataset_descr(dataset_name)` does all the magic of loading it for you ;).
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-20 15:32:38","but what is the convention? yeo for example should be yeo_2011.rst but instead it is just yeo.rst ... well happy its done then :)
+","",""
+"issue_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-20 15:33:52","> but what is the convention? yeo for example should be yeo_2011.rst but instead it is just yeo.rst ... well happy its done then :)
+
+Seems like an error to me...
+","",""
+"issue_comment","758","nilearn","nilearn","lesteve","2015-08-21 06:46:51","> Seems like an error to me...
+
+Good catch, I just fixed it in master.
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-21 08:14:43","I see, thanks @lesteve , done!
+","",""
+"issue_comment","758","nilearn","nilearn","MartinPerez","2015-08-21 12:03:27","Nice :). thank you.
+","",""
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:20:17","It does not download file names ;). Can you just put `Downloads and returns the AAL template for SPM 12.`
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:22:46","The title is missing.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:27:46","So, apparently, the ICBM template is in `datasets.struct` and not here. So, should this one be here or struct? I believe it belongs here.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:29:43","According to nilearn semantics, this one should be called `labels` and the XML file `labels` too. I think we have a problem ;).
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:30:26","Before going further on this point: is there actually a difference between AAL in SPM8 and in SPM12?
+","490c0bba540405d888e9592b2bb07e0614642953","(70, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:31:41","My gut feeling about that is that a name is rarely too specific. So `aal_spm_12` would maybe be the best option. If we want to add another atlas computed with the AAL methods later, we won't have collisions.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:32:07","You don't need newlines here.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:32:30","Well, you totally got the `_fetch_files` logic ;).
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-10 16:34:08","Putting here the explicit names would maybe be clearer. Also, we should load the XML file for the user. Most of them won't be able to do it.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","MartinPerez","2015-08-11 01:00:11","I guess we could say labels and labels_description/labels_ids then?
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","MartinPerez","2015-08-11 01:01:21","my bad, its this:
+Automated Anatomical Labeling of Activations in SPM Using a Macroscopic Anatomical Parcellation of the MNI MRI Single-Subject Brain.
+
+I will add it
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","MartinPerez","2015-08-11 01:02:05","yes they are quite different, i downloaded all the versions to test, spm12 is the first to have only a nii file and xml file, all the previous ones have a crazy amount of files, i think they have one file per label. If you mean if the labels are different, I dont really know....
+","490c0bba540405d888e9592b2bb07e0614642953","(70, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","MartinPerez","2015-08-11 01:02:36","I agree with you
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","MartinPerez","2015-08-11 01:03:12","what do you mean by loading the XML, putting it in a dictionary?
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-11 12:17:20","We can change the name but in that case, we have to change `harvard_oxford` too to be homogeneous. No good naming comes to my mind we I can summon our naming specialist @banilo ;).
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-11 12:17:50","Let's stick with the last version.
+","490c0bba540405d888e9592b2bb07e0614642953","(70, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","AlexandreAbraham","2015-08-11 12:18:41","I mean actually loading the content of the XML file and provide a dictionnary associating the label id with the region name.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","bthirion","2015-08-18 22:00:02","Maybe more simply: import xml.etree.ElementTree
+as this is used only once.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","lesteve","2015-08-20 13:24:24","Why not put that on a single line?
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","lesteve","2015-08-20 13:24:54","It looks like you are only using `keys` once so I would remove the `keys` definition above and do:
+
+``` python
+params = {'descr': fdescr, 'regions': atlas_img, 'labels': labels_dict}
+```
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","lesteve","2015-08-20 13:28:10","you can use a context manager here:
+
+``` python
+with open(os.path.join(ho_dir, 'AAL.xml'), 'w') as xml_file:
+    xml_file.write(...)
+```
+
+and the file will be closed at the exit of the block.
+","490c0bba540405d888e9592b2bb07e0614642953","(None, '', u'nilearn/datasets/tests/test_atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","lesteve","2015-08-20 13:29:34","Would it make sense to add a description of the dataset in nilearn/datasets/description? All you need to do is add aal_spm_12.rst there I think.
+","490c0bba540405d888e9592b2bb07e0614642953","(88, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","MartinPerez","2015-08-20 13:34:20","Adding the atlas is @GaelVaroquaux  idea so im not sure what extra documentation is useful or desirable. I will add it if you want.
+","490c0bba540405d888e9592b2bb07e0614642953","(88, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","758","nilearn","nilearn","lesteve","2015-08-21 06:55:19","About exposing fetch_atlas_aal_spm12, you want to add fetch_atlas_aal_smp12 in the import from .atlas a few lines above so that you can do:
+
+``` python
+
+from nilearn import datasets
+datasets.fetch_atlas_aal_smp12()
+```
+
+For the record `__all___` is used when doing `from nilearn.datasets import *`.
+","490c0bba540405d888e9592b2bb07e0614642953","(15, '', u'nilearn/datasets/__init__.py')"
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-08 16:55:03","added aal atlas download only for SPM version 12 in atlas.py. Also updated reference.rst accordingly.","c45c65dd34307e48249093fbae52c512a2a474ae",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-08 16:59:22","fix for small typo in doc","40832f26d09a408fbddeb52c7780c98ea34c6d37",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-08 17:06:05","took out spm_version parameter option in docs","23e9d703592d43c503ea3241e7a024d539c09f3e",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-09 20:08:19","added test for fetch_atlas_aal","9db10db27d9e75d0a12f9c2ef0d68ba023e64d16",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-17 11:38:44","implemented multiple minor fixes, particularly returns dictionary of labels instead of reference to xml file","54ba1dc8b141e149eb535123d38d7a2379ff9140",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-19 09:31:14","name and import corrections","7fe68cb57900ad5014082b28c1c1b38952d9ae5a",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-19 11:15:52","name changed to regions","b4e577d8da88ba5b3bcecc784cf8e13252c72583",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 08:59:28","fixed test. Included dummy xml file","ff43c4796882b1203d06044ba9f7710beaedcc49",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 10:48:35","test fix","2d40415b7f3de5926ce2b268eca8dd9d2a5c661c",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 10:49:31","test fix","5b10df8bcc4dddfbbd7cc6905a72c42935cc65e1",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 11:37:45","getiterator fix for all python versions","f1b9b4424997064b16f4f8475325bd7eb7dd4bb5",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 14:56:31","code style fixes","b282567cada395b44099011f4403fe200aceedbf",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 15:25:36","extra documentation","53b67bcf358406a7829681b63a5642896e92913b",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 15:40:14","unicode correction","88450b2ed01868e6d0a920581fe68185f6c7c7b7",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 15:41:30","unicode correction","915aab8c310436cfce967a585457b5bf396e5a65",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-20 18:43:48","corrected a doc mistake","d0e64a2dd4fe223cc365dad27156818ae42eb2a9",""
+"pull_request_commit","758","nilearn","nilearn","MartinPerez","2015-08-21 08:13:49","init correction","490c0bba540405d888e9592b2bb07e0614642953",""

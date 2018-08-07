@@ -1,0 +1,59 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1050","nilearn","nilearn","fliem","2016-03-07 10:12:40","I have a couple of questions regarding [sym_to_vec](https://github.com/nilearn/nilearn/blob/master/nilearn/connectome/connectivity_matrices.py#L196).
+- The function returns the lower triangular part including the values of the diagonal. In most cases the diagonal is not informative (usually it's just 1s). Would it make sense to have a flag that allows to control whether the diag should be included?
+
+The doc says 'Return the flattened lower triangular part of an array, after multiplying above the diagonal elements by sqrt(2)': 
+- The entire matrix (not only the not returned lower part is multiplied. Should probably say: '(...) after multiplying off-diagonal elements...'
+- Why is multiplication performed?
+","start issue","sym_to_vec"
+"issue_comment","1050","nilearn","nilearn","AlexandreAbraham","2016-03-07 10:27:34","> Would it make sense to have a flag that allows to control whether the diag should be included?
+
+Do you have a usecase in mind? If not, this means that this is probably not necessary. If we do it, the parameters could be a `k` parameter similar to the one in the function of the `tril` family.
+
+> The entire matrix (not only the not returned lower part is multiplied.
+
+No, not the entire matrix as shown in `return symmetric[..., tril_mask] * scaling[tril_mask]`. But, anyway, since only the lower part of the matrix is returned, whether or not the rest of the matrix is multiplied has no importance.
+","",""
+"issue_comment","1050","nilearn","nilearn","fliem","2016-03-07 12:13:19","> Do you have a usecase in mind? If not, this means that this is probably not necessary. If we do it, the parameters could be a k parameter similar to the one in the function of the tril family.
+
+In the case of downsampling a high res matrix to a couple of larger networks, the diag might represent the within-network connectivity.
+
+Whiy is this scaling happening? 
+For correlation matrices, it might be interesting to add fisher's-z transformation?
+","",""
+"issue_comment","1050","nilearn","nilearn","fliem","2016-03-08 08:58:27","Thanks.
+
+> ...we want to do this transformation while conserving the norm
+
+@salma1601 In which cases is it important to conserve the norm?
+
+@AlexandreAbraham Would it make sense to include the following flags (with defaults that preserve backwards compatibilty):
+- use_diagonal (True)
+- conserve_norm (True)
+- fishers_z_transformation (False)
+","",""
+"issue_comment","1050","nilearn","nilearn","fliem","2016-03-09 14:58:03","@salma1601 @AlexandreAbraham OK. Should I add the following:
+- k flag
+- use_diagonal flag?
+","",""
+"issue_comment","1050","nilearn","nilearn","salma1601","2016-03-07 16:48:25","> In most cases the diagonal is not informative (usually it's just 1s).
+
+This is true for correlations and partial correlations, which are the somehow ""standard"" measures of connectivity. However there are other kinds of connectivity measure you can try (e.g. tangent) and the diagonal may be informative in this case.
+
+> Why is this scaling happening?
+
+Roughly, this scaling happens because we want to transform a **symmetric** matrix to a vector without repeating twice the off-diagonal terms, and we want to do this transformation while **conserving the norm**. For instance note that `np.linalg.norm(np.array([[1, .1],[.1, 1]]))` equals `np.linalg.norm(np.array([[1, .1 * np.sqrt(2), 1]]))`
+","",""
+"issue_comment","1050","nilearn","nilearn","salma1601","2016-03-08 15:16:04","> In which cases is it important to conserve the norm?
+
+In my personal opinion for connectivity matrices it makes sense to conserve the norm as long as the diagonal is informative and you want to keep it.
+
+> Would it make sense to include the following flags (with defaults that preserve backwards compatibilty):
+> - use_diagonal (True)
+
+I also perfer a k parameter as suggested by @AlexandreAbraham
+
+> - fishers_z_transformation (False)
+
+-1 for me, because one can easily apply this element-wise transformation on top of the returned vector of correlations or partial correlations coefficients.
+","",""

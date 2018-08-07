@@ -1,0 +1,112 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","282","nilearn","nilearn","banilo","2014-11-13 16:02:46","Nifti files often contain NaN values (typically when coming from prior SPM analyses). Nilearn appears to handle such images in diverging ways. Should behavior towards NaN-containing niftis be unified across nifti-modulating nilearn functions? 
+
+Here is a minimal use case:
+
+``` python
+import numpy as np
+import nibabel as nib
+from nilearn.image import crop_img, mean_img, smooth_img
+from nilearn.input_data import NiftiMasker
+
+our_shape = (90, 100, 90)
+data = np.zeros(our_shape)
+data[10:20,50:60,30:40] = 1
+data[data == 0] = np.nan
+img = nib.Nifti1Image(data, affine=np.eye(4))
+
+
+# First case: error message that does not indicate the source of the problem
+# ValueError: zero-size array to reduction operation minimum which has no identity
+out = crop_img(img)
+
+
+# Second case: error message that does indicate the source of the problem
+# ValueError: Given mask is not made of 2 values: [  1.  nan  nan ...,  nan  nan  nan]. Cannot interpret as true or false
+mask = np.zeros(our_shape)
+mask[10:20,50:60,30:40] = 1
+mask[mask==0] = np.nan
+
+masker = NiftiMasker(mask_img=nib.Nifti1Image(mask, np.eye(4)))
+masker.fit()  # minor problem: why does fit() not already raise this mask-related exception?
+masker.transform(img)
+
+
+# Third case: function behaves well and output keeps NaN's
+out = mean_img((img, img, img), target_affine=img.get_affine(), target_shape=img.shape)
+np.unique(out.get_data())
+#  array([  1.,  nan,  nan, ...,  nan,  nan,  nan])
+
+
+# Fourth case: function behaves well but NaN values are implicitly replaced by zeros 
+out = smooth_img(img, 8)
+
+```
+","start issue","Nilearn & NaN's"
+"issue_comment","282","nilearn","nilearn","lesteve","2014-11-14 08:14:39","Chatting with @banilo it seems like replacing NaN by zeroes is always the right thing to do. Can someone think of a use case where that's not what you want to do?
+","",""
+"issue_comment","282","nilearn","nilearn","GaelVaroquaux","2014-11-14 08:35:44","No. That's not correct.  Nans are markers of numerical errors.  SPM also uses them as makers of missing data. It should not,  and as a result has bad error management. 
+
+One example is when normalizing some data,  some poorly written code divides by zero for a voxels with zero variance, while neighboring voxels have non zero variance. Replacing by zero here would be wrong. 
+
+<div>-------- Original message --------</div><div>From: Loïc Estève notifications@github.com </div><div>Date:14/11/2014  09:14  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Subject: Re: [nilearn] Nilearn & NaN's (#282) </div><div>
+</div>Chatting with @banilo it seems like replacing NaN by zeroes is always the right thing to do. Can someone think of a use case where that's not what you want to do?
+
+—
+Reply to this email directly or view it on GitHub.
+","",""
+"issue_comment","282","nilearn","nilearn","lesteve","2014-11-14 09:20:36","OK, what would be the best solution then? Do we want to have a utility function that checks for NaN and raises an exception with a more user-friendly error message? Is using masked arrays an option?
+
+Also about your zero variance example, doesn't that mean that smooth_img is doing something slightly adventurous by always replacing NaN by zeroes (to be fair the docstring mentions the NaN replacement explicitly)?
+","",""
+"issue_comment","282","nilearn","nilearn","eickenberg","2014-11-14 09:25:34","`crop_img` can definitely be changed to raise a nicer exception.
+
+The big problem here is clearly the abuse of `NaN` by SPM and I think the big question is how can we make a proper use of `NaN`s, as in [quiet or signalling `NaN`s](http://en.wikipedia.org/wiki/NaN) for propagating errors, all the while taking into account SPM's legacy of doing it wrong.
+
+Not sure if some sort of `safe_get_data(niimg)` would be in order -- one would first have to discuss what it should do and how strict it should be.
+","",""
+"issue_comment","282","nilearn","nilearn","AlexandreAbraham","2015-07-03 09:20:59","I think that adding a heuristic to fill NaNs automatically is not possible as the filling value is subject to debate. However, adding a simple system to allow people to replace NaNs by a specific value if they want is simple and will do no harm since people that uses it are supposed to know what they are doing.
+
+I think that it's a good compromise since NaNs are a big problem for some people.
+
+@lesteve @eickenberg @GaelVaroquaux @banilo WDYT? If you agree, we can add this to the sprint.
+","",""
+"issue_comment","282","nilearn","nilearn","GaelVaroquaux","2015-07-03 09:26:40","> I think that adding a heuristic to fill NaNs automatically is not possible as
+> the filling value is subject to debate.
+
+nilearn.masking._extrapolate_out_mask (which admittedly is not placed in
+the location that I would expect it to be).
+
+It works well as long as they are not big patches of NaNs. We could try
+to improve it.
+
+Whether we want this on by default or not is another debate.
+","",""
+"issue_comment","282","nilearn","nilearn","banilo","2015-07-03 09:27:06","> I think that it's a good compromise since NaNs are a big problem for some people.
+
+True. How about adding a NaN-replacing function as an option in one of the basic functions, for instance `check_niimg*`?
+","",""
+"issue_comment","282","nilearn","nilearn","GaelVaroquaux","2015-07-03 11:37:30","> Chatting with @banilo it seems like replacing NaN by zeroes is always the right
+> thing to do.
+
+No.
+
+> Can someone think of a use case where that's not what you want to do?
+
+If the NaN is used as a mask, and the mask has been computed in a way
+that is too restrictive (happens often).
+","",""
+"issue_comment","282","nilearn","nilearn","AlexandreAbraham","2015-07-03 12:02:53","> If the NaN is used as a mask, and the mask has been computed in a way that is too restrictive (happens often).
+
+It is very easy to introduce NaNs by mistake in your own data and, if so, then the pertinent value depends on what you've done before. I also remember some gags like GIFT that introduces NaNs when a timeserie is constant.
+
+However, since @banilo seems pretty confident that, in his data, 0 is the good value, I think that we should provide a simple way for him to replace NaN's without having to use nibabel explicitely.
+","",""
+"issue_comment","282","nilearn","nilearn","GaelVaroquaux","2015-07-03 13:15:32","> However, since @banilo seems pretty confident that, in his data, 0 is the good
+> value, I think that we should provide a simple way for him to replace NaN's
+> without having to use nibabel explicitely.
+
+nilearn.masking.apply_mask has 'ensure_finite' for that. Maybe it is not
+exposed in the right place, in which case it should be (maybe the option
+should be renamed).
+","",""

@@ -1,0 +1,55 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","530","nilearn","nilearn","bthirion","2015-04-03 11:34:28","My use case is the following: I would like to plot an image with both positive and negative values as a glass brain. Currently, the abs. value is plotted, but this obviously loses the effect sign.
+I feel the APi does simply not allow me to do keep the sign information, as the abs value seems to be implemented in relatively deep layers of viz vode (diaply.py module).
+Wouldn't it make sense to give at lest support for signed rendering, where positive and negative regions would be displayed differently ?
+","start issue","Symmetric versus signed rending with glass brain"
+"issue_closed","530","nilearn","nilearn","AlexandreAbraham","2015-04-08 09:29:45","","closed issue","Symmetric versus signed rending with glass brain"
+"issue_comment","530","nilearn","nilearn","GaelVaroquaux","2015-04-03 12:22:45",":) You are the one who pushed for using max intensity projection, in
+which case the sign looses sense.
+
+One thing that would be possible with the current code would be to
+threshold the map that you have to keep only the negative valuen, plot it
+using the current glass brain and a blueish colormap. Than plot the
+positive values only using the add_overlay method of the display returned
+by plot_glass_brain.
+
+If this solution ends up being a good solution that reliably plots good
+visualization, we could include it in plot_glass_brain with a switch to
+turn it on.
+","",""
+"issue_comment","530","nilearn","nilearn","bthirion","2015-04-03 16:35:24","If this were MIP, that would be fine, but this is not the case:  the problem is that it the code takes the max of the absolute value. Now, when I put the two opposite maps, I get the same result. This is clearly misleading.
+","",""
+"issue_comment","530","nilearn","nilearn","AlexandreAbraham","2015-04-08 09:29:11","OK, my solution does not work because `add_overlay` seems broken for `plot_glass_brain`.
+
+Code snippet:
+
+```
+from nilearn.datasets import fetch_localizer_contrasts
+from nilearn.plotting import plot_glass_brain
+from nilearn._utils import new_img_like, check_niimg_3d
+import pylab as pl
+
+
+map_img = fetch_localizer_contrasts(['checkerboard'], n_subjects=1).cmaps[0]
+map_img = check_niimg_3d(map_img)
+
+pos_map = map_img.get_data().copy()
+pos_map[pos_map < 0.] = 0.
+
+neg_map = map_img.get_data().copy()
+neg_map[neg_map > 0.] = 0.
+
+pos_map_img = new_img_like(map_img, pos_map, map_img.get_affine())
+neg_map_img = new_img_like(map_img, neg_map, map_img.get_affine())
+plot_glass_brain(pos_map_img, threshold=10, colorbar=True)
+plot_glass_brain(neg_map_img, threshold=3, colorbar=True)
+
+# Mix both
+p = plot_glass_brain(pos_map_img, threshold=10)
+p.add_overlay(neg_map_img, threshold=3, cmap='bone')
+
+pl.show()
+```
+","",""
+"issue_comment","530","nilearn","nilearn","AlexandreAbraham","2015-04-08 09:29:45","I close this one as duplicate of #455. Please continue the discussion in the other issue.
+","",""

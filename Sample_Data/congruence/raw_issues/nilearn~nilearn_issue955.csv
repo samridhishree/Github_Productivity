@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","955","nilearn","nilearn","salma1601","2016-01-18 15:15:08","somehow too large difference between computing the correlation matrix with and with standardization when using LedoitWolf. This is the snippet
+
+``` Python
+import numpy as np
+from sklearn.covariance import LedoitWolf, EmpiricalCovariance
+from nilearn import datasets, connectome
+
+timeseries = datasets.fetch_abide_pcp(n_subjects=1,
+                                      derivatives=['rois_ho']).rois_ho[0]
+for name, cov_estimator in zip(['LedoitWolf', 'Empirical'],
+                               [LedoitWolf(), EmpiricalCovariance()]):
+    cov_estimator.fit(timeseries)
+    corr1 = connectome.connectivity_matrices._cov_to_corr(
+        cov_estimator.covariance_)
+    cov_estimator.fit(timeseries / timeseries.std(axis=0))
+    corr2 = cov_estimator.covariance_
+    print(name, np.max(np.abs(corr1 - corr2)))
+```
+
+I didn't read how the shrinkage is done, but 0.3 of difference surprised me...
+
+``` Python
+('LedoitWolf', 0.3090367733625673)
+('Empirical', 1.5543122344752192e-15)
+```
+","start issue","LedoitWolf shrinkage with and without standardization"
+"issue_closed","955","nilearn","nilearn","AlexandreAbraham","2016-02-03 17:27:01","","closed issue","LedoitWolf shrinkage with and without standardization"
+"issue_comment","955","nilearn","nilearn","banilo","2016-01-18 23:39:38","LedoitWolf is a shrinkage estimator, whereas EmpiricalCovariance isn't. Perhaps add some diagnostics on the absolute values of the covariance matrices, such as Frobenius norm.
+","",""
+"issue_comment","955","nilearn","nilearn","GaelVaroquaux","2016-01-21 07:21:24","Indeed there is a large difference. It is to be expected.
+
+I think that the best way to compute correlations with LedoitWolf is to standardize the time series first. The reasoning being that LedoitWolf strives to give the best estimate (minimize a risk) of the covariance matrix. If what we want are correlations, we want the best estimate of the covariance of the standardized data.
+
+By the way, such a difference will be also present with something like a GraphLasso for the estimator.
+
+Hence, I would add in the ConnectivityMeasure transformer a test that normalizes time-series before running the covariance estimator if kind==""correlations"".
+","",""
+"issue_comment","955","nilearn","nilearn","bthirion","2016-01-21 10:03:53","+1
+Ledoit Wolf shrinks toward the identity matrix, and not an arbitrary diagonal matrix.
+","",""
+"issue_comment","955","nilearn","nilearn","AlexandreAbraham","2016-02-03 17:26:59","Fixed by #968 
+","",""

@@ -1,0 +1,32 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","385","nilearn","nilearn","AlexandreAbraham","2015-02-03 00:11:07","@bcipolli recently spotted errors in the cache mixin system. The docstring is not clear, neither is the code. This is confirmed by the fact that the cache function is misused in the code.
+
+Example (`decomposition/multi_pca.py`):
+
+``` python
+           data, variance, _ = cache(randomized_svd,
+                                memory=self.memory,
+                                ref_memory_level=3,
+                                memory_level=self.memory_level)(
+                        data.T, n_components=self.n_components)
+```
+
+Here, the caching level of the function is given as `ref_memory_level`.
+Now in `input_data/base_masker.py`:
+
+``` python
+        imgs = cache(image.resample_img, memory, ref_memory_level,
+                    memory_level=2, ignore=['copy'])(
+                        imgs,
+                        target_affine=mask_img_.get_affine(),
+                        target_shape=mask_img_.shape,
+                        copy=copy)
+```
+
+The caching level is now given in `memory_level`.
+
+It also took me time to figure out that the default value given to `ref_memory_level` and `memory_level` were put so that calling the function without specifying these parameters enables caching.
+
+See #386 for proposition to solve this issue.
+","start issue","CacheMixin is not consistent"
+"issue_closed","385","nilearn","nilearn","AlexandreAbraham","2015-02-05 10:44:05","","closed issue","CacheMixin is not consistent"

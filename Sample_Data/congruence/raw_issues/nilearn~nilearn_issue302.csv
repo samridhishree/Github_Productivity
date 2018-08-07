@@ -1,0 +1,85 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","302","nilearn","nilearn","banilo","2014-12-04 21:04:50","At several instances, Nilearn does not complain when a single image or filename/path is expected but an iterable with more than one is actually passed on. This appears to be the case for the following functions (arguments):
+
+``` python
+SearchLight(mask_img, process_mask)
+CanICA(mask)
+MultiPCA(mask)
+MultiNiftiMasker(mask_img)
+NiftiMasker(mask_img)
+NiftiLabelsMasker(mask_img, labels_img)
+plot_anat(anat_img)
+plot_epi(epi_img)
+plot_roi(roi_img, bg_img)
+plot_stat_map(stat_map_img, bg_img)
+plot_glass_brain(stat_map_img)
+img_to_signals_maps(mask_img)
+signals_to_img_maps(mask_img)
+img_to_signals_labels(labels_img)
+signals_to_img_labels(labels_img, mask_img)
+[...]
+```
+
+How about throwing informative errors, at least for the immediately user-facing functions? ...and perhaps even add corresponding regression tests?
+","start issue","Functions with nifti arguments: unexpected iterables not caught"
+"issue_closed","302","nilearn","nilearn","lesteve","2015-01-27 12:54:40","","closed issue","Functions with nifti arguments: unexpected iterables not caught"
+"issue_comment","302","nilearn","nilearn","lesteve","2014-12-05 08:08:05","> when a single image or filename/path
+
+I can not believe you didn't use Niimg-like object :wink: 
+
+Do you have a short self-contained example with the traceback?
+
+I would expect these functions to use `_utils.check_niimg(img, assert_3d)`, which throws when its `img` is an iterable only when `assert_3d=True` and `assert_3d` is False by default. Maybe that's just a case for using `assert_3d=True` where appropriate?
+","",""
+"issue_comment","302","nilearn","nilearn","banilo","2014-12-05 08:14:41","The thing is that, in most cases, there is probably no error. So the user might be fooled by input arguments being sounds but encounter unexpected outputs anyways. This might be especially true for tools such as NiftiLabelsMasker that are somewhat tricky to get into, IMHO. One might for example think that one image needs to be provided for each label individually.
+
+`assert_3d=True`seems like a very good idea.
+
+Some of those functions also go back to `_load_mask_img`...
+
+In any event, catching unwanted/unexpected iterables of niimgs, could be in large part centralized to check_niimg/_load_mask_img calls, I guess.
+","",""
+"issue_comment","302","nilearn","nilearn","eickenberg","2014-12-05 08:20:34","Just taking the first element of an iterable and not warning that it should
+be 3d is definitely not the way to go. Using the appropriate kwarg in
+check_niimg, whenever 3d needs to be enforced seems to address this neatly
+- provided the error message is understood. But I think it should be
+  understqndqble the way check_niimg is right now.
+
+On Fri, Dec 5, 2014 at 9:14 AM, Danilo Bzdok notifications@github.com
+wrote:
+
+> The thing is that, in most cases, there is probably no error. So the user
+> might be fooled by input arguments being sounds but encounter unexpected
+> outputs anyways. This might be especially true for tools such as
+> NiftiLabelsMasker that are somewhat tricky to get into, IMHO. One might for
+> example think that one image needs to be provided for each label
+> individually.
+> 
+> assert_3d=Trueseems like a very good idea.
+> 
+> Some of those functions also go back to _load_mask_img...
+> 
+> In any event, catching unwanted/unexpected iterables of niimgs, could be
+> in large part centralized to check_niimg/_load_mask_img calls, I guess.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/302#issuecomment-65759228.
+","",""
+"issue_comment","302","nilearn","nilearn","banilo","2014-12-05 12:47:47","So, how should we attack this?
+","",""
+"issue_comment","302","nilearn","nilearn","eickenberg","2014-12-05 12:49:59","As @lesteve suggests, right? Use ensure_3d=True whenever this is necessary
+
+On Fri, Dec 5, 2014 at 1:47 PM, Danilo Bzdok notifications@github.com
+wrote:
+
+> So, how should we attack this?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/302#issuecomment-65785389.
+","",""
+"issue_comment","302","nilearn","nilearn","banilo","2014-12-05 12:56:08","That does not cover all the cases, see first message...
+","",""
+"issue_comment","302","nilearn","nilearn","eickenberg","2014-12-05 13:00:45","Which are the ones that remain?
+","",""

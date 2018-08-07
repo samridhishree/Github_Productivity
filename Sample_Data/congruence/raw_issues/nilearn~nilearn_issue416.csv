@@ -1,0 +1,81 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","416","nilearn","nilearn","banilo","2015-02-08 10:29:49","Should be self-explanatory
+","start issue","[ENH] function for nifti header comparison in _utils"
+"issue_closed","416","nilearn","nilearn","AlexandreAbraham","2015-03-09 13:40:57","","closed issue","[ENH] function for nifti header comparison in _utils"
+"pull_request_title","416","nilearn","nilearn","banilo","2015-02-08 10:29:49","Should be self-explanatory
+","bd8590ed067be171532d40e0e414bc392afbd7e0","[ENH] function for nifti header comparison in _utils"
+"issue_comment","416","nilearn","nilearn","GaelVaroquaux","2015-02-08 11:06:51","why would you want to compare headers?  This is a serious question: I don't see the use case of such a generic comparison of all the fields. 
+","",""
+"issue_comment","416","nilearn","nilearn","GaelVaroquaux","2015-02-08 11:06:58","why would you want to compare headers?  This is a serious question: I don't see the use case of such a generic comparison of all the fields. 
+","",""
+"issue_comment","416","nilearn","nilearn","GaelVaroquaux","2015-02-09 12:42:57","I find that a lot of these justifications are ""will be useful"", and not
+directly useful. Thus, in favor of the YAGNI principle, I lean on the
+options of not doing it.
+
+Also, I believe that exact comparison of headers is seldom a good idea.
+Things like cal_min and cal_max are data dependent, and should probably
+not be compared. My view is that to do anything with a nifti header, one
+should understand what's in there and be a bit specific about it.
+","",""
+"issue_comment","416","nilearn","nilearn","GaelVaroquaux","2015-02-09 22:28:03","> In iter_img, we copy the header of the image to the sub_images. As Ga�l
+> stated, we do that for now, but we have no clear idea of what's
+> contained in the
+
+Actually, in iter_img/index_img, I find that it is what we should be
+doing.
+","",""
+"issue_comment","416","nilearn","nilearn","GaelVaroquaux","2015-02-10 06:40:27","> Yes, but if we want to be accurate, we need to put a value of index *
+> t_r for toffset.
+
+:).
+
+That's why I am afraid of nifti headers, it is so easy to screw them up.
+","",""
+"issue_comment","416","nilearn","nilearn","eickenberg","2015-02-08 11:20:38","It is true that this does not seem to address https://github.com/nilearn/nilearn/issues/380 in any way.
+
+The proposal resulting from that discussion is more of a copying mechanism, similar to `np.zeros_like` and `np.ones_like` where properties of the input image are copied except if other values are specified in the keyword arguments. The key point of that discussion is _which_ attributes to copy, because some of them are data dependent in different ways.
+
+The contribution here could maybe be used as the analogous diagnostic tool for anybody who relies strongly on header information. In this case, just as in the discussion in #380, different modes of comparison may be possible depending on the context one is working in.
+
+That is the only use case I can think of right now and I am not sure it is valid.
+","",""
+"issue_comment","416","nilearn","nilearn","banilo","2015-02-08 12:28:39","There are at least three ways of looking at a potential usefulness of is_hdr_equal:
+
+a) Michael H. suggested we should look more at how headers are handled/modified/passed on in nilearn -> this might increasingly necessitate broad header comparisons in the future
+
+b) Loic wanted to incorporate a header comparison in the test for index_img but there was no such function, which is why niftis in that test are currently compared with respect to some (data + affine) but not all aspects (+header)
+
+c) Fundamentally, nifti = data + header (includes affine), not nifti = data + affine (header is a blackspot). It would make sense to account for this reality in the API
+","",""
+"issue_comment","416","nilearn","nilearn","AlexandreAbraham","2015-02-09 12:39:30","> why would you want to compare headers? This is a serious question: I don't see the use case of such a generic comparison of all the fields.
+
+If we want to implement #380, such a function would be useful for testing. It should take a `mode` parameter similar to the ones used in the other niimg functions. For the moment, I don't think it is useful.
+","",""
+"issue_comment","416","nilearn","nilearn","banilo","2015-02-09 12:46:36","Very concretely, such a function was needed last week in the index_img test, but was not present.
+","",""
+"issue_comment","416","nilearn","nilearn","AlexandreAbraham","2015-02-09 12:51:03","> I find that a lot of these justifications are ""will be useful"", and not directly useful. Thus, in favor of the YAGNI principle, I lean on the options of not doing it. 
+
+Hence my conclusion: we don't need it for now ;).
+
+> Very concretely, such a function was needed last week in the index_img test, but was not present.
+
+In `iter_img`, we copy the header of the image to the _sub_images_. As Gaël stated, we do that for now, but we have no clear idea of what's contained in the header. Since we don't have clear ideas on that, I think we don't want to integrate code like that. Honestly, I don't feel comptetent enough regarding nifti headers to tell if it's a good idea or not.
+","",""
+"issue_comment","416","nilearn","nilearn","AlexandreAbraham","2015-02-09 23:19:52","Yes, but if we want to be accurate, we need to put a value of `index * t_r` for `toffset`. 
+","",""
+"issue_comment","416","nilearn","nilearn","AlexandreAbraham","2015-03-09 13:40:57","I close this one as it won't be merged. We don't know if we will need this function. It is superseeded by #380 and the code provided here may still be useful to adresse this issue.
+","",""
+"pull_request_commit_comment","416","nilearn","nilearn","eickenberg","2015-02-08 10:38:50","Would it be possible to have this list explicitly, at least in a comment, or in a notes section in the docstring. That way one can immediately see what is compared.
+
+For reference `[('sizeof_hdr', 'i4'),  ('data_type', 'S10'), ('db_name', 'S18'), ('extents', 'i4'), ('session_error', 'i2'),  ('regular', 'S1'), ('dim_info', 'u1'), ('dim', 'i2', (8,)), ('intent_p1', 'f4'),('intent_p2', 'f4'), ('intent_p3', 'f4'), ('intent_code', 'i2'),
+ ('datatype', 'i2'), ('bitpix', 'i2'), ('slice_start', 'i2'), ('pixdim', 'f4', (8,)), ('vox_offset', 'f4'), ('scl_slope', 'f4'), ('scl_inter', 'f4'),
+ ('slice_end', 'i2'), ('slice_code', 'u1'), ('xyzt_units', 'u1'), ('cal_max', 'f4'), ('cal_min', 'f4'), ('slice_duration', 'f4'),
+ ('toffset', 'f4'), ('glmax', 'i4'), ('glmin', 'i4'), ('descrip', 'S80'), ('aux_file', 'S24'), ('qform_code', 'i2'),
+ ('sform_code', 'i2'), ('quatern_b', 'f4'), ('quatern_c', 'f4'), ('quatern_d', 'f4'), ('qoffset_x', 'f4'),
+ ('qoffset_y', 'f4'), ('qoffset_z', 'f4'), ('srow_x', 'f4', (4,)), ('srow_y', 'f4', (4,)), ('srow_z', 'f4', (4,)), ('intent_name', 'S16'),
+ ('magic', 'S4')]`
+","bd8590ed067be171532d40e0e414bc392afbd7e0","(34, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit","416","nilearn","nilearn","banilo","2015-02-08 08:47:44","ENH: is_hdr_equal() added","cd58953074f9ca7067ca3b898a3cbb9ee865db03",""
+"pull_request_commit","416","nilearn","nilearn","banilo","2015-02-08 10:20:41","test for is_hdr_equal()","bd8590ed067be171532d40e0e414bc392afbd7e0",""
+"pull_request_commit_comment","416","nilearn","nilearn","eickenberg","2015-02-08 10:44:33","travis seems to be finding a `NotImplementedType` here - can you check what field this is on in your MNItemplate test?
+","cd58953074f9ca7067ca3b898a3cbb9ee865db03","(47, 440, u'nilearn/_utils/niimg_conversions.py')"

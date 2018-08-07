@@ -1,0 +1,49 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1056","nilearn","nilearn","SRSteinkamp","2016-03-11 11:42:20","Ok so this is my first issue, I hope I do not breake any kind of rules / conduct etc. Also I am quite new to nilearn and github. 
+
+Anyways, I decided to move my analysis over to python and use the NiftiLabelsMasker function to extract time-series data from the Craddock 2012 atlas. I have the feeling, that the NiftiLabelsMasker does not apply the mask provided in mask_img before extracting the time series data or does not do it in a way as I would expect the function to work. 
+
+In detail: I extracted an epi mask from my subject data and tried to apply the mask to the masker function. However the NifiLablesMasker extracts as many regions as labels are provided in the Craddock atlas, with none of them non-zero. If apply the mask on the craddock atlas prior to using NiftiLabelsMakser, I extract less regions than in the first step. 
+
+For code and a short example (to better understand what I am talking about)  please see the following Ipython notebook:
+
+https://github.com/SRSteinkamp/NiftiLabelsMasker_question/blob/master/NiftiLabelsMasker_question.ipynb
+","start issue","NiftiLabelsMasker's mask_img  might not mask the data"
+"issue_closed","1056","nilearn","nilearn","GaelVaroquaux","2016-09-01 08:51:26","","closed issue","NiftiLabelsMasker's mask_img  might not mask the data"
+"issue_comment","1056","nilearn","nilearn","GaelVaroquaux","2016-09-01 08:51:26","The actual bug was fixed. The original issue was a mis-understanding of how the masker behaved, as it did some resampling.
+","",""
+"issue_comment","1056","nilearn","nilearn","AlexandreAbraham","2016-03-11 12:00:41","Hey Simon,
+
+> Ok so this is my first issue, I hope I do not breake any kind of rules / conduct etc. Also I am quite new to nilearn and github. 
+
+No worries ;)
+
+> I decided to move my analysis over to python
+
+Congratulations! Do not hesitate to give us feedback about any difficulty in github issues, this is really valuable to us.
+
+Now, about your problem. Your issue comes from the fact that you are resampling your atlas on your mask. When masking using an atlas, we believe that the most natural resampling is to resample everything on the data, in your case, haxby. We do that by default because:
+- resampling the atlas and the mask is less ""expensive"" than resampling the whole data.
+- when resampling the signals, we may lose information in the interpolation. We believe that data is the most important so we try not to modify them without explicit user consent.
+
+You can see that in the documentation of NiftiLabelsMasker. The `resempling_target` parameter can be `data` (this is the default value, mask and labels are resampled on the data), `labels` (mask and data are resampled on the atlas) or None (we expect everything to have the same affine).
+
+We do not offer resampling to mask yet but we can add it. I think that we do not check that resampling does not delete regions, we should maybe do it.
+
+Does that answer your question?
+","",""
+"issue_comment","1056","nilearn","nilearn","AlexandreAbraham","2016-03-11 16:14:13","There is a bug indeed!
+","",""
+"issue_comment","1056","nilearn","nilearn","SRSteinkamp","2016-03-11 12:44:08","Thanks for you quick reply :) 
+
+I was assuming that the space of the mask is the same as the one of the data (which it is), as the mask is derived from the data. 
+
+The problem persists when I resample labels and mask to the data. I added an example to the notebook where I resampled the mask and the labels to the data. And the results are the same as in my original argument. 
+
+So my question/problem is still the same: 
+NiftiLabelsMasker still extracts more non-zero timeseries than I would expect by the mask provided in 'mask_img'. 
+","",""
+"issue_comment","1056","nilearn","nilearn","sprak0323","2016-09-01 08:20:42","I have the same question ,have the bug been fixed?
+
+I now use the regions.img_to_signals_labels to make the time series.
+","",""

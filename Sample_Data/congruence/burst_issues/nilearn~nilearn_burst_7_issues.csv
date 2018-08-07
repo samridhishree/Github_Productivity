@@ -1,0 +1,215 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,43,nilearn,nilearn,pgervais,2013-04-08 12:40:39,"This pull request clarifies and normalizes the API. Some optimizations have been implemented as well. 
+
+**This pull request breaks many things in the API**, hopefully for the best. Comments welcome.
+
+Main change: orientation of input and output arrays has been inverted, to match scikit-learn's. Masked data (timeseries) are thus represented as an array with shape (number of time instants, number of masked voxels), instead of the inverse. It may remain some functions working the old way, I consider this as a bug. A consequence of this is that every ""transpose"" option has been removed. Porting old code may require adding a "".T"" somewhere, but that's it.
+
+The clean() function has been simplified and optimized. **Its output is slightly different from the previous state**. I find it clearer this way, but I need feedback on this matter. Some processing code may rely on a feature that I removed/changed. More specifically, the ""shift_confounds"" keyword argument has been removed, because its usage seemed rather obscure (and no documentation was available).
+
+A lot of tests has been added/enhanced, including for technical functions like _standardize and _detrend. Documentation has been written/enhanced in many places.
+",start issue,API cleanup
+2,issue_closed,43,nilearn,nilearn,AlexandreAbraham,2013-04-11 15:53:58,,closed issue,API cleanup
+3,pull_request_title,43,nilearn,nilearn,pgervais,2013-04-08 12:40:39,"This pull request clarifies and normalizes the API. Some optimizations have been implemented as well. 
+
+**This pull request breaks many things in the API**, hopefully for the best. Comments welcome.
+
+Main change: orientation of input and output arrays has been inverted, to match scikit-learn's. Masked data (timeseries) are thus represented as an array with shape (number of time instants, number of masked voxels), instead of the inverse. It may remain some functions working the old way, I consider this as a bug. A consequence of this is that every ""transpose"" option has been removed. Porting old code may require adding a "".T"" somewhere, but that's it.
+
+The clean() function has been simplified and optimized. **Its output is slightly different from the previous state**. I find it clearer this way, but I need feedback on this matter. Some processing code may rely on a feature that I removed/changed. More specifically, the ""shift_confounds"" keyword argument has been removed, because its usage seemed rather obscure (and no documentation was available).
+
+A lot of tests has been added/enhanced, including for technical functions like _standardize and _detrend. Documentation has been written/enhanced in many places.
+",0590686eda04089e08a965eb3508eb4b01687ca7,API cleanup
+4,pull_request_merged,43,nilearn,nilearn,AlexandreAbraham,2013-04-11 15:53:58,API cleanup,092d71949199f0302629b44e3d134dcfe7756efb,Pull request merge from pgervais/nilearn:api_cleanup to nilearn/nilearn:master
+5,issue_comment,43,nilearn,nilearn,GaelVaroquaux,2013-04-09 07:41:53,"> I spoke too quickly: the shape is in fact good but the clean function
+> is called on transposed data during data preparation. You just have to
+> remove the transposition before the call to clean and after.
+
+How do we test objectively for this? It's a naive question, but an
+important one: we need to have an easy way to be sure that we are doing
+it right.
+",,
+6,issue_comment,43,nilearn,nilearn,pgervais,2013-04-09 13:13:22,"@GaelVaroquaux Please comment on my last commit. It is supposed to be an answer to your question.
+",,
+7,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-02 14:27:58,"Cleanup in apply_mask() signature
+
+Removed parameter ""transpose"". The output array is now what was obtained
+previously with transpose=True. The shape is (time, features), consistent
+with scikit-learn's.
+
+The default value for parameter ""smooth"" is now None instead of False, to
+make it consistent with common python practice.
+
+NiftiMasker classes have been adapted. Updated tests as well.",c26a546081504415132372f2997e6c34f8fc00b3,
+8,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-02 15:24:32,Wrote clean() docstring.,6f0c1b3760a28e7d6d3c0c31c05d78183a7d83bd,
+9,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-03 11:55:10,"Corrected a bug in clean()
+
+The way detrending of confounds was performed in clean() was incorrect
+(wrong axis, one more time).
+
+A test case has been added in test_signals.
+
+Signature of clean() has been modified, input array is now like
+scikit-learn's: first dimension is instants, second is features.",fd0ae4e922f86fb7910d1d70318dbda4d14238c3,
+10,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-03 15:11:54,"Added _detrend() function.
+
+This function is similar to scipy.signal.detrend, but better suited
+to the needs of nisl. It is also faster.
+
+Tests have been added as well.",677cb13414d9c0089de24854837189d433c46e5d,
+11,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-03 15:50:09,"Change _standardize() signature
+
+_standardize now takes as input an array with scikit-learn orientation.
+
+Added tests for _standardize.",6704c535b8c59ab3b9b98c0489a051654c1ee727,
+12,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-04 07:21:21,"Implemented option in _detrend()
+
+Option ""type"" has been implemented, and test added.",f8eb9a2885e44dd9f3baa4ea9a2c161b8451180d,
+13,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-04 08:44:56,"Simplified butterworth() function
+
+A tricky memory allocation scheme was used, and was quite ineffective.
+The purpose was to avoid a huge memory allocation, by allocating output
+arrays lines one at a time. However, it all ended with a call to
+np.asarray(), which did a huge memory allocation, *and* copy everything.
+
+Replaced by a simpler scheme, that turns out to be faster as well.",cedf1615c4ae0a9dae836db85e13c98ffbd0ebda,
+14,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-04 14:42:13,Comment cleanup,364ed5878f34c581b389e159376225a2707f1ec0,
+15,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-08 12:12:47,"Merge remote branch 'nisl/master' into api_cleanup
+
+Conflicts:
+	nisl/utils.py",ee3c34f0450d657d5ca5ec244a410f2e61b7b759,
+16,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-09 12:57:04,"Added a test for NiftiMasker
+
+Test orientation of output of NiftiMasker.transform(), and consistency
+between transform() and inverse_transform().",a6e805fec3a150652e90e52d337dce11cb680f4d,
+17,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-09 16:21:40,Small fixes,ebc29c3e927bf899ff02ff3fffd3b7706b0e21ea,
+18,pull_request_commit,43,nilearn,nilearn,pgervais,2013-04-10 15:44:44,"Corrected a bug in tests/__init__.py
+
+This file hasn't been updated after that commit. A non-ascii character was
+remaining, and a reference to a deleted file.",0590686eda04089e08a965eb3508eb4b01687ca7,
+19,pull_request_commit_comment,43,nilearn,nilearn,GaelVaroquaux,2013-04-09 15:54:43,"Order of imports should be:
+1. Standard library modules
+2. Standard scientific packages (eg numpy)
+3. Standard general purpose packages (eg nose)
+4. Neuroimaging-specific packages (nibabel)
+5. Local imports
+
+2 and 3 can be swapped.
+
+The logic is to go from most common and general to least.
+",a6e805fec3a150652e90e52d337dce11cb680f4d,"(12, 12, u'nisl/tests/test_io_nifti_masker.py')"
+20,pull_request_commit_comment,43,nilearn,nilearn,GaelVaroquaux,2013-04-09 15:55:33,"Missing 'kind=...', also you should indicate 'optional' when parameters are optional.
+",a6e805fec3a150652e90e52d337dce11cb680f4d,"(28, 28, u'nisl/tests/test_io_nifti_masker.py')"
+21,pull_request_commit_comment,43,nilearn,nilearn,GaelVaroquaux,2013-04-09 15:56:40,"I prefer naming conventions that separate words with underscores: 'rand_gen'
+",a6e805fec3a150652e90e52d337dce11cb680f4d,"(41, 41, u'nisl/tests/test_io_nifti_masker.py')"
+22,pull_request_commit_comment,43,nilearn,nilearn,GaelVaroquaux,2013-04-09 16:02:21,"This file should be merged with nisl/io/tests/test_multi_masker.py. As a general rule, we try, for a code in file 'bar/foo.py', to always put the tests in 'bar/tests/test_foo.py'.
+",a6e805fec3a150652e90e52d337dce11cb680f4d,"(1, 1, u'nisl/tests/test_io_nifti_masker.py')"
+23,pull_request_commit_comment,43,nilearn,nilearn,GaelVaroquaux,2013-04-09 16:03:58,"The test looks good. I would also test the detrend the same way. But I like the logic, and I do think that it answers my question/remark. Thanks.
+",a6e805fec3a150652e90e52d337dce11cb680f4d,"(86, 86, u'nisl/tests/test_io_nifti_masker.py')"
+24,pull_request_commit_comment,43,nilearn,nilearn,pgervais,2013-04-09 16:18:11,"I wasn't aware of this file. I'll make the change.
+",a6e805fec3a150652e90e52d337dce11cb680f4d,"(1, 1, u'nisl/tests/test_io_nifti_masker.py')"
+25,pull_request_commit_comment,43,nilearn,nilearn,pgervais,2013-04-09 16:18:45,"It's just a matter of adding detrend=True, I'll do it.
+",a6e805fec3a150652e90e52d337dce11cb680f4d,"(86, 86, u'nisl/tests/test_io_nifti_masker.py')"
+26,pull_request_commit_comment,43,nilearn,nilearn,AlexandreAbraham,2013-04-08 12:58:57,"Why do you remove the colon ?
+",c26a546081504415132372f2997e6c34f8fc00b3,"(14, 271, u'nisl/masking.py')"
+27,pull_request_commit_comment,43,nilearn,nilearn,pgervais,2013-04-08 13:13:21,"Because there is already a colon inserted by Shinx at the end of this line, and two colons seem to many.
+",c26a546081504415132372f2997e6c34f8fc00b3,"(14, 271, u'nisl/masking.py')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,41,nilearn,nilearn,pgervais,2013-04-02 11:07:18,"I made utils.cache a method of the class CacheMixin (this function already looked like a method anyway). Some checks have been added to make its usage as transparent as possible (namely, there is no need anymore to define self.memory and self.memory_level in **init**() if no caching is requested: CacheMixin.cache() defines them if necessary.
+
+I know there's nothing to be done about it, but ""memory_level"" would be better called ""cache_level"" and ""memory"" called ""cache"" IMO. Since the latter is used extensively in scikit-learn, I resisted the tentation to rename them.
+
+At the same time, I started removing occurences of ""except"" where all exceptions are caught, which is quite dangerous, and useful only in **very rare** cases. Most of the time, it just hides programming errors and makes programs harder to debug.
+",start issue,Cachemixin
+2,issue_closed,41,nilearn,nilearn,AlexandreAbraham,2013-04-08 12:09:07,,closed issue,Cachemixin
+3,pull_request_title,41,nilearn,nilearn,pgervais,2013-04-02 11:07:18,"I made utils.cache a method of the class CacheMixin (this function already looked like a method anyway). Some checks have been added to make its usage as transparent as possible (namely, there is no need anymore to define self.memory and self.memory_level in **init**() if no caching is requested: CacheMixin.cache() defines them if necessary.
+
+I know there's nothing to be done about it, but ""memory_level"" would be better called ""cache_level"" and ""memory"" called ""cache"" IMO. Since the latter is used extensively in scikit-learn, I resisted the tentation to rename them.
+
+At the same time, I started removing occurences of ""except"" where all exceptions are caught, which is quite dangerous, and useful only in **very rare** cases. Most of the time, it just hides programming errors and makes programs harder to debug.
+",bbe59dec3761aba617a37825238e0eb692b5423a,Cachemixin
+4,pull_request_merged,41,nilearn,nilearn,AlexandreAbraham,2013-04-08 12:09:07,Cachemixin,500734dcd774ae1066249b470f9c10e7b3510abb,Pull request merge from pgervais/nilearn:cachemixin to nilearn/nilearn:master
+5,issue_comment,41,nilearn,nilearn,GaelVaroquaux,2013-04-05 08:41:17,"Looks great. I added a few minor remarks. Thanks!
+",,
+6,issue_comment,41,nilearn,nilearn,pgervais,2013-04-05 07:17:29,"@AlexandreAbraham (or someone else) could you review/merge this pull request?
+",,
+7,pull_request_commit_comment,41,nilearn,nilearn,GaelVaroquaux,2013-04-05 08:27:46,"I think this method should be private.
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(None, '', u'nisl/io/base_masker.py')"
+8,pull_request_commit_comment,41,nilearn,nilearn,GaelVaroquaux,2013-04-05 08:33:10,"You should also point out that '-2' means 'all CPUs but one', etc.
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(None, '', u'nisl/io/nifti_multi_masker.py')"
+9,pull_request_commit_comment,41,nilearn,nilearn,GaelVaroquaux,2013-04-05 08:36:39,"I am toying with the idea of splitting up utils: it's a non-descriptive name, and people (ie developers) might not guess what's in there. I am suggesting the following layout:
+- a directory called '_utils'
+- in it:
+  - validations.py (or conversions.py) for check_niimg and co
+  - caching.py for the new mixin.
+
+What do people think?
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(36, '', u'nisl/utils.py')"
+10,pull_request_commit_comment,41,nilearn,nilearn,GaelVaroquaux,2013-04-05 08:39:22,"I think that I would prefer that when there is no cache, a joblib.Memory object with cachedir=None is returned. This object doesn't cache anything, but it ensures a uniform behavior of the code.
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(None, '', u'nisl/utils.py')"
+11,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 08:41:49,"I am OK to put the cache mixin in its own file and keep some machinery away from the user in a _utils directory.
+Although I think that at least one function could be useful to the users : concat_niimgs. When talking with Michael about nisl, he told me that he may need this kind of function (he has several 4D nifti files that he wants to concatenate as they are all related to a single subject).
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(36, '', u'nisl/utils.py')"
+12,pull_request_commit_comment,41,nilearn,nilearn,GaelVaroquaux,2013-04-05 08:52:19,"> Although I think that at least one function could be useful to the users :
+> concat_niimgs. When talking with Michael about nisl, he told me that he may
+> need this kind of function (he has several 4D nifti files taht he wants to
+> concatenate).
+
+That's a good point. We definitely want this function with a non-private
+import path. I'd still like a better name than 'utils'. Any suggestions?
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(36, '', u'nisl/utils.py')"
+13,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 08:59:44,"We could have a dedicated 'niimg' namespace. Maybe 'toolbox' but I prefer shorter names.
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(36, '', u'nisl/utils.py')"
+14,pull_request_commit_comment,41,nilearn,nilearn,pgervais,2013-04-05 09:26:54,"I like the idea of niimg namespace. 
+Splitting up utils is a good idea too, the proposed layout looks fine to me, with ""validations"" called ""niimg"".
+",bbe59dec3761aba617a37825238e0eb692b5423a,"(36, '', u'nisl/utils.py')"
+15,pull_request_commit,41,nilearn,nilearn,pgervais,2013-03-28 09:05:14,"Removed a ""except Exception:"" occurence
+
+Cleanup in comments.",83c19739f75c93bc1e81ce373b0f3199bb12638e,
+16,pull_request_commit,41,nilearn,nilearn,pgervais,2013-03-29 10:18:27,"utils.cache -> utils.CacheMixin
+
+Transformed the awkward utils.cache function into a method. Created
+CacheMixin class to contain this method.
+
+Examples still run successfully.",991e5fe2cf9be4b428b0e03584438ef690231a8c,
+17,pull_request_commit,41,nilearn,nilearn,pgervais,2013-04-02 09:05:37,Merge branch 'master' into cachemixin,91e35d5d96bc7fc0f0c5fa87fc6411ed848fc5ff,
+18,pull_request_commit,41,nilearn,nilearn,pgervais,2013-04-02 10:52:04,Merge branch 'master' into cachemixin,2de1e4c17f12ea590158a02f414e24c70bb43b0d,
+19,pull_request_commit,41,nilearn,nilearn,pgervais,2013-04-05 08:48:18,"Renamed CacheMixin.cache to _cache
+
+Corrected a bug in _cache() as well: return the input function
+unchanged if self.memory is None.",592f840f351150ecb927d91eac038af54310dece,
+20,pull_request_commit,41,nilearn,nilearn,pgervais,2013-04-05 09:22:30,Documentation fix,804675d1ed8dedbdc1d22cf47c995d0f32e6ecb5,
+21,pull_request_commit,41,nilearn,nilearn,pgervais,2013-04-05 12:19:48,"CacheMixin._cache always returns a Memory object.
+
+All default 'memory' parameters have been set to Memory(cachedir=None)
+for _cache() to always return a Memory() object.",bbe59dec3761aba617a37825238e0eb692b5423a,
+22,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 07:32:49,"I am curious: why did you change that ?
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(5, 302, u'doc/sphinxext/gen_rst.py')"
+23,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 07:36:13,"As a general remark, this file directly comes from the scikit learn documentation template. We should not modify it, and if we do, we should propagate the changes to the scikit by doing a pull request.
+For the time_elapsed question, I see in the scikit that 0 is now the default value. Maybe we should stick to that and integrate the last modifications of gen_rst in nisl.
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(None, None, None)"
+24,pull_request_commit_comment,41,nilearn,nilearn,pgervais,2013-04-05 08:14:28,"Because this is C-like programming. None has been designed exactly for this purpose: indicating a missing/undefined value. There is no reason to print something ""time elapsed: -1"", such message is just useless to the user. If something failed, then print the actual elapsed time to failure or nothing at all. 
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(5, 302, u'doc/sphinxext/gen_rst.py')"
+25,pull_request_commit_comment,41,nilearn,nilearn,pgervais,2013-04-05 08:18:38,"I didn't know this file came from scikit-learn. Both files must certainly be maintained in sync.
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(None, None, None)"
+26,pull_request_commit_comment,41,nilearn,nilearn,pgervais,2013-04-05 08:28:29,"After discussing with Gael V., it seems that gen_rst.py from scikit-learn is already quite different from nisl's. Synchronising the files will take some time, and this is not possible for me right now.
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(None, None, None)"
+27,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 08:32:07,"This is precisely the contrary here: None is replaced by -1.
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(5, 302, u'doc/sphinxext/gen_rst.py')"
+28,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 08:37:24,"Files are not sync because some modifications in this file may imply modifications in some other files of the doc. I used to update the gen_rst file time to time while checking documentation generation. Some recent changes may in fact completely break documentation generation and require heavy refactoring, Gael knows that better than me.
+
+However, if we modify this file by our side and add some feature, we must keep in mind to make a PR to scikit-learn.
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(None, None, None)"
+29,pull_request_commit_comment,41,nilearn,nilearn,pgervais,2013-04-05 08:53:55,"Damn. It seems I'm against my own modifications :-). Then I don't know why I did that, I'd better check this out or revert.
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(5, 302, u'doc/sphinxext/gen_rst.py')"
+30,pull_request_commit_comment,41,nilearn,nilearn,pgervais,2013-04-05 09:22:19,"I think this is a bug fix, but I can't really remember. Testing this thoroughly would take too much time right now, As long as documentation compiles, I suggest we leave this for later development. Ideally, we need test cases for this, but this is probably to be done together with scikit-learn.
+",2de1e4c17f12ea590158a02f414e24c70bb43b0d,"(5, 302, u'doc/sphinxext/gen_rst.py')"
+31,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 07:25:58,"Here, the initialization of memory is replaced by None. If I am not mistaken, this could break something in the cache function of the CacheMixin (see next comment).
+",991e5fe2cf9be4b428b0e03584438ef690231a8c,"(71, 125, u'nisl/io/nifti_multi_masker.py')"
+32,pull_request_commit_comment,41,nilearn,nilearn,AlexandreAbraham,2013-04-05 07:27:37,"Here, the test should be:
+
+if memory is None:
+
+and the func should be returned after the warning. (This is due to the replacement of memory object initialization by None instead of a Memory object with cachedir None).
+",991e5fe2cf9be4b428b0e03584438ef690231a8c,"(115, 306, u'nisl/utils.py')"

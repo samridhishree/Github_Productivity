@@ -1,0 +1,67 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","522","nilearn","nilearn","f4bry","2015-03-25 03:15:05","Hi,
+
+I started using the plotting tools. Is there a way to add two statistical maps (overlaid over a bg image) so that common voxels are represented by a mixed color resulting from the two maps?
+
+Thank you,
+Fab
+","start issue","plot_stat_map 2 volumes [plotting]"
+"issue_closed","522","nilearn","nilearn","GaelVaroquaux","2015-03-25 06:36:27","","closed issue","plot_stat_map 2 volumes [plotting]"
+"issue_comment","522","nilearn","nilearn","GaelVaroquaux","2015-03-25 06:36:17","> I started using the plotting tools. Is there a way to add two statistical maps
+> (overlaid over a bg image) so that common voxels are represented by a mixed
+> color resulting from the two maps?
+
+You need to use 'add_overlay' as in the following example:
+http://gaelvaroquaux.github.io/auto_examples/manipulating_visualizing/plot_probabilistic_atlas.html
+(note that this is not the official documentation, but a preview of the
+next version)
+","",""
+"issue_comment","522","nilearn","nilearn","GaelVaroquaux","2015-03-25 07:07:41","> This example does not answer his question...
+
+Why? Doesn't add_overlay answer the question?
+","",""
+"issue_comment","522","nilearn","nilearn","GaelVaroquaux","2015-03-25 07:28:06","OK, I understood the question differently.
+
+@f4bry : could you detail your question? Do you want 2 overlays over a background, or only 1 overlay mixing 2 different colorbars. @AlexandreAbraham is right that add_overlay does not mix colors, just overlays.
+","",""
+"issue_comment","522","nilearn","nilearn","GaelVaroquaux","2015-03-25 08:04:03","> As far as I know, there is currently no possiblity to plot 2 (or more)
+> statistical maps colored as a function of topographical overlap.
+
+Well, just compute the overlap as an indicate on the {0, 1, 2, 3} set: 0
+= non activated, 1 = map1 activated, 2 = both activated, 3 = map2
+activated, and then you can use the standard plotting stack.
+","",""
+"issue_comment","522","nilearn","nilearn","AlexandreAbraham","2015-03-25 07:02:20","This example does not answer his question...
+","",""
+"issue_comment","522","nilearn","nilearn","AlexandreAbraham","2015-03-25 07:22:31","From what I know, add_overlay relies on matshow which does not mix red and blue like asked here but stack them. But I may have missed an option.
+","",""
+"issue_comment","522","nilearn","nilearn","banilo","2015-03-25 07:30:29","Like here for example:
+
+http://www.frontiersin.org/files/Articles/83378/fpsyg-05-00353-HTML/image_m/fpsyg-05-00353-g001.jpg
+","",""
+"issue_comment","522","nilearn","nilearn","f4bry","2015-03-25 07:51:52","Hi,
+Thank you!
+Yes, like in banilo example. 
+Suppose I have 2 t-maps. I would like to show them, superimposed to the same anatomical template, one colored in red and the other in yellow. The common voxels (i.e. overlapped voxels) colored in orange.
+
+fab
+","",""
+"issue_comment","522","nilearn","nilearn","banilo","2015-03-25 07:56:23","As far as I know, there is currently no possiblity to plot 2 (or more) statistical maps colored as a function of topographical overlap.
+
+Good hint for improvement of the plotting function stack....
+","",""
+"issue_comment","522","nilearn","nilearn","AlexandreAbraham","2015-03-25 08:11:58","Short answer: this is not possible and probably not a good idea.
+
+Long answer: like Michael said, what you want is a 2D colorbar. This goal is usually achieved in matplotlib by using`imshow` because you can give it directly the RGB colors. However this is not possible in nilearn because, in-between, we do a lot of operations that assume that the data is scalar.
+AFAIK, matplotlib still does have options to specify layer fusion method (typically, you'd like to have the multiply fusion).
+So what I would (because I'm a bit lazy) is to fix the cut coords, output 2 images (red and blue) and mix the channels by using, for example, imagemagic (it,s very easy). You may also be able to do that direcrly in python by grabbing the binary representation of the plots in matplotlib (less easy).
+I said that this is not a good idea because, perceptually, the color has a great influence on how we perceive things. We typically distinguish red tones better than blue tones. So if you mix them in the same image, people will have the feeling that red is stronger.Same with color mixing : if you make a 2D plot of a gradient going from red to blue, people will tend to say that it is reddish rrather than blueish. Let us know if you find a solution ;).
+","",""
+"issue_comment","522","nilearn","nilearn","f4bry","2015-03-26 00:26:10","Thank you all for the suggestions!
+
+Alexandre, I don't think I got all your points, but I will try to find a solution and I'll keep you posted.
+
+I understand your comments about mixing colors. However, I think that showing such overlap can be useful in many applications.
+
+fab
+","",""

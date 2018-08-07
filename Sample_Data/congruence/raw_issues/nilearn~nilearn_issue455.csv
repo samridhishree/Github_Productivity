@@ -1,0 +1,56 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","455","nilearn","nilearn","vsoch","2015-02-22 21:48:47","The current ""plot glass brain"" chooses a color map that is aesthetically beautiful, but is misleading with regard to properly communicating the values in the map.  For example, an image with clear negative values:
+
+![actual](https://cloud.githubusercontent.com/assets/814322/6320586/f20c3d8c-ba96-11e4-8502-9fe2f72a62dd.png)
+
+is shown in all oranges / reds / yellows:
+
+![hotr](https://cloud.githubusercontent.com/assets/814322/6320590/f9e8af72-ba96-11e4-916f-fc50304b7bcf.png)
+
+I understand that the image is mimicking the standard of the spm glass brain, but as a user, I don't really remember that.  (Is the traditional spm glass brain a maximum intensity projection?)  Regardless, the default users of the package (myself included) will make some strong assumptions about the colors that come out:
+- red/orange is positive
+- blue is negative
+
+So I would conclude from the glass brain image that my brain map has many strongly positive values.
+
+I found that I have the [choice to specify the color map](https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/img_plotting.py#L724), so what I did is an [investigation of all the color maps that could be used](http://nbviewer.ipython.org/github/vsoch/brainmeta/blob/master/image_comparison/notebook/glass_brain_colormaps.ipynb).  There are many that (at least) have the right colors, red and blue, but the mappings are still off.  And most of the other ones aren't as striking as the hot oranges and yellows. So I want to suggest that we possibly need a ""functional neuroimaging"" specific color map. It might be a slightly modified glass brain with a [custom color map](http://matplotlib.org/api/colors_api.html) that is both breathtaking, and scales from blue to bright orange, correctly depicting the positive and negative values without need for an ugly colorbar. Then we can oooh and aaah at the images, and also not interpret them incorrectly. :wink: 
+","start issue","Suggested enhancement for plot_glass_brain: negative values"
+"issue_closed","455","nilearn","nilearn","GaelVaroquaux","2015-07-15 13:02:58","","closed issue","Suggested enhancement for plot_glass_brain: negative values"
+"issue_comment","455","nilearn","nilearn","eickenberg","2015-02-22 21:59:21","Thanks for the comment! Indeed, the default colormap should be useful for the most common use of the glass brain, and I am unsure which one that is.
+
+I am also wondering whether the one can infer anything from e.g. all values being positive vs there existing negative and positive values together. We automatically adjust the range of the colormap in `plot_stat_map` for this and show only the appropriate half of a double colormap if necessary. Applying this to here would mean that the default colormap should become ColdHot and that only the upper half is used when all values are positive.
+","",""
+"issue_comment","455","nilearn","nilearn","lesteve","2015-02-22 22:05:02","If I understand you correctly this is not a colorbar issue at all but more an issue about the transformation operated by the glass brain that doesn't differentiate between positive and negative values.
+
+The glass brain projection uses the max of the **absolute value** along the axis, so you are left with only positive values. The only place this is documented is in plotting.displays.GlassBrainAxes.transform_to_2d.
+
+It's probably easy to add the sign back if we decide this is the right way forward (looking at the argmax of the absolute value and returning the value of the original array for example). To be honest, not sure what the convention is for the SPM glass brain.
+","",""
+"issue_comment","455","nilearn","nilearn","AlexandreAbraham","2015-02-22 22:10:00","And you should maybe take a look at `cyan_copper` colormap from nipy. It may be close to what you are looking for.
+","",""
+"issue_comment","455","nilearn","nilearn","vsoch","2015-02-22 22:19:56","@lesteve - exactly. The absolute value is taken to only leave the positive values, but I don't think most users will know that. I think returning the original array might be worth exploring.  
+
+In the long run, I think we are moving toward interactive graphics [eg, bokeh has little bits](http://bokeh.pydata.org/en/latest/index.html), but most graphics on their own without some added stuffs from a web browser are still static. Ideally, any image produced would be svg, possibly with multiple transparent layers that could be quickly wrapped in some d3/etc. to spit out something interactive for the user.  That also means that we need paths and not image data embedded in the svg.  An animation is another option, but I think we can do better. I'm just thinking out loud at this point - the goal (I think) is to bring modern, simple interactive visualizations to brain imaging tools. 
+
+Thanks @AlexandreAbraham, I will check out cyan_copper!  
+","",""
+"issue_comment","455","nilearn","nilearn","eickenberg","2015-02-22 22:35:33","Ah, I see, makes sense. I guess what needs to be done is really dependent on how this is mostly used. People do also look at single slices, right?
+
+Adding the sign back according to the sign of the argmax of the absolute values is maybe a little ""unfair"" if most activation values along that axis are positive and there was one small negative blob. Same for vice versa. Shouldn't then taking the absolute value be re-examined?
+
+For positive maps you wouldn't need it. For mixed maps it is weird. 
+
+What about linear projections onto the mean value along each axis? (I am assuming it has been tried and didn't look good, because it is the obvious first choice.)
+","",""
+"issue_comment","455","nilearn","nilearn","AlexandreAbraham","2015-02-23 01:04:26","> Is the traditional spm glass brain a maximum intensity projection?
+
+Yes.
+
+> Shouldn't then taking the absolute value be re-examined?
+
+It is time to sell your 2D colormap ;)
+","",""
+"issue_comment","455","nilearn","nilearn","lesteve","2015-09-22 08:39:28","Just to be clear, you need to use master to use this feature. This [example](https://github.com/nilearn/nilearn/blob/master/examples/manipulating_visualizing/plot_demo_glass_brain_extensive.py) does use plot_glass_brain with plot_abs=False.
+
+The online docs are from the last stable release so they don't mention this feature.
+","",""

@@ -1,0 +1,52 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1479","nilearn","nilearn","banilo","2017-07-02 16:36:57","There may be some issue with resampling the nilearn-provided atlases. The following code yields an all-zero atlas map:
+
+``` python
+import numpy as np
+import nibabel as nib
+from nilearn import datasets as ds
+from nilearn.image import resample_img
+
+tmp_nii = ds.fetch_icbm152_brain_gm_mask()
+cort_atlas = ds.fetch_atlas_harvard_oxford('cort-prob-1mm')
+cort_atlas_maps = resample_img(
+    nib.load(cort_atlas['maps']),
+    target_affine=tmp_nii.get_affine(),
+    target_shape=tmp_nii.shape,
+    interpolation='nearest'
+    )
+print np.unique(cort_atlas_maps.get_data().ravel())
+```
+","start issue","resample_img() is acting weird"
+"issue_closed","1479","nilearn","nilearn","GaelVaroquaux","2017-07-03 04:54:31","","closed issue","resample_img() is acting weird"
+"issue_comment","1479","nilearn","nilearn","bthirion","2017-07-02 17:26:05","When I do that , I get range(100). Are you using the latest nilearn ? 
+
+B 
+
+----- Mail original -----
+
+> De: ""Danilo Bzdok"" <notifications@github.com>
+> À: ""nilearn/nilearn"" <nilearn@noreply.github.com>
+> Cc: ""Subscribed"" <subscribed@noreply.github.com>
+> Envoyé: Dimanche 2 Juillet 2017 18:36:57
+> Objet: [nilearn/nilearn] resample_img() is acting weird (#1479)
+
+> There may be some issue with resampling the nilearn-provided atlases. The
+> following code yields an all-zero atlas map:
+> import numpy as np import nibabel as nib from nilearn import datasets as ds
+> from nilearn.image import resample_img
+
+> tmp_nii = ds.fetch_icbm152_brain_gm_mask()
+> cort_atlas = ds.fetch_atlas_harvard_oxford( ' cort-prob-1mm ' )
+> cort_atlas_maps = resample_img(
+> nib.load(cort_atlas[ ' maps ' ]), target_affine = tmp_nii.get_affine(),
+> target_shape = tmp_nii.shape, interpolation = ' nearest ' ) print
+> np.unique(cort_atlas_maps.get_data().ravel())
+
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly, view it on GitHub , or mute the thread .
+","",""
+"issue_comment","1479","nilearn","nilearn","banilo","2017-07-02 21:53:13","![image](https://user-images.githubusercontent.com/3907396/27773735-a3bc415e-5f80-11e7-9131-abe792930528.png)
+
+...looks like my nilearn was in the stone age. I get the right response with version 0.3.1 as you predicted.","",""

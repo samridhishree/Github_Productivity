@@ -1,0 +1,133 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","322","nilearn","nilearn","banilo","2014-12-17 09:39:12","Working with HCP resting-state data, it seems I have encountered three potentially new bugs using resample_img:
+
+a) using input images that have bad affines can cause segmentation faults, quitting python directly
+
+b) using interpolation=nearest can cause ""completely messed up"" niftis, similar to the recent resample_img bug related to endianess
+
+c) comparing 4d niftis before and after resampling in FSLView, in one case, turned out to look fine for the first 500 images, yet resulted in rather different histogramms in images in the second 500 volumes
+
+I will try to provide python scripts reproducing these things and the corresponding data.
+","start issue","3 bugs in resample_img"
+"issue_closed","322","nilearn","nilearn","AlexandreAbraham","2015-01-14 00:18:36","","closed issue","3 bugs in resample_img"
+"issue_comment","322","nilearn","nilearn","banilo","2014-12-18 16:57:12","``` python
+# resample_img bug 1
+# -> Segmentation fault: 11 in resample_img()
+
+from nilearn.image import resample_img
+import numpy as np
+from nibabel import Nifti1Image
+
+shape_in = (91, 109, 91)
+aff_in = np.array([[  -2.,    0.,    0.,   90.], 
+                  [   0.,    2.,    0., -126.],
+                  [   0.,    0.,    2.,  -72.],
+                  [   0.,    0.,    0.,    1.]])
+
+shape_out = (53, 63, 46)
+aff_out = np.array([[  -3.,    0.,    0.,   78.],
+                   [   0.,    3.,    0., -111.],
+                   [   0.,    0.,    3.,  -51.],
+                   [   0.,    0.,    0.,    1.]])
+
+data = np.zeros(shape_in + (1000, ), dtype=np.float)
+
+for i_img in range(data.shape[-1]):
+    data[..., i_img] = i_img + 1
+img_in = Nifti1Image(data, aff_in)
+
+for mode in ['nearest', 'continuous']:
+    print ""Resampling (%s)..."" % mode
+    img_out = resample_img(img_in, target_shape=shape_out,
+        target_affine=aff_out, interpolation=mode)
+    data_out = img_out.get_data()
+    print ""Resampling done.""
+    for i_img in range(data.shape[-1]):
+        print ""%i..."" % i_img
+        assert(data_out[..., i_img] == i_img + 1)
+```
+","",""
+"issue_comment","322","nilearn","nilearn","banilo","2014-12-19 08:54:26","I am still uploading one of the data files (should be accessible by noon today) but here is a script for reproducing bug 3 from above.
+
+``` python
+# resample_img bug 3
+# -> image order messed up?
+# (seems fine until 500th volume, but compare input preproc_RS_1000.nii.gz
+#  and output resampled_4d.nii.gz at e.g. volume 600 in FSLView)
+#
+# Please download necessary data files:
+# https://dl.dropboxusercontent.com/u/4403154/grey10_icbm.nii
+# https://dl.dropboxusercontent.com/u/4403154/expression_intention-control_z_map.nii
+# https://dl.dropboxusercontent.com/u/4403154/preproc_RS_1000.nii.gz
+
+from nilearn.image import resample_img
+from nilearn.input_data import NiftiMasker
+import numpy as np
+import nibabel as nib
+
+mask_image = 'grey10_icbm.nii'
+target_space_img = 'expression_intention-control_z_map.nii'
+firstdataimg = nib.load(target_space_img)
+masknii = resample_img(mask_image, target_shape=firstdataimg.shape,
+                       target_affine=firstdataimg.get_affine(),
+                       interpolation='nearest')
+mask = masknii.get_data().astype(np.bool)
+nifti_masker = NiftiMasker(mask_img=masknii, smoothing_fwhm=False,
+                           standardize=False)
+nifti_masker.fit()
+tar_aff = np.array([[  -3.,    0.,    0.,   78.],
+                    [   0.,    3.,    0., -111.],
+                    [   0.,    0.,    3.,  -51.],
+                    [   0.,    0.,    0.,    1.]])
+
+r_nii = resample_img(
+    nib.load('preproc_RS_1000.nii.gz'),
+    target_shape=(53, 63, 46),
+    target_affine=tar_aff,
+    interpolation='continuous').to_filename('resampled_4d.nii.gz')
+```
+","",""
+"issue_comment","322","nilearn","nilearn","AlexandreAbraham","2015-01-07 11:56:14","I can't download the data.
+","",""
+"issue_comment","322","nilearn","nilearn","AlexandreAbraham","2015-01-07 12:30:04","Using the code you posted, I have a bounding box issue (part of the cerebellum is cut). Apart from that, both files are identical.
+","",""
+"issue_comment","322","nilearn","nilearn","AlexandreAbraham","2015-01-07 13:48:09","I have the same histograms, however in my case the 2 images look alike. The difference in the distribution may be due to the cropping (I would however expect more 0s in the original image...).
+","",""
+"issue_comment","322","nilearn","nilearn","AlexandreAbraham","2015-01-11 22:29:48","2 other bugs are:
+- the brain is cropped during resampling
+- data is very different from original after resampling: this is due to a bug in FSLview on Mac OS X
+","",""
+"issue_comment","322","nilearn","nilearn","AlexandreAbraham","2015-01-14 00:18:36","I can't reproduce the cropping bug. I close this one, let's open other issues with precise examples if the problem comes up again.
+","",""
+"issue_comment","322","nilearn","nilearn","banilo","2015-01-07 12:04:52","Smells like a dropbox-access issue.
+","",""
+"issue_comment","322","nilearn","nilearn","banilo","2015-01-07 13:09:32","Regarding resample_img bug 3:
+
+Nilearn seems to say that the 4D images - before and after resampling - are not the same.
+
+```
+plot_epi(nib.Nifti1Image(nib.load('resampled_4d.nii.gz').get_data()[..., 599], np.eye(4)))
+```
+
+![image](https://cloud.githubusercontent.com/assets/3907396/5645968/a757183c-9676-11e4-8016-e82021147d94.png)
+
+```
+plot_epi(nib.Nifti1Image(nib.load('preproc_RS_1000.nii.gz').get_data()[..., 599], np.eye(4)))
+```
+
+![image](https://cloud.githubusercontent.com/assets/3907396/5645962/a20f8d0a-9676-11e4-979f-94c82521b635.png)
+","",""
+"issue_comment","322","nilearn","nilearn","banilo","2015-01-07 13:33:33","...this also seems to show in the histogramms:
+
+```
+plt.hist(nib.load('preproc_RS_1000.nii.gz').get_data()[..., 599].ravel(), bins=200, range=(1e-3,1))
+```
+
+![image](https://cloud.githubusercontent.com/assets/3907396/5646232/fe8c66fe-9679-11e4-8c05-015609870ba3.png)
+
+```
+plt.hist(nib.load('resampled_4d.nii.gz').get_data()[..., 599].ravel(), bins=200, range=(1e-3,1))
+```
+
+![image](https://cloud.githubusercontent.com/assets/3907396/5646230/f228072e-9679-11e4-95d9-f9d0bf79a9c4.png)
+","",""

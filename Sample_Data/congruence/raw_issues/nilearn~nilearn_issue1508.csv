@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1508","nilearn","nilearn","grjd","2017-09-12 12:41:34","How can be possible that the precision matrix returns values larger than 1?
+I found that with my own data but also running the nilearn example
+http://nilearn.github.io/auto_examples/03_connectivity/plot_inverse_covariance_connectome.html#sphx-glr-auto-examples-03-connectivity-plot-inverse-covariance-connectome-py
+
+I get 
+In [111]: estimator.precision_.max()
+Out[111]: 2.0537018448578808
+
+In [112]: estimator.precision_.min()
+Out[112]: -1.0522529001195888
+
+I get this just using the above example with the estimator as in the example http://nilearn.github.io/_downloads/plot_inverse_covariance_connectome.py
+estimator = GraphLassoCV()
+estimator.fit(time_series)","start issue","estimator_precision_ larger than 1"
+"issue_closed","1508","nilearn","nilearn","GaelVaroquaux","2017-09-12 12:59:55","","closed issue","estimator_precision_ larger than 1"
+"issue_comment","1508","nilearn","nilearn","bthirion","2017-09-12 15:41:32","I think that these matrices should be diagonal-dominant -- which ensures that they are SDP -- which they are.
+@grjd Maybe you're bothered by sign flipping of coefficients ? ","",""
+"issue_comment","1508","nilearn","nilearn","bthirion","2017-09-13 08:38:26","* The off-diagonal coefficient of the precision *once normalized by the diagonal  of the precision* represent partial correlation (up to a sign flip).
+* The diagonal of the precision represents partial variance. They have no reason to be equal. 
+HTH","",""
+"issue_comment","1508","nilearn","nilearn","bthirion","2017-09-13 13:55:43"," Please check the code  but I think it is P_{i, j} -> P_{i, j} / sqrt(P_{i, i} * P_{j,j})","",""
+"issue_comment","1508","nilearn","nilearn","grjd","2017-09-12 12:49:13","d'accord.
+thanks Gäel","",""
+"issue_comment","1508","nilearn","nilearn","grjd","2017-09-13 08:26:37","yes SDP they are . I find confusing that the diagonal elements have very different values, if the variables are gaussian the precision represents the partial correlations, then, the diagonal elements should have all maximum precision.","",""
+"issue_comment","1508","nilearn","nilearn","grjd","2017-09-13 10:43:02","So you normalize each off diagonal element in row i by the the diagonal element i?
+P_{i, j} -> P_{i, j} / P_{i, i} ","",""
+"issue_comment","1508","nilearn","nilearn","GaelVaroquaux","2017-09-12 12:46:54","> How can be possible that the precision matrix returns values larger than 1?
+
+Precisions are not normalized, unlike partial correlations. So yes, it's
+not surprising.
+","",""
+"issue_comment","1508","nilearn","nilearn","GaelVaroquaux","2017-09-12 15:18:07","> The precision matrix (also Ledoit) dont recover the main diagonal,
+
+What do you meean?
+
+> i should have maximum values for the diagonal, normalized or not.
+
+And what do you mean here?
+
+","",""

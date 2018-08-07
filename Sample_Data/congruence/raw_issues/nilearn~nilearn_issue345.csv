@@ -1,0 +1,443 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","345","nilearn","nilearn","bcipolli","2015-01-09 07:05:46","(edited to add link to original issue: fix #328)
+
+**Summary:**
+Previously, dependency checks were defined inside `__init__.py`.  I've:
+- Moved the dependency check code to `version.py`
+- Called the code from `__init__.py` and `setup.py`
+
+This required some additional tweaks:
+- Add metadata about which modules must be installed manually.
+- Do slightly different dependency checks pre-setup (when we only need to check modules requiring manual installation) and post-setup (where we should check all modules).
+
+There were a few other tiny tweaks I made, that I'll document inline.
+
+ **Testing:**
+- I tested that `nilearn` installs properly when all dependencies are installed
+- I tested that `nilearn` fails with an error message if one of the `manual_only` modules is not installed (in my case, `sklearn`)
+  ![screen shot 2015-01-08 at 10 57 52 pm](https://cloud.githubusercontent.com/assets/4072455/5676439/ad3396e4-978a-11e4-8694-4613882b8bd9.png)
+
+**Notes:**
+- The error message for modules requiring manual installation are very generic; further installation info could be stuffed into the `required_module` metadata, to produce better error messages.  Let me know if you'd like me to do that (I think it would be good...)
+","start issue","Add dependency checks to setup.py"
+"issue_closed","345","nilearn","nilearn","lesteve","2015-01-16 14:03:37","","closed issue","Add dependency checks to setup.py"
+"pull_request_title","345","nilearn","nilearn","bcipolli","2015-01-09 07:05:46","(edited to add link to original issue: fix #328)
+
+**Summary:**
+Previously, dependency checks were defined inside `__init__.py`.  I've:
+- Moved the dependency check code to `version.py`
+- Called the code from `__init__.py` and `setup.py`
+
+This required some additional tweaks:
+- Add metadata about which modules must be installed manually.
+- Do slightly different dependency checks pre-setup (when we only need to check modules requiring manual installation) and post-setup (where we should check all modules).
+
+There were a few other tiny tweaks I made, that I'll document inline.
+
+ **Testing:**
+- I tested that `nilearn` installs properly when all dependencies are installed
+- I tested that `nilearn` fails with an error message if one of the `manual_only` modules is not installed (in my case, `sklearn`)
+  ![screen shot 2015-01-08 at 10 57 52 pm](https://cloud.githubusercontent.com/assets/4072455/5676439/ad3396e4-978a-11e4-8694-4613882b8bd9.png)
+
+**Notes:**
+- The error message for modules requiring manual installation are very generic; further installation info could be stuffed into the `required_module` metadata, to produce better error messages.  Let me know if you'd like me to do that (I think it would be good...)
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","Add dependency checks to setup.py"
+"pull_request_merged","345","nilearn","nilearn","lesteve","2015-01-16 14:03:37","Add dependency checks to setup.py","0eef8ab41977c9d2a383dfdc034e45b4d653d23f","Pull request merge from bcipolli/nilearn:setup_dependencies to nilearn/nilearn:master"
+"issue_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-16 14:06:30","Thanks Heaps!
+","",""
+"issue_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-16 14:05:27","Yeah, great work!
+","",""
+"issue_comment","345","nilearn","nilearn","bcipolli","2015-01-09 13:59:22","Thanks for all the comments and suggestions!  I'll go through these now and push up an update to the PR this morning.
+","",""
+"issue_comment","345","nilearn","nilearn","bcipolli","2015-01-09 15:23:13","Pushed changes.  Tested with both `nibabel` and `sklearn` uninstalled; both return errors (and with more informative info):
+![image](https://cloud.githubusercontent.com/assets/4072455/5681784/4d2f628c-97d0-11e4-8b04-7caf4ac54538.png)
+","",""
+"issue_comment","345","nilearn","nilearn","bcipolli","2015-01-09 17:28:25","@lesteve made requested changes.  Re: testing--I worded that poorly.  I checked that without `nibabel` and `sklearn`, an error re: `sklearn` is thrown (i.e. showing that `nilearn` isn't imported within setup).
+
+I verified that `nibabel` is installed if the other ""manual"" packages exist and it does not.  
+","",""
+"issue_comment","345","nilearn","nilearn","bcipolli","2015-01-12 14:26:16","Rolled back from `execfile` to `exec`; I think all of the issues brought up have been addressed.
+","",""
+"issue_comment","345","nilearn","nilearn","bcipolli","2015-01-15 19:06:22","@lesteve @GaelVaroquaux I removed the gzip checks, made the comment / variable name tweaks requested, and pushed the `chdir` in `setup.py` back to the file level.
+","",""
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:06:26","Within a package, I always try to do relative imports to avoid any possible import conflicts.  Is this OK here?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:06:47","This all got moved to `version.py`, except the few lines below.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-09 07:07:19","> Within a package, I always try to do relative imports to avoid any possible
+> import conflicts. Is this OK here?
+
+Yes, this is good practice.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:07:31","This code actually changes a setting, so is appropriate to stay.  The dependency check for `gzip` is already done (above), so no longer needs to be wrapped in the `try...catch` block.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:07:57","Code is the same, except for one small tweak (comment below)
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:09:12","I made this a `getattr`, as `gzip` doesn't have a `__version__` attribute.  This allows a bit more flexibility (though ... perhaps could be perceived as a hack?), by allowing `gzip` (and other modules not playing the `__version__` game) to be processed as dependencies in the same codepath as our other module dependencies.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(52, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:09:35","New function, with greater metadata (see docstrings)
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:10:11","I'm not sure if this check is the best way to go about things, or to create two different functions (one in `setup.py`, one in `__init__.py`).  I'm open to either.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:10:36","Make sure the `nilearn` we import is the one we're installing, not one in the system path.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:11:14","Here (and below) allows `setup.py` to be called from a different working directory than the `nilearn` directory.  Not sure if it's every needed by `pypi`, but it did help me with testing... :)
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 07:11:48","One nice thing about the current setup is that there's only one place where the dependencies are defined (in 'version.py'); the needed strings to pass to `setup` are created from that data here.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-09 07:54:50","I think that rather than importing and deleting, which we did to avoid polluting the namespace, eg for tab completion, I would rename the function to _check_module_dependencies, and not delete it. IPython will by default hide these from tab-completion.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-09 08:00:28","Why do we need a function here, and not simply a module-level dictionary (which should be named ALL_CAPS, as it is a constant): REQUIRED_MODULE_METADATA?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-09 08:01:17","I believe that iteritems is deprecated in Python 3, and ""items()"" should be used.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-09 08:03:24","I would rather that you use the mechanism used below in ""get_version"", that doesn't rely on importing nilearn. Indeed, there are multiple reasons why importing nilearn could fail with a non helpful error, while simply running the corresponding file (as in get_version), is quite robust.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-09 08:04:15","I am not sure what is the purpose of this change?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-09 10:13:41","`gzip` is not a dependency. It is optional and allows to open `.nii.gz` files, this is why it was in a `try ... catch` block.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-09 10:15:09","See above, it is to be able to call setup.py outside of nilearn directory.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 13:38:46","> I would rather that you use the mechanism used below in ""get_version"", that doesn't rely on importing nilearn
+
++1. I reckon with your changes `python setup.py install` won't work if nibabel is not installed. This is because you are importing nilearn (and hence executing `nilearn/__init__.py`) which requires nibabel before giving a chance to setup to actually install nibabel. If I am not clear enough, there is a better explanation [there](https://github.com/audreyr/cookiecutter-pypackage/issues/1). This is where the exec trick is coming from by the way.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-09 13:51:13","... but making it mandatory is defenitely a good idea. Aprat from the .nii.gz format, a lot of datasets use this format.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-09 13:52:56","BTW, instead of appending `__curdir__` everywhere, wouldn't it be easier to chdir at the beginning of the script?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 13:56:17","Could you use a collections.OrderedDict? The main reason is to ensure that dependencies order makes sense as was previously the case: numpy, scipy, sklearn, nibabel.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 13:57:46","Out of interest, what do you gain by being able to execute setup.py outside of the directory where it lives?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 14:01:46","@AlexandreAbraham Thanks for the comment!  As far as I understood, the `import gzip` was in a `try...catch` block, but the `catch` re-raises the error.  The code is run within `nilearn/__init__.py`, so every time you import the package.  
+
+So I read it as a hard dependency.  Am I reading the old code incorrectly?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 14:03:21","I'm not sure at all, beyond testing--I'm not so familiar with `setup.py`.  Semantically, for me, this is simply cleaner and safer--those files are in a specific location, not relative to the current working directory.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 14:04:47","I will do that.  I didn't do that because I thought `_check_module_dependencies` would suggest it is private to that module, not shared across files.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 14:08:15","@GaelVaroquaux done.  @lesteve good point.  Using `collections.OrderedDict` will create a dependency on Python 2.7 (2.6 won't work).  Is that OK?  Alternately, I could go back to a list of tuples...
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 14:15:52","> So I read it as a hard dependency. Am I reading the old code incorrectly?
+
+gzip is a hard-dependency indeed. To be honest I reckon that having a python without gzip is not likely at all (one way I know of is to compile python yourself with the right flag). The point of the try/catch was also to have a nicer error message. 
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 14:37:43","Good point about OrderedDict and 2.6, then a list of module_name, metadata tuples would do just fine. I believe you are only iterating over the collection anyway.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 15:08:39","OK.  As mentioned above, with a bit more work I could include installation info (usable for error messages) in the metadata above.  I've done this now, will push the changes shortly.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 15:10:20","I moved this back to a tuple of tuples (well, it was a list of tuples before, but it should be immutable, so made it a list of lists.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 15:10:33","@GaelVaroquaux I did my best to avoid the `import nilearn` and figure out how to call functions, will push the changes I made shortly.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 15:56:44","I believe you can use `_VERSION_GLOBALS['_check_module_dependencies'](manual_install_only=True)` here
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 15:58:57","You need > 2 here. When using `python setup.py install`, sys.argv[0] is setup.py and sys.argv[1] is install.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 16:03:45","`os.path.dirname(os.path.abspath(__file__))` is the way to circumvent this issue I know of.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 16:12:51","Please don't remove `__version__`. It is very handy to figure out which version of the package you are running for example, via:
+
+``` python
+import nilearn
+print nilearn.__version__
+```
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(4, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 16:15:08","typo in the second occurence of installed: intalled -> in**s**talled
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 16:19:22","not a big fan of the `manual_install` naming but I have to admit I haven't found a great alternative yet ...
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 16:28:22","I would point to the installation instructions on the website: http://nilearn.github.io/introduction.html#installation
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 17:19:07",":+1: 
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 17:20:09","I believe '>1' is right, or '>=2'.  The second arg must be present, and I think those two checks check that. I also tested this, and believe this is right.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 17:21:16",":+1: 
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 17:21:42","Right... I was thinking all wrong here.  Thanks!
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(4, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-09 17:26:02","Same here, and also stuck...
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 18:23:54","Yep you are completely right, I spoke too fast on this one ...
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-09 18:26:34","Took me a while to remember why we used exec rather than execfile and the reason is execfile doesn't exist in Python 3.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-12 15:38:07","I am guessing this four lines can now be removed now that you do the chdir above?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-12 15:40:53","You can probably remove the comment
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-12 15:41:45","Just to be clear, I don't think the sys.path.insert is needed since we don't import nilearn.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-12 19:32:22","> > -    return len(sys.argv) > 1 and sys.argv[1] == 'install'
+> 
+> You need > 2 here. When using python setup.py install, sys.argv[0] is setup.py
+> and sys.argv[1] is install.
+
+It should probably be 'install' in sys.arg[1:], as it is legit to do
+'python setup.py build install'.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-12 21:57:33","I am nitpicking again, but why not using the mechanism provided by setuptools?
+
+``` python
+from setuptools import setup
+from setuptools.command.install import install
+
+
+class CustomInstallCommand(install):
+    """"""Customized setuptools install command - prints a friendly greeting.""""""
+    def run(self):
+        print ""Hello, developer, how are you? :)""
+        install.run(self)
+```
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-12 22:02:57","Not setuptools. Never setuptools. Setuptools is not the official way of
+installing Python packages and should never be imported by default a
+setup.py: it monky-patches distutils and thus changes the way Python
+packages are installed (and not in a good way).
+
+Maybe, these things can be done using pure distutils, in which case we
+should probably use them.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-12 22:14:43","The exact same mechanism exists in distutils:
+
+``` python
+import os, sys
+from distutils.core import setup
+from distutils.command.install import install as _install
+
+
+class install(_install):
+    def run(self):
+        print 'pre-install stuff'
+        _install.run(self)
+
+setup(
+    ...
+    cmdclass={'install': install},
+)
+```
+
+Note that setuptools is actually used in nilearn, this is why I suggested the previous one.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-12 22:21:46","> The exact same mechanism exists in distutils:
+
+Great!
+
+> Note that setuptools is actually used in nilearn, this is why I suggested the
+> previous one.
+
+Shit. I missed that. AFAICT it was added by @lesteve in decembre.
+
+This is really a no-no. Using setuptools makes installs be eggs, which
+circumvent the normal Python import mechanisms and has many detrimental
+consequences [*]. We should not be using setuptools. Besides, this adds a
+dependency (setuptools is not in the standard library).
+
+[*] One of them, amongst others:
+http://gael-varoquaux.info/programming/long-syspath-and-consequences-one-more-reason-not-to-use-easy_install.html
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-12 22:53:19","setuptools is recommended by the [Python Packaging User Guide](https://packaging.python.org/en/latest/current.html) over distutils.
+
+It was used before I changed setup.py for example back in [2012](https://github.com/nilearn/nilearn/blob/2d2c50159164159482f5047b36a3f6f4e31a3aa2/setup.py)
+
+For completeness it is also listed in the dependencies in README.rst.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-12 23:03:34","Note that it doesn't matter in the end:
+
+```
+Even for projects that do choose to use distutils, when pip
+installs such projects directly from source (rather than installing
+from a prebuilt wheel file), it will actually build your project using
+setuptools instead.
+```
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-13 06:01:29","> setuptools is recommended by the Python Packaging User Guide over distutils.
+
+Yes. This has been a long running argument. It brings certain good
+things, and has benefits.
+
+As long as it is not in the standard library, I am against using it. The
+reason it has never made in the standard library, although it has strong
+proponents, is that it has never met the quality standards corresponding
+to the standard library. Unlike pip, which is now in the standard library
+for Python 3.5. It is improving, though, and I am hopeful that something
+good will come out of it. However, in the mean time, I think that we can
+stick to distutils.
+
+> It was used before I changed setup.py for example back in 2012
+
+OK. I am not sure how I missed that :$.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-13 15:15:48","I think the choice of using distutils vs setuptools can be made separately from this PR which is almost there in terms of fulfilling its original promise.
+
+A few comments:
+- I seem to remember distutils doesn't have find_packages, which makes it a pain because you have to list all the subpackages by hand and it is quite easy to forget to add a subpackage in setup.py next time each time we add a subpackage.
+- ensurepip which bootstraps pip in python 2.7.9 and 3.4 installs both pip and setuptools so the latter must have been deemed of reasonable quality
+- Full disclosure: setuptools was used in nilearn in 2012 but only for a selection of commands that requires setuptools and 'install' is not one of them
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-13 17:37:05","> I think the choice of using distutils vs setuptools can be made
+> separately from this PR which is almost there in terms of fulfilling
+> its original promise.
+
+Yes! Agreed.
+
+>   • I seem to remember distutils doesn't have find_packages, which makes it a
+>     pain because you have to list all the subpackages by hand and it is quite
+>     easy to forget to add a subpackage in setup.py next time each time we add a
+>     subpackage.
+
+That's a benefit benefit indeed. Setuptools do bring benefits.
+
+>   • Full disclosure: setuptools was used in nilearn in 2012 but only for a
+>     selection of commands that requires setuptools and 'install' is not one of
+>     them
+
+OK. Yes, this makes sens. That's the way it should be. In now way the
+install mechanism of setuptools should be used. Setuptools should be used
+for operations that cannot be done with distutils.
+
+I'd really like to stress that while there are benefits, setuptools has
+historically been very controversial, because it made choices that had
+wide reaching impacts on the import mechanisms and the installation of
+packages. There is a reason for which after 10 years it is not in the
+standard library.
+
+Installation is something that we really want robust and reliable. We do
+not want to be making it brittle.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 12:47:02","I reckon you and I are the only ones who touched nilearn/version.py so I assume the comment should reflect that.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:00:54","I would just use `install_requires` for the variable name and remove the comment that doesn't bring too much additional information.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:12:26","I think you can remove len(sys.argv) > 1 now. The comment could be removed too although I don't feel too strongly about it.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-14 13:14:36","> The comment could be removed too although I don't feel too strongly
+> about it.
+
+I think that we should keep it, to avoid forgetting such case (as we
+cannot easily have a test).
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:14:38","I am a bit confused, don't you need the os.chdir to be at module-scope level because of the `open('README.rst)`? I seem to remember that was the case at one point, but maybe I just dreamt about the whole thing.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:23:58","I would do minver -> min_version everywhere
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-14 13:24:42","> I would do minver -> min_version everywhere
+
++1. We prefer underscore-separated words in variable names.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:26:14","This comment should be moved just before the definition of REQUIRED_MODULE_METADATA
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:40:34","OK here is the best candidate I could find: required_at_installation_time. Not so great so better suggestions more than welcome!
+
+I would use installation_time=False for this parameter and I would replace manual_install by required_at_installation_time in the required modules metadata.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:42:39","Maybe at_installation_time or during_installation is slightly better to make it more obvious that it is a boolean rather than a float. 
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-14 13:43:42","> OK here is the best candidate I could find: required_at_installation_time. Not
+> so great so better suggestions more than welcome!
+
+required_at_installation would also work, IMHO.
+
+> I would use installation_time=False for this parameter and I would replace
+> manual_install by required_at_installation_time in the required modules
+> metadata.
+
+Same overall feeling here.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-14 13:44:42","> Maybe at_installation_time or during_installation is slightly better to
+> make it more obvious that it is a boolean rather than a float.
+
+In LaTeX coding standards, booleans are often 'is_installation_time'
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:50:00","Rather than a continue I would negate the predicate and put it in front of the `_import_module_with_version_check(...)`
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:53:20","I would reinstate the original error message:
+'Python has been compiled without gzip support, reading nii.gz files will be impossible.'
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 13:56:58","This docstring is not accurate any more. Something like ""Executes nilearn/version.py in a globals dictionary and return it'
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'setup.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 14:02:03","OK then my current preference: `required_at_installation` for the required module metatdata key and `is_nilearn_installing` for the `_check_module_dependencies` parameter name. Could be easily swayed by better alternatives though!
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-14 14:03:33","> OK then my current preference: required_at_installation for the
+> required module metatdata key and is_nilearn_installing for the
+> _check_module_dependencies parameter name. Could be easily swayed by
+> better alternatives though!
+
+Good with me...
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 14:35:09","It's not a list but a tuple (to be honest a list would be fine too, mutable vs immutable is not so crucial here). 
+
+I would also make it more explicit that we care about order because we want to check required dependencies in a meaningful order (from most core/common packages to less core/common ones roughly). In this regards gzip should probably be first in the list.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-14 14:36:42","I reckon this part of the comment should go, _check_module_dependencies is documented well enough and how REQUIRED_MODULE_METADATA is used is quite straightforwardvariable naming make the rest reasonably.
+
+As a side-comment  that's what I am a bit biased about comments with too small added value, they tend to rot very quickly, only five commits and already a few inaccuracies have crept in:
+- manual should have been replaced by manual_install
+- check_module_dependencies should have been _check_module_dependencies (missing leading underscore)
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-15 07:46:08","This is called `snake_case` as opposed to `CamelCase`.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-15 07:48:15","It is not the only problem: most (if not all) of the datasets won't be fetchable.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 08:19:49","Just as a reminder, not having gzip support will result in an exception not a warning. You won't be able to fetch any datasets because you won't be able to import nilearn. Feel free to suggest a better error message!
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","GaelVaroquaux","2015-01-15 08:28:00","> This is called snake_case as opposed to CamelCase.
+
+Nice, I like it (said in a Borat way)!
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-15 15:08:20","If `nilearn` will work for `.nii` files, then seems non-fatal to lack `gzip`.  Perhaps just having a warning inside `_check_module_dependencies`, and (re-)wrapping any `gzip` imports / manipulations in a non-fatal `try..catch` block would be best?
+
+Something like :
+
+``` python
+warnings.warn(""This version of Python does not contain gzip support; ""
+              ""fetching datasets / reading nii.gz files ""
+              ""will raise exceptions."")
+```
+
+Or, in this case, perhaps we just wrap the one true `gzip` import (that I can find), and explain the error there:
+https://github.com/nilearn/nilearn/blob/master/nilearn/datasets.py#L267
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 15:22:57","1) It's such a edge case that will never ever happen in practice 2) I'd rather consider a python without gzip broken and raise an exception early that letting the user use a restricted set of nilearn features
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","AlexandreAbraham","2015-01-15 15:32:17",":+1:, even in Gentoo, there is no flag to remove it.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-15 15:34:35","OK, then how about we just remove the (global) gzip check?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 15:47:57","I would be fine to remove the try catch around import gzip TBH.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 20:51:46","I guess this code was there just for gzip so we can remove it and go back to:
+
+``` python
+module_version = module.__version__
+```
+
+I am not sure whether there is any guarantee but I have never met a widely used python package that didn't have a `__version__` attribute.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(52, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-15 20:53:20","Actually, I ran into one today: `uptime`.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(52, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 21:11:23","I guess I wouldn't qualify it as ""widely used"" though
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(52, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-15 21:14:42","I agree.  I think it just takes one--if we remove this code and add a dependency with no `__version__`, there's no way forward and no good error.  I suggest either keeping this in, or throwing a meaningful error (with text about alternative options of what to do).
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(52, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 21:20:10","I find the ""each time"" wording a bit misleading I would use ""when"" (The way the import mechanism works in python if you do import nilearn twice the code in `nilearn/__init__.py` is actually executed only once). TBH that's another case of small added value comment if you ask me: we are in `nilearn/__init__.py` so it's quite clear this code is executed when nilearn is imported and the function has a self-explanatory name.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 21:24:32","I am not sure what you mean by that, care to elaborate?
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","lesteve","2015-01-15 21:39:45","I don't feel too strongly about it so feel free to leave the code as it is. I would argue that adding a dependency would only be done by a developer not a user and the error you get is developer-friendly enough.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(52, '', u'nilearn/version.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-15 23:42:31","OK.  The behavior of `_check_module_dependencies` was unclear to me (whether it warns or throws), but I like the idea of having really clear goals with comments (vs. good naming of functions).  Removed.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","345","nilearn","nilearn","bcipolli","2015-01-15 23:46:32","I think this docstring sucks; the format is non-standard and it's pretty unclear.  I'll push a better one now.
+","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06","(None, '', u'nilearn/version.py')"
+"pull_request_commit","345","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-09 06:59:41","Separate required dependency checks into version.py, and call from __init__.py and setup.py.","69288940875646bba5de4b62ea0438e2d898e338",""
+"pull_request_commit","345","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-09 15:20:30","Avoid importing nilearn in setup.py, minor style changes and bugfixes.","e5808ab76380fac8b26dcc2dde0dad5f3dcf56e6",""
+"pull_request_commit","345","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-09 17:28:03","Code tweaks as requested by @lesteve in PR.","051a0d4b1b63f9f719155ff8674708b499b0afde",""
+"pull_request_commit","345","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-12 17:55:28","Style changes to deal with PEP8, general code cleanup","28c0e5a682c7e64907cd7df81af03221e7302e12",""
+"pull_request_commit","345","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-12 19:47:49","More flexible command-line handling","a36aff995f6b6fdb155d0dd00a4d30129da365e3",""
+"pull_request_commit","345","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-15 19:01:41","Remove gzip check, tweak comments and variable names.","abdf3be30fff8651d12f66550a92e6259f01fa8b",""
+"pull_request_commit","345","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-15 23:47:19","More comment tweaks.","6e6b559a38eb1cf8596471a8ea6bd8ff11c0df06",""

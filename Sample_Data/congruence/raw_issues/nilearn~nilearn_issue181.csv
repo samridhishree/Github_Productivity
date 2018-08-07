@@ -1,0 +1,71 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","181","nilearn","nilearn","rphlypo","2014-04-04 13:21:29","Integration of the `n_hv_confounds` parameter into the transform functions of the different `Nifti[*]Masker` classes. This makes the high variance confounds more accessible, now being an integral part of the maskers.
+
+For `MultiNiftiMasker` only a single `n_hv_confounds` parameter is given, since it seems to make no sense to have different parameters for different datasets. This might need revision if anyone thinks this should be a list.
+","start issue","Integrate hv confounds"
+"issue_closed","181","nilearn","nilearn","AlexandreAbraham","2014-10-31 08:23:03","","closed issue","Integrate hv confounds"
+"pull_request_title","181","nilearn","nilearn","rphlypo","2014-04-04 13:21:29","Integration of the `n_hv_confounds` parameter into the transform functions of the different `Nifti[*]Masker` classes. This makes the high variance confounds more accessible, now being an integral part of the maskers.
+
+For `MultiNiftiMasker` only a single `n_hv_confounds` parameter is given, since it seems to make no sense to have different parameters for different datasets. This might need revision if anyone thinks this should be a list.
+","480402e0b03ed3512f1c85f8de05ade157ea181d","Integrate hv confounds"
+"issue_comment","181","nilearn","nilearn","GaelVaroquaux","2014-04-04 13:44:04","I'd rather the high variance confound not be integrated in the
+NiftiMasker, as ideally they should be computed on the non preprocessed
+files and applied to the preprocessed files.
+
+Computing non-specific confounds on preprocessed image is dangerous, for
+instance, as pointed out by Basile on Tuesday, the global signal mean
+will contain strong traces of the resampling done in the realign step.
+
+In terms of software design, when we integrate the HV confounds, I would
+like to do this in terms of a transform, but that means that we need to
+change the design of nilearn to take dictionaries for X, and that's a
+much larger design work that we will undertake later.
+
+If you need it for your own codebase, for instance because you don't have
+access to the raw data, I suggest that you sublass the NiftiMasker that
+you are using to add the functionality in your codebase. It should not be
+hard to do the subclassing.
+","",""
+"issue_comment","181","nilearn","nilearn","GaelVaroquaux","2014-04-04 13:49:37","> I think we should not overly simplify the work of the user.
+
+We should, but only in high-level application-specific objects, that we
+haven't started working on.
+","",""
+"issue_comment","181","nilearn","nilearn","GaelVaroquaux","2014-04-04 15:18:52","> I frankly do not know, but my intuition is similar to @rphlypo : high
+> variance confound estimation makes even more sense after preprocessing
+> than before. This is a topic for a future empirical study.
+
+OK, based on my experience it works better when using the raw data.
+
+Anyhow, as long as we haven't a clear idea on these choices, I am not
+very enthousiastic at the idea of making high-level objects. I would like
+to get empirical validation of the pipeline before implementing it in
+nilearn before I am worried about the combinatorial explosion of options.
+
+> Whether the PR should be integrated into nilearn is another question, on which
+> I have no strong feeling. Mabye @GaelVaroquaux is worried about make the
+> interface too complex too early ?
+
+I think that we have more to do before. I also think that we need to
+change the way we pass information in and out of objects before we
+tackle this problem.
+","",""
+"issue_comment","181","nilearn","nilearn","rphlypo","2014-04-04 14:22:48","I am not sure whether 
+
+> ideally they should be computed on the non preprocessed
+> files and applied to the preprocessed files.
+
+hold.
+
+In contrast, on postprocessed images they might also take into account variance introduced during the alignment process. Physiologically induced confounds should be available both before and after preprocessing the data, so not sure whether that should make a big difference.
+","",""
+"pull_request_commit","181","nilearn","nilearn","GaelVaroquaux","2014-03-27 10:28:40","MISC: Add covariance embedding files
+
+This is completely temporary and just a copy of our own internal files","bb2b337c2ecbf58676138889bbd66a46071946c0",""
+"pull_request_commit","181","nilearn","nilearn","ronald.phlypo@inria.fr","2014-04-02 16:49:11","Merge branch 'master' of https://github.com/nilearn/nilearn","f19ca04cfd7c7a8def36293f5ae5b5277d574dfe",""
+"pull_request_commit","181","nilearn","nilearn","ronald.phlypo@inria.fr","2014-04-02 19:42:57","minor aesthetical changes in covariance.py","41a36ff3f90a8b0f5baee04ffd0b5fdd125bc778",""
+"pull_request_commit","181","nilearn","nilearn","ronald.phlypo@inria.fr","2014-04-04 13:16:33","integration of the n_hv_confounds parameter into the transform functions","7fd384d33b8fe7f7dd16a91c022173c7af78de3a",""
+"pull_request_commit","181","nilearn","nilearn","ronald.phlypo@inria.fr","2014-04-04 13:57:34","reshifted doc","16b6a962b0fde65ede653b76c50a710761cce62f",""
+"pull_request_commit","181","nilearn","nilearn","ronald.phlypo@inria.fr","2014-04-04 14:09:42","removed connectivity files not in line with commit","480402e0b03ed3512f1c85f8de05ade157ea181d",""
+"pull_request_commit_comment","181","nilearn","nilearn","AlexandreAbraham","2014-04-04 13:42:33","Why is the doc shifted?
+","7fd384d33b8fe7f7dd16a91c022173c7af78de3a","(74, 270, u'nilearn/input_data/nifti_region.py')"

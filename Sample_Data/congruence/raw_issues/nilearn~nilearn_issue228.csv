@@ -1,0 +1,30 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","228","nilearn","nilearn","GaelVaroquaux","2014-07-23 15:23:27","Reported by Michael Bannert (Max Planck Institute Tuebingen)
+
+I think I’ve found the cause of my error. There seems to be a bug in base_masker.py on lines 104-6. Instead of:
+
+<pre>
+            data[:, sessions == s] = \
+                cache(signal.clean, memory, ref_memory_level, memory_level=2)(
+                    data[:, sessions == s],
+</pre>
+
+
+Those lines should be:
+
+<pre>
+            data[sessions == s, :] = \
+                cache(signal.clean, memory, ref_memory_level, memory_level=2)(
+                    data[sessions == s, :],
+</pre>
+
+
+That’s because the 2D array is of shape samples-by-features. Therefore you need to index into the samples dimension with your sessions indices.
+","start issue","clean session bug in nifti masker"
+"issue_closed","228","nilearn","nilearn","AlexandreAbraham","2014-09-15 12:52:00","","closed issue","clean session bug in nifti masker"
+"issue_comment","228","nilearn","nilearn","AlexandreAbraham","2014-07-25 14:11:36","I thought that you were going to fix it. Do you want me to do it?
+","",""
+"issue_comment","228","nilearn","nilearn","GaelVaroquaux","2014-09-15 12:52:48","> Closed #228 via 2959974.
+
+Thanks!
+","",""

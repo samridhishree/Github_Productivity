@@ -1,0 +1,162 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","380","nilearn","nilearn","mih","2015-02-02 08:23:49","I looked into composing a PR, but the issue seems rather widespread, hence I am uncertain if this is intentional.
+
+In some analysis code I use `smooth_img()`. However, any returned image looses all NIfTI header information beyond essentials, and the spatial image affine. However, the remaining dimensions, most importantly time, can be just as critical and loosing the associated pixdim values can lead to unintended side-effects. In other words: an fMRI time series with TR=2s goes in and comes back out with TR=1(no unit). Fixing this would require to re-assign all header settings that aren't affected by an operation to the output image. Can become tricky...
+
+For now I resorted to wrapping such calls like this:
+
+```
+def smooth(img):
+    hdr = img.get_header()
+    nimg = smooth_img(img, fwhm=2.0)
+    return nb.Nifti1Image(nimg.get_data(),
+                          img.get_affine(),
+                          header=img.get_header())
+```
+
+which is essentially redoing the ""create new image"" part inside `smooth_img()`, maybe this is how it should be: `smooth_img()` yielding the array only, and leaving it to the user to re-assemble a correct image.
+","start issue","Some functions strip essential information from NIfTI"
+"issue_comment","380","nilearn","nilearn","mih","2015-02-02 09:15:29","I agree, that bluntly re-assigning the header is not the appropriate strategy. In my particular case it is fine, because I have a pretty good concept of the header bits that are consumed in downstream code. 
+
+Re Gael's proposal: I think this would work. In order to avoid unnecessary code bloat this function could support a set of modes that help it do the right thing without having to express the intended modification in extreme detail. I am thinking of something like:
+
+```
+new_img_like(xfmd_data, orig_img, affine=None, xfm_mode='spatial', ...)
+```
+
+... indicating that the new data was derived from the original image doing a spatial transformation only. `affine=` most likely needs to be there to reflect the design of NiBabel's image API. Additional `strip=` or `assign=` arguments could be implemented to override the defaults implied by `xfm_mode`.
+
+Just an idea .... I'd be happy to help nailing it down.
+","",""
+"issue_comment","380","nilearn","nilearn","mih","2015-02-02 10:41:32","Or the exact opposite. Having a central place for this kind of post-processing should make it more efficient to support other image objects.
+","",""
+"issue_comment","380","nilearn","nilearn","mih","2015-07-02 13:06:57","Seems like a good candidate.
+ On Jul 2, 2015 2:59 PM, ""Gael Varoquaux"" notifications@github.com wrote:
+
+> OK, @hanke: is that something you'd like to help with at the sprint?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/380#issuecomment-118024080.
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-02-02 09:00:01","Hi Michael,
+
+Thanks for raising this issue. I do believe that it is an important one.
+
+So far, I have been punting on this (I was aware of the problem, but
+didn't mention it). The reason is that on a case by case basis some
+information should be stripped and some should not. The specific code
+that you mention is dangerous: things like cal_max, cal_min , glmax,
+glmin, should not be copied. I've fallen in bad traps because of this in
+the past.
+
+What we should probably do is a ""new_img_like"" function, that takes data
+and a niimg as an input, and returns a new img, transfering the important
+information.
+
+Do you agree with both the concern and the solution? If so, would you be
+willing to help us hash the correct code for the proposed function? I
+think that you know the nifti header better than we do.
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-02-02 09:33:53","I like the idea of controlling the 'mode' of such function. I don't like very much the 'xfm' shorthand, which I find can easily be hard to parse for a non native English speaker.
+
+I have assigned this issue to the 0.1.1 release. I don't want to delay the release of 0.1 for this, as we have been letting the date slip, and I am worried of feature creep. But I agree that we should definitely address it.
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-02-02 10:42:58","> I say that because I tried to use a custom niimg type in nilearn
+> (exposing get_data and get_affine methods as stated in the doc) and it
+> is already very difficult as I get Nifti1Image back from the functions
+> most of the time. I always have to convert it back to my own type. And
+> if we add this kinf of function, I'm afraid that using custom type will
+> be very tedious.
+
+We can work a bit on this, in particular the new function can catter to
+this (as Michael points out in another comment). However, keep in mind
+that NiftiImages are the lingua franca of neuroimaging. Your usecases are
+that of a method developer, and less that of someone trying to process
+data and make sure that the relevant information is retained.
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-02-02 13:36:32",">   • In the meantime, remove the assertion in the doc that we support
+>   any object and state that we rely on Nifti1Image for the moment.
+
+Sounds good to me.
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-07-02 10:09:34","I think that this issue is fixed. Isn't it?
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-07-02 12:59:49","OK, @hanke: is that something you'd like to help with at the sprint?
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-07-02 13:25:15","> Seems like a good candidate.
+
+Do you want to add yourself to the wiki page:
+https://github.com/nilearn/nilearn/wiki/July-2015-sprint with this?
+","",""
+"issue_comment","380","nilearn","nilearn","GaelVaroquaux","2015-12-02 22:09:51","@hanke : we have probably improved things significantly. It would really help on having feedback on how are things in the current codebase from a user perspective, to find out what are the things that surprise and tune nilearn better.
+","",""
+"issue_comment","380","nilearn","nilearn","bcipolli","2015-02-24 06:13:26","I didn't see any reference docs about the NiftiHeader.  For any like me who are unfamiliar, this can be useful: http://nipy.org/nibabel/nifti_images.html#the-nifti-header
+","",""
+"issue_comment","380","nilearn","nilearn","AlexandreAbraham","2015-07-02 10:45:30","Suggested implementation of `xfm_mode` has not been done. I think that we are moving toward the requested behavior little by little but the subject of this issue is vague and therefore it is not easy to say if it's solved or not.
+
+But, basic information are now passed from one nifti to another so I think that the 80% (taht takes 20% of the time) are fixed. The remaining 20% (that takes 80% of the time) addressing very fine behaviors are still in a ""todo"" state.
+","",""
+"issue_comment","380","nilearn","nilearn","eickenberg","2015-02-02 08:54:15","fwiw the private function _smooth_array seems to have the functionality you
+desire to use.
+
+As for propagating headers, as you indicate, it can become tricky depending
+on whether a functionality changes it or not. That is, assuming that the
+header was correct in the first place. Right now, most Nifti1Images built
+by nilearn are only informed of data and affine.
+
+On Monday, February 2, 2015, Michael Hanke <notifications@github.com
+<javascript:_e(%7B%7D,'cvml','notifications@github.com');>> wrote:
+
+> I looked into composing a PR, but the issue seems rather widespread, hence
+> I am uncertain if this is intentional.
+> 
+> In some analysis code I use smooth_img(). However, any returned image
+> looses all NIfTI header information beyond essentials, and the spatial
+> image affine. However, the remaining dimensions, most importantly time, can
+> be just as critical and loosing the associated pixdim values can lead to
+> unintended side-effects. In other words: an fMRI time series with TR=2s
+> goes in and comes back out with TR=1(no unit). Fixing this would require to
+> re-assign all header settings that aren't affected by an operation to the
+> output image. Can become tricky...
+> 
+> For now I resorted to wrapping such calls like this:
+> 
+> def smooth(img):
+>     hdr = img.get_header()
+>     nimg = smooth_img(img, fwhm=2.0)
+>     return nb.Nifti1Image(nimg.get_data(),
+>                           img.get_affine(),
+>                           header=img.get_header())
+> 
+> which is essentially redoing the ""create new image"" part inside
+> smooth_img(), maybe this is how it should be: smooth_img() yielding the
+> array only, and leaving it to the user to re-assemble a correct image.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/380.
+","",""
+"issue_comment","380","nilearn","nilearn","AlexandreAbraham","2015-02-02 10:39:21","Thanks for reporting the issue.
+
+If we go further on tweaking this kind of detail, I think we will have to make a decision on the image type: Either we seize this opportunity of going through all the code to abstract the code from Nifti1Image, or we set Nifti1Image as the reference type for nifti. I say that because I tried to use a custom niimg type in nilearn (exposing `get_data` and `get_affine` methods as stated in the doc) and it is already very difficult as I get Nifti1Image back from the functions most of the time. I always have to convert it back to my own type. And if we add this kinf of function, I'm afraid that using custom type will be very tedious.
+","",""
+"issue_comment","380","nilearn","nilearn","AlexandreAbraham","2015-02-02 12:51:04","My problem with the situation is:
+- We want to support Nifti1Image specific information
+- We claim that we support `any object exposing get_data() and get_affine() methods`
+
+And those are antinomic. So, to clarify my point of view, I think that we should:
+- Implement the method proposed by Michael (this is definitely the way to go and I like the `mode` idea). Given that we will probably review the whole code related to Nifti1Image, I think that we should add a level of abstraction, i.e. never instantiate or manipulate Nifti1Image in the code, but create a dedicated module with methods such as `new_img`, `new_img_like`, `copy_img`, etc.
+- In the meantime, remove the assertion in the doc that we support any object and state that we rely on Nifti1Image for the moment.
+
+I'm sorry to bring implementation and documentation matters in the issue, but this is important to me.
+","",""
+"issue_comment","380","nilearn","nilearn","AlexandreAbraham","2015-02-03 22:43:57","> I don't want to delay the release of 0.1 fir this
+
+I agree but I think that we should spent a coffee break to talk about it during the sprint.
+@hanke can you give us some pointers to a list of information included in a header?
+","",""
+"issue_comment","380","nilearn","nilearn","lesteve","2015-02-02 08:59:52","I have seen header be propagated in an inconsistent manner throughout the code and I assumed it wasn't that important but apparently I was wrong.
+
+Just to improve my understanding, what's the risk in adding header=input_img.get_header() where possible?
+","",""

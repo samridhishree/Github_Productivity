@@ -1,0 +1,892 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1415,nilearn,nilearn,banilo,2017-03-17 14:21:20,"I am using nilearn 0.2.5 and tried to apply a conventional grey matter mask on ~500 VBM images from the HCP dataset. Unfortunately, the NiftiMaskers still do not seem to scale to this size of datasets. Running the following line (vbm_files containing paths to the structural images from the HCP500 release) did not finish on my MacBook Pro with 16GB working memory after 3 hours (no other Python or other big processes running at the same time):
+
+``` python
+%timeit -n1 -r1 FS = masker.transform(vbm_files)
+```
+
+Perhaps an internal batching approach could be thinkable. When I perform the transform() in chunks of say 50 images the transforming operation is rather fast. The big inconvience however is that the confound removal option of the nifti maskers cannot be easily deployed in this way.
+
+Any ideas?",start issue,transform() of NiftMasker family does not seem ready for big-data
+2,issue_closed,1415,nilearn,nilearn,GaelVaroquaux,2017-11-06 20:43:24,,closed issue,transform() of NiftMasker family does not seem ready for big-data
+3,issue_comment,1415,nilearn,nilearn,GaelVaroquaux,2017-03-21 12:52:22,"> I tried again with the MultiNiftiMasker. It also took >1 hour to transform 500 VBM images.
+
+Are you sure that you are not resampling? For instance by specifying a
+mask that is on a different grid than the the data. If that's the case,
+it's not surprising that it is taking time. Resampling is a costly
+operation. If that's not the case, than please profile the run, so that
+we understand what's going on, for instance using ""%run -p"".
+
+
+",,
+4,issue_comment,1415,nilearn,nilearn,GaelVaroquaux,2017-03-29 13:23:09,"> As such, the explanation based on a costly resampling procedure is not likely.
+
+Then profile.
+",,
+5,issue_comment,1415,nilearn,nilearn,GaelVaroquaux,2017-11-06 20:43:24,"I am closing this issue: it's not helpful. It's a general comment, and not something that someone (eg an external person to the project) can tackle.",,
+6,issue_comment,1415,nilearn,nilearn,AlexandreAbraham,2017-03-17 15:34:39,"To complete Kamalaker's answer: if you use NiftiMasker, data will be concatenated and masked, precisely to be able to run confound removal. The concatenation of your 500 VBM images takes time and memory. With the MultiNiftiMasker, your input will be treated as a list so the images will be loaded one by one.
+
+What worries me is that somebody that has been around nilearn's dev team does not know that. That means that our external users may do the same mistake. Is there a reasonable way to warn users when the input seems fishy in the NiftiMasker?",,
+7,issue_comment,1415,nilearn,nilearn,banilo,2017-03-21 12:02:44,"I tried again with the ```MultiNiftiMasker```. It also took >1 hour to transform 500 VBM images.
+
+Plus, gathering the whole data internally to be able to run confound removal is by itself not in conflict with internally using a loop over batches. This may prevent memory peaks and the batches can still be concatenated for ```signal.clean()```.",,
+8,issue_comment,1415,nilearn,nilearn,banilo,2017-03-29 13:21:48,"> Are you sure that you are not resampling?
+
+As I said above (""When I perform the transform() in chunks of say 50 images the transforming operation is rather fast.""), it is considerably faster if I do the same transform() on the same images in batches. As such, the explanation based on a costly resampling procedure is not likely.",,
+9,issue_comment,1415,nilearn,nilearn,mrahim,2017-03-17 14:30:53,Already said in #1281 ,,
+10,issue_comment,1415,nilearn,nilearn,MartinPerez,2017-03-21 12:49:41,"I will join this discussion because its relevant to Nistats. I was wondering why the masker was consuming so much memory when processing all runs. Actually for a moment @bthirion was using MultiNiftiMasker in some parts instead of NiftiMasker. This different way to handle memory did not come up in our discussion when deciding the default masker to use everywhere. In Nistats we do not really use any confound removal, so its better to avoid the concatenation, I also think this is not clear from the documentation. ",,
+11,issue_comment,1415,nilearn,nilearn,KamalakerDadi,2017-03-17 14:35:38,Have you tried MultiNiftiMasker ? It can be scalable in your big size case.,,
+12,issue_comment,1415,nilearn,nilearn,bthirion,2017-03-17 21:41:40,If I'm not mistaken only one example uses it. This is not enough.,,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1531,nilearn,nilearn,KamalakerDadi,2017-10-21 16:44:44,"Trying to fix some deprecated warnings when running examples or CircleCI.
+
+Deprecated functions or modules which will be removed in sklearn 0.20.",start issue,[MRG] MAINT: Address some deprecations with sklearn
+2,issue_closed,1531,nilearn,nilearn,GaelVaroquaux,2017-11-06 20:31:04,,closed issue,[MRG] MAINT: Address some deprecations with sklearn
+3,pull_request_title,1531,nilearn,nilearn,KamalakerDadi,2017-10-21 16:44:44,"Trying to fix some deprecated warnings when running examples or CircleCI.
+
+Deprecated functions or modules which will be removed in sklearn 0.20.",5467fad2308b694d8fb2c9a07810f48e2639a794,[MRG] MAINT: Address some deprecations with sklearn
+4,pull_request_merged,1531,nilearn,nilearn,GaelVaroquaux,2017-11-06 20:31:04,[MRG] MAINT: Address some deprecations with sklearn,6b65378793619fe0d428d2bf0817af7823e92ee1,Pull request merge from KamalakerDadi/nilearn:fix_sklearn_deprecated_center_data to nilearn/nilearn:master
+5,issue_comment,1531,nilearn,nilearn,bthirion,2017-10-23 12:18:17,LGTM.,,
+6,issue_comment,1531,nilearn,nilearn,codecov[bot],2017-10-21 18:13:34,"# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=h1) Report
+> Merging [#1531](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/cdc54971e86ee2c813ed71e4f5beb307717c7d64?src=pr&el=desc) will **increase** coverage by `<.01%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1531/graphs/tree.svg?width=650&height=150&src=pr&token=KpYArSdyXv)](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1531      +/-   ##
+==========================================
++ Coverage   94.48%   94.49%   +<.01%     
+==========================================
+  Files         122      122              
+  Lines       14912    14920       +8     
+==========================================
++ Hits        14090    14098       +8     
+  Misses        822      822
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/\_utils/fixes/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=tree#diff-bmlsZWFybi9fdXRpbHMvZml4ZXMvX19pbml0X18ucHk=) | `90% <100%> (+1.76%)` | :arrow_up: |
+| [nilearn/decoding/space\_net.py](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=tree#diff-bmlsZWFybi9kZWNvZGluZy9zcGFjZV9uZXQucHk=) | `94.69% <100%> (ø)` | :arrow_up: |
+| [nilearn/decoding/tests/test\_searchlight.py](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=tree#diff-bmlsZWFybi9kZWNvZGluZy90ZXN0cy90ZXN0X3NlYXJjaGxpZ2h0LnB5) | `100% <100%> (ø)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=footer). Last update [cdc5497...5467fad](https://codecov.io/gh/nilearn/nilearn/pull/1531?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+7,pull_request_commit,1531,nilearn,nilearn,KamalakerDadi,2017-10-21 16:33:39,MAINT: Address some deprecations with sklearn,5467fad2308b694d8fb2c9a07810f48e2639a794,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1529,nilearn,nilearn,grjd,2017-10-18 16:00:14,"Hi ,
+is it possible to use plotting.plot_connectome with the coordinates in voxels rather than in mm?
+I got the coordinates of the Atlas from fsl/data/atlases/HarvardOxford-Cortical.xml which are not in mm but in voxels.
+When I plot the Harvard-Oxford atlas, since plot_connectome expects the coordinates in mm and I get this
+![hovoxels](https://user-images.githubusercontent.com/7142903/31728928-e9a6860a-b42d-11e7-91e7-d3b92b131b2a.png)
+
+
+
+
+",start issue,plotting.plot_connectome with voxels coordinates not in mm
+2,issue_closed,1529,nilearn,nilearn,GaelVaroquaux,2017-10-31 21:52:53,,closed issue,plotting.plot_connectome with voxels coordinates not in mm
+3,issue_comment,1529,nilearn,nilearn,grjd,2017-10-19 09:47:17,"thanks, the img is already resample in the MNI space but I have the Harvard-Oxford cortical Atlas coordinates in the MNI space but in voxels rather than in mm. So I dont need to change at all the image but transform an array containing the regions from voxel space to cartesian space (in mm). ",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1540,nilearn,nilearn,KamalakerDadi,2017-11-06 19:48:49,"PRs #1525 & #1535 which are now merged in master have temporary work around to FIX failures with recent matplotlib 2.1.0. 
+Those changes should be reverted to normal after new version in matplotlib is released.
+
+On top of that, one of the environment in AppVeyor Python 3.4.3 has conflict issues with new matplotlib. We should think of moving to Python 3.5.x
+For instance, see failure in https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.2109/job/a4pfv1rqeish94x6",start issue,Revert changes in all CIs after matplotlib 2.1.1 is released
+2,issue_closed,1540,nilearn,nilearn,KamalakerDadi,2017-11-14 21:33:00,,closed issue,Revert changes in all CIs after matplotlib 2.1.1 is released
+3,issue_comment,1540,nilearn,nilearn,KamalakerDadi,2017-11-14 21:33:00,Closing with PR #1547 ,,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1250,nilearn,nilearn,GaelVaroquaux,2016-08-19 14:52:36,"I was wondering: should we import and expose and document ""coord_transform"" in nilearn.image.**init**? It would seem useful.
+",start issue,Import coord_transform in nilearn.image
+2,issue_closed,1250,nilearn,nilearn,KamalakerDadi,2017-11-06 19:50:29,,closed issue,Import coord_transform in nilearn.image
+3,issue_comment,1250,nilearn,nilearn,salma1601,2016-08-20 11:58:16,"It would be useful e.g. to form spheres binary masks, because for the moment I couldn't find a straightforward way to do that with `NiftiSpheresMasker`.
+I think it is useful to be able to visualize the spheres, to check things were correctly done (e.g. resampling, see #1246)
+",,
+4,issue_comment,1250,nilearn,nilearn,KamalakerDadi,2017-11-06 19:50:28,Closing with #1538 ,,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1535,nilearn,nilearn,KamalakerDadi,2017-11-02 10:34:42,"- Temporary work around
+- This work around will be removed after a new matplotlib release
+- Currently master is failing on this. [See](https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.2100/job/2cckvjw356wim35p)
+
+We have two environments failing on master with AppVeyor CI.
+
+One failure is because of the issues with recent matplotlib 2.1.0.
+For instance, see the FIX made with travis and CircleCI a while ago.
+See https://github.com/nilearn/nilearn/pull/1525
+Similar step can taken here to force matplotlib install in this environment to 2.0.2.
+
+Another failure is because of the conflict issues with matplotlib forced version 2.0.2 dependency in Python 3.4.3 environment. We have conflict issues for matplotlib > 2.0.0 with this Python version.
+
+Here, I am upgrading environment to Python 3.5 and also forcing installation to 2.0.2 to make AppVeyor work. These temporary fix can be removed when the matplotlib 2.1.1 is released.
+
+Hope it will be clear for review.",start issue,"FIX: Appveyor, force install matplotlib=2.0.2"
+2,issue_closed,1535,nilearn,nilearn,GaelVaroquaux,2017-11-06 15:54:20,,closed issue,"FIX: Appveyor, force install matplotlib=2.0.2"
+3,pull_request_title,1535,nilearn,nilearn,KamalakerDadi,2017-11-02 10:34:42,"- Temporary work around
+- This work around will be removed after a new matplotlib release
+- Currently master is failing on this. [See](https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.2100/job/2cckvjw356wim35p)
+
+We have two environments failing on master with AppVeyor CI.
+
+One failure is because of the issues with recent matplotlib 2.1.0.
+For instance, see the FIX made with travis and CircleCI a while ago.
+See https://github.com/nilearn/nilearn/pull/1525
+Similar step can taken here to force matplotlib install in this environment to 2.0.2.
+
+Another failure is because of the conflict issues with matplotlib forced version 2.0.2 dependency in Python 3.4.3 environment. We have conflict issues for matplotlib > 2.0.0 with this Python version.
+
+Here, I am upgrading environment to Python 3.5 and also forcing installation to 2.0.2 to make AppVeyor work. These temporary fix can be removed when the matplotlib 2.1.1 is released.
+
+Hope it will be clear for review.",26fa185a2b1cd988608250d6b3f7a7f23010acbf,"FIX: Appveyor, force install matplotlib=2.0.2"
+4,pull_request_merged,1535,nilearn,nilearn,GaelVaroquaux,2017-11-06 15:54:20,"FIX: Appveyor, force install matplotlib=2.0.2",8d9be5d1b8246afbebb3f995e0c75062840f46cf,Pull request merge from KamalakerDadi/nilearn:fix_appveyor to nilearn/nilearn:master
+5,issue_comment,1535,nilearn,nilearn,KamalakerDadi,2017-11-06 19:49:43,">Can you add an issue once this is merged to remove this workaround when there is a new MPL out.
+
+Done. Issue #1540 ",,
+6,issue_comment,1535,nilearn,nilearn,codecov[bot],2017-11-02 20:26:29,"# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1535?src=pr&el=h1) Report
+> Merging [#1535](https://codecov.io/gh/nilearn/nilearn/pull/1535?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/93312a1f6e6d06c6a06a26a616282e31c5fc168f?src=pr&el=desc) will **not change** coverage.
+> The diff coverage is `n/a`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1535/graphs/tree.svg?width=650&height=150&token=KpYArSdyXv&src=pr)](https://codecov.io/gh/nilearn/nilearn/pull/1535?src=pr&el=tree)
+
+```diff
+@@           Coverage Diff           @@
+##           master    #1535   +/-   ##
+=======================================
+  Coverage   94.48%   94.48%           
+=======================================
+  Files         122      122           
+  Lines       14912    14912           
+=======================================
+  Hits        14090    14090           
+  Misses        822      822
+```
+
+
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1535?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1535?src=pr&el=footer). Last update [93312a1...26fa185](https://codecov.io/gh/nilearn/nilearn/pull/1535?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+7,pull_request_commit,1535,nilearn,nilearn,KamalakerDadi,2017-11-02 11:23:54,"FIX: Appveyor, force install matplotlib=2.0.2
+
+- Temporary work around
+- This work around will be removed after a new matplotlib release
+- Currently master is failing on this",a1b7814cdd0d651a634962bfa548851fc1983145,
+8,pull_request_commit,1535,nilearn,nilearn,KamalakerDadi,2017-11-02 20:26:05,FIX: AppVeyor build Python 3.4.3 environment,d7f6abe56a9e57eedcd8d9327b99ceff1e4db571,
+9,pull_request_commit,1535,nilearn,nilearn,KamalakerDadi,2017-11-02 20:51:54,Update Appveyor to miniconda35 for Python 3.5,26fa185a2b1cd988608250d6b3f7a7f23010acbf,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 19:39:33,"I addressed remaining comments and took over the PR #1530 
+Can I have final reviews ?",start issue,[MRG] Expose coord transform
+2,issue_closed,1538,nilearn,nilearn,GaelVaroquaux,2017-11-06 15:55:26,,closed issue,[MRG] Expose coord transform
+3,pull_request_title,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 19:39:33,"I addressed remaining comments and took over the PR #1530 
+Can I have final reviews ?",30fe67d0da5fa6b1731efe6a2950c76b30c91675,[MRG] Expose coord transform
+4,pull_request_merged,1538,nilearn,nilearn,GaelVaroquaux,2017-11-06 15:55:26,[MRG] Expose coord transform,e8b3700b160882eab9ee6d2a17ead29c2d7dadd3,Pull request merge from KamalakerDadi/nilearn:expose_coord_transform to nilearn/nilearn:master
+5,issue_comment,1538,nilearn,nilearn,bthirion,2017-11-03 20:20:17,"LGTM, besides the comment on testing all cases.",,
+6,issue_comment,1538,nilearn,nilearn,bthirion,2017-11-03 20:33:52,LGTM then.,,
+7,issue_comment,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 20:27:54,"Travis failure is because of compatibility issues with nibabel .get_affine and .affine
+
+I removed get_affine because we plan to bump nibabel to 2.0.2 which I think should be fine after PR #1534 is merged.",,
+8,issue_comment,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 20:29:49,AppVeyor failure is unrelated and should be fixed with PR #1535 ,,
+9,issue_comment,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 20:38:36,Should FIX issue #1250 ,,
+10,issue_comment,1538,nilearn,nilearn,KamalakerDadi,2017-11-04 21:47:12,">Can you rebase on master, so that hopefully the tests pass.
+
+Rebased. Travis is passed and waiting for CircleCI to be passed.",,
+11,issue_comment,1538,nilearn,nilearn,codecov[bot],2017-11-04 09:16:32,"# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=h1) Report
+> Merging [#1538](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/8dd8ec3bb8d62a514edbc38d31f0cebae1e8aeda?src=pr&el=desc) will **decrease** coverage by `0.42%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1538/graphs/tree.svg?width=650&height=150&src=pr&token=KpYArSdyXv)](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1538      +/-   ##
+==========================================
+- Coverage   94.45%   94.02%   -0.43%     
+==========================================
+  Files         122      122              
+  Lines       14893    14923      +30     
+==========================================
+- Hits        14067    14032      -35     
+- Misses        826      891      +65
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/image/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS9fX2luaXRfXy5weQ==) | `100% <100%> (ø)` | :arrow_up: |
+| [nilearn/image/tests/test\_resampling.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS90ZXN0cy90ZXN0X3Jlc2FtcGxpbmcucHk=) | `98.79% <100%> (+0.01%)` | :arrow_up: |
+| [nilearn/image/resampling.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS9yZXNhbXBsaW5nLnB5) | `97.56% <100%> (-1.94%)` | :arrow_down: |
+| [nilearn/\_utils/compat.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9fdXRpbHMvY29tcGF0LnB5) | `41.07% <0%> (-56.81%)` | :arrow_down: |
+| [nilearn/\_utils/fixes/matplotlib\_backports.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9fdXRpbHMvZml4ZXMvbWF0cGxvdGxpYl9iYWNrcG9ydHMucHk=) | `66.66% <0%> (-33.34%)` | :arrow_down: |
+| [nilearn/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9fX2luaXRfXy5weQ==) | `87.5% <0%> (-12.5%)` | :arrow_down: |
+| [nilearn/\_utils/fixes/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9fdXRpbHMvZml4ZXMvX19pbml0X18ucHk=) | `76.47% <0%> (-11.77%)` | :arrow_down: |
+| [nilearn/decoding/tests/test\_searchlight.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9kZWNvZGluZy90ZXN0cy90ZXN0X3NlYXJjaGxpZ2h0LnB5) | `96.36% <0%> (-3.64%)` | :arrow_down: |
+| [nilearn/plotting/tests/test\_surf\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy90ZXN0cy90ZXN0X3N1cmZfcGxvdHRpbmcucHk=) | `95.58% <0%> (-3.44%)` | :arrow_down: |
+| ... and [23 more](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=tree-more) | |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=footer). Last update [8dd8ec3...30fe67d](https://codecov.io/gh/nilearn/nilearn/pull/1538?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+12,pull_request_commit_comment,1538,nilearn,nilearn,bthirion,2017-11-03 20:19:46,Is there a unit test covering that case ?,30fe67d0da5fa6b1731efe6a2950c76b30c91675,"(79, '', u'nilearn/image/resampling.py')"
+13,pull_request_commit_comment,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 20:26:30,There is already in test_coord_transform module testing single integer as inputs and return output the single integer.,30fe67d0da5fa6b1731efe6a2950c76b30c91675,"(79, '', u'nilearn/image/resampling.py')"
+14,pull_request_commit_comment,1538,nilearn,nilearn,bthirion,2017-11-04 10:58:59,A bit weird to talk about Talairach here. maybe 'output space (e.g. MNI) coordinate ordering',30fe67d0da5fa6b1731efe6a2950c76b30c91675,"(None, '', u'nilearn/image/resampling.py')"
+15,pull_request_commit,1538,nilearn,nilearn,GaelVaroquaux,2017-10-18 17:32:21,"ENH: Expose coord_transform to end-users
+
+And improve its docstring to make it easier to use for end-users",0984f46bf7f8e4508f5e177cb71ffc68ba178cc5,
+16,pull_request_commit,1538,nilearn,nilearn,GaelVaroquaux,2017-10-18 17:45:55,Compatibility with old nibabel,40b52716cd0171f857e59c3381c33cf02167185c,
+17,pull_request_commit,1538,nilearn,nilearn,GaelVaroquaux,2017-10-18 19:37:14,"coord_transform: input numbers, return numbers
+
+Address @eickenberg comments",555e13637593c4be94a5339bf339544889c623bd,
+18,pull_request_commit,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 11:58:40,ENH: Expose coord_transform to end-users,779971ff398def21accfce3e0fc36844d6864d00,
+19,pull_request_commit,1538,nilearn,nilearn,KamalakerDadi,2017-11-03 19:37:37,Fixed typo numy to numpy,09c393231457a8308e91433e4d11e49a23034e9c,
+20,pull_request_commit,1538,nilearn,nilearn,KamalakerDadi,2017-11-04 09:15:52,Fixing indentation failure with sphinx-gallery,740f1609446462cddf10782e7b75458feef6910a,
+21,pull_request_commit,1538,nilearn,nilearn,KamalakerDadi,2017-11-04 16:31:24,Changed warning comment to MNI rather than Talairach,30fe67d0da5fa6b1731efe6a2950c76b30c91675,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1537,nilearn,nilearn,banilo,2017-11-03 18:54:52,"Working with the current version 0.3.1, I noticed that setting smoothing_fwhm=0 in the NiftiMasker() initialization leads to all zero outputs when transforming nifti images. The default choice for ""non-active"" is None, but perhaps an informative warning may be thrown when this non-sensible choice is made for the smoothing argument.
+",start issue,NiftiMasker: smoothing_fwhm=0 deletes data
+2,issue_closed,1537,nilearn,nilearn,KamalakerDadi,2017-11-14 10:35:30,,closed issue,NiftiMasker: smoothing_fwhm=0 deletes data
+3,issue_comment,1537,nilearn,nilearn,bthirion,2017-11-03 20:25:34,Yes. Can you issue a PR ?,,
+4,issue_comment,1537,nilearn,nilearn,bthirion,2017-11-10 09:12:01,"* You have any equivalent sigma value when fwhm=0 ?
+I would convert fwhm=0 to fwhm=None and spit a warning.",,
+5,issue_comment,1537,nilearn,nilearn,bthirion,2017-11-10 10:07:34,"On 10/11/2017 10:43, KamalakerDadi wrote:
+>
+>     You have any equivalent sigma value when fwhm=0 ?
+>     I would convert fwhm=0 to fwhm=None and spit a warning.
+>     Switching 0 to None by default appears to be a viable approach to me.
+>
+> Thanks, just want to check. If this should be only to recent SciPy or 
+> irrespective of versions ?
+>
+> —
+> You are receiving this because you commented.
+> Reply to this email directly, view it on GitHub 
+> <https://github.com/nilearn/nilearn/issues/1537#issuecomment-343425943>, 
+> or mute the thread 
+> <https://github.com/notifications/unsubscribe-auth/AAOT1suwg8SpxRubkbh-ybfMeeVhjrQVks5s1BqpgaJpZM4QRiLr>.
+>
+Ideally, you want to check and only do that  with scipy 1.0.0
+
+Thx.
+
+",,
+6,issue_comment,1537,nilearn,nilearn,banilo,2017-11-10 09:13:46,"Switching 0 to None by default appears to be a viable approach to me.
+
+2017-11-10 10:03 GMT+01:00 KamalakerDadi <notifications@github.com>:
+
+> I don't want to open a new issue because it is already there regarding
+> smoothing_fwhm=0.
+>
+> Particularly, I see this issue in canica and dict_learning when tests are
+> failing because both estimator tests used smoothing_fwhm=0.. See for
+> failing of tests.
+> https://travis-ci.org/nilearn/nilearn/jobs/299711990#L3471
+>
+> The problem is with SciPy 1.0.0, if I think I understood well:
+> This code produces an array containing nans with smoothing_fwhm=0.
+>
+> import numpy as npfrom nilearn.image.image import _smooth_array
+>
+> data = np.zeros((40, 41, 42))
+> data[20, 20, 20] = 1
+> affine = np.eye(4)
+> filtered = _smooth_array(data, affine, fwhm=0)/home/kamalakar/miniconda2/lib/python2.7/site-packages/scipy/ndimage/filters.py:207: RuntimeWarning: divide by zero encountered in double_scalars
+>   p = numpy.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])/home/kamalakar/miniconda2/lib/python2.7/site-packages/numpy/polynomial/polynomial.py:775: RuntimeWarning: invalid value encountered in multiply
+>   c0 = c[-i] + c0*x
+> Result:
+> array([[[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        ...,
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]]])
+>
+> Before SciPy 1.0.0
+>
+> Result:
+> array([[[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        ...,
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]]])
+>
+> Internally the code uses scipy.ndimage.gaussian_filter1d.
+> I see two options to fix this:
+>
+>    - To not accept smoothing_fwhm=0. rather advice users to specify as
+>    smoothing_fwhm=None.
+>    - If somebody argues that 0. is a scalar and acceptable input then we
+>    need to ask in SciPy tracker about anything I am missing with
+>    gaussian_filter1d before and after new release.
+>    - You have any equivalent sigma value when fwhm=0 ?
+>
+> Please let me know your opinions as this some what important ?
+> @banilo <https://github.com/banilo> do you mind if I take over your PR
+> #1541 <https://github.com/nilearn/nilearn/pull/1541> ?
+>
+> —
+> You are receiving this because you were mentioned.
+> Reply to this email directly, view it on GitHub
+> <https://github.com/nilearn/nilearn/issues/1537#issuecomment-343416525>,
+> or mute the thread
+> <https://github.com/notifications/unsubscribe-auth/ADufRAwNTBx92LryVenK59JwDvbxEDy4ks5s1BFMgaJpZM4QRiLr>
+> .
+>
+",,
+7,issue_comment,1537,nilearn,nilearn,KamalakerDadi,2017-11-10 09:03:05,"I don't want to open a new issue because it is already there regarding ```smoothing_fwhm=0```.
+
+Particularly, I see this issue in canica and dict_learning when tests are failing because both estimator tests used ```smoothing_fwhm=0.```. See for failing of tests.
+https://travis-ci.org/nilearn/nilearn/jobs/299711990#L3471
+
+The problem is with SciPy 1.0.0, if I think I understood well:
+This code produces an array containing nans with smoothing_fwhm=0.
+```python
+import numpy as np
+from nilearn.image.image import _smooth_array
+
+data = np.zeros((40, 41, 42))
+data[20, 20, 20] = 1
+affine = np.eye(4)
+filtered = _smooth_array(data, affine, fwhm=0)
+/home/kamalakar/miniconda2/lib/python2.7/site-packages/scipy/ndimage/filters.py:207: RuntimeWarning: divide by zero encountered in double_scalars
+  p = numpy.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])
+/home/kamalakar/miniconda2/lib/python2.7/site-packages/numpy/polynomial/polynomial.py:775: RuntimeWarning: invalid value encountered in multiply
+  c0 = c[-i] + c0*x
+Result:
+array([[[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       ..., 
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]]])
+```
+Before SciPy 1.0.0
+```python
+Result:
+array([[[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       ..., 
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]])
+```
+Internally the code uses ```scipy.ndimage.gaussian_filter1d```.
+I see two options to fix this:
+- To not accept ```smoothing_fwhm=0.``` rather advice users to specify as ```smoothing_fwhm=None```.
+- If somebody argues that 0. is a scalar and acceptable input then we need to ask in SciPy tracker about anything I am missing with ```gaussian_filter1d``` before and after new release.
+- You have any equivalent ```sigma``` value when ```fwhm=0``` ?
+
+Please let me know your opinions as this some what important ?
+@banilo do you mind if I take over your PR #1541 ?",,
+8,issue_comment,1537,nilearn,nilearn,KamalakerDadi,2017-11-10 09:43:05,">You have any equivalent sigma value when fwhm=0 ?
+>I would convert fwhm=0 to fwhm=None and spit a warning.
+>Switching 0 to None by default appears to be a viable approach to me.
+
+Thanks, just want to check. If this should be only to recent SciPy or irrespective of versions ?",,
+9,issue_comment,1537,nilearn,nilearn,KamalakerDadi,2017-11-14 10:35:30,Closing with PR #1545 ,,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1534,nilearn,nilearn,KamalakerDadi,2017-11-02 07:49:18,Continuity of PR #1533 ,start issue,[MRG+1] Bump nibabel
+2,issue_closed,1534,nilearn,nilearn,GaelVaroquaux,2017-11-04 20:32:15,,closed issue,[MRG+1] Bump nibabel
+3,pull_request_title,1534,nilearn,nilearn,KamalakerDadi,2017-11-02 07:49:18,Continuity of PR #1533 ,b480704823091f91384c4d36c378057e31b2dde6,[MRG+1] Bump nibabel
+4,pull_request_merged,1534,nilearn,nilearn,GaelVaroquaux,2017-11-04 20:32:15,[MRG+1] Bump nibabel,8dd8ec3bb8d62a514edbc38d31f0cebae1e8aeda,Pull request merge from KamalakerDadi/nilearn:bump_nibabel to nilearn/nilearn:master
+5,issue_comment,1534,nilearn,nilearn,bthirion,2017-11-04 10:36:25,"Looks great, thx.",,
+6,issue_comment,1534,nilearn,nilearn,KamalakerDadi,2017-11-02 10:37:00,Last commit to revert FIXing AppVeyor is only for simplification to make reviewing easier for this PR. Keeping only changes specific to bumping nibabel version.,,
+7,issue_comment,1534,nilearn,nilearn,KamalakerDadi,2017-11-03 12:07:38,I think this one ready to merge if not any comments. Failure with AppVeyor is planned to FIX in this PR #1535 ,,
+8,issue_comment,1534,nilearn,nilearn,KamalakerDadi,2017-11-04 21:22:41,">I've merged. Can you do a PR with the AppVeyor fix.
+
+Thank you for merging. Fix for AppVeyor is already done in PR #1535 . I am waiting for opinions.",,
+9,issue_comment,1534,nilearn,nilearn,codecov[bot],2017-11-02 08:32:01,"# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=h1) Report
+> Merging [#1534](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/93312a1f6e6d06c6a06a26a616282e31c5fc168f?src=pr&el=desc) will **decrease** coverage by `0.03%`.
+> The diff coverage is `98.27%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1534/graphs/tree.svg?height=150&width=650&token=KpYArSdyXv&src=pr)](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1534      +/-   ##
+==========================================
+- Coverage   94.48%   94.45%   -0.04%     
+==========================================
+  Files         122      122              
+  Lines       14912    14893      -19     
+==========================================
+- Hits        14090    14067      -23     
+- Misses        822      826       +4
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/version.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi92ZXJzaW9uLnB5) | `73.91% <ø> (ø)` | :arrow_up: |
+| [nilearn/\_utils/compat.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi9fdXRpbHMvY29tcGF0LnB5) | `97.87% <ø> (-0.35%)` | :arrow_down: |
+| [nilearn/decoding/tests/test\_graph\_net.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi9kZWNvZGluZy90ZXN0cy90ZXN0X2dyYXBoX25ldC5weQ==) | `100% <ø> (ø)` | :arrow_up: |
+| [nilearn/tests/test\_masking.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi90ZXN0cy90ZXN0X21hc2tpbmcucHk=) | `100% <ø> (ø)` | :arrow_up: |
+| [nilearn/datasets/func.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9mdW5jLnB5) | `89.01% <100%> (ø)` | :arrow_up: |
+| [nilearn/input\_data/nifti\_masker.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi9pbnB1dF9kYXRhL25pZnRpX21hc2tlci5weQ==) | `95.94% <100%> (-0.06%)` | :arrow_down: |
+| [nilearn/plotting/img\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9pbWdfcGxvdHRpbmcucHk=) | `94.32% <100%> (-0.03%)` | :arrow_down: |
+| [nilearn/input\_data/multi\_nifti\_masker.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi9pbnB1dF9kYXRhL211bHRpX25pZnRpX21hc2tlci5weQ==) | `91.89% <100%> (ø)` | :arrow_up: |
+| [nilearn/tests/test\_niimg\_conversions.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi90ZXN0cy90ZXN0X25paW1nX2NvbnZlcnNpb25zLnB5) | `99.57% <100%> (-0.01%)` | :arrow_down: |
+| [nilearn/regions/tests/test\_signal\_extraction.py](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree#diff-bmlsZWFybi9yZWdpb25zL3Rlc3RzL3Rlc3Rfc2lnbmFsX2V4dHJhY3Rpb24ucHk=) | `100% <100%> (ø)` | :arrow_up: |
+| ... and [22 more](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=tree-more) | |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=footer). Last update [93312a1...b480704](https://codecov.io/gh/nilearn/nilearn/pull/1534?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+10,pull_request_commit,1534,nilearn,nilearn,GaelVaroquaux,2017-10-31 21:43:40,MAINT: bump the nibabel version,0ad3e35a9ab7853c2ceacfffd8e29d3aee606ec6,
+11,pull_request_commit,1534,nilearn,nilearn,GaelVaroquaux,2017-10-31 21:49:21,"WIP: remove get_affine compat functions
+
+This commit will break tests: it is there to serve as a reminder that
+the work is unfinished.",2f180c3a3fcb68cb64a63720803675b71000166f,
+12,pull_request_commit,1534,nilearn,nilearn,KamalakerDadi,2017-11-02 08:36:31,ENH: Address remaining changes to get_affine to affine,a2e089b464e9634c62604db9087b2334607c3da7,
+13,pull_request_commit,1534,nilearn,nilearn,KamalakerDadi,2017-11-02 09:23:12,"FIX: Appveyor, force install matplotlib=2.0.2",6f266999b745b4e9ca850a459d15b0a41139ebea,
+14,pull_request_commit,1534,nilearn,nilearn,KamalakerDadi,2017-11-02 11:17:31,"Simplification of nibabel bump PR, Reverting changes made to Appveyor",b480704823091f91384c4d36c378057e31b2dde6,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1264,nilearn,nilearn,salma1601,2016-09-06 20:19:54,"Each time a explicitely cache a function with `Memory` from `sklearn.joblib.externals` I got an ugly warning
+
+> DeprecationWarning: Changing the shape of non-C contiguous array by
+> descriptor assignment is deprecated. To maintain
+> the Fortran contiguity of a multidimensional Fortran
+> array, use 'a.T.view(...).T' instead
+
+Is there a way to solve it ?
+",start issue,is there a way to avoid joblib Deprecation Warning
+2,issue_closed,1264,nilearn,nilearn,GaelVaroquaux,2017-11-06 21:13:12,,closed issue,is there a way to avoid joblib Deprecation Warning
+3,issue_comment,1264,nilearn,nilearn,GaelVaroquaux,2017-11-06 21:13:12,Closing this as we won't fix it in the nilearn codebase. It will just disappear by itself :),,
+4,issue_comment,1264,nilearn,nilearn,aabadie,2016-09-06 20:43:19,"This warning was fixed in upstream Joblib in [this PR](https://github.com/joblib/joblib/pull/309). I think this fix is also in the latest version of scikit-learn.
+Maybe updating scikit-learn would solve your issue.
+",,
+5,issue_comment,1264,nilearn,nilearn,aabadie,2016-09-06 20:53:55,"Just verified and scikit-learn 0.17.1 (latest stable release) contains the fix so consider upgrading your installed version.
+
+```
+pip install scikit-learn --upgrade
+```
+
+or 
+
+```
+conda update scikit-learn
+```
+
+if you use anaconda.
+",,
+6,issue_comment,1264,nilearn,nilearn,aabadie,2016-09-07 07:55:52,"@salma1601, my bad, my scikit-learn installation was ""partched"" with a more recent version of joblib (0.10.0) which itself contains the fix.
+The default scikit-learn installation (0.17.1) still uses 0.9.4, sorry. The next release of scikit-learn should be out by the end of this month.
+",,
+7,issue_comment,1264,nilearn,nilearn,lesteve,2016-09-08 07:55:41,"In the mean time, if you find them really annoying, you can get rid of the warnings by either use the `warnings` module in your script or set the `PYTHONWARNINGS` environment variable. Something like this after your imports in your script (some package modify the warnings filters at import time which can override the filter you are trying to set) should work:
+
+``` py
+import warnings
+warnings.simplefilter('ignore', DeprecationWarning)
+```
+",,
+8,issue_comment,1264,nilearn,nilearn,KamalakerDadi,2016-09-06 20:41:14,"As far as warnings, I don't think there is a way.
+
+But, you can ignore the warnings by catch the warnings and tell to ignore them. Watch at Neurovault fetcher PR particularly example to make sense of what I am talking. Feel free to close it if you think this issue still not be kept hold.
+",,
+9,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-06 21:27:18,"I just upgraded sklearn to 0.17.1
+
+``` Python
+In [1]: import sklearn
+In [2]: sklearn.__version__
+Out[2]: '0.17.1
+```
+
+but I still got the warnings
+",,
+10,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-06 21:35:30,"It is strange because I have the old version of the file joblib `hashing` file (not tacking into account the mentioned PR) although I upgraded sklearn
+",,
+11,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-07 16:45:26,"Ok thanks for the explanations !
+",,
+12,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-08 08:38:43,"Ok, thanks !
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1318,nilearn,nilearn,VictorDel,2016-10-27 10:39:17,"Hi, 
+I've been using **plotting.find_xyz_cut_coords** for some time now and I just ran into what looks like a dataype issue. It seems to have trouble with a 4D FLOAT nifti file (iterated through **image.iter_img**). This file was generated using **image.concat_img** from 3D S32 files. So it lookes like **image.concat_img** changed the data type, is that possible?
+I believe the issue with **plotting.find_xyz_cut_coords** is due to the data type since I solved my problem by just converting it to S32 (with brainvisa AimsFileConvert)
+Could there be something else there?
+Cheers
+
+[AVCnn_4D_networks_FLOAT.nii.tar.gz](https://github.com/nilearn/nilearn/files/555508/AVCnn_4D_networks_FLOAT.nii.tar.gz)
+[AVCnn_4D_networks_S32.nii.tar.gz](https://github.com/nilearn/nilearn/files/555509/AVCnn_4D_networks_S32.nii.tar.gz)
+
+``` python
+from nilearn import image
+from nilearn import plotting
+
+ref_atlas =  '/neurospin/grip/protocols/MRI/Resting_state_Victor_2014/atlases/atlas_fonctionel_control_AVCnn/AVCnn_4D_networks_FLOAT.nii'
+coords=[plotting.find_xyz_cut_coords(roi)for roi in image.iter_img(ref_atlas)]
+print('datatype = FLOAT\n')
+print(coords,'\n')
+
+ref_atlas =  '/neurospin/grip/protocols/MRI/Resting_state_Victor_2014/atlases/atlas_fonctionel_control_AVCnn/AVCnn_4D_networks_S32.nii'
+coords=[plotting.find_xyz_cut_coords(roi)for roi in image.iter_img(ref_atlas)]
+print('datatype = S32\n')
+print(coords)
+```
+
+```
+datatype = FLOAT
+
+[array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5]), array([ 30.5,  36.5,  30.5])] 
+
+datatype = S32
+
+[[52.13559322033899, 6.92090395480227, -0.7344632768361521], [-52.3170731707317, -23.96987087517934, 21.473457675753224], [-49.53776978417267, 0.19424460431653756, 1.7104316546762561], [-53.63358778625954, 3.263358778625957, 19.55725190839695], [56.030973451327434, 7.154867256637175, 18.11946902654867], [51.552399608227226, -22.237022526934368, 19.67776689520079], [-55.19811320754718, -36.0, 1.4716981132075517], [55.481327800829874, -34.531120331950206, 1.8049792531120374], [-41.83289124668437, 26.092838196286493, -12.755968169761275], [-52.28967642526965, -10.705701078582436, -16.516178736517723], [52.59798994974875, -4.105527638190949, -19.457286432160807], [42.35222672064778, 32.0161943319838, -11.81781376518218], [-14.299009900990086, -9.19009900990099, 64.19999999999999], [5.7954545454545325, -12.88636363636364, 64.39090909090908], [-45.994609164420496, -9.824797843665763, 44.53908355795147], [48.36962750716332, -4.968481375358181, 43.84813753581662], [-22.593900481540942, -37.16051364365971, 64.75762439807383], [27.40119760479042, -33.61077844311376, 64.89820359281435], [-27.611842105263165, 23.76315789473682, 45.44078947368422], [-41.98792756539237, -62.70422535211267, 32.36619718309859], [-35.63937282229966, 25.63066202090593, 3.224738675958193], [-41.39106145251395, -53.72067039106145, 43.93296089385474], [26.67870967741935, 27.030967741935484, 45.99483870967741], [48.390957446808514, -56.56914893617021, 31.35638297872339], [37.902702702702705, 36.47567567567569, 27.118918918918922], [45.83582089552239, -50.13930348258707, 43.94029850746267], [-22.703549060542798, -6.598121085594997, -0.5260960334029221], [23.449603624009058, -7.0973952434881085, 2.3952434881087186], [23.1694214876033, -0.16115702479339689, -9.38429752066115], [-25.493775933609953, -35.11618257261411, -11.128630705394194], [-11.13944223107569, 49.50996015936255, 17.820717131474098], [11.192691029900331, 49.53820598006644, 19.265780730897006], [-27.07058823529411, -16.78823529411764, -19.05882352941176], [28.91402714932127, -11.361990950226243, -18.76018099547511], [6.095022624434392, 44.3212669683258, -10.072398190045249], [12.116197183098592, -70.80633802816901, 43.61619718309859], [-6.513011152416354, -51.07063197026022, 32.855018587360604], [8.006648936170208, -51.21941489361703, 32.75664893617021], [-15.91242603550296, -52.04378698224852, 53.74792899408283], [16.11325301204819, -51.527710843373484, 54.56024096385542], [10.412825651302612, -80.89779559118236, 19.923847695390776], [-11.33076923076922, -52.65230769230769, 10.103076923076927], [-8.81214421252372, -77.03225806451613, 1.8842504743833075], [-7.255965292841665, -83.16052060737528, 19.392624728850322], [13.486607142857139, -50.41964285714286, 10.888392857142861], [-28.488549618320604, -75.2267175572519, -9.361832061068696], [-29.63013698630138, -89.2876712328767, 4.027397260273972], [31.34972341733252, -72.22864167178857, -7.591272280270431], [-21.83865814696486, -57.57987220447285, -6.244408945686899], [-26.758139534883725, -82.52093023255814, 18.846511627906978], [31.33920704845815, -77.59911894273128, 20.68281938325991], [17.392953929539303, -62.98915989159892, -1.298102981029814], [-21.246212121212125, -69.52651515151516, 40.136363636363626], [23.817891373801913, -6.728434504792332, 63.00958466453673], [29.4321608040201, -65.84422110552764, 40.658291457286424], [-43.31954887218046, 10.353383458646618, 32.18796992481204], [-42.25764192139738, -35.851528384279476, 45.165938864628814], [43.350415512465375, -33.91412742382272, 46.0180055401662], [44.82945736434108, 13.317829457364326, 31.51162790697674], [-5.091954022988517, 28.643678160919535, 45.517241379310335], [-5.213114754098356, 1.7845433255269256, 44.747072599531606], [7.4334677419354875, -0.04233870967742348, 44.63709677419354], [-38.78532110091743, 34.2880733944954, 26.152293577981652], [38.35853976531942, 29.1903520208605, 3.3207301173402897], [-30.991525423728802, 2.4279661016949206, 11.186440677966104]]
+```
+
+``` python
+
+```
+",start issue,plotting.find_xyz_cut_coords FLOAT datatype supported ?
+2,issue_closed,1318,nilearn,nilearn,GaelVaroquaux,2017-11-06 21:06:09,,closed issue,plotting.find_xyz_cut_coords FLOAT datatype supported ?
+3,issue_comment,1318,nilearn,nilearn,VictorDel,2016-10-28 13:10:35,"Thanks for the answer!
+And the reason why plotting.plot_roi managed to find the right cuts for display with both files, would be that it recalculates the threshold at l.162 in img_plotting ?
+Any idea on the data type change using image.concat_img? (I did not do that step personnaly though I can say 200% sure that nothing else was done).
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1509,nilearn,nilearn,grjd,2017-09-12 14:16:50," Just to make sure how the precision matrix is built.
+I do a GraphLassoCV estimator for just 4 nodes and plot the covariance and the precision matrix, also Ledoit (which is pretty much like the precision)
+The precision matrix (also Ledoit) dont recover the main diagonal, i should have maximum values for the diagonal, normalized or not.
+
+lw_cov_, _ = ledoit_wolf(time_series)
+lw_prec_ = linalg.inv(lw_cov_)
+lw_prec_.precision_  gives me
+array([[ 1.31104237, -0.32148359, -0.1051193 , -0.4004092 ],
+[-0.32148359, 2.01339135, -1.22316702, -0.09501513],
+[-0.1051193 , -1.22316702, 1.93573103, -0.21259643],
+[-0.4004092 , -0.09501513, -0.21259643, 1.2511603 ]])
+
+This is the ledoit estimator.prec_
+![screen shot 2017-09-12 at 3 39 36 pm](https://user-images.githubusercontent.com/7142903/30330525-9d08ffe0-97d5-11e7-8190-a0d1fb745a89.png)
+",start issue,precision matrix diagonal not max values
+2,issue_closed,1509,nilearn,nilearn,GaelVaroquaux,2017-11-06 20:37:13,,closed issue,precision matrix diagonal not max values
+3,issue_comment,1509,nilearn,nilearn,grjd,2017-09-12 14:58:16,"The partial correlation of one variable with itself should be one.
+",,
+4,issue_comment,1509,nilearn,nilearn,grjd,2017-09-12 15:33:41,"Yes, but the precision matrix is proportional to the partial correlation matrix and the diagonal elements should  keep the same proportion, right? ",,
+5,issue_comment,1509,nilearn,nilearn,grjd,2017-09-12 16:22:42,"I guess is this , for the Conditional Covariance Formula
+Cov(X, Y) = E[Cov(X, Y|Z)] + Cov(E[X|Z], E[Y|Z]), when X=Y 
+...
+Cov(X, X) = E(X|Z)",,
+6,issue_comment,1509,nilearn,nilearn,GaelVaroquaux,2017-09-12 14:25:48,"> Just to make sure how the precision matrix is built.
+
+It's the standard mathematical definition, with the corresponding
+estimator.
+
+> I do a GraphLassoCV estimator for just 4 nodes and plot the covariance and the
+> precision matrix, also Ledoit (which is pretty much like the precision)
+> The precision matrix (also Ledoit) dont recover the main diagonal, i should
+> have maximum values for the diagonal, normalized or not.
+
+I don't understand the question.
+",,
+7,issue_comment,1509,nilearn,nilearn,GaelVaroquaux,2017-09-12 15:30:16,"> The partial correlation of one variable with itself should be one.
+
+Yes, but this is a precision matrix, and not a partial correlation
+matrix.
+",,
+8,issue_comment,1509,nilearn,nilearn,GaelVaroquaux,2017-09-12 15:55:30,"> Yes, but the precision matrix is proportional to the partial
+> correlation matrix and the diagonal elements should keep the same
+> proportion, right?
+
+No.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1533,nilearn,nilearn,GaelVaroquaux,2017-10-31 21:47:33,"We can bump the requirement to nibabel 2.0.2, which has been release mid 2015 and is in most distributions.",start issue,[WIP] MAINT: bump the nibabel version
+2,issue_closed,1533,nilearn,nilearn,GaelVaroquaux,2017-11-04 20:32:22,,closed issue,[WIP] MAINT: bump the nibabel version
+3,pull_request_title,1533,nilearn,nilearn,GaelVaroquaux,2017-10-31 21:47:33,"We can bump the requirement to nibabel 2.0.2, which has been release mid 2015 and is in most distributions.",2f180c3a3fcb68cb64a63720803675b71000166f,[WIP] MAINT: bump the nibabel version
+4,pull_request_merged,1533,nilearn,nilearn,GaelVaroquaux,2017-11-04 20:32:22,[WIP] MAINT: bump the nibabel version,2f180c3a3fcb68cb64a63720803675b71000166f,Pull request merge from GaelVaroquaux/nilearn:bump_nibabel to nilearn/nilearn:master
+5,issue_comment,1533,nilearn,nilearn,KamalakerDadi,2017-11-02 07:51:32,This is continued in PR #1534 ,,
+6,issue_comment,1533,nilearn,nilearn,codecov[bot],2017-10-31 21:57:38,"# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=h1) Report
+> Merging [#1533](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/93312a1f6e6d06c6a06a26a616282e31c5fc168f?src=pr&el=desc) will **decrease** coverage by `0.05%`.
+> The diff coverage is `75%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1533/graphs/tree.svg?token=KpYArSdyXv&src=pr&height=150&width=650)](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1533      +/-   ##
+==========================================
+- Coverage   94.48%   94.43%   -0.06%     
+==========================================
+  Files         122      122              
+  Lines       14912    14915       +3     
+==========================================
+- Hits        14090    14085       -5     
+- Misses        822      830       +8
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/version.py](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=tree#diff-bmlsZWFybi92ZXJzaW9uLnB5) | `73.91% <ø> (ø)` | :arrow_up: |
+| [nilearn/image/image.py](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS9pbWFnZS5weQ==) | `96.56% <75%> (-0.4%)` | :arrow_down: |
+| [nilearn/\_utils/compat.py](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=tree#diff-bmlsZWFybi9fdXRpbHMvY29tcGF0LnB5) | `91.07% <0%> (-7.15%)` | :arrow_down: |
+| [nilearn/plotting/tests/test\_surf\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy90ZXN0cy90ZXN0X3N1cmZfcGxvdHRpbmcucHk=) | `99.01% <0%> (-0.99%)` | :arrow_down: |
+| [nilearn/datasets/tests/test\_atlas.py](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy90ZXN0cy90ZXN0X2F0bGFzLnB5) | `99.57% <0%> (-0.43%)` | :arrow_down: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=footer). Last update [93312a1...2f180c3](https://codecov.io/gh/nilearn/nilearn/pull/1533?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+7,pull_request_commit,1533,nilearn,nilearn,GaelVaroquaux,2017-10-31 21:43:40,MAINT: bump the nibabel version,0ad3e35a9ab7853c2ceacfffd8e29d3aee606ec6,
+8,pull_request_commit,1533,nilearn,nilearn,GaelVaroquaux,2017-10-31 21:49:21,"WIP: remove get_affine compat functions
+
+This commit will break tests: it is there to serve as a reminder that
+the work is unfinished.",2f180c3a3fcb68cb64a63720803675b71000166f,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1345,nilearn,nilearn,sprak0323,2016-12-11 05:38:14,"Sorry for disturbing you
+
+I would like to align two MNI space images(same resolution, different affine&shape) to the same voxel space.
+
+>image.resample_to_img(atlas,stats, 
+                    interpolation='nearest', copy=True, order='F')
+
+and raise an error：
+
+>BoundingBoxError: The field of view given by the target affine does not contain any of the data
+
+So can you tell me how to do this?
+",start issue,A question about 'image.resample_img'
+2,issue_closed,1345,nilearn,nilearn,GaelVaroquaux,2017-11-06 21:14:05,,closed issue,A question about 'image.resample_img'
+3,issue_comment,1345,nilearn,nilearn,KamalakerDadi,2016-12-11 05:45:54,"Do you think you can share/attach your nifti files ?
+
+You error message looks like there are spurious images to me.",,
+4,issue_comment,1345,nilearn,nilearn,sprak0323,2016-12-11 06:34:39,"
+[atlas+stats.zip](https://github.com/nilearn/nilearn/files/644261/atlas.stats.zip)
+Thank you very much 
+
+",,
+5,issue_comment,1345,nilearn,nilearn,sprak0323,2016-12-11 06:55:15,"Just like this:
+>>> A = image.load_img('/Volumes/LA_Fun/Allen/MRI/rs_reorder_T1_donor9861.nii')
+>>> B = image.load_img('/Volumes/LA_Fun/atlas/BN_Atlas_246_1mm.nii.gz')
+>>> B.shape
+(182, 218, 182)
+>>> A.shape
+(197, 233, 189)
+>>> C = image.resample_to_img(A, B)",,
+6,issue_comment,1345,nilearn,nilearn,KamalakerDadi,2016-12-11 07:05:10,"This one '/Volumes/LA_Fun/Allen/MRI/rs_reorder_T1_donor9861.nii' doesn't seems like in MNI space.
+Can you check by specifying coordinates to [0, 0, 0]. If image is in MNI space then you see cursor at AC-PC line (Please google it if you don't know what AC-PC is)
+
+Let me know after aligning to MNI space, if it worked or not ?",,
+7,issue_comment,1345,nilearn,nilearn,KamalakerDadi,2016-12-11 07:07:48,"Can you try this ?
+```python
+plotting.plot_stat_map('/Volumes/LA_Fun/Allen/MRI/rs_reorder_T1_donor9861.nii', cut_coords=[0, 0, 0])
+```",,
+8,issue_comment,1345,nilearn,nilearn,sprak0323,2016-12-11 07:10:54,"![figure_1](https://cloud.githubusercontent.com/assets/18514015/21078718/f8e5fa66-bfb3-11e6-93f6-0f780208e3d2.png)
+This is what I got",,
+9,issue_comment,1345,nilearn,nilearn,KamalakerDadi,2016-12-11 07:23:34,"Have you tried visualizing this image with other softwares ? How does it look like ?
+To make sure if there is problem with data or package.",,
+10,issue_comment,1345,nilearn,nilearn,sprak0323,2016-12-11 07:25:46,"Sure, the image is an atlas and a samples ,I can open it by MRIcro software.",,
+11,issue_comment,1345,nilearn,nilearn,KamalakerDadi,2016-12-11 07:37:14,"I can view atlas properly. I cannot view samples image properly which is a reordered image I suppose. I am not sure what's going on. It may time to debug it. Sorry. May be somebody will pitch in to have another solution.
+",,
+12,issue_comment,1345,nilearn,nilearn,sprak0323,2016-12-11 07:42:01,"I see, thanks a lot, I think I should try some another way.",,
+13,issue_comment,1345,nilearn,nilearn,KamalakerDadi,2016-12-11 07:42:41,"Just curious, What are these samples represent ?",,
+14,issue_comment,1345,nilearn,nilearn,sprak0323,2016-12-11 07:48:58,"They are the allen gene expressions data, each sample represents a probe to measure all the gene expression there(we have MNI coordinates).
+And I think I should use the MNI coordinates to create my own image rather than resampling other's.
+
+For more information: http://human.brain-map.org",,
+15,issue_comment,1345,nilearn,nilearn,KamalakerDadi,2016-12-11 07:54:04," >And I think I should use the MNI coordinates to create my own image rather than resampling other's.
+
+Yes, may be that would help.",,
+16,issue_comment,1345,nilearn,nilearn,GaelVaroquaux,2016-12-11 09:11:05,"This error message is trying to tell you there is no data where you are
+targeting the resample, ie no overlap between the source and the target
+image.
+
+I suspect that your image is not in MNI space.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1281,nilearn,nilearn,banilo,2016-09-19 08:29:54,"Running `transform()` on a dozens of Nifti images does still not fly well with the masker family it appears. Concrete example: It does not work well for me to apply a 50-region NiftiLabelsMakser on 500 HCP VBM volumes. Could one solution be to internally batch the transformation by chunking image sets and putting the together without the user/coder having to interact with the process or having to introduce a new argument like `batch_size` ?
+",start issue,NiftiMasker.transform() not biggish-data ready
+2,issue_closed,1281,nilearn,nilearn,GaelVaroquaux,2017-11-06 20:47:09,,closed issue,NiftiMasker.transform() not biggish-data ready
+3,issue_comment,1281,nilearn,nilearn,GaelVaroquaux,2017-11-06 20:47:09,"I am closing this issue: it's not helpful. It's a general comment, and not something that someone (eg an external person to the project) can tackle.",,
+4,issue_comment,1281,nilearn,nilearn,AlexandreAbraham,2016-09-19 08:36:10,"We noticed with @KamalakerDadi some unusual memory consumption when masking. We are currently investigating it. If anybody can run profiling on masking code, that would be helpful.
+",,

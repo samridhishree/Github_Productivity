@@ -1,0 +1,101 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","127","nilearn","nilearn","eickenberg","2013-11-08 12:51:57","In IPython, if you type
+
+import nilearn
+
+and then
+
+nilearn.[TAB]
+
+you find numpy, scipy and sklearn, which are imported in nilearn/nilearn/__ init __.py
+
+I was wondering whether it would be possible to add selected, non memory intensive submodules in order to facilitate exploring the package.
+
+When trying to add e.g. 
+
+import io
+
+to nilearn/nilearn/__ init __.py, suddenly all sorts of other modules appear to be loaded, so I didn't go ahead and make this a pull request directly: The import seems difficult to control.
+
+So if there is a way to control precisely which submodules should be visible and there is a consensus on which ones these should be, I think this could be a useful addition.
+","start issue","Make nilearn tab complete navigateable?"
+"issue_closed","127","nilearn","nilearn","eickenberg","2014-03-19 17:35:39","","closed issue","Make nilearn tab complete navigateable?"
+"issue_comment","127","nilearn","nilearn","GaelVaroquaux","2013-11-08 15:36:05","> Asking the question the other way round: Is there any submodule of
+> nilearn that shouldn't be loaded on import ?
+
+I wonder if we should load nilearn submodules on import. I don't think so
+because it leads to tight coupling that mean that if something, somewhere
+is broken, nothing in nilearn is usable. We can easily add it afterward,
+if we find that we should focus more on usability than portability.
+Removing it as an afterthought, on the other side, would be breaking
+compatibility.
+","",""
+"issue_comment","127","nilearn","nilearn","GaelVaroquaux","2013-11-08 18:15:16","> Would importing a restricted amount of basic functionality, well
+> segmented, minimally susceptible to coupling, be OK?
+
+I'd rather have consistency: everything the same.
+
+> Alternatively, could we have a function init() or explore() which
+> imports the submodules such that one can explore them? [possibly to be
+> called if an IPython interpreter session is detected, but I admit this
+> could lead to trouble]
+
+That's a hack. Hacks are bad: they give bad habits and eventually break.
+
+> My worry is that non-explorability may potentially waste time for users
+> that are looking to explore their data quickly in an interpreter session
+> and are not sure of the exact naming of the commands. 
+
+I agree, and this is why we have to keep the option open to change our minds. However I want to get a better feeling of where nilearn is going before switching to an ""import everything"" strategy.
+","",""
+"issue_comment","127","nilearn","nilearn","eickenberg","2013-11-08 13:02:21","OK, cool, I'll do that.
+
+Asking the question the other way round: Is there any submodule of nilearn that _shouldn't_ be loaded on import ?
+","",""
+"issue_comment","127","nilearn","nilearn","eickenberg","2013-11-08 16:52:03","I totally agree that there is this risk in general.
+
+Would importing a restricted amount of basic functionality, well segmented, minimally susceptible to coupling, be OK?
+
+Alternatively, could we have a function init() or explore() which imports the submodules such that one can explore them? [possibly to be called if an IPython interpreter session is detected, but I admit this could lead to trouble]
+
+My worry is that non-explorability may potentially waste time for users that are looking to explore their data quickly in an interpreter session and are not sure of the exact naming of the commands. 
+","",""
+"issue_comment","127","nilearn","nilearn","eickenberg","2013-11-09 15:57:36","i have to take away the import first
+
+On Saturday, November 9, 2013, bthirion wrote:
+
+> +1 for merging
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/nilearn/nilearn/issues/127#issuecomment-28128703
+> .
+","",""
+"issue_comment","127","nilearn","nilearn","AlexandreAbraham","2013-11-08 13:00:06","You have to use a scope to avoid unwanted imports. For example, you can avoid numpy and scipy autocompletion by doing, in **init**.py:
+
+```
+def _check_dependencies():
+    try:
+        import numpy
+    except ImportError:
+        print 'Numpy could not be found, please install it properly to use nilearn.'
+
+    try:
+        import scipy
+    except ImportError:
+        print 'Scipy could not be found, please install it properly to use nilearn.'
+
+    try:
+        import sklearn
+    except ImportError:
+        print ('Scikit-learn could not be found,'
+               ' please install it properly to use nilearn.')
+
+_check_dependencies()
+```
+","",""
+"issue_comment","127","nilearn","nilearn","AlexandreAbraham","2013-11-08 13:05:51","I think that _utils is reserved to internal stuff.
+","",""
+"issue_comment","127","nilearn","nilearn","AlexandreAbraham","2013-11-08 18:29:57","This issue is not a nilearn issue. For its autocompletion, ipython builds a tree of all modules (and their associated submodules). The process is not automatic as it can take some time, there must be some cron-like thing involved. So if you just install nilearn, you won't get the completion. However, you can force ipython to rebuild the tree with magic command %rehashx. We've checked: Michael can autocomplete nilearn easily now.
+
+So, I'm +1 for merging the PR (scoping numpy, scipy and the sklearn) but there is no need to import all submodules.
+","",""

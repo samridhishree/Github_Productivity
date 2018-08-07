@@ -1,0 +1,584 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","167","nilearn","nilearn","VirgileFritsch","2014-02-21 17:04:41","This PR provides massively univariate linear models estimation using OLS regression and permutation testing. The code is designed to complete a very large number of permutations (> 100000) on a large
+problem (thousands of targets variables, namely the brain voxels) within a few minutes.
+
+As compared to the v1 PR, we do not split the targets so as to perform their analysis on parallel computing units, but we delegate a fraction of permutations to the parallel computing units. This solves the problem we had ensuring the data are permuted in the same manner by each worker. The code is also simpler as the max F-score across data descriptors can be computed directly after each permutation.
+
+We assume that we perform analysis of a reasonable number of tested variates and that each computing unit can process the target variates without the need to split it. Typically, neuroimaging-genetic problems (and particularly Genom-Wide Association Studies) require specific code optimizations that are not straightwforward with the new design proposed in this PR.
+","start issue","NF: Add Massively Univariate Linear Model with permuted OLS (v2)."
+"issue_closed","167","nilearn","nilearn","bthirion","2014-03-13 10:30:42","","closed issue","NF: Add Massively Univariate Linear Model with permuted OLS (v2)."
+"pull_request_title","167","nilearn","nilearn","VirgileFritsch","2014-02-21 17:04:41","This PR provides massively univariate linear models estimation using OLS regression and permutation testing. The code is designed to complete a very large number of permutations (> 100000) on a large
+problem (thousands of targets variables, namely the brain voxels) within a few minutes.
+
+As compared to the v1 PR, we do not split the targets so as to perform their analysis on parallel computing units, but we delegate a fraction of permutations to the parallel computing units. This solves the problem we had ensuring the data are permuted in the same manner by each worker. The code is also simpler as the max F-score across data descriptors can be computed directly after each permutation.
+
+We assume that we perform analysis of a reasonable number of tested variates and that each computing unit can process the target variates without the need to split it. Typically, neuroimaging-genetic problems (and particularly Genom-Wide Association Studies) require specific code optimizations that are not straightwforward with the new design proposed in this PR.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","NF: Add Massively Univariate Linear Model with permuted OLS (v2)."
+"pull_request_merged","167","nilearn","nilearn","bthirion","2014-03-13 10:30:42","NF: Add Massively Univariate Linear Model with permuted OLS (v2).","6c465d36852fc9250c3dd0e24a53831d257e1e6c","Pull request merge from VirgileFritsch/nilearn:permuted_ols_altchunk to nilearn/nilearn:master"
+"issue_comment","167","nilearn","nilearn","mekman","2014-03-12 21:00:58","Sorry for chiming in. This looks great. Since you already cite the recent paper form Thomas' group (it's not referenced from anywhere in the docstring if I'm not mistaken), it might be worth it to explicitly state which of the 9 methods compared in their paper to obtain parameter estimates in the presence of nuisance variables is actually implemented here. Please excuse if I missed it somewhere, but ATM one would need to look at the code to figure this out. This could be done after the merge of course.
+","",""
+"issue_comment","167","nilearn","nilearn","mekman","2014-03-13 10:27:35","Perfect, thank you so much Virgile!
+","",""
+"issue_comment","167","nilearn","nilearn","agramfort","2014-02-22 19:26:37","you have duplicated commited files see diff
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-21 17:12:07","@GaelVaroquaux, @AlexandreAbraham, @rphlypo, @bthirion, @agramfort Please note that it is a v2 of the permuted OLS PR: I just changed the algorithm so that each parallel computing unit has to perform a fraction of the total amount of permutations on the full data instead of performing all the permutation on a data chunk. You can read the PR description for more details.
+
+It may introduce some complexity in the upcoming PR about Randomized Parcellation Base Inference (RPBI) and it makes difficult to use permuted OLS on neuroimaging-genetic problems, but our choice was to provide a simpler and more robust code.
+Note that the GrowableSparseArray data structure has disappeared, which considerably reduces the size of the contribution.
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-21 17:13:40","Up: should we simplify the `_f_score` function so that it only handle the ""normalized design"" case?
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-21 18:25:40","10,000 permutations, full brain (216 samples, 40000 voxels), performed in **1 minute** with my 8-core desktop computer. Note: no memory consumption is visible.
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-21 18:26:25","I will let you review the PR before I change anything else.
+","",""
+"issue_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 15:15:52","Aside from my comments, I have no further remark. I think that this is almost ready to be merged.
+
+By the way, I ran a line-profile on the code for haxby n_jobs=1, and the results are below. They show you that you are doing a pretty good job, as all the time is spent in two dot functions. You can't be faster. Well done!
+
+<pre>
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    94                                           @profile
+    95                                           def _f_score(vars1, vars2, covars=None, normalized_design=True):
+    96                                               """"""Compute F-score associated with the regression of vars2 against vars1
+    97                                           
+    98                                               Covariates are taken into account (if not None).
+    99                                               The normalized_design case corresponds to the following assumptions:
+   100                                               - vars1 and vars2 are normalized
+   101                                               - covars are orthonormalized
+   102                                               - vars1 and covars are orthogonal (np.dot(vars1.T, covars) == 0)
+   103                                           
+   104                                               Parameters
+   105                                               ----------
+   106                                               vars1: array-like, shape=(n_samples, n_var1)
+   107                                                 Explanatory variates
+   108                                               vars2: array-like, shape=(n_samples, n_var2)
+   109                                                 Targets variates. F-ordered is better for efficient computation.
+   110                                               covars, array-like, shape=(n_samples, n_covars) or None
+   111                                                 Confounding variates.
+   112                                               normalized_design: bool,
+   113                                                 Specify whether the variates have been normalized and orthogonalized
+   114                                                 with respect to each other. In such a case, the computation is simpler
+   115                                                 and a lot more efficient.
+   116                                           
+   117                                               Returns
+   118                                               -------
+   119                                               score: numpy.ndarray, shape=(n_var2, n_var1)
+   120                                                 F-scores associated with the tests of each explanatory variate against
+   121                                                 each target variate (in the presence of covars).
+   122                                           
+   123                                               """"""
+   124      1001         1223      1.2      0.0      if not normalized_design:  # not efficient, added for code exhaustivity
+   125                                                   # normalize variates
+   126                                                   vars1_normalized = normalize_matrix_on_axis(vars1)
+   127                                                   vars2_normalized = normalize_matrix_on_axis(vars2)
+   128                                                   if covars is not None:
+   129                                                       # orthonormalize covariates
+   130                                                       covars_orthonormalized = orthonormalize_matrix(covars)
+   131                                                       # orthogonalize vars1 with respect to covars
+   132                                                       beta_vars1_covars = np.dot(
+   133                                                           vars1_normalized.T, covars_orthonormalized)
+   134                                                       vars1_resid_covars = vars1_normalized.T - np.dot(
+   135                                                           beta_vars1_covars, covars_orthonormalized.T)
+   136                                                       vars1_normalized = normalize_matrix_on_axis(
+   137                                                           vars1_resid_covars, axis=1).T
+   138                                                   else:
+   139                                                       covars_orthonormalized = None
+   140                                                   return _f_score(vars1_normalized, vars2_normalized,
+   141                                                                   covars_orthonormalized, normalized_design=True)
+   142                                               else:  # efficient, should be used everytime with permuted OLS
+   143      1001         1096      1.1      0.0          if covars is None:
+   144                                                       lost_dof = 0
+   145                                                   else:
+   146      1001         2050      2.0      0.0              lost_dof = covars.shape[1]
+   147      1001         1592      1.6      0.0          dof = vars2.shape[0] - 1 - lost_dof
+   148      1001     10979284  10968.3     48.5          beta_vars2_vars1 = np.dot(vars2.T, vars1)
+   149      1001        82847     82.8      0.4          b2 = beta_vars2_vars1 ** 2
+   150      1001         1881      1.9      0.0          if covars is None:
+   151                                                       rss = (1 - b2)
+   152                                                   else:
+   153      1001     10988632  10977.7     48.5              beta_vars2_covars = np.dot(vars2.T, covars)
+   154      1001       202838    202.6      0.9              a2 = np.sum(beta_vars2_covars ** 2, 1)
+   155      1001       142944    142.8      0.6              rss = (1 - a2[:, np.newaxis] - b2)
+   156      1001       155238    155.1      0.7          score = b2 / rss
+   157      1001        35065     35.0      0.2          score *= dof
+   158      1001        55071     55.0      0.2          return np.asfortranarray(score)
+File: nilearn/mass_univariate/permuted_least_squares.py
+Function: _permuted_ols_on_chunk at line 161
+Total time: 22.9923 s
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   161                                           @profile
+   162                                           def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars,
+   163                                                                      confounding_vars=None, n_perm_chunk=10000,
+   164                                                                      intercept_test=True, random_state=None):
+   165                                               """"""Massively univariate group analysis with permuted OLS on a data chunk.
+   166                                           
+   167                                               To be used in a parallel computing context.
+   168                                           
+   169                                               Parameters
+   170                                               ----------
+   171                                               scores_original_data: array-like, shape=(n_descriptors, n_regressors)
+   172                                                 F-scores obtained for the original (non-permuted) data.
+   173                                               tested_vars: array-like, shape=(n_samples, n_regressors)
+   174                                                 Explanatory variates.
+   175                                               target_vars: array-like, shape=(n_samples, n_targets)
+   176                                                 fMRI data. F-ordered for efficient computations.
+   177                                               confounding_vars: array-like, shape=(n_samples, n_covars)
+   178                                                 Clinical data (covariates).
+   179                                               n_perm_chunk: int,
+   180                                                 Number of permutations to be performed.
+   181                                               intercept_test: boolean,
+   182                                                 Change the permutation scheme (swap signs for intercept,
+   183                                                 switch labels otherwise). See [1]
+   184                                               random_state: int or None,
+   185                                                 Seed for random number generator, to have the same permutations
+   186                                                 in each computing units.
+   187                                           
+   188                                               Returns
+   189                                               -------
+   190                                               h0_fmax_part: array-like, shape=(n_perm_chunk, )
+   191                                                 Distribution of the (max) F-statistic under the null hypothesis
+   192                                                 (limited to this permutation chunk).
+   193                                           
+   194                                               References
+   195                                               ----------
+   196                                               [1] Fisher, R. A. (1935). The design of experiments.
+   197                                           
+   198                                               """"""
+   199                                               # initialize the seed of the random generator
+   200         1           76     76.0      0.0      rng = check_random_state(random_state)
+   201                                           
+   202         1            3      3.0      0.0      n_samples, n_regressors = tested_vars.shape
+   203         1            1      1.0      0.0      n_descriptors = target_vars.shape[1]
+   204                                           
+   205                                               # run the permutations
+   206         1            6      6.0      0.0      h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
+   207         1           36     36.0      0.0      scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
+   208      1001         2298      2.3      0.0      for i in xrange(n_perm_chunk):
+   209      1000         1134      1.1      0.0          if intercept_test:
+   210                                                       # sign swap (random multiplication by 1 or -1)
+   211                                                       target_vars = (target_vars
+   212                                                                      * rng.randint(2, size=(1, n_samples)) * 2 - 1)
+   213                                                   else:
+   214                                                       # shuffle data
+   215                                                       # Regarding computation costs, we choose to shuffle testvars
+   216                                                       # and covars rather than fmri_signal.
+   217                                                       # Also, it is important to shuffle tested_vars and covars
+   218                                                       # jointly to simplify f_score computation (null dot product).
+   219      1000        60379     60.4      0.3              shuffle_idx = rng.permutation(n_samples)
+   220      1000        24360     24.4      0.1              tested_vars = tested_vars[shuffle_idx]
+   221      1000         1496      1.5      0.0              if confounding_vars is not None:
+   222      1000        14746     14.7      0.1                  confounding_vars = confounding_vars[shuffle_idx]
+   223                                           
+   224                                                   # OLS regression on randomized data
+   225      1000         1819      1.8      0.0          perm_scores = _f_score(tested_vars, target_vars, confounding_vars,
+   226      1000     22663853  22663.9     98.6                                 normalized_design=True)
+   227      1000        47037     47.0      0.2          h0_fmax_part[i] = np.amax(perm_scores, 0)
+   228                                                   # find the rank of the original scores in h0_part
+   229                                                   # (when n_descriptors or n_perm are large, it can be quite long to
+   230                                                   #  find the rank of the original scores into the whole H0 distribution.
+   231                                                   #  Here, it is performed in parallel by the workers involded in the
+   232                                                   #  permutation computation)
+   233      1000         7493      7.5      0.0          scores_as_ranks_part += (h0_fmax_part[i].reshape((-1, 1))
+   234      1000       167561    167.6      0.7                                   < scores_original_data.T)
+   235                                           
+   236         1            3      3.0      0.0      return scores_as_ranks_part, h0_fmax_part.T
+</pre>
+","",""
+"issue_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 15:21:38","Also, CPU usage pattern in parallel computing is good (ie: all CPUs maxed out), and I can run on my desktop (12 cores, 4-year old box) a full-brain Haxby analysis with 10 000 permutations in 60s.
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-06 14:29:32","ping?
+","",""
+"issue_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-06 14:31:56","> ping?
+
+I am going to rip your head off and shit down your neck. (hint: cultural
+reference, just in case you are too young).
+","",""
+"issue_comment","167","nilearn","nilearn","AlexandreAbraham","2014-03-06 14:42:53","> I am going to rip your head off and shit down your neck. (hint: cultural reference, just in case you are too young).
+
+Gael, this is a public area. As responsible of team communication, I have to ask you to put a warning logo before your answer:
+<img src=""http://img.clubic.com/05460701-photo-pegi-18.jpg"" width=""100"" />
+
+PS: As an old man, I know this sentence from Duke Nukem but, apparently, for very old men, the original reference is from Full Metal Jacket.
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-10 14:22:22","Do you think it should be merged in the current state? I think I have addressed all the comments.
+","",""
+"issue_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:36:06","You're almost there. There are still a few comments unaddressed, but it isn't much.
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-11 12:03:31","I found the ""bug"" with `_utils` folder. Mine was under `nilearn/_utils/fixes` but it should have been in `nilearn/nilearn/_utils/fixes`. My bad...
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-11 16:55:48","Done. Waiting for validation (when you have time :).
+","",""
+"issue_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-12 18:28:02","I am :+1: for merge with no other comments.
+
+@bthirion ?
+","",""
+"issue_comment","167","nilearn","nilearn","bthirion","2014-03-12 21:09:31","+1 for merging (Thanks Mathias for the comment: @VirgileFritsch  please address it)
+","",""
+"issue_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-13 10:13:01","Thanks Matthias. I added a small paragraph mentioning Freedman & Lane method explicitly and referenced the bibliography better.
+
+So now the PR should be ready for merge. @GaelVaroquaux, @bthirion I cannot do that :)
+It should not need a rebase.
+","",""
+"pull_request_commit_comment","167","nilearn","nilearn","agramfort","2014-02-22 19:29:44","int | None
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","agramfort","2014-02-22 19:31:46","from .permuted_least_squares import permuted_ols
+
+relative import
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/__init__.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 16:56:54","Maybe I'm missing something, but the first term of the if condition is included in the second one. Why not use the second term only ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/__init__.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 16:58:46","You should describe in the docstrings what happens when th input matrix is rank deficient.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(93, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:00:25","You mean that this is a requirement ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:02:05","Design orthonormality should be checked rather than asserted ? What if the user makes it wrong ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:04:36","Not sure about the -1: is it because you assume that the intercept is not part of the design matrix ? Is it a common convetion from, say, statsmodel ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:07:26","It is slightly unclear. Shouldn't this be computed rather than asserted ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:10:23","Note: the function being private, some of my comments are probably not relevant. But in that  case, you might make further assumptions (trying to include them in the function name) to simplify it ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:11:10","Maybe n_perm ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:13:26","run the permutations
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:17:22","I am surprised: you think that it is more optimal to do this at each iteration than at the end. Maybe the true motivation is that you want to avoid storing all the permutation results ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(220, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:18:51","Will be used
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:24:00","I think you did not introduce explicitly step 1 and step 2
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(400, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:25:44","covars_orthonormalized or orthonormalized_covars
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:27:29","tested_vars
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:28:09","tested_vars_resid_covars
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:31:15","Important reference, but you never refer to it if I am not mistaken.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:44:07","I have  a numerical issue with that doctest. Maybe put yourself in a situation where no coefficient is null
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:46:51","I think you don't have to introduce a sparsity threshold
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:48:12","You mean, this is what the kstest performs ?
+The docstrings are a little bit hard to follow here.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(90, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-03 17:49:35","Some explanation of that test
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 12:26:46","If version < 0.12, the first block is executed, if 0.12 <= version < 0.15, then the second block is, and for version >= 0.15 the last block (`else...`) is executed.
+It is useless to test the whole condition (0.12 <= version < 0.15) since half of it is already captured by the first `if...` statement.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/__init__.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 12:45:46","Such a check would make the function slower, which is a very bad idea regarding code efficiency. The function has been made private so that the user should not call it. Thus, it is the developer that needs to make sure that the `normalized_design` argument is correct.
+
+As already mentioned I do not like the fact that this function computes a F-score for every use-case: It was originally designed for speed and was actually not a function (it became one for code readability). One comment of the PR was that for the sake of completeness, the function should also be callable with non-normalized designs. The latter change did not change the speed of the function but added a lot of code (that is never used in nilearn currently).
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:13","There is a ""-1"" in any case in the F-score formula, even when no covariate (and no intercept) is present.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:16","That's true, good catch. I guess it has been like that for historical reasons.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:18","Ok. Got it.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:20","I do not know, `n_perm_chunk` make it clear that it is not the full permutations that are performed here, but only a part of it.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:23","It avoids storing all the permutation results for sure, but speed is also an argument I think.
+Indeed, we avoid a call to np.searchsorted after the reduce part. The problem is not so much with that call, but with the fact that to speed it up, I parallelized it, thus creating a slight overhead. A good option is to directly compute the rank in the workers that have been created for the permutation... only a tiny gain I must admit.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(220, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:27","Yes, I did.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(400, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:32","Right. Added.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:04:39","No, KS test focuses on the maximum error between the distributions. MSE is a ""uniform"" error.
+I agree that this test is a bit complex.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(90, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-04 20:51:27","But this piece of code is corking on a chunk anyway
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-04 20:58:30","OK, but I doubt that your current solution is efficient. Isn't searchsorted more readable ? WHat do you lose by using it ?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(220, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-04 21:01:13","I think that completeness does not make sense here, given the huge unckehecked hypotheses you make on the data.
+Go for the readibility: give the private function a long name that reflects its ad-hoc purpose, and only deal with the case you need to deal with. 
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-04 21:06:20","yes, but,if  version < .12 then version < 0.15, so why bother with the first case ? You are redefining f_regression in both cases ...
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/__init__.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 23:08:06","But if version == 0.13 (say), then the first case is skipped and we fall in
+the second block (but still not in the third), in which we define a
+slightly different f_regression function than the one of the first block
+(sparse support vs no sparse support).
+Le 4 mars 2014 22:06, ""bthirion"" notifications@github.com a écrit :
+
+> In nilearn/_utils/fixes/__init__.py:
+> 
+> > @@ -0,0 +1,11 @@
+> > +from distutils.version import LooseVersion
+> > +import sklearn
+> > +
+> > +if LooseVersion(sklearn.**version**) < LooseVersion('0.12'):
+> > -    from .sklearn_f_regression_nosparse import (
+> > -        f_regression_nosparse as f_regression)
+> >   +elif (LooseVersion(sklearn.**version**) < LooseVersion('0.15') or
+> 
+> yes, but,if version < .12 then version < 0.15, so why bother with the
+> first case ? You are redefining f_regression in both cases ...
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/nilearn/nilearn/pull/167/files#r10274571
+> .
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/__init__.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-04 23:14:27","It is to avoid defining another function that performs the np.searchsorted
+in parallel (code readability + overhead associated with splitting the data
+once more to distribute computations).
+See diff in commit 3daedc17dd.
+Le 4 mars 2014 21:58, ""bthirion"" notifications@github.com a écrit :
+
+> In nilearn/mass_univariate/permuted_least_squares.py:
+> 
+> > -            shuffle_idx = rng.permutation(n_samples)
+> > -            #rng.shuffle(shuffle_idx)
+> > -            tested_vars = tested_vars[shuffle_idx]
+> > -            if confounding_vars is not None:
+> > -                confounding_vars = confounding_vars[shuffle_idx]
+> >   +
+> > -        # OLS regression on randomized data
+> > -        perm_scores = _f_score(tested_vars, target_vars, confounding_vars,
+> > -                               lost_dof, normalized_design=True)
+> > -        h0_fmax_part[i] = np.amax(perm_scores, 0)
+> > -        # find the rank of the original scores in h0_part
+> > -        # (when n_descriptors or n_perm are large, it can be quite long to
+> > -        #  find the rank of the original scores into the whole H0 distribution.
+> > -        #  Here, it is performed in parallel by the workers involded in the
+> > -        #  permutation computation)
+> > -        scores_as_ranks_part += (h0_fmax_part[i].reshape((-1, 1))
+> 
+> OK, but I doubt that your current solution is efficient. Isn't
+> searchsorted more readable ? WHat do you lose by using it ?
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/nilearn/nilearn/pull/167/files#r10274219
+> .
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(220, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 12:20:24","You do not need to load the mask here, you should simply give the mask name to the NiftiMasker as a string.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 12:21:17","I would prefer applying this condition mask on the output of the NiftiMasker, rather than on the input. That way you can simply pass ""dataset_files.func"" to the NiftiMasker.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 12:27:00","As NiftiMasker.inverse_transform will pad the image with zeros outside the mask, we don't need all of the above. We can simply use an 'np.ma.masked_below(neg_log_pvals_bonferroni_unmasked, vmin)'
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 12:29:06","Do you actually need the ravel in the line above?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:04:07","We never use multiple CPUs by default in script, as under Windows this creates problems. We usual put 'n_jobs=1' with a comment on how to change this.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:15:16","I don't think that I would put 'Analytic F-test' in the title, because it is true for both plots.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:16:12","I think that in both titles it would be interesting to indicate the number of detections, as this is the simplest way to summarize the difference between both approaches.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-05 14:17:57","No the permutation-based p-value is not an 'analytic' result. It should rather be called 'non-parametric'
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-05 14:19:21","Sorry, that is a residual of a local change used to quickly run the script.
+Good catch (since you already made that comment).
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:19:37","> No the permutation-based p-value is not an 'analytic' result. It should rather
+> be called 'non-parametric'
+
+Sounds good with me.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-05 14:20:12","Agreed too.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:24:14","Some people may not know that wrt means ""with regards to"", so I would put it without the abbrievation.
+
+Also, it would be good if you could indent this line by 3 more spaces, to define a list in restructured text.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/sklearn_f_regression.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:24:31","Same remark as above.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/sklearn_f_regression_nosparse.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:29:13","Numpy docstring standard requires a space before the "":"". Also, I find it more readable if there is an empty line between each parameter description. These two comments also apply to the permuted_ols function.
+
+Finally, I think that it would be useful if you could rename var1 and var2 to test_vars and target_vars, as in permuted_ols.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:36:41","Why do you use a ""return"" here?
+
+Can you not just go on with the body of the function (that currently is in the else statement)?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:39:19","That 'asfortranarray' assumes a specific usage pattern of the _f_score. It should probably be put in the caller, as only the caller knows that it is useful.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 14:54:50","This above is wrong: setting random_state=0 in each permutation will get you exactly the same permutations, and thus much less entropy than you believe you have.
+
+The right pattern is a bit tricky:
+1. The permuted_ols needs to take a random_state argument (it already does, but it's not used), that gets passed to check_random_state
+2. Each parallel processing code indeed needs to be seeded (because elsewhere the fork-based behavior will give the same stream of parallel computing) but in the following way:
+
+<pre>
+  random_state=random_state.random_integers(2**32)
+</pre>
+
+
+This warrants both high entropy, and controllable random number generation stream.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 15:24:08","You should at least raise a warning.
+
+The reason being that if in two years, statsmodels changes their import path, this test will be skipped silently and we will never notice at all.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-05 15:28:05","Also, rather than 'return', you should raise nose.SkipTest.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-06 09:49:49","This is somewhat related to issue #165. I will try to swap the call to the NiftiMasker and condition-masking the data.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-06 10:03:12","Cool :) I did not know that trick, is very useful!
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-06 10:47:16","I do not agree on the last point (renaming variates), since a f-score is more general than this precise application. I have already been asked to change from ""tested_vars"" and ""target_vars"" to ""vars1"" and ""vars2"".
+With RPBI, I will use the f_score function on variates that are not corresponding to the initial problem's targets and tested variates.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","bthirion","2014-03-06 11:30:58","I have the same concern as Gael: vars1/vars2 is really obscure. I would even prefer X and y, if one thinks in terms of skl conventions. Sorry If somebody asked you to mv from ""tested_vars"" / ""target_vars"" to ""vars1"" and ""vars2"", but this was a mistake for sure. 
+Using (tested_vars/target_vars) does not limit the applicability of f statsitics, and,
+Most importantly, (vars1/ vars2) is not consistent with the conventions of the module.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-06 12:56:39","Is there any benefit of using `np.iinfo(np.int32).max` instead of 2 *\* 32 (it is purely equivalent in terms of values)?
+Note that `np.iinfo(np.int).max` or `np.iinfo(np.int64).max` do not work with `rng.random_intergers` (""OverflowError: Python int too large to convert to C long"").
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-06 12:58:08","> Is there any benefit of using np.iinfo(np.int32).max instead of 2 *\* 32 (it is
+> purely equivalent in terms of values)?
+
+It's probably more robust to plateform issues. So I would say that it is
+indeed better.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-06 13:36:56","Is there any problem with git/github and directories that start with an underscore?
+I never see the files _utils/fixes/sklearn*.py is the git status list, and your comments about these files are never automatically collapsed even though I finally did the change.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/sklearn_f_regression_nosparse.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:13:47","Line too long.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'doc/building_blocks/searchlight.rst')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:14:30","Line too long.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'doc/building_blocks/searchlight.rst')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:18:48","I think that it is more idiomatic in English to write 'the variable tested', rather than 'the tested variable'. Google seems to agree with me:
+http://www.googlefight.com/index.php?lang=en_GB&word1=%22tested+variable%22&word2=%22variable+tested%22
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'doc/building_blocks/searchlight.rst')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:20:15","Do we need sparse support? Can we not simplify this code?
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/__init__.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:20:58","This comment is not addressed.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/sklearn_f_regression.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:25:19","No that I know. But you didn't address my remark on missing indentation here :)
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/sklearn_f_regression_nosparse.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:30:40","You should also add a link to a non pay-walled version, for instance:
+http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","GaelVaroquaux","2014-03-10 18:34:06","@VirgileFritsch : Could you change the title to ""parametric"", rather than ""analytic"".
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'plot_haxby_mass_univariate.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-11 11:55:23","I made the change for this sentence.
+
+But ""_the_ tested variable"" (significantly?) wins over ""_the_ variable tested"".
+""The tested device"" wins against ""the device tested"", but ""the tested method"" and ""the method tested"" are almost as frequent.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'doc/building_blocks/searchlight.rst')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-11 11:56:51","I did!
+That's the problem: the diff shows that the change has been taken into account, but in the discussion (here), things appear as if nothing has changed.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/sklearn_f_regression_nosparse.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-03-11 11:57:40","It is and the file has even been removed. I do not understand why it still appear here.
+","87c6738b197d5b64cbddb239e6784cbfcab4fbaf","(None, '', u'nilearn/_utils/fixes/sklearn_f_regression.py')"
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-01-30 15:35:43","NF: Add Massively Univariate Linear Model with permuted OLS.
+
+An example is still needed and more tests may be welcomed.","9450a0ccb32603c643d36c13a860c6715238dd0c",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-01-31 09:51:33","cosmetic changes in permuted_ols + rename module.","4df1c135cb5ba6c800be5334dc8c64ca215c4c54",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-01-31 14:49:59","Mass univariate: Add Haxby example.","88025536daf52c46c16702b341321d3e303a33df",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-04 12:32:26","Mass univariate -- permuted OLS: address PR comments.","158b52b766187aa31043feea611665b4d4b13e29",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-04 12:55:37","permuted OLS: Correct doctests + C-contiguousity with copy()","735b0eecd71fc4acf42c184b257ec84181ca6845",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-04 13:49:41","Permuted OLS: fix contiguousarray problem (one check was missing).","090ed2bb87aa77c2b8d98c19d0ea51205c6866d2",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-04 16:40:15","permuted OLS: Modify example --> add thresholded F-score for comparison.","a31b37e33727e72ade0e2fe2bbda08dabbaef8c7",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-06 10:36:08","permuted OLS: adjust memory pre-allocation + robust sparsity threshold.","08833a03ac8b71bdc2f48dffca17d4415bfad3ac",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-10 15:59:21","permuted OLS: add intercept by default + unit tests + code robustness.","409c6e46860e8f600c3e7927a28de93eb32ee9c9",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 12:22:22","permuted OLS: backport for sklearn f_regression.","50e772b5ed7ef89a05d34ce13f7450e9016e9226",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 12:26:05","permuted OLS: commit forgotten files (_utils/fixes directory).","b792740c3a441ada48f483844366fcb615ab2b89",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 12:43:48","permuted OLS: add support for sklearn < 0.12 (no sparse matrix support)","b7728d5b71ae5aca9ad06f0a4298b19db8b74f0d",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 14:02:36","permuted OLS: Add documentation + commit forgotten test_gsarray.py","e063acab7a328898b23cbed8c998140a2f23d878",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 14:13:20","permuted OLS: fix gsarray tests for Travis (raises *several* warnings)","ffd7e2abd6a8c52482e838d3a3062ece8f60b061",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 14:16:40","permuted OLS: fix test again for Travis.","6b3ed64427afda135345f553ad063f455c256cb4",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 15:47:25","permuted OLS: Magnify doc.","70d0a60d47ae3c24ba216aff62d1c71ff5889065",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 16:12:40","permuted OLS: typos + cosmit.","bd52c2cea842868fb5f7100f3890a36aeac2d076",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-11 16:50:24","BF: Being more precise in checking sklearn version in _utils/fixes.","c937bb149b7a44b864fe760ed75f334797639579",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-12 17:45:35","Integrate GaelVaroquaux""s comments on PR.","915c955afbe746f00ca9f1fec5ed08ebc0a11e5f",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-12 17:49:30","Cosmit: rename ""append_iter_data"" in ""append"".","39f18fb9fbbe44ff3a0a5c2c7e976f823d51d0a7",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-17 14:57:00","Addressing more PR comments.","9223931ed397589ce58178461634313012e16e60",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-17 15:00:17","Deal with number of CPUs according to joblib's conventions.","77e231f58b66a1700172b97700269593fe609188",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-17 17:46:13","Test of h0 values.","bc90711e3648de2af1ab3847f1189e525b1da813",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-18 15:27:03","Add tests for h0 distribution.","aa1724445ba6bb8a12603fb1017691520b61b240",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-18 15:45:29","DOC: details about shuffling strategy + remove spurious test and .npz","b2e3a5f0896bf742acebb4179eb1e6c2364034d2",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-18 16:51:17","Typo.","3fefed06dff95a8d21508a634f72394f1e148c18",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-20 13:31:12","More general _f_score function + comments by rphlypo.","57447a51c963cf82622d991bbf4c97bc4c276219",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-20 13:33:13","cosmit in sklearn f_regression fixes.","204c3dc2dfcb78cfe478e50fd81182252222d58f",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 12:38:58","Test of h0 distribution + typos and comments by rphlypo.","cf196cd930d2b84be6407bbfda18ada21f40e727",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 13:57:28","Fix sparsity_threshold automatic computation (simpler + explaination).","56aaa4a4f52afd083c8ceb9b4df352177ae5fcd7",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 14:00:24","DOC: cosmit.","3eec8432c5be56a766eea89e01ec7c60e5dec17f",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 14:09:19","DOC: explain how computational ressources usage can be improved.","5d197298470f7ca2cd677c053b68aa89e62159a6",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 14:38:48","DOC: cosmit.","c8f334f8635478ca43876d740527aaea570c1eb4",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 16:44:32","NF: Add Massively Univariate Linear Model with permuted OLS (v2).
+
+This PR provides massively univariate linear models estimation using
+OLS regression and permutation testing. The code is designed to
+complete a very large number of permutations (> 100000) on a large
+problem (thousands of targets variables, namely the brain voxels)
+within a few minutes.
+As compared to the v1 PR, we do not split the targets so as to perform
+their analysis on parallel computing units, but we delegate a fraction
+of permutations to the parallel computing units. This solves the
+problem we had ensuring the data are permuted in the same manner by
+each worker. The code is also simpler as the max F-score across data
+descriptors can be computed directly after each permutation.
+We assume that we perform analysis of a reasonable number of tested
+variates and that each computing unit can process the target variates
+without the need to split it. Typically, neuroimaging-genetic problems
+(and particularly Genom-Wide Association Studies) require specific
+code optimizations that are not straightwforward with the new design
+proposed in this PR.","4996941ea3d4b34c3fd51707fd860010151e3c49",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 17:43:29","ENH: speed-up F-scores to p-values transformation.
+
+Can be still improved be thresholding the scores (all score below the
+threshold would be assigned a p-value of 1.).","c90d4b0fc9de45b75ce1532309f83b1bde948cc3",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 17:52:49","BF: ravelization of h0 crashed on desktop. Also chunks were not correct.","6a7351dac3882e6418afa1ce5b86447dfdba1dac",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-21 18:16:44","BF: wrong number of permutations was performed.","eba7d731a045da4b889429442201a47e153befd4",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-24 12:11:41","address agramfort comments.","8c4a5d8f7eea2018c9a68fc107d06968f37c6010",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-24 14:20:16","Typo","46b0dd5383b984ed262b6f681c39ef68f50dff95",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-02-26 13:14:36","ENH: refactor parallel p-values computing.
+
+We use the same workers that perform the permutations so we avoid
+the overhead of re-splitting the data and sending them to new workers.","3daedc17ddab948752f3d6b90e56b177ea77ec42",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-04 14:09:59","Address bthirion's comments.","0d13176994350ad471a0a0505df03cb338d30a04",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-06 13:30:48","Fix seeding + back to simpler f_score function + cosmit.","0513c8454646221098896043be7b616ba299e9b2",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-06 13:32:23","DOC: abbreviations.","6fcc89dd99075f16dfcbe19ddef14eaa9c9784b4",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-06 17:03:30","Simplify scikit-learn f_regression backport.","f17decab6f84d1dcc1647a4dd3d3f2b3dce3e02e",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-11 12:01:57","Address GaelVaroquaux's comments.","4280ece7c92795848ab5605678512dcfd8286cc3",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-11 12:06:19","Cosmit(forgotten comment).","d2338e0f31f3ed0dfb253e32163f5d68f8f86535",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-11 12:08:04","Add URL for ""Permutation tests for linear models"".","fcea5c79ec5086f256687c6261210e2d3e84288e",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-12 13:16:35","Reference to Nichols (2014 Nimg) + BF number of detections in example.","c3cba20a0ccef839888e4ba9a53c397d1c2a4dcd",""
+"pull_request_commit","167","nilearn","nilearn","VirgileFritsch","2014-03-13 10:06:04","More references in the docstring of the permuted_ols function.","87c6738b197d5b64cbddb239e6784cbfcab4fbaf",""
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-20 13:43:25","@rphlypo As you can see, I improved the _f_score function.
+But still, I think it now handles a case that is never used in the permuted OLS code, which is a case we will really need in the future (scipy, sklearn and statsmodels provide means to compute F-scores).
+The code has twenty lines more, a lot more tests, and I think this is against the general philosophy of sklearn/nilearn to have minimal code/features.
+
+The _f_score provided here, with the documentation about the assumptions, could be restricted to the normalized_design case and would only be a utility for the permuted_ols function.
+
+I guess all this discussion is about subjective choice (except for the ""minimal code"" rule and @GaelVaroquaux 's famous ""you ain't going to need it"" ;). Anyway, we have it here now, we just need to decide whether or not we keep it or switch it back to the old version.
+","57447a51c963cf82622d991bbf4c97bc4c276219","(91, 256, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 07:47:11","""The higher the rank of the original F-score, the smaller is its associated p-value""
+","57447a51c963cf82622d991bbf4c97bc4c276219","(6, 180, u'doc/building_blocks/searchlight.rst')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 07:48:28","""across""
+","57447a51c963cf82622d991bbf4c97bc4c276219","(16, 23, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 07:48:38","normalized
+","57447a51c963cf82622d991bbf4c97bc4c276219","(22, 28, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 07:50:18","""array transposition preserves the contiguity flag of that array""
+","57447a51c963cf82622d991bbf4c97bc4c276219","(31, 49, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 08:00:38","Sure you want to keep this example? I would have opted for its transpose, so that an orthonormalization takes place of the second against the first vector. The case of orthonormalisation in the proposed example could be solved by taking **any** orthogonal 2x2 matrix and appending zeros to its right (ok, unless the matrix is rank deficient, but again, this case is too exceptional to be considered in a simple example).
+","57447a51c963cf82622d991bbf4c97bc4c276219","(53, 80, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 08:02:21","As per this code, I do not expect to see appear zeros to the right of the matrix in the example.
+","57447a51c963cf82622d991bbf4c97bc4c276219","(72, 91, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 08:03:25","orthogonalized
+","57447a51c963cf82622d991bbf4c97bc4c276219","(116, 276, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 08:05:45","Attention: `random_state` is still given as an argument, not sure why you suppressed its documentation entry (unless you meant to suppress `random_state` from the argument list)
+","57447a51c963cf82622d991bbf4c97bc4c276219","(214, 321, u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","rphlypo","2014-02-21 08:07:12","magical test values ??
+","57447a51c963cf82622d991bbf4c97bc4c276219","(125, 245, u'nilearn/mass_univariate/tests/test_permuted_least_squares.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","AlexandreAbraham","2014-02-01 19:19:50","Just to be sure, I would have checked m.ndim ==  2 instead of the axis value.
+","9450a0ccb32603c643d36c13a860c6715238dd0c","(33, 33, u'nilearn/group_analysis/permuted_least_squares_aux.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","AlexandreAbraham","2014-02-01 19:22:41","If I'm not mistaken, this case cannot happen. In line 54, tmp.shape[1] is limited to n_eig.
+","9450a0ccb32603c643d36c13a860c6715238dd0c","(56, 56, u'nilearn/group_analysis/permuted_least_squares_aux.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-03 15:30:09","I did something about this (check the dimension in a first step, check the axis in a second step).
+","9450a0ccb32603c643d36c13a860c6715238dd0c","(33, 33, u'nilearn/group_analysis/permuted_least_squares_aux.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-03 15:44:39","Solved. Unfortunately, we do not have a test case where this has an influence.
+","9450a0ccb32603c643d36c13a860c6715238dd0c","(56, 56, u'nilearn/group_analysis/permuted_least_squares_aux.py')"
+"pull_request_commit_comment","167","nilearn","nilearn","VirgileFritsch","2014-02-04 13:54:05","The doctests now ensure that the dimensions of the output array is correct when we have zero eigenvalues.
+","9450a0ccb32603c643d36c13a860c6715238dd0c","(56, 56, u'nilearn/group_analysis/permuted_least_squares_aux.py')"

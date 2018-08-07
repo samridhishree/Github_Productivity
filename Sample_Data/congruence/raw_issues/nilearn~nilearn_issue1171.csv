@@ -1,0 +1,25 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1171","nilearn","nilearn","salma1601","2016-07-07 12:42:32","I am trying to do use `NiftiMasker` to get the signals within a region given by a binary mask. It works when I manually resample the mask to the shape and affine of my functional image, but when using the masker reasmpling I am getting an error. May be I am doing something wrong with the `NiftiMasker` ?
+
+``` Python
+import nibabel
+from nilearn import datasets, masking, input_data
+icbm152 = datasets.fetch_icbm152_2009()
+wm_filename = icbm152.wm
+wm_mask_img = masking.compute_epi_mask(wm_filename, upper_cutoff=1.)
+adhd = datasets.fetch_adhd(n_subjects=1)
+func_img = nibabel.load(adhd.func[0])
+target_shape, target_affine = func_img.get_data().shape[:-1], func_img.get_affine()
+wm_masker = input_data.NiftiMasker(mask_img=wm_mask_img,
+                                   target_shape=target_shape,
+                                   target_affine=target_affine)
+wm_signals = wm_masker.fit_transform(adhd.func[0])
+```
+
+throughs the following error
+
+> ValueError: Given mask is not made of 2 values: [ -7.44326475e-15  -7.13535134e-15  -6.32653652e-15 ...,   6.93715918e-15
+>    7.04167627e-15   1.00000000e+00]. Cannot interpret as true or false
+","start issue","Resampling of mask_img does not remove background noise."
+"issue_comment","1171","nilearn","nilearn","AlexandreAbraham","2016-07-19 13:05:33","What happens if that nilearn resamples the mask and, when trying to load it, is bothered by the numerical noise in the background. We should have a special function to resample a mask (ie binarize the values after resampling).
+","",""

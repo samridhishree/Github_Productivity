@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1438","nilearn","nilearn","acamargofb","2017-04-10 18:22:51","Hi Nilearn experts:
+
+I am trying to create mask and apply it to a T1 image (just for check it is correct) and I having problems,
+
+Here is the code with the error:
+
+
+fmri_gm_norm = '/home/brain/Downloads/Audrey_Vanhaudenhuise/T1/mni_icbm152_gm_tal_nlin_sym_09a.nii'
+T1 = '/home/brain/Downloads/Audrey_Vanhaudenhuise/T1/T1.nii'
+
+# Creating the mask
+from nilearn.input_data import NiftiMasker
+masker = NiftiMasker(mask_strategy='epi',
+                     mask_args=dict(upper_cutoff=.9, lower_cutoff=.4,
+                                    opening=False))                                   
+masker.fit()
+
+
+## Applying the mask to T1
+T1_masked = masker.transform(T1)
+
+
+TypeError: Data given cannot be loaded because it is not compatible with nibabel format:
+None","start issue","Problems creating a mask"
+"issue_closed","1438","nilearn","nilearn","KamalakerDadi","2017-06-23 00:52:52","","closed issue","Problems creating a mask"
+"issue_comment","1438","nilearn","nilearn","acamargofb","2017-04-11 16:18:46","Thanks a lot,  it works :)","",""
+"issue_comment","1438","nilearn","nilearn","KamalakerDadi","2017-04-10 19:56:14","You should be using like this:
+Step 1: I am trying to create mask
+
+```python
+fmri_gm_norm = '/home/brain/Downloads/Audrey_Vanhaudenhuise/T1/mni_icbm152_gm_tal_nlin_sym_09a.nii'
+T1 = '/home/brain/Downloads/Audrey_Vanhaudenhuise/T1/T1.nii'
+
+from nilearn.input_data import NiftiMasker
+masker = NiftiMasker(mask_strategy='epi',
+mask_args=dict(upper_cutoff=.9, lower_cutoff=.4,
+opening=False))
+masker.fit(fmri_gm_norm)
+```
+Step 2: and apply it to a T1 image
+```python
+# You should `fit` your mask image first and then should be using to transform
+# your T1.
+
+data = masker.transform(T1) 
+```
+
+Hope this helps.
+","",""

@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1397","nilearn","nilearn","chrplr","2017-03-02 16:33:50","It would be nice to have a function which returns a list of the xyz coordinates of the first 'n' local maxima ? (or just the the n maximal voxels, without being necessarily local maxima)
+
+ ","start issue","wish list: locate the peaks (maxima) in a volume"
+"issue_comment","1397","nilearn","nilearn","eickenberg","2017-03-02 16:39:24","n maximal voxels is
+
+img.get_data().argsort()[::-1][:n]
+
+a bit faster with argpartition.
+
+This is quite different from finding local maxima, which for stability
+should be smoothing followed by an intersection of masks indicating whether
+a voxel value is larger than eqch of it's neighbors' values
+
+On Thursday, 2 March 2017, Christophe Pallier <notifications@github.com>
+wrote:
+
+> It would be nice to have a function which returns a list of the xyz
+> coordinates of the first 'n' local maxima ? (or just the the n maximal
+> voxels, without being necessarily local maxima)
+>
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly, view it on GitHub
+> <https://github.com/nilearn/nilearn/issues/1397>, or mute the thread
+> <https://github.com/notifications/unsubscribe-auth/ABPwC3iALLnCSVfaDbWKj695IgKXQNbXks5rhu9ugaJpZM4MROD_>
+> .
+>
+","",""
+"issue_comment","1397","nilearn","nilearn","chrplr","2017-03-02 16:56:42","Thanks!
+Now, I am just a bit unsure how I should then convert back into coordinates (to create a SphereMasker). I guess I must apply the affine transform.","",""
+"issue_comment","1397","nilearn","nilearn","AlexandreAbraham","2017-03-03 07:54:59","One can use scikit-image to retrieve local maxima. I have this code but not sure it is still working:
+```
+def find_poi(data, affine, smooth=10.):
+    from skimage.feature.peak import peak_local_max
+    # Smooth the data to remove meaningless local maxima
+    markers_ind = _smooth_array(data, affine, fwhm=smooth)
+    markers_ind = peak_local_max(markers_ind, exclude_border=False,
+            min_distance=6)
+    return markers_ind
+```","",""

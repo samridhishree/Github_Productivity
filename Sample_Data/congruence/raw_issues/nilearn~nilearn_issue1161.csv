@@ -1,0 +1,38 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1161","nilearn","nilearn","dohmatob","2016-07-04 15:38:27","For example, the following we crash:
+
+`threshold_img(""my_maps.nii.gz"", mask_img=""my_mask.nii.gz"", threshold=""98%"")`
+
+with traceback
+
+```
+/home/elvis/.local/lib/python2.7/site-packages/nilearn-0.2.5-py2.7.egg/nilearn/image/image.pyc in threshold_img(img, threshold, mask_img)
+    675 
+    676     if mask_img is not None:
+--> 677         if not _check_same_fov(img, mask_img):
+    678             mask_img = resampling.resample_img(mask_img, target_affine=affine,
+    679                                                target_shape=img.shape[:3],
+
+/home/elvis/.local/lib/python2.7/site-packages/nilearn-0.2.5-py2.7.egg/nilearn/_utils/niimg_conversions.pyc in _check_same_fov(*args, **kwargs)
+     56     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
+     57             kwargs.items(), 2):
+---> 58         if not a_img.shape[:3] == b_img.shape[:3]:
+     59             errors.append((a_name, b_name, 'shape'))
+     60         if not np.allclose(a_img.get_affine(), b_img.get_affine()):
+
+AttributeError: 'str' object has no attribute 'shape'
+> /home/elvis/.local/lib/python2.7/site-packages/nilearn-0.2.5-py2.7.egg/nilearn/_utils/niimg_conversions.py(58)_check_same_fov()
+     56     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
+     57             kwargs.items(), 2):
+---> 58         if not a_img.shape[:3] == b_img.shape[:3]:
+     59             errors.append((a_name, b_name, 'shape'))
+     60         if not np.allclose(a_img.get_affine(), b_img.get_affine()):
+
+ipdb> 
+```
+
+A fix would be to do `mask_img = check_niimg(mask_img)` in the beginning of the `threshold_img` function.
+","start issue","threshold_img crashes if mask_img is string (other image manip routines may be affected)"
+"issue_closed","1161","nilearn","nilearn","AlexandreAbraham","2016-07-07 12:23:48","","closed issue","threshold_img crashes if mask_img is string (other image manip routines may be affected)"
+"issue_comment","1161","nilearn","nilearn","AlexandreAbraham","2016-07-07 12:23:48","Fixed by #1162.
+","",""

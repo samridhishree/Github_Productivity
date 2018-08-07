@@ -1,0 +1,164 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","277","nilearn","nilearn","banilo","2014-11-11 14:33:26","tries to address #183
+","start issue","added concat_img() in nilearn.image"
+"issue_closed","277","nilearn","nilearn","lesteve","2015-01-14 09:32:34","","closed issue","added concat_img() in nilearn.image"
+"pull_request_title","277","nilearn","nilearn","banilo","2014-11-11 14:33:26","tries to address #183
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","added concat_img() in nilearn.image"
+"pull_request_merged","277","nilearn","nilearn","lesteve","2015-01-14 09:32:34","added concat_img() in nilearn.image","13ef131a0440459232f64e7a71021687ab7ae3c2","Pull request merge from banilo/nilearn:new_concat to nilearn/nilearn:master"
+"issue_comment","277","nilearn","nilearn","banilo","2014-11-16 22:46:34","Thanks for the advice, I tried to remedy accordingly.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2014-11-19 08:19:37","Here's a use case: some time ago, we wanted to run summary analyses on the top of a bunch of previous quantitative meta-analyses published by different laboratories (project related to cognitive primitives). That is, there were niftis in different shapes as well as data in different representations (3D/4D), since everybody simply sent there data in the form they have the habit of processing it at their respective labs.
+
+In this particular case, it would have been nice to rapidly get an overview of all the heterogeneous data by first getting everything into one 4D image in the same space to begin with.
+More generally, I see the gain of concat_img in being able to collect niftis from heterogeneous origins/data processing cultures, including NeuroVault- or OpenfMRI-like sources.
+","",""
+"issue_comment","277","nilearn","nilearn","lesteve","2014-11-19 14:45:45","OK I just realised now that @banilo took the code of _utils.concat_niimgs with some slight modifications so that most of my comments applied mostly to the former.
+
+Also I do believe we should think of a better way to share code to add this auto_resample functionality.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2014-11-22 13:31:45","So, how about refactoring the code like this:
+
+Take the functionality from the private _utils.concat_niimgs to the public image.concat_img, including the arguments auto_resample (currently image.concat_img) and accept_4d (currently _utils.concat_niimgs). 
+
+This combined public function could then be called in check_niimgs and related functions.
+
+Additionally, the ""_img"" suffix appears to be more prevalent than ""_niimg"" in nilearn, in general.
+","",""
+"issue_comment","277","nilearn","nilearn","lesteve","2014-11-24 08:18:18","> Take the functionality from the private _utils.concat_niimgs to the public image.concat_img, including the arguments auto_resample (currently image.concat_img) and accept_4d (currently _utils.concat_niimgs).
+> 
+> This combined public function could then be called in check_niimgs and related functions.
+
+I would say this is the wrong way around: _utils should be used by user-facing modules otherwise you'll increase your risk creating circular depencies. Maybe the simplest is to add the functionality to _utils and then just do `from _utils import concat_img` in image.py so that it is exposed to the user.
+
+> Additionally, the ""_img"" suffix appears to be more prevalent than ""_niimg"" in nilearn, in general.
+
+I agree on this one.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2014-11-24 08:23:37","So, I understand...
+1) we just update _utils.concat_niimgs with the new auto_resample option
+2) we rename this function into ""concat_img"" and change all calls in nilearn accordingly?
+","",""
+"issue_comment","277","nilearn","nilearn","lesteve","2014-11-24 08:26:08","> So, I understand...
+> 1) we just update _utils.concat_niimgs with the new auto_resample option
+> 2) we rename this function into ""concat_img"" and change all calls in nilearn accordingly?
+
+I think so and if we want a user-facing concat_img we just import it in nilearn.image something like:
+`from .._utils import concat_img` this way it will be accessible as `nilearn.image.concat_img`
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2014-11-24 08:27:31","Good idea!, ok, I will do this in the afternoon.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2014-11-27 08:41:04","Private function _concat_niimg updated accordingly.
+","",""
+"issue_comment","277","nilearn","nilearn","lesteve","2014-12-17 14:43:22","@banilo still a merge conflict on this one, have you checked where it is coming from?
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2014-12-18 13:48:37","...merge conflicts resolved.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2014-12-23 14:09:58","Last comments integrated.
+
+Pushing of a commit that only restores trailing white spaces does actually not work reliably for me :( This is why I made random changes in the local neighbor hood...
+","",""
+"issue_comment","277","nilearn","nilearn","bthirion","2014-12-23 15:53:31","Besides the test aspect,  the PR looks good to me.
+","",""
+"issue_comment","277","nilearn","nilearn","lesteve","2015-01-05 15:39:55","An additional thing is that the promise of this PR is not fulfilled: you have not added concat_img to nilearn.image ...
+
+I think the idea was just to do something along the lines of:
+`from _utils.niimg_conversions import concat_niimg as concat_img`
+in `nilearn/image/__init__.py`. A test using nilearn.image.concat_img would be good.
+","",""
+"issue_comment","277","nilearn","nilearn","AlexandreAbraham","2015-01-07 11:48:08","Is there a usecase where we want to concat 3D and 4D images ? I would expect to concat only 3D or 4D images, mixing 3D and 4D images should raise an error, or at least a warning.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2015-01-07 09:41:59","All aspects should have been addressed now.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2015-01-14 09:06:40","As @lesteve said, this PR does not relate to the behavior you are talking about. This aspect remains unchanged.
+","",""
+"issue_comment","277","nilearn","nilearn","banilo","2015-01-14 09:34:46",":beer: 
+","",""
+"pull_request_commit_comment","277","nilearn","nilearn","AlexandreAbraham","2014-11-11 22:11:48","`array_equal` may not be the best function to use with float values.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","AlexandreAbraham","2014-11-11 22:12:54","Do you really have a use case where this parameter is useful?
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","banilo","2014-11-12 08:10:30","I was inspired by how the affines are compared in niimg_conversion.py. What should I use instead?
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","banilo","2014-11-13 08:01:27","Gael added this function and auto_resample option to the 0.1 milestone (cf. #183)
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","bthirion","2014-11-16 21:46:02","You probably need to explain a bit more the logic of the function here since your image concatenation can do really fancy stuff.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","bthirion","2014-11-16 21:54:32","the `sizes` naming  (and size in the for loop below) is not good because this is not consistent with what is called a size in numpy.  This probably fits better with the concept of len.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-11-19 10:46:06","This could be a assert_array_equal, right?
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-11-19 10:46:44","PEP8 misalignment I think, it's probably worth spending some time setting up PEP8 warnings in your editor of choice.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-11-19 10:50:22","You can decorate the test function with nose.with_setup decorator which is quite handy for this kind of setup, teardown stuff. An example [here](https://github.com/nilearn/nilearn/blob/master/nilearn/tests/test_datasets.py#L61).
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","GaelVaroquaux","2014-11-19 10:54:59","> Do you really have a use case where this parameter is useful?
+
+Bunch of data acquired on different subjects. The data having been
+realigned using rigid transformation, thus only the affine has been
+modified. As a result, they have different affines.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","banilo","2014-11-19 11:57:59","practical use case:
+download z-maps from Neurovault that came from different laboratories / preprocessing pipelines -> we want to run third-level analyses across those, without resampling each image by hand first
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","GaelVaroquaux","2014-11-19 11:58:59","> download z-maps from Neurovault that came from different laboratories /
+> preprocessing pipelines -> we want to run third-level analyses across
+> those, without resampling each image by hand first
+
+Great example!
+
+Although I would use a NiftiMasker to do that :)
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-11-19 12:13:07","I believe the `verbose` argument is generally an int rather than a boolean in nilearn.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","GaelVaroquaux","2014-11-19 12:22:00","> I believe the verbose argument is generally an int rather than a boolean in
+> nilearn.
+
+Both work, as False is equivalent to 0 and True to 1.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-11-19 12:29:24","You are not using `index` in this loop.
+
+Probably related the comment in the line below doesn't make sense any more.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-11-19 12:36:07","> Both work, as False is equivalent to 0 and True to 1.
+
+Sure, but I meant more as a general convention. It seems most of the code I have seen in nilearn does `verbose=0` by default and does a ""greater than"" comparison for printing debug information.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","GaelVaroquaux","2014-11-19 12:42:54","> Sure, but I meant more as a general convention. It seems most of the code I
+> have seen in nilearn does verbose=0 by default and does a greater than
+> comparison for printing debug information.
+
+The greater than will also work with ints. I have no preference.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-11-19 12:47:52","You can use `%r` in your string template to avoid having to use repr (not sure what gain you expect by using repr btw)
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-12-19 08:28:09","You have to use `from nilearn._utils.testing import assert_raises_regexp` so that it works with Python 2.6
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2014-12-19 09:18:23","Shouldn't there be a 's', i.e. length**s**?
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","bthirion","2014-12-23 15:52:56","Nosetest tells me that lines 290-297 are not tested. If it is the case, could you add a test ?
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2015-01-12 16:36:27","You could do something like this that would test that they are actually the exact same function
+
+``` python
+# in the imports
+from ..._utils import niimg_conversions
+
+# in the tests
+def test_concat_imgs():
+    image.concat_imgs is niimg_conversions.concat_niimgs
+```
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2015-01-12 16:39:58","I don't understand what you mean by ""parse"" here and also a few times in the lines below. Also I am not sure what useful piece of information this comments bring.
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2015-01-12 16:47:52","Sorry there is a missing assert_true in the previous comment:
+
+``` python
+# in the tests
+def test_concat_imgs():
+    assert_true(image.concat_imgs is niimg_conversions.concat_niimgs)
+```
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","277","nilearn","nilearn","lesteve","2015-01-13 10:48:50","I guess you don't need this test any more, i.e. all the testing is done in the _utils.niimg_conversions test
+","4102d5190f84d0f48e3cdde7bca5891db7c97aab","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit","277","nilearn","nilearn","banilo","2015-01-13 10:27:35","added auto_resample to concat_niimgs()","55cffe5607a7f079bb2bf3612a3bb44bfe93851a",""
+"pull_request_commit","277","nilearn","nilearn","banilo","2015-01-14 07:41:42","removed unnecessary test","4102d5190f84d0f48e3cdde7bca5891db7c97aab",""

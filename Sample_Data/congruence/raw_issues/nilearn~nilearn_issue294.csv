@@ -1,0 +1,352 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","294","nilearn","nilearn","banilo","2014-11-24 16:39:55","tries to address #292 
+","start issue","[ENH] globally unifying _img/_niimg naming in API+variables"
+"issue_closed","294","nilearn","nilearn","lesteve","2014-12-04 13:19:46","","closed issue","[ENH] globally unifying _img/_niimg naming in API+variables"
+"pull_request_title","294","nilearn","nilearn","banilo","2014-11-24 16:39:55","tries to address #292 
+","12c3053e78d6338256b8556a6b0888b86c27863e","[ENH] globally unifying _img/_niimg naming in API+variables"
+"pull_request_merged","294","nilearn","nilearn","lesteve","2014-12-04 13:19:46","[ENH] globally unifying _img/_niimg naming in API+variables","93fce15c1b8a032a4fa30365b3e4ab0401eef63e","Pull request merge from banilo/nilearn:niimg to nilearn/nilearn:master"
+"issue_comment","294","nilearn","nilearn","eickenberg","2014-11-25 12:30:51","I'm finding this not easy to review, because I am not 1000% sure of the criteria. I can go on giving my opinion, but I'd prefer making sure I am reasoning in the right direction first. I kind of liked ""niimg"" ...
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-11-25 15:07:17","Below is my summary of the compromise I gathered from the previous conversations. Please anyone shout if I misunderstood or misrepresented something:
+1. Outside of _utils always use _img. In order to avoid ambiguities I am sincerely hoping that all the user-facing functions always accept Nifti-like images via calling _utils.check_img et al.
+2. Inside _utils, make the difference between
+   - _img: an object that has get_data and get_affine
+   - _niimg: either a Nifti filename or an _img
+
+So to take a few realistic examples:
+
+``` python
+# plotting/img_plotting.py
+
+def plot_img(img):
+    ""are we fine with the check_niimg(img) inconsistency here""
+    img = check_niimg(img)  
+    # rest of the code
+```
+
+``` python
+# _utils/niimg_conversions.py
+
+def check_niimg(niimg):
+    # whatever the code does to check 'niimg' type 
+    # and possibly convert the filename to an image
+
+def is_img(img):
+    # check that img has get_data and get_affine
+```
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-11-27 08:49:08","I would realize Loic's suggestion, then. Unless there are objections?
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-11-27 09:45:41","In the last (squashed) commit I attempted the following compromise:
+
+a) functions/variables unambiguously dealing with Nifti1Image objects -> ""img""
+b) functions/variables dealing with either Nifti1Image objects or paths to niftis or lists of these -> ""niimg""
+","",""
+"issue_comment","294","nilearn","nilearn","eickenberg","2014-11-27 09:47:30","dont squash until you are ready to merge
+
+On Thursday, November 27, 2014, Danilo Bzdok notifications@github.com
+wrote:
+
+> In the last (squashed) commit I attempted the following compromise:
+> 
+> a) functions/variables unambiguously dealing with Nifti1Image objects ->
+> ""img""
+> b) functions/variables dealing with either Nifti1Image objects or paths to
+> niftis or lists of these -> ""niimg""
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/294#issuecomment-64767176.
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-11-27 10:02:58","> In the last (squashed) commit I attempted the following compromise:
+> 
+> a) functions/variables unambiguously dealing with Nifti1Image objects -> ""img""
+> b) functions/variables dealing with either Nifti1Image objects or paths to niftis or lists of these -> ""niimg""
+
+You followed this only inside _utils, right?
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-11-27 10:07:20","Rather, for all changes files, including _utils.*
+
+2014-11-27 11:02 GMT+01:00 Loïc Estève notifications@github.com:
+
+> In the last (squashed) commit I attempted the following compromise:
+> 
+> a) functions/variables unambiguously dealing with Nifti1Image objects ->
+> ""img""
+> b) functions/variables dealing with either Nifti1Image objects or paths to
+> niftis or lists of these -> ""niimg""
+> 
+> You followed this only inside _utils, right?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/294#issuecomment-64769154.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-11-27 10:28:38","> Rather, for all changes files, including _utils.*
+
+:confused: At first sight, it looks like you did what I proposed so I am going to completely disregard your last comment.
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-11-27 10:34:41","Whatever the Watzlawickian communication bottleneck... From what I
+understood, we might all agree on the current version of the PR. Let's see.
+
+2014-11-27 11:28 GMT+01:00 Loïc Estève notifications@github.com:
+
+> Rather, for all changes files, including _utils.*
+> 
+> [image: :confused:] At first sight, it looks like you did what I proposed
+> so I am going to completely disregard your last comment.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/294#issuecomment-64772258.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-11-28 08:58:59","I think we should come up with a uniform description of the `img` parameter in the docstring as well. At the moment here are a few examples I could find:
+- niimg
+- string or object
+- nilearn nifti image
+- a nifti-image like object or a filename
+
+The wording [there](http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg-like-objects) seems to be ""Niimg-like object"". We could use this wording but I am not sure how to point to a useful description of what a Niimg-like object inside the docstring.
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-11-28 21:50:53","Last commit..
+a) restored unnecessary PEP8 fixes
+b) change concat_img to concat_niimgs
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-01 08:05:53","> a) restored unnecessary PEP8 fixes
+
+There are still some left ...
+
+Besides that I believe the main remaining thing is to come up with a uniform and useful docstring description, see my post above.
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-12-01 08:14:38","Regarding the documentation issue: how about docstring-ing 3 baseline entities:
+a) img: a nibabel.Nifti1Image object, with .get_affine(), .get_data() and shape
+b) str: filename/path to a nifti image
+c) niimg (restriced to _utils): (iterable of) a or b
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:12:26","There are still `niimg` occurences lingering in other files, e.g. nilearn/decoding/searchlight.py
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:18:52","> There are still niimg occurences lingering in other files, e.g. nilearn/decoding/searchlight.py
+
+Also in nilearn/image/resampling.py
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-12-01 19:05:39","Ok, how about the current status?
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-01 19:16:24","> Ok, how about the current status?
+
+Looking closer but a few of my comments are still visible, meaning they have been missed  ...
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-12-02 10:08:25","Ok, last touches done
+
+:dancers: 
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-12-02 13:22:07","Last last touches done...
+
+:ghost: 
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-12-02 15:35:37","Last last touches done...
+
+:dancer: :dancer: :dancer: :dancer: :dancer: :dancer: :dancer: 
+","",""
+"issue_comment","294","nilearn","nilearn","banilo","2014-12-04 08:35:32","Voilà, commits squashed... resolved 1 merge conflict in plot_oasis... on the way.
+
+Regarding test: final commit has works-on-my-machine certificat
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-04 10:06:25","plot_oasis_vbm.py is broken: you left some niimg in there
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-04 10:08:57","there are still some niimg left in decoding/searchlight.py
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-04 10:11:26","Outside the last few comments, I think we are closing in on near-perfection. I am sure we missed a few but they will be fixed incrementally.
+","",""
+"issue_comment","294","nilearn","nilearn","lesteve","2014-12-04 13:19:36","All right, we got there or close enough in the end :fireworks:!
+
+Kudos for going through the pain to bring this to completion.
+","",""
+"issue_comment","294","nilearn","nilearn","GaelVaroquaux","2014-12-04 13:39:38","Hurray! Thanks
+
+<div>-------- Original message --------</div><div>From: Loïc Estève notifications@github.com </div><div>Date:04/12/2014  14:19  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Subject: Re: [nilearn] [ENH] globally unifying _img/_niimg naming in
+  API+variables (#294) </div><div>
+</div>Merged #294.
+
+—
+Reply to this email directly or view it on GitHub.
+","",""
+"pull_request_commit_comment","294","nilearn","nilearn","eickenberg","2014-11-25 12:11:04","maybe go for `is_img` because 'a' isn't the right article for 'img'. Interesting that this said ""niimg"" to begin with -- this function will not accept filenames as valid images.
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","eickenberg","2014-11-25 12:11:33","wait for another opinion before making this change
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","eickenberg","2014-11-25 12:12:42","this function also doesn't accept filenames, so good change.
+","12c3053e78d6338256b8556a6b0888b86c27863e","(23, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","eickenberg","2014-11-25 12:14:50","I would write ""image"" here or stay with ""niimg"" (but again, it can't be a filename here)
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","banilo","2014-11-27 08:51:19","Yes, is_img appears to be a good solution. Objections?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","banilo","2014-11-27 08:52:57","Suggestion: Should we just tend to use ""image"" in docstrings and comments as a human-language correlate of img objects?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-11-27 14:56:02","Unnecessary change
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-11-27 14:58:58","I guess you should use img rather than nifti_image here.
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-11-27 14:59:24","a_n_ image
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-11-27 15:05:09","I thought we agree that we would keep niimg in this kind of cases:
+- we are in _utils so we bother about making the img/niimg distinction
+- niimgs can be a list of paths or image objects (since we called check_niimg on them)
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-11-27 15:11:41","I am guessing your editor removes newlines at the end of the file automatically. It would be nice to disable that since that introduces unnecessary noise in the diff.
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/__init__.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-11-27 15:39:47","Still some unnecessary PEP8 fixes like this in a few places. Can you look at your diff and remove all of them?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","banilo","2014-11-27 21:21:04","Yes indeed...i will disable this Feature 
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/__init__.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","banilo","2014-11-28 21:15:14","Fixed this uncalled for default behavior of atom editor now!
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:26:41","niimgs?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:28:58","iterable of niimg-like objects?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:30:40","Keep niimg here and the line above, since you are iterating over niimgs?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:31:21","Same thing here img -> niimg
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:32:12","iter_img -> iter_niimg
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:33:10","I would keep the (iterable of)*
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:33:34","Still a new line here
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:34:07","list of Niimg-like objects + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:34:47","I would keep ""list of""
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:35:49","Niimg-like object, instance of NiftiMasker ...
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:35:59","List of
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:36:30","Niimg-like object?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:37:38","List of or plural?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:37:59","Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/__init__.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:39:03","Niimg-like object
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:40:58","I would add ""or iterable of Niimg-like object""
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:43:07","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:43:28","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:43:53","Niimg-like object
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:44:46","Should we say image here?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:45:13","Add ""or iterable of Niimg-like objects""
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:45:55","Do we need the explanation now that we have the link to the doc?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:48:51","a_n_ img
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:49:28","a_n_ img
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:49:47","a_n_ img
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'plot_mask_computation.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:52:29","list of Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:58:29","list of?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:58:40","Niimg-like object + URL?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 14:59:31","Niimg-like object
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:03:19","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:03:21","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:04:28","Niimg-like object
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:05:04","Niimg-like object
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:05:13","Niimg-like object
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:05:56","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-01 15:06:03","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:40:22","I think what the (...)\* meant was: Niimg-like object or iterable of Niimg-like objects.
+
+Maybe we should use the wording ""4D Niimg-like object"" to follow the doc URL .
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:41:18","list of Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:42:01","object_s_
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:42:15","object_s_
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:42:27","object_s_
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:43:23","and keep 4D. Something like ""list of 4D Niimg-like object""
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:45:14","Syntax error
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:48:31","Still some unwanted PEP8 changes
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:48:41","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:48:45","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:48:50","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:48:54","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:48:59","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:49:03","and again
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:49:20","missing URL?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 12:55:11","should we use 4D Niimg-like object here and everywhere that check_niimg_s_ is used?
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 13:13:47","list of ...
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 13:51:06","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/nifti_region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 13:51:12","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/nifti_region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 13:52:44","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/nifti_region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 13:52:51","Niimg-like object + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/nifti_region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 14:01:11","list of Niimg-like objects + URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 14:51:10","list of Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 14:55:20","4D Niimg-like object (I think ...)
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 14:59:11","Actually I don't understand the code in detail, just follow the old docstring i.e.:
+list of Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 15:03:36","Again, I don't follow the code completely but based on the old docstring I would use:
+list of Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 15:05:23","list of Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-02 15:10:17","same thing as above, I don't understand the code well enough, but I would follow the hint of the old docstring and go for:
+list of Niimg-like objects
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-04 10:04:07","missing URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-04 10:04:15","missing URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","294","nilearn","nilearn","lesteve","2014-12-04 10:04:23","missing URL
+","12c3053e78d6338256b8556a6b0888b86c27863e","(None, '', u'nilearn/region.py')"
+"pull_request_commit","294","nilearn","nilearn","banilo","2014-12-04 11:55:16","API: globally unifying niimg/img in functions/variables","12c3053e78d6338256b8556a6b0888b86c27863e",""

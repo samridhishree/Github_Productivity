@@ -1,0 +1,360 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","293","nilearn","nilearn","eickenberg","2014-11-24 10:25:46","Adding functionality to make colorbar range from 0 to vmax instead of -vmax to +vmax. Which example should I best illustrate this on? @lesteve 
+","start issue","[ENH + MRG] added symmetric_range kw to plot_stat_map"
+"issue_closed","293","nilearn","nilearn","GaelVaroquaux","2015-02-05 16:55:50","","closed issue","[ENH + MRG] added symmetric_range kw to plot_stat_map"
+"pull_request_title","293","nilearn","nilearn","eickenberg","2014-11-24 10:25:46","Adding functionality to make colorbar range from 0 to vmax instead of -vmax to +vmax. Which example should I best illustrate this on? @lesteve 
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","[ENH + MRG] added symmetric_range kw to plot_stat_map"
+"pull_request_merged","293","nilearn","nilearn","GaelVaroquaux","2015-02-05 16:55:50","[ENH + MRG] added symmetric_range kw to plot_stat_map","abe92c206ba778273d61dd3f2302aa3727883eea","Pull request merge from eickenberg/nilearn:plot_symmetric_range to nilearn/nilearn:master"
+"issue_comment","293","nilearn","nilearn","eickenberg","2014-11-24 11:52:06","![symmetric_cbar](https://cloud.githubusercontent.com/assets/1306635/5164473/9aa40dc2-73d8-11e4-83c9-2845373185e1.png) 
+
+### becomes
+
+![non_symmetric_cbar](https://cloud.githubusercontent.com/assets/1306635/5164477/a40dc8f8-73d8-11e4-981f-6a17f259ed99.png)
+
+Without changing a single line of code in `plot_localizer_simple_analysis.py`
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2014-11-24 11:59:41","Ah yes, good point. We had discussed that actually. Was too happy when everything worked on the first test :)
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2014-11-24 12:00:44","It's more work, I know, but it will really solve the problem that our
+users were having.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2014-11-24 12:02:15","I confirm: Changing to default colormap in the cited example leads to a weird plot.
+","",""
+"issue_comment","293","nilearn","nilearn","lesteve","2014-11-24 12:18:50","> I confirm: Changing to default colormap in the cited example leads to a weird plot.
+
+What kind of weird are we talking about, blue pixels associated with non-negative values?
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2014-11-24 12:23:28","exactly :) -- I am looking at matplotlib doc to be able to specify the boundaries of the colormap. One can always use an array as a 1D image to make the whole colorbar, but I am checking to see if this situation is provided for already in matplotlib. Do you happen to know if this is the case?
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2014-11-24 12:26:21","> One can always use an array as a 1D image to make the whole colorbar,
+
+I am afraid that you'll have to do this.
+","",""
+"issue_comment","293","nilearn","nilearn","lesteve","2014-11-24 12:46:46","What about having cmap default to None and seting the colormap in the two different cases, e.g. the current one if there are both negative and positive values and a more suitable one if there are only positive/negative values?
+
+I would be pretty annoyed if I passed in my favourite colormap and realised that only half of it was used because I was in the ""positive values only"" case.
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2014-11-24 12:50:27","> What about having cmap default to None and seting the colormap in the two
+> different cases, e.g. the current one if there are both negative and positive
+> values and a more suitable one if there are only positive/negative values?
+
+I think that explicit is better than implicit. More importantly, I want
+to make it easy for people to use different colormaps.
+
+> I would be pretty annoyed if I passed in my favourite colormap and
+> realised that only half of it was used because I was in the ""positive
+> values only"" case.
+
+Then you would set ""symmetric_range"" to False (and we need to point to
+that in the docstring of the cmap argument).
+","",""
+"issue_comment","293","nilearn","nilearn","lesteve","2014-11-24 13:27:38","Maybe I am missing something here but I think what we are trying to fix here is that the **default** cmap doesn't follow the best practices (i.e. using blue/red when all your values have the same sign), hence my suggestion above. To me it doesn't feel very natural to potentially keep only half of the cmap when the user explicitly specifies one.
+
+> More importantly, I want to make it easy for people to use different colormaps.
+
+I don't understand this, the auto-setting of the colormap would only happen when cmap is left to its default (i.e. None). If the cmap is specified then you left it unmodified.
+
+> Then you would set ""symmetric_range"" to False (and we need to point to that in the docstring of the cmap argument).
+
+I don't know it still feels less than great to have to specify two separate arguments when you just want a different colormap.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2014-11-24 15:35:51","The fact that all nilearn colourmaps are symmetric in this way can be a justification for the `symmetric_range=` keyword etc.
+
+As Gaël (resp. google) rightly said to me (resp. google internal gmail users), ""you are not the user"", when I stated similar reservations wrt this. Now the question is what do the users think about this. 
+
+Coming from using basic matplotlib, I too am annoyed at things not doing what I want them to do. The question is whether the users have used basic matplotlib.
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2014-11-24 15:37:00","> Coming from using basic matplotlib, I too am annoyed at things not
+> doing what I want them to do. The question is whether the users have
+> used basic matplotlib.
+
+These users should be using plot_img.
+","",""
+"issue_comment","293","nilearn","nilearn","lesteve","2014-11-25 15:38:50","About plot_img, one of the major annoyances I bumped into is that it doesn't have a default bg_img + anat dimming so that you have to write a few non-trivial lines when switching from plot_stat_map to plot_img.
+
+Any objections to add the default anat + anat dimming to plot_img?
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2014-11-25 15:52:48","> Any objections to add the default anat + anat dimming to plot_img?
+
+Objection your honor: it shouldn't be on by default. Not every data is in
+standard space. Not every data should be plotted would a background.
+Actually, most data shouldn't.
+","",""
+"issue_comment","293","nilearn","nilearn","bthirion","2014-11-25 20:55:40","Is there a way to test this feature ?
+","",""
+"issue_comment","293","nilearn","nilearn","lesteve","2014-11-26 09:40:19","I reckon it could be tested with some matplotlib hackery.
+
+As an aside nilearn plotting functions don't have tests besides smoke tests that only make sure no exception is raised, which is not great. Provided the right matplotlib incantations it is probably possible to check a few things like the threshold logic, the colorbar range, etc...
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2014-11-26 10:06:41","> I reckon it could be tested with some matplotlib hackery.
+
+For now, I think that we want smoke test only. But we definitely want a
+smoke test, ie all the lines of code should be covered.
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2014-11-26 10:09:29","As the strategy implemented here is not the ""right"" one, I am changing the title from MRG to WIP. Please change it back to MRG when done.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2014-11-26 10:16:12","thanks, I forgot to do that.
+","",""
+"issue_comment","293","nilearn","nilearn","bthirion","2014-11-26 10:23:49","Agreed: a smoke test is better than no test. Simply think of potential issues with different matplotlib versions...
+I understand that a real test is hard to make, and would not require it in this PR.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2014-12-23 18:57:38","With some very good input from @AlexandreAbraham I managed to make the requested half colorbar.
+
+It already works on plot_localizer_simple_analysis.
+
+I am now wondering: Do I re-double the xticks?
+","",""
+"issue_comment","293","nilearn","nilearn","bthirion","2015-01-04 22:14:41","The example looks good. I don't think you need to add more yticks. 
+Could you add a (smoke) test ?
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-01-05 13:29:00","Added back the typical number of ticks for such a colorbar.
+
+![figure_1](https://cloud.githubusercontent.com/assets/1306635/5613591/f1b35d78-94e6-11e4-8b49-61c6c90813b2.png)
+
+Will add smoke test.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-01-05 13:48:39","Travis failure due to smoke tests: Smoke tests for plots invoke saving in order to force rendering. Saving is forced by passing a filename. `img_plotting._plot_img_with_bg` saves the file if a filename is provided and returns `None` instead of the active display object. Changing the colorbar a posteriori in `plot_stat_map` by interacting with the display object is thus impossible and raises an error.
+
+Two possibilities for solving this:
+- add `cbar_min`, `cbar_max` kwargs to `_plot_img_with_bg`, making colorbar range editing available to a wider number of functions (is this wanted at all?)
+- do the saving by hand in `plot_stat_map` after the colorbar has been rendered.
+
+Neither of the possibilities poses much of a problem. It is more a question of whether specifying `cbar_max` and `cbar_min` independently of `vmax, vmin` is generally useful or not.
+","",""
+"issue_comment","293","nilearn","nilearn","AlexandreAbraham","2015-01-05 13:54:26","Option #3: turn _plot_img_with_bg into an object which plot the axis in the __init__, let you mess around with the colorbar, and render it (or save it to a file) in a .show() method. Note that I have not seen the code and therefore don't know if this make sense or not :confused: .
+","",""
+"issue_comment","293","nilearn","nilearn","lesteve","2015-01-05 14:08:29","> add cbar_min, cbar_max kwargs to _plot_img_with_bg, making colorbar range editing available to a wider number of functions (is this wanted at all?)
+
+I'd be in favor of this solution even if the colorbar tweaking is only used in plot_stat_map. In my mind _plot_img_with_bg is the generic helper function that user-facing functions call with different parameters.
+
+An other option would be to add a callback that is called with the display as argument just before the save. Not sure which one is simpler.
+","",""
+"issue_comment","293","nilearn","nilearn","GaelVaroquaux","2015-01-05 15:40:30",">   • add cbar_min, cbar_max kwargs to _plot_img_with_bg, making colorbar range
+>     editing available to a wider number of functions (is this wanted at all?)
+
+This sounds about right to me. _plot_img_with_bg is somewhat of a
+low-level swiss-army knife, and can thus be made more versatile.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-01-06 12:58:48","swiss army knife made and plot_stat_map tested
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-01-07 10:26:41","Added possibility for fully negative range to be detected. Also made tick marks adapt to the necessary order of magnitude in precision (done using `log10` of the amplitude. Not switching from `%f` to `%e` notation and not invoking any general matplotlib tick formatter -- open to suggestions if such a thing exists).
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-01-07 10:30:29","Possibly found a recipe for the latter in matplotlib
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-01-07 11:55:34","Simply not calling `set_tick_labels` causes the colorbar ticks to be formatted in a reasonable manner automatically.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-01-29 16:41:41","resolved conflict and squashed commits
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-02-01 15:55:02","Yeah I somehow reverted to an earlier version, all colorbar logic is back in plot_stat_map instead of _plot_img_with_bg.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-02-01 19:46:43","OK this doesn't work for the travis machine with `MATPLOTLIB_VERSION=""1.4.2""`, a newer matplotlib than that which I used to code this feature. I am having troubles installing matplotlib from github right now, so I'll try to fix this on another machine.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-02-05 12:34:41","In matplotlib 1.1.1 we have
+`ColorbarBase.outline.get_ydata` and `ColorbarBase.outline.set_ydata`
+
+In matplotlib 1.4.2, that doesn't exist, but there is
+`ColorbarBase.outline.get_xy` and `ColorbarBase.outline.set_xy`.
+
+There exists no function to this effect that is shared between versions. One way out of this would be to write helper functions `_get_y, _set_y` that render these differences transparent. Should I do that, or is there something smarter I can do?
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-02-05 14:09:07","Tests passing on matplotlib 1.4.2 as well now.
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-02-05 16:06:45","Yeah this is/was ready ...
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-02-05 17:05:03","Thanks!
+","",""
+"issue_comment","293","nilearn","nilearn","eickenberg","2015-02-06 07:44:12","had a little après-sprint to make it grow up :)
+
+On Friday, February 6, 2015, Gael Varoquaux notifications@github.com
+wrote:
+
+> > Thanks!
+> 
+> Looks like this merge right before a release was a bit premature :)
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/293#issuecomment-73188864.
+","",""
+"pull_request_commit_comment","293","nilearn","nilearn","AlexandreAbraham","2015-01-06 22:35:57","I would expect the symmetric colorbar to work both ways: upper part of the original cbar if all values are positive and lower part of the cbar if all values are negative.
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","GaelVaroquaux","2015-01-06 22:37:23","> I would expect the symmetric colorbar to work both ways: upper part of the
+> original cbar if all values are positive and lower part of the cbar if all
+> values are negative.
+
+Good point!
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","eickenberg","2015-01-07 06:50:51","i would, too. but is this expected to happen for any type of data?
+
+On Tuesday, January 6, 2015, Alexandre Abraham notifications@github.com
+wrote:
+
+> In nilearn/plotting/img_plotting.py
+> https://github.com/nilearn/nilearn/pull/293#discussion-diff-22557878:
+> 
+> > @@ -586,7 +611,15 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+> >                      np.logical_not(stat_map_data._mask)])
+> >          stat_map_max = np.nanmax(stat_map_data)
+> >          stat_map_min = np.nanmin(stat_map_data)
+> > +
+> > -    if symmetric_cbar == 'auto':
+> > -        symmetric_cbar = stat_map_min < 0
+> 
+> I would expect the symmetric colorbar to work both ways: upper part of the
+> original cbar if all values are positive and lower part of the cbar if all
+> values are negative.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/293/files#r22557878.
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","GaelVaroquaux","2015-01-07 06:54:21","Yes. A t map with the contrast specified with the wrong sign for instance. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Jan 7, 2015, 07:50, at 07:50, eickenberg notifications@github.com wrote:
+
+> > @@ -586,7 +611,15 @@ def plot_stat_map(stat_map_img,
+> > bg_img=MNI152TEMPLATE, cut_coords=None,
+> >                      np.logical_not(stat_map_data._mask)])
+> >          stat_map_max = np.nanmax(stat_map_data)
+> >          stat_map_min = np.nanmin(stat_map_data)
+> > +
+> > -    if symmetric_cbar == 'auto':
+> > -        symmetric_cbar = stat_map_min < 0
+> 
+> i would, too. but is this expected to happen for any type of data?
+> 
+> On Tuesday, January 6, 2015, Alexandre Abraham
+> notifications@github.com
+> wrote:
+> 
+> > In nilearn/plotting/img_plotting.py
+> > 
+> > https://github.com/nilearn/nilearn/pull/293#discussion-diff-22557878:
+> > 
+> > > @@ -586,7 +611,15 @@ def plot_stat_map(stat_map_img,
+> > > bg_img=MNI152TEMPLATE, cut_coords=None,
+> > >                      np.logical_not(stat_map_data._mask)])
+> > >          stat_map_max = np.nanmax(stat_map_data)
+> > >          stat_map_min = np.nanmin(stat_map_data)
+> > > +
+> > > -    if symmetric_cbar == 'auto':
+> > > -        symmetric_cbar = stat_map_min < 0
+> > 
+> > I would expect the symmetric colorbar to work both ways: upper part
+> > of the
+> > original cbar if all values are positive and lower part of the cbar
+> > if all
+> > values are negative.
+> > 
+> > —
+> > Reply to this email directly or view it on GitHub
+> > https://github.com/nilearn/nilearn/pull/293/files#r22557878.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/293/files#r22572998
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","eickenberg","2015-01-07 07:04:31","but t values generally can take both signs and thus should be shown with
+the full colorbar, but ok, i see the idea, and will add.
+
+up until now i was thinking that showing only one half of the colorbar
+should only be done if the values are necessarily and inherently of only
+one sign (eg neg log p values). and in that case one has the choice of the
+sign and won't let it be negative.
+
+On Wednesday, January 7, 2015, Gael Varoquaux notifications@github.com
+wrote:
+
+> In nilearn/plotting/img_plotting.py
+> https://github.com/nilearn/nilearn/pull/293#discussion-diff-22573083:
+> 
+> > @@ -586,7 +611,15 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+> >                      np.logical_not(stat_map_data._mask)])
+> >          stat_map_max = np.nanmax(stat_map_data)
+> >          stat_map_min = np.nanmin(stat_map_data)
+> > +
+> > -    if symmetric_cbar == 'auto':
+> > -        symmetric_cbar = stat_map_min < 0
+> 
+> Yes. A t map with the contrast specified with the wrong sign for instance.
+> Sent from my phone. Please forgive brevity and mis spelling
+> … <#14ac32c444d9a712_>
+> On Jan 7, 2015, 07:50, at 07:50, eickenberg <notifications@github.com
+> <javascript:_e(%7B%7D,'cvml','notifications@github.com');>> wrote: >> @@
+> -586,7 +611,15 @@ def plot_stat_map(stat_map_img, >bg_img=MNI152TEMPLATE,
+> cut_coords=None, >> np.logical_not(stat_map_data._mask)]) >> stat_map_max =
+> np.nanmax(stat_map_data) >> stat_map_min = np.nanmin(stat_map_data) >> + >>
+> - if symmetric_cbar == 'auto': >> + symmetric_cbar = stat_map_min < 0 > >i
+>   would, too. but is this expected to happen for any type of data? > >On
+>   Tuesday, January 6, 2015, Alexandre Abraham ><notifications@github.com
+>   <javascript:_e(%7B%7D,'cvml','notifications@github.com');>> >wrote: > In
+>   nilearn/plotting/img_plotting.py > <
+>   https://github.com/nilearn/nilearn/pull/293#discussion-diff-22557878>: >
+>   > > @@ -586,7 +611,15 @@ def plot_stat_map(stat_map_img,
+>   bg_img=MNI152TEMPLATE, cut_coords=None, > >
+>   np.logical_not(stat_map_data._mask)]) > > stat_map_max =
+>   np.nanmax(stat_map_data) > > stat_map_min = np.nanmin(stat_map_data) > > +
+>   > > + if symmetric_cbar == 'auto': > > + symmetric_cbar = stat_map_min < 0
+>   > > I would expect the symmetric colorbar to work both ways: upper part of
+>   the > original cbar if all values are positive and lower part of the cbar
+>   if all > values are negative. > > — > Reply to this email directly or view
+>   it on GitHub > <
+>   https://github.com/nilearn/nilearn/pull/293/files#r22557878>. > --- Reply
+>   to this email directly or view it on GitHub:
+>   https://github.com/nilearn/nilearn/pull/293/files#r22572998
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/293/files#r22573083.
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","bthirion","2015-01-07 07:43:02","To be frank I don't think I have encountered such a use case in the past: while positive values van be seen for variance images, I have no idea of the equivalent for negative images.
+On the other hand, I thinks that adding this use case could be useful in some cases that I can't figure out at the moment, and will not harm. 
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","GaelVaroquaux","2015-01-07 07:56:14","Ok
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Jan 7, 2015, 08:43, at 08:43, bthirion notifications@github.com wrote:
+
+> > @@ -586,7 +611,15 @@ def plot_stat_map(stat_map_img,
+> > bg_img=MNI152TEMPLATE, cut_coords=None,
+> >                      np.logical_not(stat_map_data._mask)])
+> >          stat_map_max = np.nanmax(stat_map_data)
+> >          stat_map_min = np.nanmin(stat_map_data)
+> > +
+> > -    if symmetric_cbar == 'auto':
+> > -        symmetric_cbar = stat_map_min < 0
+> 
+> To be frank I don't think I have encountered such a use case in the
+> past: while positive values van be seen for variance images, I have no
+> idea of the equivalent for negative images.
+> On the other hand, I thinks that adding this use case could be useful
+> in some cases that I can't figure out at the moment, and will not harm.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/293/files#r22573993
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","AlexandreAbraham","2015-02-05 14:34:35","Thanks for all these details!
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(15, '', u'nilearn/_utils/fixes/matplotlib_backports.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","AlexandreAbraham","2015-02-05 14:36:07","I prefer to enclose boolean expression in parenthesis `
+symmetric_cbar = (stat_map_min < 0 and stat_map_max > 0)`
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","AlexandreAbraham","2015-02-05 14:38:20","Same here.
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","GaelVaroquaux","2015-02-05 16:10:52","Why are why introducing new keywords: could we use 'vmax' and 'threshold'?
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(13, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","GaelVaroquaux","2015-02-05 16:13:12","@eickenberg convinced.
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(13, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","GaelVaroquaux","2015-02-05 16:14:26","I meant: @eickenberg convinced me.
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(13, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","293","nilearn","nilearn","eickenberg","2015-02-05 16:14:44","[ref](https://github.com/nilearn/nilearn/pull/293/#issuecomment-68725033)
+","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08","(13, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit","293","nilearn","nilearn","eickenberg","2014-11-24 10:15:52","ENH added symmetric_cbar keyword to plot_stat_map","ab614e7e052c6a06d0ea2771de4dc59b0965fd8d",""
+"pull_request_commit","293","nilearn","nilearn","eickenberg","2015-02-05 14:00:56","FIX matplotlib 1.4.2 issue","31ca37307275982f0b4013e790ef97ad4390f917",""
+"pull_request_commit","293","nilearn","nilearn","eickenberg","2015-02-05 14:52:49","COS parentheses around boolean expressions","c50184d3e1e49af910153b66ce4531cd145d3063",""
+"pull_request_commit","293","nilearn","nilearn","eickenberg","2015-02-05 15:10:13","FIX use hasattr instead of checking versions","86f3d6b81dcbff8fcd42047eb7e3961d7a43ae08",""

@@ -1,0 +1,55 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","42","nilearn","nilearn","pgervais","2013-04-02 13:04:06","I profiled the memory usage of unmask, and found that it was _really_ unefficient. The usage of numpy.concatenate at the end of the function requires almost three times the memory that will be required at the end of unmask().
+
+I solved this problem by writing two functions for the special cases of the 3D and N-D arrays, which use much less memory (almost three times less) than the original unmask().
+
+At the same time, **the signature of the function was modified**. The input array is now shaped like in scikit-learn, meaning than the first dimension is time and the second is features (if d is the input array, the value at for the n-th instant for the p-th feature is d[n, p]). It was the opposite by default. The ""transpose"" option has been removed as well, because it is though to be unclear and useless. Instead of writing something like:
+
+```
+data = unmask(timeseries, transpose=True)
+```
+
+write
+
+```
+data = unmask(timeseries.T).T
+```
+
+which is both shorter and clearer (transpose=True doesn't tell you which matrix is transposed, and when. You'll have to test or read the code to know).
+","start issue","Unmask"
+"issue_closed","42","nilearn","nilearn","AlexandreAbraham","2013-04-04 21:05:11","","closed issue","Unmask"
+"pull_request_title","42","nilearn","nilearn","pgervais","2013-04-02 13:04:06","I profiled the memory usage of unmask, and found that it was _really_ unefficient. The usage of numpy.concatenate at the end of the function requires almost three times the memory that will be required at the end of unmask().
+
+I solved this problem by writing two functions for the special cases of the 3D and N-D arrays, which use much less memory (almost three times less) than the original unmask().
+
+At the same time, **the signature of the function was modified**. The input array is now shaped like in scikit-learn, meaning than the first dimension is time and the second is features (if d is the input array, the value at for the n-th instant for the p-th feature is d[n, p]). It was the opposite by default. The ""transpose"" option has been removed as well, because it is though to be unclear and useless. Instead of writing something like:
+
+```
+data = unmask(timeseries, transpose=True)
+```
+
+write
+
+```
+data = unmask(timeseries.T).T
+```
+
+which is both shorter and clearer (transpose=True doesn't tell you which matrix is transposed, and when. You'll have to test or read the code to know).
+","c7f60665cfcfe0c81a9f5bacee4c2f2762f02074","Unmask"
+"pull_request_merged","42","nilearn","nilearn","AlexandreAbraham","2013-04-04 21:05:11","Unmask","966102025d2cbbf39c914dcf3cd96a24c7c0b3fb","Pull request merge from pgervais/nilearn:unmask to nilearn/nilearn:master"
+"issue_comment","42","nilearn","nilearn","GaelVaroquaux","2013-04-02 13:05:40","Cc @AlexandreAbraham
+","",""
+"issue_comment","42","nilearn","nilearn","GaelVaroquaux","2013-04-04 20:51:54","> The tests are OK and my test on real data is a success too... I'm OK to
+> merge it. If there is no objection before 4PM, I'll do it.
+
+Excellent. Great team work!
+","",""
+"pull_request_commit","42","nilearn","nilearn","pgervais","2013-03-22 15:58:19","Optimized NiftiMasker.inverse_transform()
+
+A new function for unmasking has been added (unmask_optimized). It
+is slightly less general than the previous one (unmask), but uses
+three times less memory.","d0456204f7fdbb7970405d2346bad1178e03f924",""
+"pull_request_commit","42","nilearn","nilearn","pgervais","2013-04-02 11:37:26","Generalized optimized unmask
+
+Optimized unmask now works in arbitrary dimensions.
+Removed previous unmask implementation, adapted tests.","c7f60665cfcfe0c81a9f5bacee4c2f2762f02074",""

@@ -1,0 +1,63 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 15:07:59","Nothing very complicated, but it should save us memory here and there by keeping the life cycle of temporary data copies as short as possible
+","start issue","[MRG] Small memory optimizations"
+"issue_closed","723","nilearn","nilearn","AlexandreAbraham","2015-07-29 06:32:00","","closed issue","[MRG] Small memory optimizations"
+"pull_request_title","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 15:07:59","Nothing very complicated, but it should save us memory here and there by keeping the life cycle of temporary data copies as short as possible
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","[MRG] Small memory optimizations"
+"pull_request_merged","723","nilearn","nilearn","AlexandreAbraham","2015-07-29 06:32:00","[MRG] Small memory optimizations","835d68f7cfbdd52cdedc5dbf91de6ef1c7eddad4","Pull request merge from GaelVaroquaux/nilearn:small_mem_optim to nilearn/nilearn:master"
+"pull_request_commit_comment","723","nilearn","nilearn","AlexandreAbraham","2015-07-28 15:28:06","This is clever but your efforts are kinda wasted by the `new_img_like` at line 289/287.
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","(4, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","723","nilearn","nilearn","AlexandreAbraham","2015-07-28 15:32:31","A pattern like this may be useful?
+
+``` python
+image_crafter = something(img)
+del img
+[...]
+image_crafter.new_img_like(data)
+```
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","(4, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 17:19:07","> > -    epi_img = _utils.check_niimg(epi_img)
+> 
+> This is clever but your efforts are kinda wasted by the new_img_like at line 289/287.
+
+Not too bad, because if it's a 4D image, new_img_like doesn't call
+'get_data', and so the data is not loaded.
+
+That said, new_img_like is a bit of a tangle, as it uses load_img, which
+itself uses new_img_like. new_img_like should probably not be using
+load_img, and maybe nibabel directly.
+
+Would you be OK to special-case new_img_like to use nibabel directly,
+and, as a consequence, not load the data for list of string?
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","(4, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","723","nilearn","nilearn","AlexandreAbraham","2015-07-28 21:48:08","I think that at some point we should put that in a function to promote this kind of pattern.
+
+Apart from that, +100 for merging.
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","(92, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 21:49:42","> I think that at some point we should put that in a function to promote this
+> kind of pattern.
+
+Suggestion for name?
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","(92, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 21:50:22","> Suggestion for name?
+
+The reason that I am asking, is that I am wondering how much this pattern
+can be reused. It's kinda specific.
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","(92, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","723","nilearn","nilearn","AlexandreAbraham","2015-07-28 22:00:30","Oh, no, forget it, I haven't seen it was in  `new_img_like`... OK for merging.
+","220f78f4c4e012e8f2337fa4725e32b7f829bf5f","(92, '', u'nilearn/image/image.py')"
+"pull_request_commit","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 13:05:16","ENH: delay loading of imgs
+
+Slight memory optimization by loading the imgs as late as
+possible","6183ba88aa5e87957535f1278e61cd7631223def",""
+"pull_request_commit","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 13:10:14","COSMIT: call '_data' something that is not 'niimg'
+
+Shouldn't be called _img","d271ffe45bf35d0dea7a385ee4408305c3eeea18",""
+"pull_request_commit","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 15:05:33","ENH: small optim to save memory
+
+As the image is not actually returned, just used as a temporary for
+resample_img, I think that it is OK not to use new_img_like","9d92eb3217361730f9a60e344e436070b4d8c786",""
+"pull_request_commit","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 15:09:02","Remove trailing unused variable","5ec04010db727ef35eab6900fa354c860b396ca9",""
+"pull_request_commit","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 21:37:01","ENH: limit memory loading","002d309d8d1e7885bc402049425904f0b8cd56c1",""
+"pull_request_commit","723","nilearn","nilearn","GaelVaroquaux","2015-07-28 21:46:19","ENH: more speed, less memory","e8e1da3334b1f1fcc4f0c0c9d26dd7601c24a3a6",""
+"pull_request_commit","723","nilearn","nilearn","GaelVaroquaux","2015-07-29 05:54:26","BUG: make sure that data is copied","220f78f4c4e012e8f2337fa4725e32b7f829bf5f",""

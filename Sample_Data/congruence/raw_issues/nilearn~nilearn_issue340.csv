@@ -1,0 +1,59 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","340","nilearn","nilearn","GaelVaroquaux","2015-01-08 13:47:45","NiftiMapsMasker/NiftiLabelsMasker need to accept resample_target=""data"" (to avoid blowing up the memory when Atlas is oversampled as in the yeo_2011 case)
+","start issue","resample_target=""data"" in NiftiMapsMasker/NiftiLabelsMasker"
+"issue_closed","340","nilearn","nilearn","GaelVaroquaux","2015-02-05 16:08:14","","closed issue","resample_target=""data"" in NiftiMapsMasker/NiftiLabelsMasker"
+"issue_comment","340","nilearn","nilearn","GaelVaroquaux","2015-01-15 10:30:38","> The problem is not the transform step, it is the inverse_transform. If
+> resampling is done on heterogenous data, how do we chose the affine when
+> inverse_transforming?
+
+Good point indeed. We can specify that the inverse transform always
+return the data in the space of the atlas unless an explicit affine is
+passed. These are consitent semantics (in the sens that they offer little
+surprises). They may lead to memory explosions, but note that
+inverse_transform will be used by much less people than transform (it is
+a less common case). Also, the memory explosion is more obvious because
+it occurs via the size of the output created by the function. In the
+current case, it is harder to guess, as it occurs in an intermediate
+variable.
+","",""
+"issue_comment","340","nilearn","nilearn","GaelVaroquaux","2015-01-15 10:42:54","> I suggest that we talk about that during a coffee break otherwise it
+> will take ages to reach a conclusion ;).
+
+OK. I am at neurospin tomorrow.
+","",""
+"issue_comment","340","nilearn","nilearn","GaelVaroquaux","2015-02-05 16:08:14","Fixed!
+","",""
+"issue_comment","340","nilearn","nilearn","AlexandreAbraham","2015-01-15 09:55:49","This is not as easy as it seems. In fact, it brings inconsistencies to the masker as the affine is defined in the transform rather than the fit. For example:
+
+``` python
+masker = NiftiLabelsMasker(labels_img, resample_target='data')
+masker.fit()
+
+# First dataset, target_affine is set to affine_data_1
+data1 = masker.transform(dataset1)
+
+# Second dataset, target_affine is set to affine_data_2
+data2 = masker.transform(dataset2)
+
+# Inverse transform, my data has been resampled into dataset2 space
+masker.inverse_transform(data1)
+```
+
+We could say that the affine is defined on the first transform, but I find this misleading. We could also say that the `target_affine` is defined by the data given in the `fit` but it would conflict with mask computation and also be misleading compared to the behavior of the classical NiftiMasker.
+
+I would be more in favor of accepting niimgs in the `resample_target` parameter.
+","",""
+"issue_comment","340","nilearn","nilearn","AlexandreAbraham","2015-01-15 10:25:35","> If new data comes along (as in a new call to transform), the atlas would be resampled from the original atlas image if it is not on the right affine.
+
+The problem is not the `transform` step, it is the `inverse_transform`. If resampling is done on heterogenous data, how do we chose the affine when `inverse_transforming`? For me, it is better to explicitely give an affine (or a niimg which has the desired affine).
+
+> I realize that this makes parallel computing in the transform nasty.
+
+I think we can consider resampling the atlas as costless. Given that masking is usually done once and cached, it doesn't bother me if there is a small overhead per process.
+","",""
+"issue_comment","340","nilearn","nilearn","AlexandreAbraham","2015-01-15 10:42:01","OK, I see your point now. In my head, I thought that what you are describing was the default behavior of NiftiLabelsMasker. I think that it should actually be the default behavior and not requiring a `resample_data='data'` (which, semantically, has also no sense :P). I suggest that we talk about that during a coffee break otherwise it will take ages to reach a conclusion ;).
+","",""
+"issue_comment","340","nilearn","nilearn","AlexandreAbraham","2015-01-29 09:31:38","While I'm on nilearn issues list, let's take a decision on this one: I agree with you that we should have a `resample_target='data'` and that this should be the default behavior.
+
+PR welcome! It shouldn't be too long.
+","",""

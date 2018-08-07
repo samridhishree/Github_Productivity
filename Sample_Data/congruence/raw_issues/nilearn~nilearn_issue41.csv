@@ -1,0 +1,98 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","41","nilearn","nilearn","pgervais","2013-04-02 11:07:18","I made utils.cache a method of the class CacheMixin (this function already looked like a method anyway). Some checks have been added to make its usage as transparent as possible (namely, there is no need anymore to define self.memory and self.memory_level in **init**() if no caching is requested: CacheMixin.cache() defines them if necessary.
+
+I know there's nothing to be done about it, but ""memory_level"" would be better called ""cache_level"" and ""memory"" called ""cache"" IMO. Since the latter is used extensively in scikit-learn, I resisted the tentation to rename them.
+
+At the same time, I started removing occurences of ""except"" where all exceptions are caught, which is quite dangerous, and useful only in **very rare** cases. Most of the time, it just hides programming errors and makes programs harder to debug.
+","start issue","Cachemixin"
+"issue_closed","41","nilearn","nilearn","AlexandreAbraham","2013-04-08 12:09:07","","closed issue","Cachemixin"
+"pull_request_title","41","nilearn","nilearn","pgervais","2013-04-02 11:07:18","I made utils.cache a method of the class CacheMixin (this function already looked like a method anyway). Some checks have been added to make its usage as transparent as possible (namely, there is no need anymore to define self.memory and self.memory_level in **init**() if no caching is requested: CacheMixin.cache() defines them if necessary.
+
+I know there's nothing to be done about it, but ""memory_level"" would be better called ""cache_level"" and ""memory"" called ""cache"" IMO. Since the latter is used extensively in scikit-learn, I resisted the tentation to rename them.
+
+At the same time, I started removing occurences of ""except"" where all exceptions are caught, which is quite dangerous, and useful only in **very rare** cases. Most of the time, it just hides programming errors and makes programs harder to debug.
+","bbe59dec3761aba617a37825238e0eb692b5423a","Cachemixin"
+"pull_request_merged","41","nilearn","nilearn","AlexandreAbraham","2013-04-08 12:09:07","Cachemixin","500734dcd774ae1066249b470f9c10e7b3510abb","Pull request merge from pgervais/nilearn:cachemixin to nilearn/nilearn:master"
+"issue_comment","41","nilearn","nilearn","GaelVaroquaux","2013-04-05 08:41:17","Looks great. I added a few minor remarks. Thanks!
+","",""
+"issue_comment","41","nilearn","nilearn","pgervais","2013-04-05 07:17:29","@AlexandreAbraham (or someone else) could you review/merge this pull request?
+","",""
+"pull_request_commit_comment","41","nilearn","nilearn","GaelVaroquaux","2013-04-05 08:27:46","I think this method should be private.
+","bbe59dec3761aba617a37825238e0eb692b5423a","(None, '', u'nisl/io/base_masker.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","GaelVaroquaux","2013-04-05 08:33:10","You should also point out that '-2' means 'all CPUs but one', etc.
+","bbe59dec3761aba617a37825238e0eb692b5423a","(None, '', u'nisl/io/nifti_multi_masker.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","GaelVaroquaux","2013-04-05 08:36:39","I am toying with the idea of splitting up utils: it's a non-descriptive name, and people (ie developers) might not guess what's in there. I am suggesting the following layout:
+- a directory called '_utils'
+- in it:
+  - validations.py (or conversions.py) for check_niimg and co
+  - caching.py for the new mixin.
+
+What do people think?
+","bbe59dec3761aba617a37825238e0eb692b5423a","(36, '', u'nisl/utils.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","GaelVaroquaux","2013-04-05 08:39:22","I think that I would prefer that when there is no cache, a joblib.Memory object with cachedir=None is returned. This object doesn't cache anything, but it ensures a uniform behavior of the code.
+","bbe59dec3761aba617a37825238e0eb692b5423a","(None, '', u'nisl/utils.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 08:41:49","I am OK to put the cache mixin in its own file and keep some machinery away from the user in a _utils directory.
+Although I think that at least one function could be useful to the users : concat_niimgs. When talking with Michael about nisl, he told me that he may need this kind of function (he has several 4D nifti files that he wants to concatenate as they are all related to a single subject).
+","bbe59dec3761aba617a37825238e0eb692b5423a","(36, '', u'nisl/utils.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","GaelVaroquaux","2013-04-05 08:52:19","> Although I think that at least one function could be useful to the users :
+> concat_niimgs. When talking with Michael about nisl, he told me that he may
+> need this kind of function (he has several 4D nifti files taht he wants to
+> concatenate).
+
+That's a good point. We definitely want this function with a non-private
+import path. I'd still like a better name than 'utils'. Any suggestions?
+","bbe59dec3761aba617a37825238e0eb692b5423a","(36, '', u'nisl/utils.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 08:59:44","We could have a dedicated 'niimg' namespace. Maybe 'toolbox' but I prefer shorter names.
+","bbe59dec3761aba617a37825238e0eb692b5423a","(36, '', u'nisl/utils.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","pgervais","2013-04-05 09:26:54","I like the idea of niimg namespace. 
+Splitting up utils is a good idea too, the proposed layout looks fine to me, with ""validations"" called ""niimg"".
+","bbe59dec3761aba617a37825238e0eb692b5423a","(36, '', u'nisl/utils.py')"
+"pull_request_commit","41","nilearn","nilearn","pgervais","2013-03-28 09:05:14","Removed a ""except Exception:"" occurence
+
+Cleanup in comments.","83c19739f75c93bc1e81ce373b0f3199bb12638e",""
+"pull_request_commit","41","nilearn","nilearn","pgervais","2013-03-29 10:18:27","utils.cache -> utils.CacheMixin
+
+Transformed the awkward utils.cache function into a method. Created
+CacheMixin class to contain this method.
+
+Examples still run successfully.","991e5fe2cf9be4b428b0e03584438ef690231a8c",""
+"pull_request_commit","41","nilearn","nilearn","pgervais","2013-04-02 09:05:37","Merge branch 'master' into cachemixin","91e35d5d96bc7fc0f0c5fa87fc6411ed848fc5ff",""
+"pull_request_commit","41","nilearn","nilearn","pgervais","2013-04-02 10:52:04","Merge branch 'master' into cachemixin","2de1e4c17f12ea590158a02f414e24c70bb43b0d",""
+"pull_request_commit","41","nilearn","nilearn","pgervais","2013-04-05 08:48:18","Renamed CacheMixin.cache to _cache
+
+Corrected a bug in _cache() as well: return the input function
+unchanged if self.memory is None.","592f840f351150ecb927d91eac038af54310dece",""
+"pull_request_commit","41","nilearn","nilearn","pgervais","2013-04-05 09:22:30","Documentation fix","804675d1ed8dedbdc1d22cf47c995d0f32e6ecb5",""
+"pull_request_commit","41","nilearn","nilearn","pgervais","2013-04-05 12:19:48","CacheMixin._cache always returns a Memory object.
+
+All default 'memory' parameters have been set to Memory(cachedir=None)
+for _cache() to always return a Memory() object.","bbe59dec3761aba617a37825238e0eb692b5423a",""
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 07:32:49","I am curious: why did you change that ?
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(5, 302, u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 07:36:13","As a general remark, this file directly comes from the scikit learn documentation template. We should not modify it, and if we do, we should propagate the changes to the scikit by doing a pull request.
+For the time_elapsed question, I see in the scikit that 0 is now the default value. Maybe we should stick to that and integrate the last modifications of gen_rst in nisl.
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(None, None, None)"
+"pull_request_commit_comment","41","nilearn","nilearn","pgervais","2013-04-05 08:14:28","Because this is C-like programming. None has been designed exactly for this purpose: indicating a missing/undefined value. There is no reason to print something ""time elapsed: -1"", such message is just useless to the user. If something failed, then print the actual elapsed time to failure or nothing at all. 
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(5, 302, u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","pgervais","2013-04-05 08:18:38","I didn't know this file came from scikit-learn. Both files must certainly be maintained in sync.
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(None, None, None)"
+"pull_request_commit_comment","41","nilearn","nilearn","pgervais","2013-04-05 08:28:29","After discussing with Gael V., it seems that gen_rst.py from scikit-learn is already quite different from nisl's. Synchronising the files will take some time, and this is not possible for me right now.
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(None, None, None)"
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 08:32:07","This is precisely the contrary here: None is replaced by -1.
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(5, 302, u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 08:37:24","Files are not sync because some modifications in this file may imply modifications in some other files of the doc. I used to update the gen_rst file time to time while checking documentation generation. Some recent changes may in fact completely break documentation generation and require heavy refactoring, Gael knows that better than me.
+
+However, if we modify this file by our side and add some feature, we must keep in mind to make a PR to scikit-learn.
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(None, None, None)"
+"pull_request_commit_comment","41","nilearn","nilearn","pgervais","2013-04-05 08:53:55","Damn. It seems I'm against my own modifications :-). Then I don't know why I did that, I'd better check this out or revert.
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(5, 302, u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","pgervais","2013-04-05 09:22:19","I think this is a bug fix, but I can't really remember. Testing this thoroughly would take too much time right now, As long as documentation compiles, I suggest we leave this for later development. Ideally, we need test cases for this, but this is probably to be done together with scikit-learn.
+","2de1e4c17f12ea590158a02f414e24c70bb43b0d","(5, 302, u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 07:25:58","Here, the initialization of memory is replaced by None. If I am not mistaken, this could break something in the cache function of the CacheMixin (see next comment).
+","991e5fe2cf9be4b428b0e03584438ef690231a8c","(71, 125, u'nisl/io/nifti_multi_masker.py')"
+"pull_request_commit_comment","41","nilearn","nilearn","AlexandreAbraham","2013-04-05 07:27:37","Here, the test should be:
+
+if memory is None:
+
+and the func should be returned after the warning. (This is due to the replacement of memory object initialization by None instead of a Memory object with cachedir None).
+","991e5fe2cf9be4b428b0e03584438ef690231a8c","(115, 306, u'nisl/utils.py')"

@@ -1,0 +1,135 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","369","nilearn","nilearn","bcipolli","2015-01-25 20:40:25","Fix for #366
+
+The `verbosity` parameter should control output from a function, with `0` meaning no output (and a non-zero default for functions that we want to output by default.  In some functions, current behavior was to always output. 
+
+Here, I have fixed the above, tweaked docstrings, and changed places where `verbose` was passed as a boolean to be passed as an int.
+
+I've also made changes to the testing code, to suppress output by forcing `verbose=0`.  With this, we can expect no output in tests--allowing browsing test results more cleanly and exposing more clearly unexpected prints and warnings.
+","start issue","Verbosity=0 should mean silent"
+"issue_closed","369","nilearn","nilearn","lesteve","2015-02-01 15:37:40","","closed issue","Verbosity=0 should mean silent"
+"pull_request_title","369","nilearn","nilearn","bcipolli","2015-01-25 20:40:25","Fix for #366
+
+The `verbosity` parameter should control output from a function, with `0` meaning no output (and a non-zero default for functions that we want to output by default.  In some functions, current behavior was to always output. 
+
+Here, I have fixed the above, tweaked docstrings, and changed places where `verbose` was passed as a boolean to be passed as an int.
+
+I've also made changes to the testing code, to suppress output by forcing `verbose=0`.  With this, we can expect no output in tests--allowing browsing test results more cleanly and exposing more clearly unexpected prints and warnings.
+","97df72722680e5db12f1238978a82c9bf84c9e7f","Verbosity=0 should mean silent"
+"pull_request_merged","369","nilearn","nilearn","lesteve","2015-02-01 15:37:40","Verbosity=0 should mean silent","a214698a01c8f89043aae2c0c88aedf5fdfabc94","Pull request merge from bcipolli/nilearn:allow_silence to nilearn/nilearn:master"
+"issue_comment","369","nilearn","nilearn","lesteve","2015-01-26 08:16:07","There is a lingering `self.verbose > 10` in nilearn/input_data/nifti_masker.py.
+","",""
+"issue_comment","369","nilearn","nilearn","AlexandreAbraham","2015-01-30 14:26:43","I agree with you!
+","",""
+"issue_comment","369","nilearn","nilearn","lesteve","2015-01-30 12:36:06","Sorry there is a tiny merge conflict I introduced by fixing something completely unrelated in master. Do you mind rebasing on master ? You just need to rename files -> filenames in `nilearn/_utils/testing.py`:
+
+```
+<<<<<<< HEAD
+        kwargs['mock'] = True
+        filenames = original_fetch_files(*args, **kwargs)
+=======
+        files = self._mock_fetch_files(*args, **kwargs)
+>>>>>>> 33c9bdbb9bbafc437af606621ef6b269af9462a3
+```
+","",""
+"issue_comment","369","nilearn","nilearn","lesteve","2015-01-30 14:20:08","LGTM, other than the verbose level in nilearn/input_data/nifti_masker.py and the merge conflict.
+
+Maybe @AlexandreAbraham you can have a quick look ?
+","",""
+"issue_comment","369","nilearn","nilearn","lesteve","2015-02-01 15:37:36","Thanks a lot for this, clearly a nice improvement, be it only to make travis logs load a lot faster.
+","",""
+"issue_comment","369","nilearn","nilearn","bcipolli","2015-01-28 23:23:34","OK, pulled the `silence_fn` and added `verbosity=0` to all relevant tests in `test_datasets.py`.  Made the two verbosity tweaks above as well, did a little commit squashing... I think this is all set!
+","",""
+"issue_comment","369","nilearn","nilearn","bcipolli","2015-01-28 23:34:19","...and with that said, the output is back in the tests.  Investigating.
+","",""
+"issue_comment","369","nilearn","nilearn","bcipolli","2015-01-29 00:58:05","After changing how the testing was done, then searching through the output again, I found quite a few more changes to make things work as advertised.  Please review the last 7 commits carefully; the changes are small but took thinking.
+
+It would also be good to have a test run with all tests using `verbose=10`, to make sure none of the printing code has errors in it.  I suggest to add an issue for this.
+","",""
+"issue_comment","369","nilearn","nilearn","bcipolli","2015-01-30 14:44:21","OK, I rebased to master and restored the one verbosity check to 10 where suggested.  The tests pass and the output still looks clean, so this should be good to go!
+","",""
+"pull_request_commit_comment","369","nilearn","nilearn","lesteve","2015-01-26 08:18:21","I guess this one should become `if verbose == 1` (shortening of the url for easier reading with the default verbosity)
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","lesteve","2015-01-26 08:57:17","I am sligthly uneasy with this for two reasons:
+- you are silencing all functions at once, which means that you could hide potential issues, for example if a verbose parameter wasn't passed from the caller to the callee (you fixed a few of those in this PR by the way, thanks for that)
+- ideally, it'd be good to have a teardown equivalent of this that sets back the datasets functions to their original selves, so that each test doesn't modify the global state. I am guessing that with the current version of the code, you only need one decorated test to silence all of them.
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","lesteve","2015-01-26 09:56:01","Actually thinking about it a bit more, why is it not enough to pass verbose=0 into the tested functions? Was it done to make it easier on the test writer so that he doesn't have to remember to add verbose=0 to each datasets function call?
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","GaelVaroquaux","2015-01-26 10:00:49","> Actually thinking about it a bit more, why is it not enough to pass verbose=0
+> into the tested functions?
+
+That would seem like the right thing to do to me. Unless the purpose is
+to trigger the printing code in order to test it.
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","bcipolli","2015-01-28 15:01:50","It seems more failsafe to me.  To test the output directly, just don't add the decorator to the test... or the decorator could be extended to accept a list of function names to silence, or to avoid silencing.
+
+I don't have any strong opinion about it, so happy to simply pass `verbose=0` explicitly, or to write teardown code.
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","bcipolli","2015-01-28 15:15:07","On further thought, I think the _best_ way to do this is to automatically silence all functions--there should be no manual verification in tests, so output simply isn't helpful.  To test verbosity of any function, people should write specific unit tests.
+
+What I've done is shorthand for that.  I could use the `inspect` function to recursively search modules for functions that accept a `verbose` parameter, and I could write a teardown function as well.
+
+This seems the most complete and safest to me.  It could also wrap `stderr` / `stdout` to test whether any function has output... in fact, doing this for the entire test suite via a `TestRunner`, rather than using a decorator, is also an option.
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","lesteve","2015-01-28 22:44:20","tl; dr: it just seems to me that passing `verbose=0` into the needed functions is a lot simpler.
+
+It does the job we want which is to reduce noise in the output of nosetests. Yes we may forget to set `verbose=0` occasionally when adding a new test, but we will probably notice eventually when either running the tests or looking at the travis-ci output.
+
+Also as I mentioned above, it could be a way to potentially detect bugs, like the verbose parameters that aren't passed down the call stack. Let's be honest, I don't think we have so much time on our hands that we are going to unit test each of our print statements.
+
+> To test the output directly, just don't add the decorator to the test
+
+That's actually not true because you don't have a teardown method and you only need one decorated test with setup_silence to silence your dataset functions for all the tests that are going to run from then on. Changing the global state in tests is very very nasty.
+
+An example of the side-effects, add this test at the end of test_datasets.py that checks that some printing on stdout actually occurs:
+
+``` python
+
+import sys
+from contextlib import contextmanager
+
+@contextmanager
+def redirect_stdout(new_target):
+    old_target, sys.stdout = sys.stdout, new_target # replace sys.stdout
+    try:
+        yield new_target # run some code with the replaced stdout
+    finally:
+        sys.stdout = old_target # restore to the previous value
+
+def test_stdout_miyawaki2008():
+    with redirect_stdout(open('/tmp/test', 'w')):
+        datasets._get_dataset_dir('test', verbose=5)
+
+    content = open('/tmp/test').read()
+    assert_true('search paths' in content)
+
+```
+
+This won't pass with you current code but it will pass if you remove your setup_silence decorators (or have setup_silence be just a no-op)
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","lesteve","2015-01-29 19:12:11","There are other occurences of this verbose - 1 elsewhere in the code. Would you mind fixing them while you are at it?
+
+```
+~/dev/nilearn $ git grep -n -P 'verbose\s*-\s*1'
+nilearn/group_sparse_covariance.py:548:                verbose=self.verbose - 1, debug=False)
+nilearn/input_data/multi_nifti_masker.py:188:                            verbose=(self.verbose - 1),
+nilearn/input_data/nifti_masker.py:168:                verbose=(self.verbose - 1),
+```
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(5, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","lesteve","2015-01-29 19:14:04","Actually you have already, thanks for that and sorry for the noise ...
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(5, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","lesteve","2015-01-29 19:15:08","I am not too sure whether > 10 was a typo or meant to indicate a super high verbosity was needed. At least the required verbosity is the same as the other print statements in the same class so that's probably fine.
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","369","nilearn","nilearn","GaelVaroquaux","2015-01-29 19:18:50","Indeed, I think that it should be a high value. Printing just before a return is not someone wants often: most often we know that the operation is finished because either another one is starting, or the processing has finished.
+","97df72722680e5db12f1238978a82c9bf84c9e7f","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-25 06:46:22","Make sure all print/stderr output checks verbosity level; add docstring comments re: verbose.","7513db29d804c588a6792166b19803b41ddb3d00",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-25 06:47:04","Tweak parameter name to make the output method/circumstances clearer.","a2e5b23dd405e0f41bb33a22883ff962d55a2e1f",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-25 06:47:40","Make sure that verbose is an int, not a bool.","a582b37b9b5a0f9524b1e58ebf3bb2ae55ccac0f",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-25 20:31:19","Turn logging OFF from within tests.","00d88d38e3753ec66c5d3345591816fd660fa829",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-28 23:51:44","Tunnel verbosity through fetch_localizer_calculation_task","8c21e68ba24342eb73f7039b158e3a9753d12f11",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-28 23:54:49","Allow is_spd output to be turned off.","e215be66b813bf16786b20a24e0c8b7c84437d02",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 00:24:22","Tweak code where verbosity is decreased; passing negative verbosity leads to high verbosity.","b9af88dec769ea93fb9f52a28ae77f207bb1375b",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 00:24:42","Silencing the Parallel object in permuted_ols.","e1f66572e4310fc06ebb5c67775bac53cfe3c717",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 00:37:08","Only report download progress if verbose > 0.","8a0a08d010dc846a59fc8c9b389b1cc557696dfe",""
+"pull_request_commit","369","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 00:49:21","Turning off explicit logging in tests.","97df72722680e5db12f1238978a82c9bf84c9e7f",""

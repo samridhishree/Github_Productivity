@@ -1,0 +1,65 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","64","nilearn","nilearn","fabianp","2013-05-29 08:24:14","3822.42 seconds in my machine. Mostly because of Searchlight.
+
+In any case this makes it really painful to build the doc and to the user it looks as if the example was broken (there is no output whatsoever for one hour).
+
+This is blocking to have the nightly documentation builds.
+","start issue","plot_simulated_data.py takes one hour to finish"
+"issue_closed","64","nilearn","nilearn","AlexandreAbraham","2013-05-30 22:44:03","","closed issue","plot_simulated_data.py takes one hour to finish"
+"issue_comment","64","nilearn","nilearn","GaelVaroquaux","2013-05-29 08:26:53","> 3822.42 seconds in my machine. Mostly because of Searchlight.
+> 
+> In any case this makes it really painful to build the doc and to the user it
+> looks as if the example was broken (there is no output whatsoever for one
+> hour).
+
+OK, the fact that there is no output needs to be changed.
+
+That said, we need real examples on nisl, not only toys. This means that
+we will have to cope with long-running doc builds (and yes searchlight is
+slow and useless).
+","",""
+"issue_comment","64","nilearn","nilearn","GaelVaroquaux","2013-05-29 08:40:19","> Normally, the progression is shown like that:
+> Job #1, processed 190/1435 voxels(13.24%, 76 seconds remaining)
+> 
+> So there must be another problem...
+
+It could be that the output is captured by the gen_rst.py. There is a
+'Tee' object that is supposed to sort this out, but... Need investigation
+","",""
+"issue_comment","64","nilearn","nilearn","GaelVaroquaux","2013-05-29 12:44:05","> Estimated computation time on my machine is ~50 000 seconds.
+
+Are you sure that you are talking about the plot_simulated_data example?
+","",""
+"issue_comment","64","nilearn","nilearn","GaelVaroquaux","2013-05-29 12:51:13","> ```
+> Are you sure that you are talking about the plot_simulated_data example?
+> ```
+> 
+> No, I thought that we were talking about plot_haxby_searchlight...
+
+So the take home message is that if you put an SVC in a regression pb, it
+is very slow, and the same for an SVR in a classification pb. I believe
+that it is because of the low explained variance, that makes the
+optimization pb hard (probably because of the large number of support
+vectors).
+","",""
+"issue_comment","64","nilearn","nilearn","GaelVaroquaux","2013-05-31 08:15:54","> THANKS!! works much better now, it went down to 159s which is really
+> reasonable.
+
+Well, thanks for pointing it out. It was useful.
+
+> I promise to have the buildbot working soon.
+
+Great!
+
+G
+","",""
+"issue_comment","64","nilearn","nilearn","pgervais","2013-05-29 09:26:05","I'm in the process of changing the Searchlight class API (see PR #65). I'll have a look on this problem at the same time. 
+","",""
+"issue_comment","64","nilearn","nilearn","pgervais","2013-05-29 09:39:43","The reason why there's no output in the console, is because verbose=1 should be passed to Searchlight, which is not the case in plot_simulated_data.py.
+","",""
+"issue_comment","64","nilearn","nilearn","pgervais","2013-05-29 09:43:20","On my machine, with one core only, the searchlight part takes 475s. 
+","",""
+"issue_comment","64","nilearn","nilearn","pgervais","2013-05-29 12:22:23","After some discussion with Gael, adding `estimator=svm.SVR(kernel=""linear"")` to the SearchLight initialization parameters partly solves the problem (this was a bug). The computation time is reduced, and the result is way better.
+","",""
+"issue_comment","64","nilearn","nilearn","pgervais","2013-05-29 12:49:05","The bug is only in plot_simulated_data.py, not plot_haxby_searchlight.py, because one is a regression, and the other a classification task.
+","",""

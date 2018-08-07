@@ -1,0 +1,120 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","803","nilearn","nilearn","AlexandreAbraham","2015-10-22 12:18:24","It is not used for the moment but was requested in #736.
+","start issue","For tests purposes, adds a memory limiter under the form of a decorator."
+"issue_closed","803","nilearn","nilearn","AlexandreAbraham","2016-01-20 14:25:47","","closed issue","For tests purposes, adds a memory limiter under the form of a decorator."
+"pull_request_title","803","nilearn","nilearn","AlexandreAbraham","2015-10-22 12:18:24","It is not used for the moment but was requested in #736.
+","c033fefe76a807290e29be5f96d65be658b438da","For tests purposes, adds a memory limiter under the form of a decorator."
+"issue_comment","803","nilearn","nilearn","aabadie","2015-10-22 14:30:44","> Ping @aabadie, apparently I stole your job. But I've done the easy part, the hardest part is to set it cleverly when needed :P.
+
+No problem @AlexandreAbraham, your change is a nice contribution.
+","",""
+"issue_comment","803","nilearn","nilearn","aabadie","2015-10-23 12:52:36","@AlexandreAbraham,  in case you missed it, the test is failing on circle ci. Probably an issue when setting memory limit on the VM.
+","",""
+"issue_comment","803","nilearn","nilearn","aabadie","2016-01-18 13:02:02","> The problem seems that the code segfaults instead of raising a memory error... Maybe I asked for too much memory?
+
+This is a possibility but I would be surprised as the maximum memory is set to 10000000 (10MB) and the size of the array is 12MB which is not that much.
+
+Maybe using a strategy based on MemoryProfiler would help.
+","",""
+"issue_comment","803","nilearn","nilearn","aabadie","2016-01-19 13:00:25","> FWIW @aabadie has a solution for this use case (testing nilearn memory consumption as per #736) based on memory_profiler
+
+ @AlexandreAbraham, @lesteve, if you agree, I'll propose a PR based on that solution.
+","",""
+"issue_comment","803","nilearn","nilearn","AlexandreAbraham","2016-01-18 11:54:42","The problem seems that the code segfaults instead of raising a memory error... Maybe I asked for too much memory?
+","",""
+"issue_comment","803","nilearn","nilearn","GaelVaroquaux","2016-01-18 15:06:00","> The problem seems that the code segfaults instead of raising a memory error...
+> Maybe I asked for too much memory?
+
+Indeed, under old versions of Python, there were segfaults when you asked
+for too much memory.
+","",""
+"issue_comment","803","nilearn","nilearn","lesteve","2016-01-19 12:56:11","FWIW @aabadie has a solution for this use case (testing nilearn memory consumption as per #736) based on memory_profiler, which is part of https://github.com/joblib/joblib/pull/260.
+
+I am not entirely sure it is worth investigating more time making this PR work.
+","",""
+"issue_comment","803","nilearn","nilearn","lesteve","2016-01-19 13:22:53","> @AlexandreAbraham, @lesteve, if you agree, I'll propose a PR based on that solution.
+
+This is fine with me. It would be great to find a few tests to add in order to test functions in nilearn where  memory consumption actually matters. @AlexandreAbraham, @GaelVaroquaux any suggestions ?
+","",""
+"issue_comment","803","nilearn","nilearn","AlexandreAbraham","2016-01-19 13:31:59","> Indeed, under old versions of Python, there were segfaults when you asked
+> for too much memory.
+
+But we don't use older versions of Python. This is why this seems strange to me.
+
+> FWIW @aabadie has a solution for this use case (testing nilearn memory consumption as per #736) based on memory_profiler, which is part of joblib/joblib#260.
+
+Yes, I know how to do it with `memory_profiler`. The goal of this PR was to rely on the system and avoid a dependency.
+","",""
+"issue_comment","803","nilearn","nilearn","AlexandreAbraham","2016-01-19 13:41:06","> @AlexandreAbraham, @lesteve, if you agree, I'll propose a PR based on that solution.
+
+I won't say no :P 
+
+>  It would be great to find a few tests to add in order to test functions in nilearn where memory consumption actually matters. @AlexandreAbraham, @GaelVaroquaux any suggestions ?
+
+Any function that is supposed to treat data iteratively such as `compute_multi_epi_mask` (or `multi_compute_epi_mask` or `compute_epi_multi_mask`).
+","",""
+"issue_comment","803","nilearn","nilearn","AlexandreAbraham","2016-01-20 14:25:47","Handing it over to @aabadie !
+","",""
+"issue_comment","803","nilearn","nilearn","lesteve","2015-10-28 07:51:33","> @aabadie, setting the limit of memory is protected. The error seems to be that a segfault is triggered when I allocate too much memory instead of a memory error. I'll try to put a smaller object in the test.
+
+You put a smaller object but didn't change the memory_limit. I would guess that's why the Travis tests are now failing.
+","",""
+"issue_comment","803","nilearn","nilearn","lesteve","2015-10-28 08:25:10","> I don't get your comment. The error should be triggered when the allocated object size is higher than the limit, which is the case. Or maybe I have my memory usage estimation wrong?
+
+I haven't double-checked the memory usage computation but it looks like the Travis failure is due to the fact that the memory usage doesn't go over the memory_limit threshold.
+","",""
+"issue_comment","803","nilearn","nilearn","lesteve","2015-10-28 08:26:48","On top of that it looks like it only fails for a few distributions but not for the other, weird.
+
+Here is the error you get:
+
+```
+======================================================================
+
+FAIL: nilearn.tests.test_testing.test_memory_limit_raise
+
+----------------------------------------------------------------------
+
+Traceback (most recent call last):
+
+  File ""/usr/lib/python2.7/dist-packages/nose/case.py"", line 197, in runTest
+
+    self.test(*self.arg)
+
+  File ""/home/travis/build/nilearn/nilearn/testvenv/local/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/_utils/testing.py"", line 690, in wrapper_func
+
+    retval = func(*args, **kwargs)
+
+  File ""/home/travis/build/nilearn/nilearn/testvenv/local/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/tests/test_testing.py"", line 58, in test_memory_limit_raise
+
+    MemoryError, '', np.zeros, (500, 100, 60), dtype=np.float32)
+
+AssertionError: MemoryError not raised
+```
+","",""
+"pull_request_commit_comment","803","nilearn","nilearn","GaelVaroquaux","2015-10-22 12:26:11","CamelCase for a function. Blah!
+","c033fefe76a807290e29be5f96d65be658b438da","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","803","nilearn","nilearn","GaelVaroquaux","2015-10-22 12:27:08","Are you sure that this is in the standard library?
+","c033fefe76a807290e29be5f96d65be658b438da","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","803","nilearn","nilearn","AlexandreAbraham","2015-10-22 12:27:19","I use it as a decorator afterward. But I can change it to `snake_case` since nose does that with `with_setup`.
+","c033fefe76a807290e29be5f96d65be658b438da","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","803","nilearn","nilearn","GaelVaroquaux","2015-10-22 12:28:41","> I use it as a decorator afterward.
+
+Decorators aRe nOt CamelCase. It's uGlY. :) 
+","c033fefe76a807290e29be5f96d65be658b438da","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","803","nilearn","nilearn","AlexandreAbraham","2015-10-22 12:38:39","It is for Unix systems. I probably should skip tests if not available / setrlimit or getrlimit raise a resource.error.
+","c033fefe76a807290e29be5f96d65be658b438da","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","803","nilearn","nilearn","GaelVaroquaux","2015-10-22 12:46:50","> It is for Unix systems. I probably should skip tests if not available /
+> setrlimit or getrlimit raise a resource.error.
+
+More than skip tests, you cannot import it at all windows, I suspect.
+Which means that importing scikit-learn on windows would crash.
+
+We need CI for Windows. I created an issue: #804.
+","c033fefe76a807290e29be5f96d65be658b438da","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit","803","nilearn","nilearn","AlexandreAbraham","2015-10-22 12:15:53","Add a memory limiter.","2689d886feb8b291af1b03db882039dd40a65967",""
+"pull_request_commit","803","nilearn","nilearn","AlexandreAbraham","2015-10-22 12:29:52","Address comments","3a105fc9570b66d4ae4266a94bb6115434758c9b",""
+"pull_request_commit","803","nilearn","nilearn","AlexandreAbraham","2015-10-22 13:20:45","Put guards if resource is not available.","8626d047f8f88919ef016cd5a7b54977c8fde391",""
+"pull_request_commit","803","nilearn","nilearn","AlexandreAbraham","2015-10-27 12:11:15","Smaller object in test to avoid segfault","c20792a9d2065dab7f522d26ba80079eddb47640",""
+"pull_request_commit","803","nilearn","nilearn","AlexandreAbraham","2015-10-29 21:32:37","Robustify resource setting","f822255208dedfd2c34362927f3b39fc8b614499",""
+"pull_request_commit","803","nilearn","nilearn","AlexandreAbraham","2016-01-12 13:17:51","Fix comment","d2231a41760c974599fef71f51f7f953897c67f8",""
+"pull_request_commit","803","nilearn","nilearn","AlexandreAbraham","2016-01-12 13:31:34","Debug prints for CircleCI","c033fefe76a807290e29be5f96d65be658b438da",""

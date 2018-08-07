@@ -1,0 +1,64 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","595","nilearn","nilearn","grlee77","2015-05-26 16:51:17","The plotting utilities in nilearn are pretty nice!
+
+This is a simple pull request to add optional title and annotation kwarg dictionaries to `_plt_img_with_bg`.  This is intended to make it easier for users to edit the title and/or annotation font size, color, etc. via functions such as `plot_roi` or `plot_img`
+
+example usage:
+
+``` python
+plotting.plot_roi(roi_nii,
+                  title='roi label',
+                  annotation_kwargs=dict(size=10),
+                  title_kwargs=dict(size=12, color='k', bgcolor='w',
+                                    weight='bold', alpha=0.))
+```
+
+If there is already another simple way to do this, please let me know.  If you are interested in this implementation, I can explicitly list these arguments in the docstrings to `plot_roi`, etc so that they are easier for users to find, instead of leaving them ""hidden"" within **kwargs as presently implemented.
+
+Also, one minor inconsistency is that the background color argument for the title is `bgcolor`, while for the annotation it would be `bg_color`.  Is it worth changing the implementation in `plotting.displays.BaseSlicer` to make the names consistent?
+","start issue","ENH: plotting: add title and annotation kwargs to _plt_img_with_bg"
+"issue_closed","595","nilearn","nilearn","lesteve","2015-06-03 13:57:29","","closed issue","ENH: plotting: add title and annotation kwargs to _plt_img_with_bg"
+"pull_request_title","595","nilearn","nilearn","grlee77","2015-05-26 16:51:17","The plotting utilities in nilearn are pretty nice!
+
+This is a simple pull request to add optional title and annotation kwarg dictionaries to `_plt_img_with_bg`.  This is intended to make it easier for users to edit the title and/or annotation font size, color, etc. via functions such as `plot_roi` or `plot_img`
+
+example usage:
+
+``` python
+plotting.plot_roi(roi_nii,
+                  title='roi label',
+                  annotation_kwargs=dict(size=10),
+                  title_kwargs=dict(size=12, color='k', bgcolor='w',
+                                    weight='bold', alpha=0.))
+```
+
+If there is already another simple way to do this, please let me know.  If you are interested in this implementation, I can explicitly list these arguments in the docstrings to `plot_roi`, etc so that they are easier for users to find, instead of leaving them ""hidden"" within **kwargs as presently implemented.
+
+Also, one minor inconsistency is that the background color argument for the title is `bgcolor`, while for the annotation it would be `bg_color`.  Is it worth changing the implementation in `plotting.displays.BaseSlicer` to make the names consistent?
+","a7d16b31bee0a8af59affcea2823a4fa1f150e39","ENH: plotting: add title and annotation kwargs to _plt_img_with_bg"
+"issue_comment","595","nilearn","nilearn","lesteve","2015-05-27 06:53:36","Glad you find nilearn plotting useful and thanks for the PR.
+
+One way to do what you want with the existing code is something like:
+
+``` python
+
+display = plotting.plot_roi(roi_nii, annotate=False)
+display.title('roi_label', size=12, color='k', bgcolor='w', weight='bold', alpha=0.)
+display.annotate(size=12)
+```
+
+My take on it is that we are trying to fight against adding more complexity in the plotting code but ccing @GaelVaroquaux and @AlexandreAbraham for their opinions on the matter.
+
+The rationale is that plotting.plot_\* functions should cover the most basic use cases. If you need more tweaking it can be done via the 'display' objects that these functions return.
+","",""
+"issue_comment","595","nilearn","nilearn","AlexandreAbraham","2015-05-27 07:27:32","I am in favor of using the existing system. This is the way matplotlib works and I'd like to keep the arguments of the plot functions to their strict minimum.
+","",""
+"issue_comment","595","nilearn","nilearn","grlee77","2015-05-27 13:03:44","thanks @lesteve 
+That looks just as easy.  I should have looked more closely to see that the object was returned and you could just set it then as in matplotlib!  
+
+Perhaps, something along these lines could be added to one of the examples here:
+http://nilearn.github.io/building_blocks/plotting.html
+","",""
+"issue_comment","595","nilearn","nilearn","AlexandreAbraham","2015-05-27 13:08:31",":+1: 
+","",""
+"pull_request_commit","595","nilearn","nilearn","grlee77","2015-05-26 16:28:44","add title_kwargs and annotation_kwargs to _plt_img_with_bg","a7d16b31bee0a8af59affcea2823a4fa1f150e39",""

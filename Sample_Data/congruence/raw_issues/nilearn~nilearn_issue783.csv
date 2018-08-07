@@ -1,0 +1,47 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","783","nilearn","nilearn","salma1601","2015-09-21 15:51:34","I used caching through spyder and when I run my code outside spyder it is recomputing everything. Is this expected behaviour ?
+","start issue","cache through spyder"
+"issue_closed","783","nilearn","nilearn","lesteve","2015-09-22 14:13:02","","closed issue","cache through spyder"
+"issue_comment","783","nilearn","nilearn","lesteve","2015-09-21 15:54:03","> Is this expected behaviour ?
+
+No. Do you have a self-contained example that reproduces the problem on your machine ?
+","",""
+"issue_comment","783","nilearn","nilearn","lesteve","2015-09-22 14:13:02","All right closing then.
+
+I guess you can use an absolute path in your case. Not sure what best practices are, people who use joblib more than me can comment if they wish.
+","",""
+"issue_comment","783","nilearn","nilearn","salma1601","2015-09-21 16:04:22","``` python
+import nilearn.datasets
+import nilearn.input_data
+atlas = nilearn.datasets.fetch_atlas_msdl()
+dataset = nilearn.datasets.fetch_adhd()
+masker = nilearn.input_data.NiftiMapsMasker(
+    atlas.maps, resampling_target=""maps"", detrend=True,
+    low_pass=None, high_pass=.01, t_r=2.5, standardize=False,
+    memory='nilearn_cache', memory_level=1, verbose=2)
+time_series = masker.fit_transform(dataset.func[0])
+```
+
+The output in spyder 
+
+``` python
+[NiftiMapsMasker.fit_transform] loading regions from /home/sb238920/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[Memory]    0.0s, 0.0min: Loading filter_and_extract...
+```
+
+and when I run it outside spyder
+
+``` python
+[NiftiMapsMasker.fit_transform] loading regions from /home/sb238920/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+filter_and_extract('/home/sb238920/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
+```
+
+etc.
+","",""
+"issue_comment","783","nilearn","nilearn","salma1601","2015-09-22 13:52:19","Yes, thanks !
+spyder created nilearn_cache in the same folder where the code is located.
+","",""
+"issue_comment","783","nilearn","nilearn","salma1601","2015-09-22 14:08:55","I wasn't aware that setting memory='nilearn_cache' creates the nilearn_cache folder in the current directory. I thought it was always the same place.
+","",""

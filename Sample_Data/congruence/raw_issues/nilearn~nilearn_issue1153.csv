@@ -1,0 +1,97 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1153","nilearn","nilearn","AlexandreAbraham","2016-06-24 13:12:30","Depending on the type of connectivity matrix extracted, keeping diagonal elements can be pertinent or not. I suggest to add a parameter to be able to discard them.
+
+One problem is that it makes the multiplication of off-diagonal elements by sqrt(2) useless so I removed it. But I don't know what is the best option here.
+","start issue","[MRG] Discard diagonal in sym_to_vec and refactor scaling"
+"issue_closed","1153","nilearn","nilearn","AlexandreAbraham","2016-07-19 17:52:58","","closed issue","[MRG] Discard diagonal in sym_to_vec and refactor scaling"
+"pull_request_title","1153","nilearn","nilearn","AlexandreAbraham","2016-06-24 13:12:30","Depending on the type of connectivity matrix extracted, keeping diagonal elements can be pertinent or not. I suggest to add a parameter to be able to discard them.
+
+One problem is that it makes the multiplication of off-diagonal elements by sqrt(2) useless so I removed it. But I don't know what is the best option here.
+","94e830b22c3804ee6e61c24a6da01884279402c1","[MRG] Discard diagonal in sym_to_vec and refactor scaling"
+"pull_request_merged","1153","nilearn","nilearn","AlexandreAbraham","2016-07-19 17:52:58","[MRG] Discard diagonal in sym_to_vec and refactor scaling","5e2ab743bd0fd4d1dd3f85230312aaedf6fb380a","Pull request merge from AlexandreAbraham/nilearn:sym_to_vec_diagonal to nilearn/nilearn:master"
+"issue_comment","1153","nilearn","nilearn","AlexandreAbraham","2016-07-07 12:24:44","Ready for review. Appveyor crash is spurious.
+","",""
+"issue_comment","1153","nilearn","nilearn","AlexandreAbraham","2016-07-19 12:34:03","> General comment: What do we expect in results scaling these diagonal or off-diagonal elements ? Can you point me any reference if you have ? Thanks.
+
+I don't have a reference, sorry.
+
+> Could you add in whats_new ?
+
+Done.
+","",""
+"issue_comment","1153","nilearn","nilearn","AlexandreAbraham","2016-07-19 17:52:56","Let's go then !
+","",""
+"issue_comment","1153","nilearn","nilearn","KamalakerDadi","2016-07-08 14:28:37","General comment: What do we expect in results scaling these diagonal or off-diagonal elements ? Can you point me any reference if you have ? Thanks.
+","",""
+"issue_comment","1153","nilearn","nilearn","KamalakerDadi","2016-07-10 18:14:38","Could you add in whats_new ?
+","",""
+"issue_comment","1153","nilearn","nilearn","KamalakerDadi","2016-07-19 17:44:14","I have no further comments. LG from my side.
+","",""
+"pull_request_commit_comment","1153","nilearn","nilearn","bthirion","2016-06-27 21:36:07","I proprose to remove this scaling, which is horribly counter-intuitive. 
+It might be available under an 'isometric' option if there is any reason to keep it, but I don't  see any use case.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","GaelVaroquaux","2016-06-28 09:17:07","> > -        scaling = sqrt(2) \* np.ones(symmetric.shape[-2:])
+> 
+> I proprose to remove this scaling, which is horribly counter-intuitive.
+> It might be available under an 'isometric' option if there is any reason to
+> keep it, but I don't see any use case.
+
+I seem to remember that it is fairly important to have the metric to
+really be the Cramer-Rao metric.
+
+That said, we could do it the other way around, and apply 1/sqrt(2) on
+the diagonal, which would be probably more intuitive.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","bthirion","2016-06-28 15:23:17","On 28/06/2016 11:17, Gael Varoquaux wrote:
+
+> In nilearn/connectome/connectivity_matrices.py 
+> https://github.com/nilearn/nilearn/pull/1153#discussion_r68723710:
+> 
+> > ```
+> >  """"""
+> > ```
+> > -    scaling = sqrt(2) \* np.ones(symmetric.shape[-2:])
+> > -    np.fill_diagonal(scaling, 1.)
+> > -    tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(np.bool)
+> > -    return symmetric[..., tril_mask] \* scaling[tril_mask]
+> > -    if keep_diagonal:
+> > -        scaling = sqrt(2) \* np.ones(symmetric.shape[-2:])
+> > - scaling = sqrt(2) \* np.ones(symmetric.shape[-2:]) I proprose to 
+> >   remove this scaling, which is horribly counter-intuitive. It might be 
+> >   available under an 'isometric' option if there is any reason to keep 
+> >   it, but I don't see any use case.
+> >   I seem to remember that it is fairly important to have the metric to 
+> >   really be the Cramer-Rao metric. That said, we could do it the other 
+> >   way around, and apply 1/sqrt(2) on the diagonal, which would be 
+> >   probably more intuitive.
+> 
+> —
+> You are receiving this because you commented.
+> Reply to this email directly, view it on GitHub 
+> https://github.com/nilearn/nilearn/pull/1153/files/c79280449fff7c06e0fc5cdb645ad7f5d309ad92#r68723710, 
+> or mute the thread 
+> https://github.com/notifications/unsubscribe/AAOT1hZNtyTwjMeWvz1Sxo1DhMuyUE-Nks5qQOaTgaJpZM4I9wJA.
+> 
+> Sounds like a reasonable compromise.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","bthirion","2016-07-07 20:32:34","I thought we had agreed on a different behavior: when the diagonal is kept, it is scaled by 1. / sqrt(2). This might be less confusing to users.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","KamalakerDadi","2016-07-07 20:34:32","What is the use case of isometric here ?
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","KamalakerDadi","2016-07-07 20:35:52","You may have to change the default.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","AlexandreAbraham","2016-07-08 13:58:33","Sorry, I fixed the code but not the doc.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","AlexandreAbraham","2016-07-08 14:00:23","I must admit that now that only diagonal elements are modified, I don't see the usage. Anybody in favor of keeping this option?
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","AlexandreAbraham","2016-07-08 14:00:29","Thanks, changed.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1153","nilearn","nilearn","KamalakerDadi","2016-07-10 18:14:14","> I don't see the usage
+
+Yes think so.
+","94e830b22c3804ee6e61c24a6da01884279402c1","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit","1153","nilearn","nilearn","AlexandreAbraham","2016-06-24 13:09:05","Add an option to discard diagonal in sym_to_vec","1ab3f479514cb22021d0a929cf7cab8ddfb897cb",""
+"pull_request_commit","1153","nilearn","nilearn","AlexandreAbraham","2016-07-06 12:07:22","Fix tests","11d804168a415206013404c551af94d18b29a4d0",""
+"pull_request_commit","1153","nilearn","nilearn","AlexandreAbraham","2016-07-08 14:00:37","Address comments","c1741dadb3b8cd04eeece59ac98fda89ccd0a5fd",""
+"pull_request_commit","1153","nilearn","nilearn","AlexandreAbraham","2016-07-19 12:28:01","Remove isometric option","e87834c6edeca8e60ba174ce9028ff7eda3ed06a",""
+"pull_request_commit","1153","nilearn","nilearn","AlexandreAbraham","2016-07-19 12:32:45","Add what's new","94e830b22c3804ee6e61c24a6da01884279402c1",""

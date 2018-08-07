@@ -1,0 +1,59 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1185,nilearn,nilearn,AlexandreAbraham,2016-07-22 14:42:27,"OK, here is how the bug happens.
+
+Here is what happens in the code (I'm sorry, I'll dig a bit into how matplotlib works because you can't understand the bug if you don't know it):
+- First, we create the base layer of the glass brain (ie the brain outline). In the case of left-side brain, we call `invert_xaxis` to flip it horizontally. Behind the scenes, matplotlib simply takes `x_min`, `x_max` and invert them (this is not just a flag, this is important). So we have `x_min` > `x_max`.
+- Then, we want to plot the ""data"" layer over this background. When we do it, we compute the bounds of the data to plot in order to readjust the limits of the axis if needed. Two cases:
+  1. the data fits in the glass brain: we do nothing. Everything is fine.
+  2. there is a voxel outside of the canvas of the axis. The canvas is then readjusted to display this voxel. During this adjustment, the limits of the axis are modified. So, if the limits were flipped before by `invert_xaxis`, they are now resetted in the correct order (`x_min` < `x_max`). This happens because we do not take into account the direction of the plot when computing the bounds.
+
+The patch may seems a bit ""quick and dirty"" but it is actually the safest way I've found to fix the bug with my limited knowledge of the plotting framework. In particular:
+- I don't want to change the way the bounds are computed because the `x_min` > `x_max` thing is matplotlib dependant and I don't know if some other code relies on these values
+- I don't want to call `invert_xaxis` each time something is plotting, I'm a bit afraid that adding more layers may flip the image again
+- If tomorrow the matplotlib API changes and the inversion is represented as a flag, the code should still work.
+
+Comments welcome of course.
+",start issue,Re-invert the axis after bounding box update if needed.
+2,issue_closed,1185,nilearn,nilearn,AlexandreAbraham,2016-07-27 09:19:15,,closed issue,Re-invert the axis after bounding box update if needed.
+3,pull_request_title,1185,nilearn,nilearn,AlexandreAbraham,2016-07-22 14:42:27,"OK, here is how the bug happens.
+
+Here is what happens in the code (I'm sorry, I'll dig a bit into how matplotlib works because you can't understand the bug if you don't know it):
+- First, we create the base layer of the glass brain (ie the brain outline). In the case of left-side brain, we call `invert_xaxis` to flip it horizontally. Behind the scenes, matplotlib simply takes `x_min`, `x_max` and invert them (this is not just a flag, this is important). So we have `x_min` > `x_max`.
+- Then, we want to plot the ""data"" layer over this background. When we do it, we compute the bounds of the data to plot in order to readjust the limits of the axis if needed. Two cases:
+  1. the data fits in the glass brain: we do nothing. Everything is fine.
+  2. there is a voxel outside of the canvas of the axis. The canvas is then readjusted to display this voxel. During this adjustment, the limits of the axis are modified. So, if the limits were flipped before by `invert_xaxis`, they are now resetted in the correct order (`x_min` < `x_max`). This happens because we do not take into account the direction of the plot when computing the bounds.
+
+The patch may seems a bit ""quick and dirty"" but it is actually the safest way I've found to fix the bug with my limited knowledge of the plotting framework. In particular:
+- I don't want to change the way the bounds are computed because the `x_min` > `x_max` thing is matplotlib dependant and I don't know if some other code relies on these values
+- I don't want to call `invert_xaxis` each time something is plotting, I'm a bit afraid that adding more layers may flip the image again
+- If tomorrow the matplotlib API changes and the inversion is represented as a flag, the code should still work.
+
+Comments welcome of course.
+",a63eb6890d7e3dda8220ab794a937eb808c94f88,Re-invert the axis after bounding box update if needed.
+4,pull_request_merged,1185,nilearn,nilearn,AlexandreAbraham,2016-07-27 09:19:15,Re-invert the axis after bounding box update if needed.,0f07e2f4d86a553c20ef22ba531aeabe1b08f595,Pull request merge from AlexandreAbraham/nilearn:fix_revert_gb to nilearn/nilearn:master
+5,issue_comment,1185,nilearn,nilearn,MartinPerez,2016-07-22 16:00:51,"I will download the PR and test on all my images
+",,
+6,issue_comment,1185,nilearn,nilearn,MartinPerez,2016-07-22 16:50:34,"I tested that adding in line 98 of draw_2d:
+
+if self.direction == 'l':
+      self.ax.invert_xaxis()
+
+after 
+self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
+
+fixes my contrast images, moreover I deleted from line 659 the original inversion, since its not necessary there anymore and due to the bug would be reset anyway.
+
+It is important to verify that line 1347 of add_graph is also not affected by this bug. I think it is not.
+
+I think changing the code inside draw 2d would be better than checking bound values since the reason of the inversion becomes explicit and its dependence on self.direction is also clear.
+",,
+7,issue_comment,1185,nilearn,nilearn,MartinPerez,2016-07-27 09:19:22,"@AlexandreAbraham I see your point. Its true I am assuming draw2d to be called once at the end. I agree then with your solution.
+
+Just to clarify the reason there is a separate x_axis inversion in add_graph is because the connectomics code kind of overrides the glass brain implementation when I looked at the logic details. So I was forced to add a separate inversion call there after the markers and links were added. So If I read well the logic the two would never be called together.
+",,
+8,issue_comment,1185,nilearn,nilearn,MartinPerez,2016-07-27 09:43:52,"I would totally agree with re-engineering the code and will be happy to help. I thought exactly the same when modifying the code to add the left hemisphere, nonetheless I did not see any way without very heavy changes.
+",,
+9,issue_comment,1185,nilearn,nilearn,KamalakerDadi,2016-07-22 15:27:45,"Can I see which example has this bug behaviour, if any ?
+",,
+10,pull_request_commit,1185,nilearn,nilearn,AlexandreAbraham,2016-07-22 14:29:24,Re-invert the axis after bounding box update if needed.,a63eb6890d7e3dda8220ab794a937eb808c94f88,

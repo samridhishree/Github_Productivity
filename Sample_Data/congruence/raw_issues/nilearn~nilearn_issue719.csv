@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","719","nilearn","nilearn","AlexandreAbraham","2015-07-24 11:48:59","Sometimes, we have big niimages that doesn't fit in memory. But in some cases, it is possible to handle them using block processing. The question is to determine if the code overhead is worth the functionality.
+
+Basically, the concept would be to add a `return_iterator` option to `check_niimg_4d`. By doing so, some processing like smoothing or masking can be applied on blocks of data, in a fixed size memory space.
+
+Different strategies can be applied. If the 4d niimg is:
+- a list of 3D niimages (like in #715): iteration comes for free. For the moment, we always concat those files brutally.
+- a 4d "".nii"" file: for the moment, we explicitely prevent memory mapping. In the case of iteration, we could force memory_mapping and copy file blocks in memory to process them.
+- a 4d "".nii.gz"" file: gzipped file must be decompressed in memory. But, it is actually possible to stream data reading and read one block after the other. However, doing a PR to nibabel is, I think, close to impossible since it would require many modifications in the codebase. Plus, Nifti format is clearly not made for that and some header information may be hard to handle (inter / slope for example). I think that a hack would work in more than 90% of the cases, but it may be more fitted for `nilearn_sandbox`.
+
+I think that this is pretty reasonable since, for most of the functions, it boils down to apply the function on each block and concatenate the result instead of appying it on the data instead. For some functions where it requires more intelligent strategy (like high variance confounds : maybe an incremental pca?) we could simply not support it.
+","start issue","Iterate over big 4d niimages"
+"issue_comment","719","nilearn","nilearn","AlexandreAbraham","2015-08-31 13:22:09","Note: This can be achieved using `nifti.dataobj[..., i]`.
+","",""
+"issue_comment","719","nilearn","nilearn","banilo","2015-07-24 12:09:39","+1 for iterators on 4d images...
+
+2015-07-24 13:49 GMT+02:00 Alexandre Abraham notifications@github.com:
+
+> Sometimes, we have big niimages that doesn't fit in memory. But in some
+> cases, it is possible to handle them using block processing. The question
+> is to determine if the code overhead is worth the functionality.
+> 
+> Basically, the concept would be to add a return_iterator option to
+> check_niimg_4d. By doing so, some processing like smoothing or masking
+> can be applied on blocks of data, in a fixed size memory space.
+> 
+> Different strategies can be applied. If the 4d niimg is:
+> - a list of 3D niimages (like in #715
+>   https://github.com/nilearn/nilearn/issues/715): iteration comes for
+>   free. For the moment, we always concat those files brutally.
+> - a 4d "".nii"" file: for the moment, we explicitely prevent memory
+>   mapping. In the case of iteration, we could force memory_mapping and copy
+>   file blocks in memory to process them.
+> - a 4d "".nii.gz"" file: gzipped file must be decompressed in memory.
+>   But, it is actually possible to stream data reading and read one block
+>   after the other. However, doing a PR to nibabel is, I think, close to
+>   impossible since it would require many modifications in the codebase. Plus,
+>   Nifti format is clearly not made for that and some header information may
+>   be hard to handle (inter / slope for example). I think that a hack would
+>   work in more than 90% of the cases, but it may be more fitted for
+>   nilearn_sandbox.
+> 
+> I think that this is pretty reasonable since, for most of the functions,
+> it boils down to apply the function on each block and concatenate the
+> result instead of appying it on the data instead. For some functions where
+> it requires more intelligent strategy (like high variance confounds : maybe
+> an incremental pca?) we could simply not support it.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/719.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""

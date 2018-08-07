@@ -1,0 +1,77 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","266","nilearn","nilearn","banilo","2014-10-24 21:13:31","It's great that 4D images or lists of nifti paths' can be passed on to transform() of Nifti(Labels)Masker instance. Yet, there are situations when those niftis require some preprocessing.
+
+Use case: we know that nifti contain NaN's that we need to np.nan_to_num those NaNs out in each, first.
+
+Might it be conceivable to extend the arguments for transform() such that 3D numpy arrays are also support? The affine could be checked back with the fitted mask image in this case.
+","start issue","Nifti(Labels)Masker: Extend possible data types for transform()?"
+"issue_closed","266","nilearn","nilearn","lesteve","2014-10-28 09:31:52","","closed issue","Nifti(Labels)Masker: Extend possible data types for transform()?"
+"issue_comment","266","nilearn","nilearn","lesteve","2014-10-27 10:47:28","FWIW, you can use `nilearn.image.smooth_img` with `fwhm=None` to remove non-finite values. 
+
+``` python
+from nilearn import image
+
+niimgs = image.smooth_img(niimgs_with_nans, fwhm=None)
+```
+
+We could have the functionality in a function with a better name, if that's useful.
+
+About having transform take 3D numpy arrays, my understanding of the API is that high-level functions should take niimgs as arguments. Is it that much pain to create the niimgs from your 3D numpy arrays? 
+","",""
+"issue_comment","266","nilearn","nilearn","banilo","2014-10-27 12:52:15","Ok, thanks.
+
+An alternative idea would be add an optional argument to Nifti(Labels)Masker that allows to specify a pipeline/set of operations that are performed on each of the nifti images before applying any actual masking operations.
+","",""
+"issue_comment","266","nilearn","nilearn","lesteve","2014-10-27 13:13:56","It feels more natural to me to keep the NiftiMasker interface as it is and add some functions in case they don't exist already to do some common pre-processing directly on niimgs.
+
+Another argument would be that we probably want to maintain a scikit-learn interface for the `transform`, `fit`, `fit_transform` methods.
+","",""
+"issue_comment","266","nilearn","nilearn","banilo","2014-10-27 13:22:34","To frame my point from the perspective of expense in memory, if the user
+needs to load niis from disc and then apply same modification not already
+supported by NiftiMasker this will double memory consumption - at a given
+moment in time the original and the modified input niis will need to be
+held im memory. Or is there a simple numpy or nibabel solution to this?
+
+2014-10-27 14:13 GMT+01:00 Loïc Estève notifications@github.com:
+
+> It feels more natural to me to keep the NiftiMasker interface as it is and
+> add some functions in case they don't exist already to do some common
+> pre-processing directly on niimgs.
+> 
+> Another argument would be that we probably want to maintain a scikit-learn
+> interface for the transform, fit, fit_transform methods.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/266#issuecomment-60589895.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","266","nilearn","nilearn","GaelVaroquaux","2014-10-27 14:39:04","> Might it be conceivable to extend the arguments for transform() such
+> that 3D numpy arrays are also support? The affine could be checked back
+> with the fitted mask image in this case.
+
+No. It is important to me that we do not collide together nifti images
+and arrays. If we start doing this, the API is going to become blurry.
+In addition, supporting this uniformly would be ill-defined and
+impossible to implement in a consistent way (ie which affine would be
+used). It would make the package difficult to grasp and to use.
+","",""
+"issue_comment","266","nilearn","nilearn","GaelVaroquaux","2014-10-27 14:45:49","> To frame my point from the perspective of expense in memory, if the user
+> needs to load niis from disc and then apply same modification not already
+> supported by NiftiMasker this will double memory consumption - at a given
+> moment in time the original and the modified input niis will need to be
+> held im memory.
+
+For the time being, my answer would be: buy more memory, or process your
+images in patches.
+
+We don't right now have the infrastructure to handle such a usecase.
+Importantly, we shouldn't try to hack quick fixes, as they won't solve
+much, but will make the code hard to handle. In the long run, we may
+build an out-of-core handling infrastucture, but in the short term, you
+should do loops over your images, and process them in batches.
+","",""

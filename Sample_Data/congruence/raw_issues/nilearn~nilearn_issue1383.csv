@@ -1,0 +1,22 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1383","nilearn","nilearn","alexsavio","2017-02-21 13:19:34","Hi,
+
+I've found out that you perform a smoothing to find cut slices coordinates. For that, just before calling `_smooth_array` you convert the data type to float in:
+https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/find_cuts.py#L228
+
+My issue is in that some atlases have a ""np.uint8"" dtype, in this case `data.dtype.kind` is 'u', not 'i' as expected.
+
+The following change solved my problem. Do you think it is a reasonable change for Nilearn?
+```
+if data.dtype.kind in ('i', 'u'):
+    data = data.astype(np.float)
+```","start issue","Find cut slices and smoothing"
+"issue_closed","1383","nilearn","nilearn","alexsavio","2017-02-22 16:32:31","","closed issue","Find cut slices and smoothing"
+"issue_comment","1383","nilearn","nilearn","GaelVaroquaux","2017-02-21 17:53:32","> The following change solved my problem. Do you think it is a reasonable change for Nilearn?
+
+> if data.dtype.kind in ('i', 'u'):
+>     data = data.astype(np.float)
+
+Yes, preceeded by a comment that explains why it's necessary. Thanks!
+","",""
+"issue_comment","1383","nilearn","nilearn","alexsavio","2017-02-22 16:32:31","PR in #1385. Merged. Thanks!","",""

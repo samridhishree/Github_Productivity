@@ -1,0 +1,101 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1275","nilearn","nilearn","medcharleslaidi","2016-09-14 12:12:32","Sorry for taking your time... 
+
+I am trying to extract resting state network with Canica and/or Dict_learning from the Abide dataset. 
+I chose the UM sample and downloaded the data after dparsf pre-processing (abide pre-processed).
+
+When launching CanICA, I get a ""mask is invalid as it is empty"" error. 
+As I didn't managed to extract the mask from the fmri images, I downloaded a mask for each subject from the abide repository and produced a mask for the dataset using Niftimasker. 
+I created a list named ""mask"" with all the masks of the subjects and tried : 
+
+`masker = NiftiMasker(mask_strategy='background', mask_args=dict(opening=8))`
+`masker.fit(mask)`
+
+and get  :
+
+![mask1](https://cloud.githubusercontent.com/assets/11093149/18511577/c191aa16-7a84-11e6-9eeb-824a5c0eee1b.png)
+
+As the result was not perfect, I tried (even if the epi strategy should not be applied in this case because I am using a mask and not an fmri image)
+
+`masker = NiftiMasker(mask_strategy='epi',mask_args=dict(upper_cutoff=.79,lower_cutoff=.77,opening=False))`
+`masker.fit(mask)`
+`plot_roi(masker.mask_img_, title='Mask-Nilearn')`
+
+and get : 
+
+![mask2](https://cloud.githubusercontent.com/assets/11093149/18511627/0d912a40-7a85-11e6-8081-2ffb556a969c.png)
+
+which is a little better. 
+
+However the mask is not covering all the brain so I am wondering if I am using a correct strategy. 
+
+Thanks a lot, 
+
+Charles 
+","start issue","""the mask is invalid as it is empty"" -  mask issues"
+"issue_closed","1275","nilearn","nilearn","GaelVaroquaux","2016-09-15 11:59:17","","closed issue","""the mask is invalid as it is empty"" -  mask issues"
+"issue_comment","1275","nilearn","nilearn","GaelVaroquaux","2016-09-14 12:18:00","If you're using CanICA you shouldn't have to rely on a NiftiMasker,
+CanICA does it for you. What are the lines that you are using to call
+CanICA?
+","",""
+"issue_comment","1275","nilearn","nilearn","GaelVaroquaux","2016-09-14 12:28:55","Is there a reason why you really want to give to CanICA a mask? Usually letting CanICA figure out it's mask work quite well.
+
+If you really want to compute the mask yourself, you could do a soft intersection of the masks of the different subjects, using http://nilearn.github.io/modules/generated/nilearn.masking.intersect_masks.html#nilearn.masking.intersect_masks
+","",""
+"issue_comment","1275","nilearn","nilearn","GaelVaroquaux","2016-09-14 13:30:17","So the automatic masking fails. It would be interesting for us to
+reproduce. What is the exact set of data that you are putting in. We
+might have it available on our computers, as we have also looked at
+ABIDE. Cc @abraham
+","",""
+"issue_comment","1275","nilearn","nilearn","GaelVaroquaux","2016-09-14 14:08:10","> I could easily send you this sample (I'm working at the 2nd floor of Neurospin !).
+
+OK. Let's see this together tomorrow, I am not in Neurospin today. Let's
+sit down at your computer and debug this. Grab me at some point.
+","",""
+"issue_comment","1275","nilearn","nilearn","GaelVaroquaux","2016-09-15 11:58:46","I saw with @medcharleslaidi today. The problem was that he was feeding in images that were already zero-meaned and variance-normalized. As a result, the mask extraction was failing.
+
+To prevent this issue, we should do two things. First work on reporting: if @medcharleslaidi had been able to show us a report, we would have immediately diagnosed the problem. Second, we can add a warning in the mask extraction routines if they fail. It might prompt the user to look at their data. I have added #1276 as an enhancement issue on this subject.
+","",""
+"issue_comment","1275","nilearn","nilearn","medcharleslaidi","2016-09-14 12:20:48","I used : 
+
+`canica = CanICA(mask=masker.mask_img_, 
+                n_components=21, 
+                smoothing_fwhm=6., 
+                memory=""nilearn_cache"", memory_level=2, 
+                threshold=3., verbose=10, random_state=0)
+canica.fit(func)`
+
+When not specifying any mask argument, I had the ""the mask is invalid as it is empty"" error.... 
+","",""
+"issue_comment","1275","nilearn","nilearn","bthirion","2016-09-14 13:04:58","Another part of the discussion is that the mask does not vocer perfectly the MNI template. This is because individual brains do not have extactly the shape of the MNI brain, due to the  variability between subjects.
+In a group analysis, you probably want a standard mask that does not correspond to one subject in particular, but to the average of your sample. CaniCa does it for you (see Gael's response)?
+ Best,
+","",""
+"issue_comment","1275","nilearn","nilearn","medcharleslaidi","2016-09-14 13:24:48","Actually I didn't wanted to give CanICA a mask, but when just doing : 
+
+`canica = CanICA(n_components=21,   
+                smoothing_fwhm=6., 
+                memory=""nilearn_cache"", memory_level=2, 
+                threshold=3., verbose=10, random_state=0)`
+`canica.fit(func)`
+
+I had the : 
+
+> ValueError: The mask is invalid as it is empty: it masks all 
+> 
+> data.
+
+error
+
+So I assumed that CanICA wasn't able to compute the mask and that I should create the mask myself... 
+","",""
+"issue_comment","1275","nilearn","nilearn","medcharleslaidi","2016-09-14 14:05:52","Using the soft intersection of the masks of my different subjects just gave me a fairly similar result : 
+
+![mask3](https://cloud.githubusercontent.com/assets/11093149/18515149/9f1d7112-7a94-11e6-80d7-c49683b9a335.png)
+
+I used data from the ""UM"" sample from abide i  preprocessed with dparsf
+I could easily send you this sample (I'm working at the 2nd floor of Neurospin !).  
+Would also be very interested if you guys are planning to schedule a nilearn tutorial at neurospin or elsewhere. 
+
+Thanks for your help !
+","",""

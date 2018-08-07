@@ -1,0 +1,44 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","561","nilearn","nilearn","salma1601","2015-04-26 08:12:42","I am unsure about what the signal.clean is supposed to output. Isn't the cleaned signal the residual from the  least squares regression ?
+I have been comparing the residuals obtained using scipy.linalg.lstsq and the output of signal.clean. With confounds with full rank, the results match. On the other hand, I have a systhematic mismatch between  the two outputs when the confounds do not have full rank (adding for instance a constant array to confounds or using the same confound twice).
+","start issue","confounds removal"
+"issue_closed","561","nilearn","nilearn","GaelVaroquaux","2015-05-11 15:20:34","","closed issue","confounds removal"
+"issue_comment","561","nilearn","nilearn","AlexandreAbraham","2015-04-27 10:41:09","Thanks, this is very kind of you to crawl the code and highlight such problems! Could you provide a small script that reproduce the problem?
+","",""
+"issue_comment","561","nilearn","nilearn","salma1601","2015-04-27 12:13:16","It is with great pleasure ! plus I saw it spontaneously working on ADHD since it has a constant confound in the .csv confounds file. This is the code showing regression works well only when full rank confounds
+
+``` Python
+import numpy as np
+from scipy.linalg import lstsq
+from nilearn.signal import clean, _standardize
+from nilearn.tests.test_signal import generate_signals
+
+# Generate a normalized signal
+length = 30
+signal, noise, confounds = generate_signals(n_features=1, n_confounds=5,
+                                            length=length)
+to_clean = _standardize(signal + noise, detrend=False, normalize=True)
+
+# Generate full rank confounds, with a confound non present in the signal
+confounds_full = np.hstack((confounds, np.random.rand(length, 1)))
+
+# Generate non-full rank confounds
+confounds_twice = np.hstack((confounds,
+                             confounds[:, -1][:, np.newaxis]))
+confounds_cst = np.hstack((confounds, np.ones((length, 1))))
+
+
+# Compare with scipy residuals
+for confounds in [confounds_full, confounds_twice, confounds_cst]:
+    # Standardize the confounds, as done in signal.clean
+    confounds = _standardize(confounds, detrend=False, normalize=True)
+    cleaned_signal = clean(to_clean, confounds=confounds, detrend=False,
+                           standardize=False)
+    beta = lstsq(confounds, to_clean)[0]
+    residual = to_clean - confounds.dot(beta)
+    print('{0} confounds, rank is {1}, mismatch is {2}'.format(
+        confounds.shape[-1],
+        np.linalg.matrix_rank(confounds),
+        np.max(np.abs(cleaned_signal - residual))))
+```
+","",""

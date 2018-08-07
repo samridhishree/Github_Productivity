@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1449","nilearn","nilearn","yavuzacikalin","2017-05-08 16:18:04","Hello, 
+
+I've tried to change the scoring of my searchlight analysis to area under the curve, and have tried various ways to input this, e.g.:
+
+scoring = make_scorer(roc_auc_score)
+scoring = 'roc_auc_score'
+scoring = 'roc_auc'
+
+In all cases, I get a ValueError, ""Data is not binary and pos_label is not specified"". From what I understand this seems to be an issue with the roc_auc_score function only taking 1's and 0's as input and not being able to read more ""flexible"" types of dummy variables. 
+
+Any advice on how to implement this?
+
+Thank you,
+Yavuz","start issue","Searchlight: Difficulty implementing 'roc_auc_score'/'roc_auc' for scoring in searchlight"
+"issue_closed","1449","nilearn","nilearn","KamalakerDadi","2017-05-16 16:25:11","","closed issue","Searchlight: Difficulty implementing 'roc_auc_score'/'roc_auc' for scoring in searchlight"
+"issue_comment","1449","nilearn","nilearn","KamalakerDadi","2017-05-08 17:18:58","Define SearchLight estimator like this:
+```python
+import nilearn.decoding
+# The radius is the one of the Searchlight sphere that will scan the volume
+searchlight = nilearn.decoding.SearchLight(
+    mask_img,
+    process_mask_img=process_mask_img,
+    radius=5.6, n_jobs=n_jobs,
+    verbose=1, cv=cv, scoring='roc_auc')
+```
+Before ```fit()```, convert input ""y"" to binary labels using ```_, y_labels = np.unique(y)```
+Now, 
+```python
+searchlight.fit(fmri_img, y_labels)
+```
+
+Hope this way it helps.","",""
+"issue_comment","1449","nilearn","nilearn","yavuzacikalin","2017-05-08 17:42:59","Hi,
+
+I've tried the approach you've suggested, but I get a new error:
+
+TypeError: Singleton array 'immediate' cannot be considered a valid collection.","",""
+"issue_comment","1449","nilearn","nilearn","KamalakerDadi","2017-05-08 17:57:23","Try with return_inverse=True when binarizing the labels 'y'.
+```python
+_, y_labels = np.unique(y, return_inverse=True)
+```","",""
+"issue_comment","1449","nilearn","nilearn","yavuzacikalin","2017-05-08 18:04:24","Seems to be running now. Thanks a lot for the help!","",""

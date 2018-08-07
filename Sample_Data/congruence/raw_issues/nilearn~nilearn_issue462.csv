@@ -1,0 +1,34 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","462","nilearn","nilearn","bcipolli","2015-02-25 16:04:12","``` python
+from nilearn import datasets
+from nilearn.image import iter_img, index_img
+
+haxby_dataset = datasets.fetch_haxby_simple()
+func_img_1 = index_img(haxby_dataset.func, 0)
+print list(iter_img([func_img_1]))
+```
+
+**Expected:**
+a list of one image.
+
+**Current Behavior:**
+The image is duplicated.
+`[<nibabel.nifti1.Nifti1Image object at 0x10bcf4f90>, <nibabel.nifti1.Nifti1Image object at 0x10bcf4f90>]`
+
+**Notes:**
+I believe this problem may be deeper rooted (and more severe than just this example).  I found this while debugging `check_niimgs`, which I believe has a bug with how it deals with iterators.  But I don't have time to dig deeper into this.
+","start issue","iter_img on a list of 3D images duplicates the first image"
+"issue_closed","462","nilearn","nilearn","bcipolli","2015-02-25 16:10:34","","closed issue","iter_img on a list of 3D images duplicates the first image"
+"issue_comment","462","nilearn","nilearn","AlexandreAbraham","2015-02-25 16:10:05","Works for me on nilearn/master: 
+
+```
+In [7]: print list(iter_img([func_img_1]))
+[<nibabel.nifti1.Nifti1Image object at 0x7fe511a81890>]
+```
+","",""
+"issue_comment","462","nilearn","nilearn","bcipolli","2015-02-25 16:10:34","Lemme try that again :)
+","",""
+"issue_comment","462","nilearn","nilearn","AlexandreAbraham","2015-02-25 16:14:00","I would have waited for somebody else to try before closing (since we all have different software environments) but if you think you can check by yourself, it's fine!
+","",""
+"issue_comment","462","nilearn","nilearn","bcipolli","2015-02-25 16:26:40","@AlexandreAbraham User error :)  I thought I had moved off of my local branch to test this on upstream/master, but I had not.  The real issue is in #463... and that's on upstream/master :)
+","",""

@@ -1,0 +1,67 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","486","nilearn","nilearn","AlexandreAbraham","2015-03-05 12:15:05","Harvard Oxford fetcher:
+- [x] does not return a Bunch in contrary to all the other fetch_ functions but a tuple
+- [x] does not use the standard nilearn_data location to fetch the data but the current working directory instead (not reproducible on my side)
+- [x] browse FSLDIR instead of browsing FSLDIR/data/atlases/
+- [x] should look up in default system directories for each system
+- [x] should mimic FSL data directory tree in nilearn_data.
+","start issue","fetch_harvard_oxford quirks"
+"issue_closed","486","nilearn","nilearn","AlexandreAbraham","2015-06-22 15:40:30","","closed issue","fetch_harvard_oxford quirks"
+"issue_comment","486","nilearn","nilearn","banilo","2015-03-05 18:37:30","Should I take care of this?
+","",""
+"issue_comment","486","nilearn","nilearn","lesteve","2015-04-14 10:53:58","> does not use the standard nilearn_data location to fetch the data but the current working directory instead (not reproducible on my side)
+
+I can reproduce the problem even when NILEARN_DATA is set. Here is the output:
+- NILEARN_DATA no set:
+
+``` python
+
+In [1]: from nilearn import datasets
+
+In [2]: datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm', verbose=10)
+Dataset search paths: ['', '', '/home/le243287/nilearn_data']
+
+Dataset created in harvard_oxford
+
+Downloading data from https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz ...
+Downloaded 7879863 of 7879863 bytes (100.00%,    0.0s remaining)  
+...done. (13 seconds, 0 min)
+Extracting data from harvard_oxford/dc9b313e598e25514deb51b257475841/HarvardOxford.tgz...
+   ...done.
+
+```
+- NILEARN_DATA set to /tmp:
+
+``` python
+In [1]: from nilearn import datasets
+
+In [2]: datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm', verbose=10)
+Dataset search paths: ['', '', '/tmp', '/home/le243287/nilearn_data']
+
+Dataset created in harvard_oxford
+
+Downloading data from https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz ...
+Downloaded 7879863 of 7879863 bytes (100.00%,    0.0s remaining)  
+...done. (9 seconds, 0 min)
+Extracting data from harvard_oxford/dc9b313e598e25514deb51b257475841/HarvardOxford.tgz...
+   ...done.
+```
+
+In both cases for some reason `''` is inserted in the dataset search paths twice before the usual paths.
+","",""
+"issue_comment","486","nilearn","nilearn","AlexandreAbraham","2015-04-14 11:08:53","OK, this is related to FSLDIR resolution. This is an easyfix
+","",""
+"issue_comment","486","nilearn","nilearn","lesteve","2015-04-15 07:47:19","> Should I take care of this?
+
+@banilo would make sense since you have worked on this fetcher in the past IIRC.
+","",""
+"issue_comment","486","nilearn","nilearn","AlexandreAbraham","2015-04-17 07:26:37","If somebody could take care of that for 0.1.3 release, that would be great!
+","",""
+"issue_comment","486","nilearn","nilearn","salma1601","2015-06-01 07:40:46","fetch_harvard_oxford reloads or not my existant atlas, depending on what my current working directory is! 
+","",""
+"issue_comment","486","nilearn","nilearn","AlexandreAbraham","2015-06-01 07:44:21","Yes, this is a side effect of the different quirks. I'll try to set up a quickfix today.
+","",""
+"issue_comment","486","nilearn","nilearn","salma1601","2015-06-01 07:47:13","Ok thanks !
+","",""
+"issue_comment","486","nilearn","nilearn","AlexandreAbraham","2015-06-22 15:40:30","Fixed by #597.
+","",""

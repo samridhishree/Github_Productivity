@@ -1,0 +1,65 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","80","nilearn","nilearn","AlexandreAbraham","2013-06-19 22:34:42","In MultiPCA, if the user provides a masker, we clone it. Unfortunately, in joblib 0.6, a bug prevent cloning a Memory object. This issue can be addressed by testing joblib version (patch proposed by Philippe):
+
+```
+        if isinstance(self.mask, NiftiMultiMasker) \
+           and sklearn.externals.joblib.__version__.startswith(""0.6""):
+            # Dirty workaround for a joblib bug
+            # Memory with cachedir=None cannot be cloned in version 0.6
+            # of joblib.
+            masker_memory = self.mask.memory
+            if masker_memory.cachedir is None:
+                self.mask.memory = None
+                self.masker_ = clone(self.mask)
+                self.mask.memory = masker_memory
+                self.masker_.memory = Memory(cachedir=None)
+            else:
+                self.masker_ = clone(self.mask)
+            del masker_memory
+        else:
+            self.masker_ = clone(self.mask)
+```
+
+ but, unfortunately, this breaks Travis build:
+
+```
+======================================================================
+ERROR: nisl.decomposition.tests.test_multi_pca.test_multi_pca
+----------------------------------------------------------------------
+Traceback (most recent call last):
+File ""/usr/lib/python2.7/dist-packages/nose/case.py"", line 197, in runTest
+    self.test(*self.arg)
+File ""/home/travis/build/nilearn/nilearn/nisl/decomposition/tests/test_multi_pca.py"", line 44, in test_multi_pca
+    multi_pca.fit(data[:2])
+File ""/home/travis/build/nilearn/nilearn/nisl/decomposition/multi_pca.py"", line 211, in fit
+    and sklearn.externals.joblib.__version__.startswith(""0.6""):
+AttributeError: 'module' object has no attribute '__version__'
+```
+
+I have made a dirty fix for the moment but we should fix this ASAP.
+","start issue","Fix cloning of MultiNiftiMasker in MultiPCA"
+"issue_closed","80","nilearn","nilearn","AlexandreAbraham","2013-06-20 08:53:15","","closed issue","Fix cloning of MultiNiftiMasker in MultiPCA"
+"issue_comment","80","nilearn","nilearn","GaelVaroquaux","2013-06-19 23:05:28","> In MultiPCA, if the user provides a masker, we clone it. Unfortunately, in
+> joblib 0.6, a bug prevent cloning a Memory object.
+
+I don't understand. The memory shouldn't be cloned, only the masker. What
+is the error message? Sorry, I am supposedly listening to talks, so I
+cannot reproduce myself.
+
+G
+","",""
+"issue_comment","80","nilearn","nilearn","GaelVaroquaux","2013-06-19 23:13:17","> The Masker contains a Memory object. Therefore, when we clone the masker, the
+> Memory is cloned too. Unfortunately, in joblib 0.6, cloning a Memory does not
+> work if cachedir is None.
+
+OK, I remember now.
+
+> Philippe's patch fixes this bug but it breaks Travis build :-/
+
+OK, you can do a try/except on the cloning of the masker rather than
+testing for version.
+
+G
+","",""
+"issue_comment","80","nilearn","nilearn","pgervais","2013-06-20 07:38:50","I don't think there is any need for a ""clean"" patch: this is a workaround, and such things are always a little messy. If the code inside the ""try"" branch is clean, that doesn't matter to me if what is in the ""except"" clause is ugly. Using a try/except by itself is not bad practice.
+","",""

@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1460","nilearn","nilearn","grjd","2017-05-31 09:41:06","Hi 
+Not sure how to interpret this result when calling fit_transform(timeseries):
+
+1.  I extract the time series for the DMN 
+dim_coords = {label[0]:(0, -52, 18),label[1]:(-46, -68, 32), label[2]:(46, -68, 32),label[3]:(1, 50, -5)}
+I got 0 correlation matrix
+[[ 1.  0. -0. -0.]
+ [ 0.  1. -0. -0.]
+ [-0. -0.  1. -0.]
+ [-0. -0. -0.  1.]]
+
+2. If I change ONLY the second seed, which is now equal to the first seed, all the rest equal
+dim_coords = {label[0]:(0, -52, 18),label[1]:(0, -52, 18), label[2]:(46, -68, 32),label[3]:(1, 50, -5)} 
+I get this correlation matrix, how can be this possible? 
+
+[[ 1.          0.12200073 -0.01801971  0.12200073]
+ [ 0.12200073  1.         -0.06792058  0.91561723]
+ [-0.01801971 -0.06792058  1.         -0.06792058]
+ [ 0.12200073  0.91561723 -0.06792058  1.        ]]","start issue","connectivity_measure.fit_transform"
+"issue_comment","1460","nilearn","nilearn","grjd","2017-05-31 10:25:09","Hi yes I plot the time series no problem","",""
+"issue_comment","1460","nilearn","nilearn","grjd","2017-05-31 10:25:50","![figure_12](https://cloud.githubusercontent.com/assets/7142903/26627880/44c3e758-45fc-11e7-8f67-444ec498e7b4.png)
+![figure_6](https://cloud.githubusercontent.com/assets/7142903/26627881/44c61852-45fc-11e7-96bc-2e285417bddc.png)
+","",""
+"issue_comment","1460","nilearn","nilearn","grjd","2017-05-31 10:44:26","Yes, forget the example with two seeds identical, but my point is that for the second image, 4 perfectly fine time series, the correlation matrix is 0!
+
+I will rephrase the problem: I have 4 seeds s={s1,s2,s3, s4}  get the time series and  connectivity_measure.fit_transform(ts) returns the identity matrix (no correlation between pairs of seeds found)
+
+But, If I change one seed, let us say, s2 for s5, now the connectivity_measure.fit_transform(ts)  for {s1,s5,s3, s4} returns a matrix with correlation >0 between pairs. How can be possible that the correlation between, for example, s1 and s4 is 0 in the first case and and .3 in the second case??
+ ","",""
+"issue_comment","1460","nilearn","nilearn","grjd","2017-05-31 11:03:43","kind_of_corr = 'correlation' #tried also with partial_correlation also return identity matrix
+connectivity_measure = ConnectivityMeasure(kind=kind_of_corr)   
+#(Attached) time_series.shape == (116, 4)
+[time_series.txt](https://github.com/nilearn/nilearn/files/1041210/time_series.txt)
+
+correlation_matrix = connectivity_measure.fit_transform([ts])[0] ","",""
+"issue_comment","1460","nilearn","nilearn","grjd","2017-05-31 12:33:11","Thank you! 
+I am not sure how to interpret the shrinkage for the Leit covariance estimator. What does it say about the time series covariance? I wonder if there is a way to compute the optimal
+shrinkage intensity","",""
+"issue_comment","1460","nilearn","nilearn","mrahim","2017-05-31 09:50:55","Hi @grjd , could you plot the timeseries corresponding to dim_coords ?","",""
+"issue_comment","1460","nilearn","nilearn","mrahim","2017-05-31 11:51:36","It looks like the LedoitWolf estimator shrinks too much towards the identity.
+I've found the shrinkage = 1.0
+
+```python
+import numpy as np
+from sklearn.covariance import LedoitWolf, EmpiricalCovariance
+
+X = np.loadtxt('/tmp/timeseries.txt')
+cov = EmpiricalCovariance(assume_centered=True)
+cov.fit(X)
+print(cov.covariance_)
+
+lw = LedoitWolf(assume_centered=True)
+lw.fit(X)
+print(lw.covariance_)
+print('shrinkage = %.4f' % lw.shrinkage_)
+```
+```
+[[ 1.          0.13324425 -0.0196804  -0.11378572]
+ [ 0.13324425  1.         -0.0741801  -0.01235692]
+ [-0.0196804  -0.0741801   1.         -0.17500451]
+ [-0.11378572 -0.01235692 -0.17500451  1.        ]]
+[[ 1.  0. -0. -0.]
+ [ 0.  1. -0. -0.]
+ [-0. -0.  1. -0.]
+ [-0. -0. -0.  1.]]
+shrinkage = 1.0000
+```
+[timeseries.txt](https://github.com/nilearn/nilearn/files/1041336/timeseries.txt)
+
+
+
+","",""

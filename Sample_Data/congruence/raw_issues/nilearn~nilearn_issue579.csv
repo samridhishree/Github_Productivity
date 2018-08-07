@@ -1,0 +1,79 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","579","nilearn","nilearn","AlexandreAbraham","2015-05-11 09:27:58","Nilearn is strongly oriented toward use of Nifti1Image. We should maybe support other image types.
+
+Here is a script to see which data types are supported by (some) nibabel image types:
+
+``` python
+import nibabel
+import numpy as np
+
+
+def _nibabel_image_types():
+    for i in nibabel.__dict__:
+        if i.endswith('Image'):
+            yield nibabel.__dict__[i]
+
+
+types_to_test = [
+        np.int8,
+        np.uint8,
+        np.bool,
+        np.float64,
+]
+
+for image in _nibabel_image_types():
+    supp = []
+    unsupp = []
+    for t in types_to_test:
+        try:
+            image(np.zeros((10, 10, 10), dtype=t), np.eye(4))
+            supp.append(t)
+        except:
+            unsupp.append(t)
+    print('Type', image)
+    print('\tSupported:', supp)
+    print('\tUnsupported:', unsupp)
+```
+
+And here are the results:
+
+```
+Type <class 'nibabel.nifti1.Nifti1Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'bool'>]
+Type <class 'nibabel.minc2.Minc2Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'bool'>, <class 'numpy.float64'>]
+        Unsupported: []
+Type <class 'nibabel.spm99analyze.Spm99AnalyzeImage'>
+        Supported: [<class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>]
+Type <class 'nibabel.spm2analyze.Spm2AnalyzeImage'>
+        Supported: [<class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>]
+Type <class 'nibabel.freesurfer.mghformat.MGHImage'>
+        Supported: [<class 'numpy.uint8'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>, <class 'numpy.float64'>]
+Type <class 'nibabel.minc1.MincImage'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'bool'>, <class 'numpy.float64'>]
+        Unsupported: []
+Type <class 'nibabel.minc1.Minc1Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'bool'>, <class 'numpy.float64'>]
+        Unsupported: []
+Type <class 'nibabel.analyze.AnalyzeImage'>
+        Supported: [<class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>]
+Type <class 'nibabel.nifti2.Nifti2Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'bool'>]
+```
+
+So, 2 remarks:
+- Spm*AnalyzeImage do not support int8
+- when we use internal masks (90% of usecases if masks) we could rely on MincImage format since it supports bool. This would be easier than passing the data and affine separately in all the functions.
+","start issue","[ENH] Explore nibabel image types"
+"issue_comment","579","nilearn","nilearn","banilo","2015-05-11 13:22:04","> when we use internal masks (90% of usecases if masks) we could rely on MincImage format since it supports bool.
+
+Since the nii_img handling has been centralized: isn't there a quick hack to internally support this image format also?
+","",""
+"issue_comment","579","nilearn","nilearn","AlexandreAbraham","2015-05-11 13:23:09","It is already supported.
+","",""

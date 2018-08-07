@@ -1,0 +1,32 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","458","nilearn","nilearn","bcipolli","2015-02-23 20:23:02","I (accidentally) called `inverse_transform` on a vector of shape (n_voxels, 1).  This wound up grinding my system to a halt with the Python process consuming over 14GB.
+
+The culprit is my error, combined with nilearn's logic for allocating memory in `_unmask_nd`:
+
+``` python
+    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
+```
+
+The only checks to this point are that X is 2D.
+
+I'm still unclear on how much we want to hand-hold users, but avoiding this kind of issue (which can be hard to find/debug, as your system may become unstable) would be nice. 
+
+I open this issue to discuss because I'm not sure what the preferred fix would be.  Here are two possibilities:
+- I think transpose errors of vectors are the most common, and I have a simple, lightweight fix for that specific error.  
+- A more general check (that one of the dimensions is equal to the # of non-zero entries in the `mask`) requires a call to `np.count_nonzero`, which though lightweight, would have to get called on every successful call of `unmask_nd`.
+
+I would like to at least implement the first fix (and [have that available, with a test](https://github.com/bcipolli/nilearn/tree/kind_transpose_error), as I do think I'm not the only user who would make this mistake, the severity is relatively high, and it can be tough to debug.
+","start issue","Nilearn allocates gigabytes of memory when inverse_transform is passed a transposed feature vector."
+"issue_closed","458","nilearn","nilearn","lesteve","2015-02-27 11:49:27","","closed issue","Nilearn allocates gigabytes of memory when inverse_transform is passed a transposed feature vector."
+"issue_comment","458","nilearn","nilearn","AlexandreAbraham","2015-02-23 21:45:43","> A more general check (that one of the dimensions is equal to the # of non-zero entries in the mask) requires a call to np.count_nonzero, which though lightweight, would have to get called on every successful call of unmask_nd.
+
+I am :+1: for this solution. First, we don't need `count_nonzero` but `sum` since the mask is boolean. We can bench it but I think that the additional cost is negligible. If not, we could compute it once and for all in the masker (because this function will be more likely called from the masker).
+","",""
+"issue_comment","458","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:49:47","> I am :+1: for this solution. First, we don't need count_nonzero but sum
+> since the mask is boolean. We can bench it but I think that the
+> additional cost is negligible. If not, we could compute it once and for
+> all in the masker (because this function will be more likely called
+> from the masker).
+
++1
+","",""

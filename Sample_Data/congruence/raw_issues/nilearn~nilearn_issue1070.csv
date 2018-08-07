@@ -1,0 +1,59 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1070","nilearn","nilearn","jwe080","2016-03-31 17:25:30","Hi,
+
+I'm overlaying a functional map (fMRI) on an anatomical in the subject's space.  This displays fine with display_mode='ortho' as well as the axis pairs (eg.'xz')
+![image](https://cloud.githubusercontent.com/assets/18194766/14184368/d5989666-f742-11e5-8b15-d812bc67acbc.png)
+
+but crashes in x,y,z with cut_coords > 1 and looks wrong even in the cut_coords=1 case:
+![image](https://cloud.githubusercontent.com/assets/18194766/14184391/f6751d8c-f742-11e5-9302-686681b689ce.png)
+
+Single axis cuts work fine using the MNI space data.  The command I'm using is below followed by the error.
+
+Two other questions while I'm here:
+1. is there a way of changing the transparency of the overlay that I've missed
+2. is there a way of choosing the offset and spacing for the cuts in addition to the number of cuts for a single axis (x or y or z).
+
+Thanks!
+
+``` python
+In [1]: from nibabel import nifti1 as nifti
+
+In [2]: import nilearn.plotting as niplot
+
+In [3]: nim = nifti.load('anat_al.nii')
+
+In [4]: olay =nifti.load('varex.nii')
+
+In [5]: niplot.plot_stat_map(olay,bg_img=nim,black_bg=False, threshold=20,display_mode='x',draw_cross=False)
+Out[5]: <nilearn.plotting.displays.XSlicer at 0x7ff86e0eb290>
+
+In [6]: Traceback (most recent call last):
+  File ""/usr/local/Anaconda/lib/python2.7/site-packages/matplotlib/backends/backend_qt5.py"", line 427, in idle_draw
+    self.draw()
+  File ""/usr/local/Anaconda/lib/python2.7/site-packages/matplotlib/backends/backend_qt5agg.py"", line 148, in draw
+    FigureCanvasAgg.draw(self)
+  File ""/usr/local/Anaconda/lib/python2.7/site-packages/matplotlib/backends/backend_agg.py"", line 469, in draw
+    self.figure.draw(self.renderer)
+  File ""/usr/local/Anaconda/lib/python2.7/site-packages/matplotlib/artist.py"", line 59, in draw_wrapper
+    draw(artist, renderer, *args, **kwargs)
+  File ""/usr/local/Anaconda/lib/python2.7/site-packages/matplotlib/figure.py"", line 1085, in draw
+    func(*args)
+  File ""/usr/local/Anaconda/lib/python2.7/site-packages/matplotlib/artist.py"", line 59, in draw_wrapper
+    draw(artist, renderer, *args, **kwargs)
+  File ""/usr/local/Anaconda/lib/python2.7/site-packages/matplotlib/axes/_base.py"", line 2003, in draw
+    pos = locator(self, renderer)
+  File ""/spin1/users/jwe080/python_modules/nilearn/nilearn/plotting/displays.py"", line 1019, in _locator
+    return transforms.Bbox([[left_dict[axes], y0],
+KeyError: <matplotlib.axes._axes.Axes object at 0x7ff86e0eb490>
+
+If you suspect this is an IPython bug, please report it at:
+    https://github.com/ipython/ipython/issues
+or send an email to the mailing list at ipython-dev@scipy.org
+
+You can print a more detailed traceback right now with ""%tb"", or use ""%debug""
+to interactively debug it.
+
+Extra-detailed tracebacks for bug-reporting purposes can be enabled via:
+    %config Application.verbose_crash=True
+```
+","start issue","plotting crash in single axis mode but not ortho"

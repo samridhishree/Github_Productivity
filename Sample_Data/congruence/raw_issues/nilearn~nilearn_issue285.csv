@@ -1,0 +1,83 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","285","nilearn","nilearn","lesteve","2014-11-20 09:59:25","Replace + by - to ensure that some voxels pass the threshold. 
+
+I seem to bump on this line on occasions and I figured I would ask whether I was missing something.
+","start issue","Fix auto threshold in img_plotting.py"
+"issue_closed","285","nilearn","nilearn","GaelVaroquaux","2014-11-20 10:00:26","","closed issue","Fix auto threshold in img_plotting.py"
+"pull_request_title","285","nilearn","nilearn","lesteve","2014-11-20 09:59:25","Replace + by - to ensure that some voxels pass the threshold. 
+
+I seem to bump on this line on occasions and I figured I would ask whether I was missing something.
+","12db24e92f81f40ba9e5ebf406d5b6e9cbfb0163","Fix auto threshold in img_plotting.py"
+"pull_request_merged","285","nilearn","nilearn","GaelVaroquaux","2014-11-20 10:00:26","Fix auto threshold in img_plotting.py","ef98b58530b588fb342ef145eb6deffa013abe89","Pull request merge from lesteve/nilearn:auto-threshold to nilearn/nilearn:master"
+"issue_comment","285","nilearn","nilearn","GaelVaroquaux","2014-11-20 10:00:24","Good catch!
+","",""
+"issue_comment","285","nilearn","nilearn","lesteve","2014-11-20 11:00:52","BTW just curious, is the 1e-5 coming from somewhere in particular? The reason I ask is because 1e-15 is used [here](https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/find_cuts.py#L75) instead.
+","",""
+"issue_comment","285","nilearn","nilearn","GaelVaroquaux","2014-11-20 11:07:07","> BTW just curious, is the 1e-5 coming from somewhere in particular? The
+> reason I ask is because 1e-15 is used here instead.
+
+1e-15 is for numerical instability. 1e-5 is because some algorithms do
+not converge at a precision such that what should be 0 is actually 0, but
+more 1e-5 think of it as xtol in an optimization framework).
+","",""
+"issue_comment","285","nilearn","nilearn","lesteve","2014-11-20 11:15:28","Maybe I could have been more clear. In both of the cases I mentioned you just offset an activation threshold by an epsilon, except that the epsilon is not the same (1e-5 or 1e-15). Basically just curious about the reason of the difference if there is any good one. Also it could have been a typo given how close they are (in typing distance). 
+","",""
+"issue_comment","285","nilearn","nilearn","GaelVaroquaux","2014-11-20 15:17:03","I just realized that I did a mistake merging your PR. I am doing too many
+things in parallel.
+
+I think that the code was correct. The goal of this code is to say that
+when you are thresholding at 1, the segment [-1, 1](ie 1 included) is
+not displayed. The main usecase is to threshold a O, in which case, you
+want to set transparent {0} and not the null ensemble.
+
+If you agree with the reasonning above (in particular the usecase) could
+please commit (directly into master) a commit that reverts your change
+and explains the code better based on my explaination.
+","",""
+"issue_comment","285","nilearn","nilearn","lesteve","2014-11-20 18:58:50","I am not too sure about the use case, because in most cases I have seen, `np.ma.masked_inside(data, -threshold, threshold)` is used to mask the array and this function mask the values inclusively, so zero would be masked.
+
+Note that this code is only used when using `threshold='auto'` in which case your auto threshold is the 80% percentile of np.abs(data).
+
+The use case I thought the code was trying to solve is when you are unlucky enough that no voxel value is _strictly_ greater in absolute value than the auto threshold. I may be wrong about that obviously.
+","",""
+"issue_comment","285","nilearn","nilearn","GaelVaroquaux","2014-11-20 21:17:16","> Note that this code is only used when using threshold='auto' in which
+> case your auto threshold is the 80% percentile of np.abs(data).
+> 
+> The use case I thought the code was trying to solve is when you are
+> unlucky enough that no voxel value is strictly greater in absolute
+> value than the auto threshold. I may be wrong about that obviously.
+
+Now I think that it comes back to me (I wrote this code, but years ago; I
+do remember that this detail was important) suppose that you have a
+binary image, only zeros and 1. You don't want 1 to be masked, even if
+there are more than 20% of 1. I think that this is the usecase that the
+code was solving (I _think_).
+","",""
+"issue_comment","285","nilearn","nilearn","lesteve","2014-11-21 09:45:41","> You don't want 1 to be masked, even if there are more than 20% of 1. I think that this is the usecase that the code was solving (I _think_).
+
+So this agrees with what I had in mind. We definitely want a - sign which is what this PR was about.
+","",""
+"issue_comment","285","nilearn","nilearn","GaelVaroquaux","2014-11-21 09:59:22","> So this agrees with what I had in mind. We definitely want a - sign which is
+> what this PR was about.
+
+OK. I think that you are right and I am wrong. Is it possible to write a
+test for this or not (ie is the function structure right, or do we have a
+tangle). If it's easy to do so, it would be great if you could write a
+test. If it's not easy, just give up.
+","",""
+"issue_comment","285","nilearn","nilearn","lesteve","2014-11-21 10:21:49","Off the top of my head, I seem to remember this auto threshold logic is deep inside the plotting functions. I guess one quick and dirty way to do it would be to use the plotting function with some toy image and look at the image vmin and vmax (we can probably retrieve them in some way from the display object).
+","",""
+"issue_comment","285","nilearn","nilearn","GaelVaroquaux","2014-11-21 10:23:58","> I seem to remember this auto threshold logic is deep inside the
+> plotting functions.
+
+Me too :(.
+
+> I guess one quick and dirty way to do it would be to use the plotting
+> function with some toy image and look at the image vmin and vmax (we
+> can probably retrieve them in some way from the display object).
+
+If it's easy, go for it. It's a functional test that makes sens!
+","",""
+"pull_request_commit","285","nilearn","nilearn","lesteve","2014-11-20 09:57:13","Fix auto threshold in img_plotting.py
+
+Replace + by - to ensure that some voxels pass the threshold","12db24e92f81f40ba9e5ebf406d5b6e9cbfb0163",""

@@ -1,0 +1,129 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","599","nilearn","nilearn","mwaskom","2015-06-03 00:44:05","I've run into an issue trying to use nilearn to visualize data in native space. This came up when trying to plot ROIs:
+
+``` python
+plot_roi(roi_img, epi_img)
+```
+
+![4jxsfhcftoutz on44aeto5 amrliyfontmfmzgztu1pwycbeokebeeliotdtslqgp4eqqgghlwwnbkiiiyquguejqgghhbscngzcccgefijgaygeeeikqaobeeiiiywg0uaiiysqqtboiiqqqkghadqqqgghpba0ggghhbbscbonhbbccckejqzcccgefijgaygeeeikqaobeeiiiywg0uaiiysqqtboiiqqqkghadqqqgghpba0gggh](https://cloud.githubusercontent.com/assets/315810/7950342/2d7a5150-094e-11e5-938d-dca4053718fa.png)
+
+(where `roi_img` and `epi_img` are `nibabel.Nifti1Image` objects).
+
+This issue does not appear to occur with the example [haxby data](https://nilearn.github.io/auto_examples/manipulating_visualizing/plot_roi_extraction.html).
+
+Something similar is happening with a continuous statistical map:
+
+``` python
+plot_stat_map(z_img, epi_img, threshold=9)
+```
+
+![nu3t7u8rkyrl bt89cviofaqfqvnxy6pvq4ybgqgjvlw84vps0lkjuljykgtk5 cbxv1dxvbt27p6lkycbgaas6kxsvglfy82d udhx9xexm5li9fruvxrysnj0c5otlyuvzq7ozm6ruwdxaaalac5gabaadliqabaadliqabaadliqabaadliqabaadliqabaadliqabaadliqabaadliqabaadliqabaadliqabaadliqabaadliqaba](https://cloud.githubusercontent.com/assets/315810/7950385/bd969a78-094e-11e5-9a31-d6d7939d7108.png)
+
+I've tracked down the issue to [this line of code](https://github.com/nilearn/nilearn/blob/0.1.3/nilearn/plotting/displays.py#L532). The `img` object that goes into the `reorder_img` function has a masked data array, but the `img` that comes out of it just has a bare float array of 1s and 0s (in the case of the ROI image).
+
+My native space images have a LPS orientation; presumably the mask  information is getting lost somewhere as the data are reordered to RAS. Presumably that step is skipped for the Haxby data, which are already oriented properly, and that is why the examples look fine.
+
+I'm using nilearn 1.3.
+","start issue","Plotting thresholds are ignored for images whose affine contains a rotation"
+"issue_closed","599","nilearn","nilearn","lesteve","2015-06-04 12:10:07","","closed issue","Plotting thresholds are ignored for images whose affine contains a rotation"
+"issue_comment","599","nilearn","nilearn","lesteve","2015-06-03 07:18:33","Can you provide an example reproducing the problem? It's not entirely obvious to me what the problem is by just looking at the plots. In particular in the plot_stat_map case, it does look like the threshold=9 is applied.
+
+I checked whether `reorder_img` was getting rid of the mask when the input image in in LPS orientation but this doesn't seem to be the case.
+
+``` python
+
+import numpy as np
+import nibabel as nib
+
+from nilearn import image, plotting
+
+data = np.random.randn(20, 20, 20)
+data = np.ma.masked_less(data, 0.)
+
+# This should be LPS hopefully
+affine = np.array([[-3., 0., 0., 1.],
+                   [0., -3., 0., -2.],
+                   [0., 0., 3., 3.],
+                   [0., 0., 0., 1.]])
+img = nib.Nifti1Image(data, affine)
+
+reordered_img = image.reorder_img(img)
+
+print('Consistent mask:',
+      np.sum(data.mask) == np.sum(reordered_img.get_data().mask))
+
+# The plotting seems fine too AFAICS
+plotting.plot_stat_map(img, threshold=0.5)
+
+```
+","",""
+"issue_comment","599","nilearn","nilearn","mwaskom","2015-06-03 13:33:52","> Can you provide an example reproducing the problem? It's not entirely obvious to me what the problem is by just looking at the plots.
+
+Do you mean the images themselves? Sure I can do that when I get to school. 
+
+> In particular in the plot_stat_map case, it does look like the threshold=9 is applied.
+
+Why do you say that? I would have expected much of the overlay would be transparent (z = 9 is a high threshold) and that we would see the gray colormapped mean epi image in those spots.
+
+> I checked whether reorder_img was getting rid of the mask when the input image in in LPS orientation but this doesn't seem to be the case.
+
+What happens when you make an affine with rotations?
+","",""
+"issue_comment","599","nilearn","nilearn","lesteve","2015-06-03 16:19:45","> What happens when you make an affine with rotations?
+
+Good point, I can reproduce the problem, the reordered_img lose the mask for some reason which needs to be elucidated:
+
+``` python
+import numpy as np
+import nibabel as nib
+
+from nilearn import image, plotting
+
+data = np.random.randn(20, 20, 20)
+data = np.ma.masked_less(data, 0.)
+
+# matrix with rotation
+affine = np.array([[-3., 1., 0., 1.],
+                   [-1., -3., 0., -2.],
+                   [0., 0., 3., 3.],
+                   [0., 0., 0., 1.]])
+img = nib.Nifti1Image(data, affine)
+
+reordered_img = image.reorder_img(img, resample='continuous')
+print('img data type:', type(img.get_data()))  # numpy.ma.core.MaskedArray
+print('reordered_img data type:', type(reordered_img.get_data()))  # numpy.ndarray
+```
+
+This seems more related to affine with rotations rather than LPS vs RAS by the way.
+","",""
+"issue_comment","599","nilearn","nilearn","GaelVaroquaux","2015-06-03 16:21:39","> This seems more related to affine with rotations rather than LPS vs RAS by the
+> way.
+
+It's going to be the resampling.
+
+One thing that we could do would be to move this reordering before we
+apply the threshold. The other option is to resample the mask, but that's
+going to be ugly (resampling discrete info is not something that I like).
+","",""
+"issue_comment","599","nilearn","nilearn","lesteve","2015-06-03 16:35:45","> One thing that we could do would be to move this reordering before we apply the threshold
+
+From a quick look at the code, it does look like it is feasible.
+","",""
+"issue_comment","599","nilearn","nilearn","mwaskom","2015-06-03 16:36:54","> One thing that we could do would be to move this reordering before we
+> apply the threshold.
+
+That sounds like the right order of operations to me, although I am (much) less familiar with the codebase.
+","",""
+"issue_comment","599","nilearn","nilearn","GaelVaroquaux","2015-06-03 16:39:23","> That sounds like the right order of operations to me,
+
+Quite clearly. This was an oversight.
+
+G
+","",""
+"issue_comment","599","nilearn","nilearn","AlexandreAbraham","2015-06-04 08:32:55","What if the user gives us data that is already masked?
+","",""
+"issue_comment","599","nilearn","nilearn","GaelVaroquaux","2015-06-04 14:23:23","> What if the user gives us data that is already masked?
+
+That means trouble! How about a little note saying that in this case (ie
+non affine with rotation) we don't support user masks.
+","",""

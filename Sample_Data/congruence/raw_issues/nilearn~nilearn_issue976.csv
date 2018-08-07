@@ -1,0 +1,295 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","976","nilearn","nilearn","aabadie","2016-02-02 10:54:58","This should fix #972 
+
+The general idea is to use the CIRCLECI environment variable available when building on circle ci along with `functools.partial` to override a parameter of the fetch functions.
+I choose to add a `report_frequency` named parameter (I couldn't find a better one, suggestions greatly appreciated) in `_chunk_read` with is set so that it keeps the current behaviour by default. Setting it to 5, will reduce the number of report displayed.
+It seems that the output on circle ci is pretty weird: on my local computer I have 5 distinct output but this is not always the case on the ci.
+","start issue","MRG: limit download status output displayed on circle ci"
+"issue_closed","976","nilearn","nilearn","lesteve","2016-02-03 17:21:01","","closed issue","MRG: limit download status output displayed on circle ci"
+"pull_request_title","976","nilearn","nilearn","aabadie","2016-02-02 10:54:58","This should fix #972 
+
+The general idea is to use the CIRCLECI environment variable available when building on circle ci along with `functools.partial` to override a parameter of the fetch functions.
+I choose to add a `report_frequency` named parameter (I couldn't find a better one, suggestions greatly appreciated) in `_chunk_read` with is set so that it keeps the current behaviour by default. Setting it to 5, will reduce the number of report displayed.
+It seems that the output on circle ci is pretty weird: on my local computer I have 5 distinct output but this is not always the case on the ci.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","MRG: limit download status output displayed on circle ci"
+"pull_request_merged","976","nilearn","nilearn","lesteve","2016-02-03 17:21:01","MRG: limit download status output displayed on circle ci","8672aa9f71fff6d85cad93fe6cc8933618f46593","Pull request merge from aabadie/nilearn:fix_cicleci_verbosity to nilearn/nilearn:master"
+"issue_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-02 13:40:07","I would still like some progress on circleCI, to be able to debug download problems. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 2, 2016, 14:37, at 14:37, ""Loïc Estève"" notifications@github.com wrote:
+
+> > This is what I first tried but this totally disable the output. I
+> > prefer having a subset of messages instead.
+> > 
+> > Indeed, CircleCI replaces carriage returns (\r) by newlines.
+> 
+> Just to reiterate, we are looking for a CircleCI-specific work-around
+> here, because CircleCI changes '\r' into newlines. On a terminal I am
+> not sure you would only change the rate of refresh and I am not
+> convinced this would be really useful. This is why I was saying that
+> setting verbose=0 in CircleCI seemed to do the job well enough.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/976#issuecomment-178576602
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-02 13:45:53","still about playing on verbose default value, with the current design setting `verbose=2` to keep the same behaviour as the one with `verbose=1` has a global impact.
+In the end, I prefer my change, which is less intrusive: it fixes the initial problem but doesn't change the default behaviour.
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-02 15:38:22","> CircleCI replaces carriage returns (\r) by newlines.
+
+Looking at the behavior on circle ci, to me the problem is more due to the refresh rate. The default behaviour (update the line each time a block 8192 bytes is downloaded) is too fast and circle CI cannot handle correctly the '\r'. There are other places where writing to `sys.stderr` is used and the problem doesn't happen because the time between 2 displays is long enough for circle ci output to handle the '\r' correctly.
+Renaming `report_frequency` with `report_updates` would probably better reflect what this option actually does. Maybe we can use a higher fixed value (something like 100) and remove all CIRCLECI related code.
+","",""
+"issue_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-02 15:40:43","What you're suggesting is to say that we don't update more than eg once a
+second might fix the problem? That would be awesome.
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-02 15:43:47","> What you're suggesting is to say that we don't update more than eg once a second might fix the problem? That would be awesome.
+
+I looked at the output on circle (with the change of this PR) and noticed that each 4 lines (`Downloaded xx% ...`) were displayed and correctly overwritten.
+","",""
+"issue_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-02 15:50:44","> ```
+> we don't update more than eg once a second might fix the problem?
+> ```
+> 
+> I looked at the output on circle (with the change of this PR) and
+> noticed that each 4 lines (Downloaded xx% ...) were displayed and
+> correctly overwritten.
+
+OK, let's try a rule with ""no update more than once a second"" then, and
+see what it gives.
+","",""
+"issue_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-02 15:52:02","> I looked at the output on circle (with the change of this PR) and noticed that each 4 lines (Downloaded xx% ...) were displayed and correctly overwritten.
+
+OK, the behavior of the output is very strange... For example:
+
+```
+Downloading data from https://www.nitrc.org/frs/download.php/7783/adhd40_0010064.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7784/adhd40_0010128.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7785/adhd40_0021019.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7786/adhd40_0023008.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7787/adhd40_0023012.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7788/adhd40_0027011.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7789/adhd40_0027018.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7790/adhd40_0027034.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7791/adhd40_0027037.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7792/adhd40_1019436.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7793/adhd40_1206380.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7794/adhd40_1418396.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7795/adhd40_1517058.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7796/adhd40_1552181.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7797/adhd40_1562298.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7798/adhd40_1679142.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7799/adhd40_2014113.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7800/adhd40_2497695.tgz ...
+Downloading data from https://www.nitrc.org/frs/download.php/7801/adhd40_2950754.tgz ...
+Downloaded 67925261 of 67925261 bytes (100.00%,    0.0s remaining) ...done. (67.9253 MB, 12 seconds, 0 min)
+Extracting data from /home/ubuntu/nilearn_data/adhd/358cf54c801c6157e7ce6865e8dd53e2/adhd40_3007585.tgz..... done.
+
+Downloaded 32919780 of 32919780 bytes (100.00%,    0.0s remaining) ...done. (32.9198 MB, 8 seconds, 0 min)
+Extracting data from /home/ubuntu/nilearn_data/adhd/358cf54c801c6157e7ce6865e8dd53e2/adhd40_3154996.tgz..... done.
+```
+
+Here, the ""Downloaded..."" messages should be after each ""Downloading..."" line. I won't try to understand what's happening but, if it is okay just to print less, I'll be happy!
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-02 16:50:24",">  I won't try to understand what's happening but, if it is okay just to print less, I'll be happy!
+
+Looking at the current build on circle ci, the last commit of this PR works like a charm ! no more output flooding, one can see the download progression for each % (now it's an int, we don't need 2 precision digits).
+Tell me if this makes you happy.
+","",""
+"issue_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-02 17:27:33","Indeed, it does look great now. Thanks a lot. +1 for merge!
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-03 08:58:49","is it ok for you @AlexandreAbraham ?
+","",""
+"issue_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-03 09:47:16","I'm OK to set the update ""per percent"" on CircleCI but I don't see the interest of doing it for the everyday user, when we can do a more regular update. For instance, if I take the biggest file I've ever downloaded through nilearn, 3GB, that means one update per 30MB which means less than one update per minute on my crappy connection @home. With that update rate, I'll never know if the download is ongoing or stalled.
+
+But since I've no strong feeling about that and that situation (downloading big files) is very rare, I will follow the decision made by the others.
+","",""
+"issue_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-03 09:52:39","> I'm OK to set the update ""per percent"" on CircleCI but I don't see the
+> interest of doing it for the everyday user, when we can do a more
+> regular update.
+
+I feel the same.
+
+How about a time-based decision: I would like an update every couple of
+second. It seems that this would solve the circleCI problem too.
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-03 09:55:04","> How about a time-based decision: I would like an update every couple of second. It seems that this would solve the circleCI problem too.
+
+I agree. I can try to slightly change the output messages with an activity like character just to show that something is running.
+","",""
+"issue_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-03 09:56:22","> I agree. I can try to slightly change the output messages with an
+> activity like character just to show that something is running.
+
+I would also not display percents, but a finer resolution. That would
+show progress
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-03 09:57:36","> I would also not display percents, but a finer resolution. That would show progress
+
+Ok
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-03 10:31:25","> How about a time-based decision
+
+Done, the download report is refreshed every half second and looking at circle ci output now, it works.
+","",""
+"issue_comment","976","nilearn","nilearn","aabadie","2016-02-03 12:44:45","I applied your comments applied @lesteve 
+","",""
+"issue_comment","976","nilearn","nilearn","lesteve","2016-02-03 12:46:07","> I applied your comments applied @lesteve
+
+Thanks. There was a weird Travis failure on the python 2.7 distrib related to pip being unable to install nose-timer. Let's hope it was just a temporary glitch!
+","",""
+"issue_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-03 13:46:45","I'll merge after circleCI is happy.
+","",""
+"issue_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-03 14:58:57","CircleCI failure seems unrelated. Can anybody confirm?
+","",""
+"issue_comment","976","nilearn","nilearn","lesteve","2016-02-03 15:12:09","> CircleCI failure seems unrelated. Can anybody confirm?
+
+Looks like the download of http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz failed.
+
+```
+Downloading data from http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz ...
+________________________________________________________________________________
+../examples/03_connectivity/plot_rest_clustering.py is not compiling:
+Traceback (most recent call last):
+  File ""/home/ubuntu/nilearn/doc/sphinxext/sphinx_gallery/gen_rst.py"", line 467, in execute_script
+    exec(code_block, example_globals)
+  File ""<string>"", line 8, in <module>
+  File ""/home/ubuntu/nilearn/nilearn/datasets/func.py"", line 382, in fetch_nyu_rest
+    verbose=verbose)
+  File ""/home/ubuntu/nilearn/nilearn/datasets/utils.py"", line 702, in _fetch_files
+    overwrite=overwrite)
+  File ""/home/ubuntu/nilearn/nilearn/datasets/utils.py"", line 529, in _fetch_file
+    data = url_opener.open(request)
+  File ""/usr/lib/python2.7/urllib2.py"", line 404, in open
+    response = self._open(req, data)
+  File ""/usr/lib/python2.7/urllib2.py"", line 422, in _open
+    '_open', req)
+  File ""/usr/lib/python2.7/urllib2.py"", line 382, in _call_chain
+    result = func(*args)
+  File ""/usr/lib/python2.7/urllib2.py"", line 1214, in http_open
+    return self.do_open(httplib.HTTPConnection, req)
+  File ""/usr/lib/python2.7/urllib2.py"", line 1187, in do_open
+    r = h.getresponse(buffering=True)
+  File ""/usr/lib/python2.7/httplib.py"", line 1051, in getresponse
+    response.begin()
+  File ""/usr/lib/python2.7/httplib.py"", line 415, in begin
+    version, status, reason = self._read_status()
+  File ""/usr/lib/python2.7/httplib.py"", line 371, in _read_status
+    line = self.fp.readline(_MAXLINE + 1)
+  File ""/usr/lib/python2.7/socket.py"", line 476, in readline
+    data = self._sock.recv(self._rbufsize)
+error: [Errno 104] Connection reset by peer
+
+```
+","",""
+"issue_comment","976","nilearn","nilearn","lesteve","2016-02-03 17:20:58","All CIs are green, merging, thanks !
+","",""
+"pull_request_commit_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-02 11:12:06","What if total_size is None? (which is possible given the code above)
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","GaelVaroquaux","2016-02-02 11:14:50","I think that I would prefer having an iteration counter of the ""while"" loop, and reporting only if that iteration counter is an integer fraction of report_frequency, ie
+
+<pre>
+if i // report_frequency == 1:
+   report
+</pre>
+
+
+I find that such a logic is more robust than a logic on the chunk size (and easier to read).
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-02 12:32:26","If total_size is None, the whole remaining content is downloaded. So normally it's not None at this point.
+see https://github.com/nilearn/nilearn/pull/976/files#diff-c22120ae66106d07e452aed0f968c08eR150
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-02 12:32:47","Indeed, I'll try to make this clearer.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-02 13:07:26","Reading at the code more carefully, total_size can be None, in case of a failure. See https://github.com/nilearn/nilearn/pull/976/files#diff-c22120ae66106d07e452aed0f968c08eR158
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-02 13:19:55","Using modulo operator makes things clearer.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-02 16:56:09","I made a typo here (_of_ should be _or_)
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 08:58:20","Typo is fixed.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 10:42:40","1e6 is already a float so you don't need float(1e6)
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 12:28:54","Removed.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 12:31:45","Another slight niggle: you can use `'... {1:.0f} {2:.0f}'.format(dt, dt // 60)` if you want to print without decimal digit. Also it will round to the closer int in contrast to your method.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 12:33:16","you can do `t0 = t_display = time.time()`
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 12:34:24","I would use time_last_read and time_last_report for the variable names.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 12:35:15","time_last_report = time_last_read (rather than time.time())
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 12:51:18","Are the 4 decimals really that useful?
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 12:51:25","Maybe 2 is good enough.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 12:56:05","> Maybe 2 is good enough.
+
+That's what I used initially, but with very small data, you can have something like 0.0MB downloaded. Maybe a more clever string (using KB, MB, GB) depending on the size could be better.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-03 13:00:28","IMHO, problems in this code may rise from big files, not small ones. I wouldn't spend time on that.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 13:02:06","I see. To be honest you already have the size in bytes on the left (in master):
+
+```
+Downloaded 314803244 of 314803244 bytes (100.0%,    0.0s remaining) ...done. (314.8032 MB, 665 seconds, 11 min)
+```
+
+so maybe just drop it.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 13:04:20","I pushed a change about this. Tell me if it's ok.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 13:11:47","> so maybe just drop it.
+
+I reverted the change. It's now back to master version.
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 15:30:00","total_size can be None maybe just use `not chunk` (which is the exit condition)
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 15:39:21","Done
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-03 15:58:01","I can even go further! :trollface: 
+
+```
+    chunk = True
+    while chunk:
+        time_last_display = time.time()
+        while time.time() < time_last_display + 0.5:
+            chunk = response.read(chunk_size)
+            if not chunk:
+                break
+            bytes_so_far += len(chunk)
+            local_file.write(chunk)
+        else:
+            _chunk_report_(len(chunk), bytes_so_far,
+                           total_size, initial_size, t0)
+```
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(28, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 16:31:10","> I can even go further!
+
+You missed the `report_chunk` check ;)
+","b5dabd5302c81136fd278ee8a406176ac20266b1","(28, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit","976","nilearn","nilearn","aabadie","2016-02-02 08:27:35","limit download status output to 4 on circle ci","7de0bee94f8486b97e762acec2845033d6d5f066",""
+"pull_request_commit","976","nilearn","nilearn","aabadie","2016-02-02 15:50:53","update chunk report for each downloaded percent of the data","5a317b04e2292f882c783125969c6170d9f8c5ed",""
+"pull_request_commit","976","nilearn","nilearn","aabadie","2016-02-03 08:58:03","fixing typo","5018d6cc67cdb366ede088af0bee9322a7bc2bd5",""
+"pull_request_commit","976","nilearn","nilearn","aabadie","2016-02-03 10:08:22","refresh report display every half second","1369e6da2834ed8626e144969bfee7ceab61a91c",""
+"pull_request_commit","976","nilearn","nilearn","aabadie","2016-02-03 13:11:04","reverting download completed display change","1284250ba12ede4d0db9281d64d8ea6d221fab62",""
+"pull_request_commit","976","nilearn","nilearn","aabadie","2016-02-03 13:14:57","re applying lost changes","3ca02bc280910da19a6b256a009a674a6bc56c8a",""
+"pull_request_commit","976","nilearn","nilearn","aabadie","2016-02-03 15:18:58","improve refresh display of download report","b5dabd5302c81136fd278ee8a406176ac20266b1",""
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 13:20:59","Could you move this to the `else` clause above?
+","1369e6da2834ed8626e144969bfee7ceab61a91c","(39, 173, u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-03 13:45:29","This is not necessary. After the `break`, this code is directly executed.
+","1369e6da2834ed8626e144969bfee7ceab61a91c","(39, 173, u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 13:53:10","Just feels more readable.
+","1369e6da2834ed8626e144969bfee7ceab61a91c","(39, 173, u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 14:47:47","I don't see the point, this block is only executed if `report_hook` is True. Or maybe you want the full `if` statement in the `else` clause of the `while` loop ?
+","1369e6da2834ed8626e144969bfee7ceab61a91c","(39, 173, u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","AlexandreAbraham","2016-02-03 14:59:50","For me, the current version is more readable. The block is executed at the end of the while loop.
+","1369e6da2834ed8626e144969bfee7ceab61a91c","(39, 173, u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","lesteve","2016-02-03 15:09:27","You would have the decision to exit the loop at the same place where you print the last report, that's all.
+","1369e6da2834ed8626e144969bfee7ceab61a91c","(39, 173, u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","976","nilearn","nilearn","aabadie","2016-02-03 15:20:05","I removed it and changed the refresh condition in the loop. It should make everybody happy :)
+","1369e6da2834ed8626e144969bfee7ceab61a91c","(39, 173, u'nilearn/datasets/utils.py')"

@@ -1,0 +1,77 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1580","nilearn","nilearn","GaelVaroquaux","2017-11-30 16:59:14","ENH: error for a single subject in fit_transform for tangent space
+
+A classic error is that people call fit_transform on single subjects when the tangent space parametrization. This cannot work.
+
+This PR raises an error in this case.
+
+The code is extracted from PR #1477 that we will probably drop.","start issue","Error on tangent"
+"pull_request_title","1580","nilearn","nilearn","GaelVaroquaux","2017-11-30 16:59:14","ENH: error for a single subject in fit_transform for tangent space
+
+A classic error is that people call fit_transform on single subjects when the tangent space parametrization. This cannot work.
+
+This PR raises an error in this case.
+
+The code is extracted from PR #1477 that we will probably drop.","34f2ad03eb5e041870e0faa36189b5ae1d571a83","Error on tangent"
+"issue_comment","1580","nilearn","nilearn","salma1601","2017-12-01 00:18:37",">Do you think that we should return the mean ""kind""?
+
+Yes, I think the user would expect the mean_ to correspond to the ""kind"" he has chosen","",""
+"issue_comment","1580","nilearn","nilearn","salma1601","2017-12-01 07:51:22",">The problem is that users who don't understand what they are doing call 'fit_transform' in a loop on each subject of a group and expect to do a group analysis on the result. That does not work.
+
+Ah ok now I see, thank you. You are right.
+Something that always worried me about `tangent` is that people comparing groups may compute their connectivities for each group separately and then do statistics/classification. This also will be wrong. I already saw someone doing it and don't know how to prevent this. Doc ?  ","",""
+"issue_comment","1580","nilearn","nilearn","KamalakerDadi","2017-11-30 17:26:02",">The code is extracted from PR #1477 that we will probably drop.
+
+Why will it be dropped ?","",""
+"issue_comment","1580","nilearn","nilearn","codecov[bot]","2017-11-30 18:25:38","# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1580?src=pr&el=h1) Report
+> Merging [#1580](https://codecov.io/gh/nilearn/nilearn/pull/1580?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/60ee7bb16f4271a51287f00f50782fa746104158?src=pr&el=desc) will **increase** coverage by `<.01%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1580/graphs/tree.svg?width=650&height=150&token=KpYArSdyXv&src=pr)](https://codecov.io/gh/nilearn/nilearn/pull/1580?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1580      +/-   ##
+==========================================
++ Coverage   94.45%   94.45%   +<.01%     
+==========================================
+  Files         125      125              
+  Lines       15349    15360      +11     
+==========================================
++ Hits        14498    14509      +11     
+  Misses        851      851
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1580?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [...arn/connectome/tests/test\_connectivity\_matrices.py](https://codecov.io/gh/nilearn/nilearn/pull/1580/diff?src=pr&el=tree#diff-bmlsZWFybi9jb25uZWN0b21lL3Rlc3RzL3Rlc3RfY29ubmVjdGl2aXR5X21hdHJpY2VzLnB5) | `99.01% <100%> (ø)` | :arrow_up: |
+| [nilearn/connectome/connectivity\_matrices.py](https://codecov.io/gh/nilearn/nilearn/pull/1580/diff?src=pr&el=tree#diff-bmlsZWFybi9jb25uZWN0b21lL2Nvbm5lY3Rpdml0eV9tYXRyaWNlcy5weQ==) | `95.4% <100%> (+0.25%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1580?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1580?src=pr&el=footer). Last update [60ee7bb...34f2ad0](https://codecov.io/gh/nilearn/nilearn/pull/1580?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+","",""
+"pull_request_commit_comment","1580","nilearn","nilearn","salma1601","2017-11-30 19:51:50","Hi ! 
+Are you retrurning the covariances mean even for kind='correlation' or précision ? ","34f2ad03eb5e041870e0faa36189b5ae1d571a83","(62, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1580","nilearn","nilearn","bthirion","2017-11-30 22:45:24","I'm missing something. IIUC fit() accepts a single subject, and so does transform(). Only fit_transform() doesn't. But actually fit_transform() on a single subject could yield a null matrix.
+?","34f2ad03eb5e041870e0faa36189b5ae1d571a83","(79, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1580","nilearn","nilearn","salma1601","2017-12-01 00:29:30","BTW, why is it an error to get a null matrix ? All the deviations are somehow ""strange"" matrices for a user that didn't understand that they are deviations from the mean: they can be négative on the diagonal, have values outside [-1, 1] etc. May be à simple warning is sufficient, to remind the context. May be even à message printed systematically for the tangent kind would be pedagogic, whatever the number of subjects is.","34f2ad03eb5e041870e0faa36189b5ae1d571a83","(79, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit_comment","1580","nilearn","nilearn","salma1601","2017-12-01 07:53:38","do we actually have `tangent_geometric` and `tangent` ?","34f2ad03eb5e041870e0faa36189b5ae1d571a83","(None, '', u'nilearn/connectome/connectivity_matrices.py')"
+"pull_request_commit","1580","nilearn","nilearn","GaelVaroquaux","2017-11-30 16:54:32","ENH: error for a single subject in fit_transform for tangent space
+
+A classic error is that people call fit_transform on single subjects
+when the tangent space parametrization. This cannot work.
+
+This PR raises an error in this case.
+
+The code is extracted from PR #1477 that we will probably drop.","94312a7de479a1679e5424b950505bbf64a7eacb",""
+"pull_request_commit","1580","nilearn","nilearn","GaelVaroquaux","2017-11-30 16:58:16","STYLE","e87ce8d77ff97ccd9a58a4f0abdb24a5f9010408",""
+"pull_request_commit","1580","nilearn","nilearn","GaelVaroquaux","2017-12-01 07:56:53","Fix backport error","34f2ad03eb5e041870e0faa36189b5ae1d571a83",""
+"pull_request_commit","1580","nilearn","nilearn","GaelVaroquaux","2017-12-14 16:46:22","Refactor ConnectivityMeasure to compute mean
+
+This is a non trivial refactor to compute the correct mean
+and avoid duplication of computation.","5999eee82d100ae13964ba6b01be69bbf74e920d",""

@@ -1,0 +1,33 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1314","nilearn","nilearn","KamalakerDadi","2016-10-20 11:10:50","``` python
+In [1]: from nilearn import datasets
+
+In [2]: abide = datasets.fetch_abide_pcp()
+Downloading data from https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz ...
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-2-1f1f31175720> in <module>()
+
+AttributeError: can't set attribute
+```
+
+Can somebody reproduce it ?'
+Seems like download link from amazon is changed. Replacing fcp-indi -> fcp-indi-new in the fetcher download link will work.
+","start issue","ABIDE fetcher download link needs to be renamed"
+"issue_closed","1314","nilearn","nilearn","AlexandreAbraham","2016-10-31 13:45:31","","closed issue","ABIDE fetcher download link needs to be renamed"
+"issue_comment","1314","nilearn","nilearn","AlexandreAbraham","2016-10-31 13:45:31","As @jpellman explained to Joao and me, the fcp-indi-new bucket was a temporary one and we should point to it. Full answer:
+
+> We recently migrated to a new AWS account.  As part of this migration, the data from the 'fcp-indi' bucket was synced to a temporary bucket ('fcp-indi-new') belonging to our new account.  After the migration of our data to the new account, our old account was deleted, and along with it the old 'fcp-indi' bucket.  In order to preserve the S3 paths that we had been using under the old account, we re-created the 'fcp-indi' bucket under our new account and began syncing all of the data in 'fcp-indi-new' to it.  At this time, I changed the URLs in our documentation to ensure that interested researchers could still access our data from the temporary bucket while it was syncing to the new 'fcp-indi' bucket.  Presently, the file sync is finished and the only reason that the temporary bucket ('fcp-indi-new') is still referred to in the documentation is that we also had to change permissions for all the files in 'fcp-indi' using a script so that they were publicly readable.  This script has finished executing, however, and I am reverting the documentation to refer to the 'fcp-indi' bucket now.
+> 
+> So to answer your question, the data is the same in 'fcp-indi-new' and 'fcp-indi', but you shouldn't need to change your code.  In fact, you should use 'fcp-indi', since we are going to remove the 'fcp-indi-new' bucket now that our migration is finished.
+> 
+> ```
+> ```
+","",""
+"issue_comment","1314","nilearn","nilearn","mrahim","2016-10-20 11:19:43","Same thing here.
+Looks like the link has changed ([see here](http://preprocessed-connectomes-project.org/abide/download.html)):
+https://s3.amazonaws.com/fcp-indi-new/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz
+
+was
+https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz
+","",""

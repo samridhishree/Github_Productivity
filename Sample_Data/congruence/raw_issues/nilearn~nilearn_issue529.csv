@@ -1,0 +1,49 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","529","nilearn","nilearn","fnielsen","2015-03-31 19:35:49","There are problems with nilearn.datasets.fetch_harvard_oxford
+
+Documentation indicates that a Nifti1Image object should be returned. But it is a tuple and line 1675 does return a string (the filename), e.g.:
+
+```
+ volume, labels = nilearn.datasets.fetch_harvard_oxford('sub-maxprob-thr25-2mm', symmetric_split=False)
+```
+
+A possible fix is:
+
+```
+   if not symmetric_split:
+        atlas_img = check_niimg(atlas_img)
+        atlas = atlas_img.get_data() 
+        return new_img_like(atlas_img, atlas, atlas_img.get_affine()), names.tolist()
+
+>>> type(labels) == list
+True
+```
+
+(but it is unclear to me whether this output is the intended)
+
+Another problem is line 1689 `for s, _, _ in slices` as elements may be None. It may be triggered with: 
+
+```
+nilearn.datasets.fetch_harvard_oxford('sub-maxprob-thr25-2mm', symmetric_split=True)
+```
+
+Fix: 
+
+```
+crosses_middle = [slice[0].start < middle_ind and slice[0].stop > middle_ind
+                   for slice in slices if slice is not None]
+```
+","start issue","fetch_harvard_oxford return argument and symmetric_split"
+"issue_closed","529","nilearn","nilearn","lesteve","2015-04-14 12:04:44","","closed issue","fetch_harvard_oxford return argument and symmetric_split"
+"issue_comment","529","nilearn","nilearn","AlexandreAbraham","2015-04-07 08:48:20","> But it is a tuple and line 1675 does return a string (the filename)
+
+This is more a problem of documentation: the function return a Niimage-like object which can be a filepath.
+
+> Another problem is line 1689 for s, _, _ in slices as elements may be None
+
+Good catch!
+","",""
+"issue_comment","529","nilearn","nilearn","lesteve","2015-04-14 12:04:42","@fnielsen thanks a lot for your bug report! I just pushed a fix in master for the main issue (ndimage.find_objects output containing None elements).
+
+The documentation inconsistency is going to be tackled in #486 so I am going to close this issue.
+","",""

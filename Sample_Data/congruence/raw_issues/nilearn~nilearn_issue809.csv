@@ -1,0 +1,137 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","809","nilearn","nilearn","aabadie","2015-10-30 16:44:29","As reported in #808, a lot of nilearn tests are failing on windows. There's an issue with the path ot the datasets.
+
+Here is one of the failing ci run : https://ci.appveyor.com/project/aabadie/nilearn/build/job/htt98au0b1j0hxnq
+","start issue","Failing tests on windows"
+"issue_closed","809","nilearn","nilearn","lesteve","2015-11-09 14:36:59","","closed issue","Failing tests on windows"
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-02 09:10:37","> The path problems should be easy to fix
+
+It seems the environ variables are not correctly set on windows. Trying to fix this.
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-02 09:17:26","> It seems the environ variables are not correctly set on windows. Trying to fix this.
+
+Forget about this. The problem is in the logic of _get_dataset_dir
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-02 15:04:17","> You are going to be very limited memory-wise if you want to use nilearn on a 32bit platform
+
+I'm testing locally using a 64 bit version of python and also have the same ""OverflowError: Python int too large to convert to C long"" issue. This problem seems to be related to a call to joblib.Parallel in function ""permuted_ols"" that I don't fully understand.
+
+I could hopefully fix the path related issues.
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-02 16:46:10","I created PR #814 
+
+Remaining issues:
+- ""OverflowError: Python int too large to convert to C long"" raised in mass_univariate ""permuted_ol"" function. Some help will be greatly appreciated for this one.
+- More problematic is the one concerning the access to multiple opened file at the same time on windows. For example:
+
+``` python
+with tempfile.NamedTemporaryFile(suffix='.txt') as fp:
+    f = open(fp.name, 'w+b')
+    f.write('toto')
+    f.close()
+```
+
+will fail with the error message: """"""PermissionError: [Errno 13] Permission denied: 'C:\Users\ALEXAN~1\AppData\Local\Temp\tmpuuihk6z6.txt""""""
+Same story with:
+
+``` python
+with tempfile.NamedTemporaryFile(suffix='.txt') as fp:
+    with open(fp.name, 'w+b') as fpp:
+        f.write('toto')
+```
+
+And this strategy is used intensively in nilearn/plotting/tests/test_img_plotting.py. I could fix the issue here using a temporary string variable and process the filename outside the ""with"" block.
+But it's the same kind of context manager behavior used with the function write_tmp_imgs in _utils/testing.py to remove the temporary files on the fly. Here it breaks quite a few tests.
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-03 08:12:33","@GaelVaroquaux, I agree. But now in the test (see test_img_plotting.py, function test_plot_anat), we use it like what I described above:
+
+``` python
+with tempfile.TemporaryFile(suffix='.png') as fp:
+    z_slicer.savefig(fp.name) # savefig open another descriptor internally => permission error
+```
+
+Using the code below works (of course) but I need a confirmation of the solution:
+
+``` python
+filename = """"
+with tempfile.TemporaryFile(suffix='.png') as fp:
+    filename = fp.name
+
+# tempfile has been removed when exiting the previous context
+z_slicer.savefig(filename) # Opens and creates the file again
+os.remove(filename)
+```
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-03 08:15:59","@GaelVaroquaux, about the overflow error, I made a simple test:
+
+``` python
+import numpy as np
+a = np.arange(10)
+print(a.dtype)
+```
+- result on windows (using anaconda python 3.4, 64 bits): int32
+- result on linux (using same anaconda python 3.4, 64 bits): int64
+
+I think built numpy/scipy provided by anaconda are 32 bits on windows which explains this issue.
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-03 08:17:41","> Can you try with a = np.zeros(10) and tell us what you get?
+
+float64...I'm lost
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-03 11:00:03","> OK, so it's indeed a 64bit install, but the default integer is 32bit.
+> Interesting.
+
+I created #819 which hopefully (and magically) fixed the issue
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-04 07:48:22","> With the 2 PRs merged, is there still something failing under Windows?
+
+@GaelVaroquaux, yes PR #814 is still pending. There are also
+ other problems with context manager in _create_tmp_imgs test utility function that I'd like to fix today.
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-04 15:19:50","We are getting closer to complete this issue. Just a summary of what is remaining:
+- Lots of remaining issues like: 
+
+```
+  File ""C:\softs\src\nilearn\nilearn\_utils\testing.py"", line 144, in write_tmp_imgs
+    os.remove(filename)
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\ALEXAN~1\\AppData\\Local\\Temp\\nilearn_iu926ggu.nii'
+```
+
+I tried what @GaelVaroquaux suggested IRL without success. I also tried to remove the contextlib decorator and get the filenames using `list(write_tmp_imgs())` but then it breaks the initial test logic. I need some help on those ones.
+- Appveyor raises 3 other issues with python 2.7 but I can't reproduce them locally, see the 3 last ones [here](https://ci.appveyor.com/project/nilearn-ci/nilearn/build/1.0.14/job/nlmqm87exiihnss6)
+- I fixed a couple of other ones : one write permission issue was remaining and there was an issue with some the mode parameter of some call to np.memmap.
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-05 15:50:55","@GaelVaroquaux, all tests are passing now on Windows. Just to let you know, we disabled matplotlib as it makes the python interpreter crash at exit with python 3.4. I cannot reproduce this behavior on my system. It's a bit weird.
+
+All the rest is ok.
+
+Maybe we can close this issue (along with #804 until the webhook is added to github).
+","",""
+"issue_comment","809","nilearn","nilearn","aabadie","2015-11-09 14:26:12","> For the record, I have added the AppVeyor webhook but it doesn't show in PRs at the moment. I need to investigate more
+
+I confirmed the request sent to nilearn-ci (it uses my personal email). Is it ok now ?
+","",""
+"issue_comment","809","nilearn","nilearn","GaelVaroquaux","2015-11-03 17:35:08","With the 2 PRs merged, is there still something failing under Windows?
+","",""
+"issue_comment","809","nilearn","nilearn","GaelVaroquaux","2015-11-04 08:05:01","OK, I just merged #814 
+I'll let you tackle the rest and create a PR.
+","",""
+"issue_comment","809","nilearn","nilearn","lesteve","2015-11-09 10:14:47","> Maybe we can close this issue (along with #804 until the webhook is added to github).
+
+For the record, I have added the AppVeyor webhook but it doesn't show in PRs at the moment. I need to investigate more ...
+","",""
+"issue_comment","809","nilearn","nilearn","lesteve","2015-11-09 14:35:15","To make a long story short, I had to give nilearn-ci write permission in github, revoke the github link you made in AppVeyor and reauthorize it as nilearn-ci.
+
+One of the resource that was actually helpful:
+http://help.appveyor.com/discussions/kb/4-show-multiple-statuses-in-github-pull-requests#comment_36808437
+
+I think this should be OK now, look at https://github.com/nilearn/nilearn/pull/613 (the failure is expected by the way)
+","",""
+"issue_comment","809","nilearn","nilearn","lesteve","2015-11-09 14:36:57","Closing this one I'll open a new issue about the matplotlib segmentation fault on AppVeyor.
+","",""
+"issue_comment","809","nilearn","nilearn","lesteve","2015-11-02 09:00:12","The path problems should be easy to fix.
+
+The `nilearn.tests.test_signal.test_clean_confounds` one not so sure.
+","",""
+"issue_comment","809","nilearn","nilearn","lesteve","2015-11-02 14:45:50","Also chatting with @GaelVaroquaux you want to set-up the tests on a 64bit architecture and forget about the 32bit ones. You are going to be very limited memory-wise if you want to use nilearn on a 32bit platform.
+","",""

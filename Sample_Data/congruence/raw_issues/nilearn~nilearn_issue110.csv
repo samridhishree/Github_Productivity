@@ -1,0 +1,128 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","110","nilearn","nilearn","banilo","2013-10-01 21:35:42","I experienced that NiftiMasker had trouble fitting a nifti, that, when loaded manually using nibabel.load(), contained a lot of NaN's. mask_img_ just contained a huge square, rather than the actual seed regions I wanted to use as a mask. Manual numpy.nan_to_num appeared to solve the problem.
+","start issue","[bug?] NiftiMasker"
+"issue_closed","110","nilearn","nilearn","AlexandreAbraham","2013-11-06 13:21:52","","closed issue","[bug?] NiftiMasker"
+"issue_comment","110","nilearn","nilearn","GaelVaroquaux","2013-10-07 16:37:08","> A workaround exists in compute_epi_mask (ensure_finite) but it is not
+> accessible directly from the NiftiMasker. Maybe we should enable this option.
+
+I think that we should expose it in the various nifti maskers and
+probably enable it by default. SPM has the bad habit of putting NaNs
+everywhere.
+","",""
+"issue_comment","110","nilearn","nilearn","GaelVaroquaux","2013-11-06 13:16:19","> First, you should simply feed the mask directly to the NiftiMasker:
+> NiftiMasker (mask='MSDL_bin_0000.bin')
+
+Indeed. What you are trying to do cannot and shouldn't work.
+
+> Second, there is indeed a bug: compute_epi_mask was not made to fit a mask on
+> binary data, althought I think that it should behave well in such a case.
+> 
+> WDYT Gael ?
+
+Well, first we can hack compute_epi_mask so that if the array has only 2
+values it is well-behaved: take the largest of the two values, issue a
+warning, and take the largest cc.
+
+Second, we will need to implement a 'masking_strategy' option to the
+masker.
+","",""
+"issue_comment","110","nilearn","nilearn","GaelVaroquaux","2013-11-06 13:16:19","> I think that the best we can do is to provide a series of utilities
+> that make these different things easy, but certainly not a swiss knife
+> that would work on any kind of image.
+
+Yes, agreed. We have been discussing add a 'masking_strategy' argument,
+or something like this, to the NiftiMasker to cater for the multiple
+options.
+","",""
+"issue_comment","110","nilearn","nilearn","GaelVaroquaux","2013-11-06 13:27:51","OK, but please add an ENH issue that compute_epi_mask should work OK on
+arrays with 2 values.
+","",""
+"issue_comment","110","nilearn","nilearn","GaelVaroquaux","2013-11-06 13:45:01","> Are you suggesting that we should not crop the histogram when data is
+> binary ?
+
+Yes.
+
+> What should we do if we have a sequence of binary data ?
+
+What do you mean?
+","",""
+"issue_comment","110","nilearn","nilearn","GaelVaroquaux","2013-11-06 14:57:15","> ```
+> compute_epi_mask takes a 3D scan or a sequence of 3D scans. In case of a
+> sequence of scans, we use the heuristic on the mean scan. If we have a
+> sequence of binary scans, the mean will have continuous values and thus we
+> will get back to the heuristic which may not be the best strategy.
+> ```
+
+OK. Let's wait to see if it pops up in real life, and address the problem
+when we have it.
+","",""
+"issue_comment","110","nilearn","nilearn","bthirion","2013-10-03 21:27:40","Banilo, 
+I'm not sure  I understand: the Nan are in the mask img or the associated brain maps ? 
+Would you put somewhere the mask img + the script on a gist so that we reproduce the bug ?
+Best, 
+","",""
+"issue_comment","110","nilearn","nilearn","banilo","2013-10-03 22:12:04","Bonjour Bertrand,
+
+Sorry, I didn't express myself clearly enough. In the attached file, you
+will find a short piece of code that reproduces the bug (?):
+
+loading an MSDL image (already binarized) by NiftiMasker results in a
+NiftiMasker.mask_img_ that just contains a huge rectangle but not the
+original MSDL region (dumped to disk as nii in the example).
+
+I hope my report makes any sense :-) Let me know if I can be of any further
+assistance.
+
+Best,
+Danilo
+
+2013/10/3 bthirion notifications@github.com
+
+> Banilo,
+> I'm not sure I understand: the Nan are in the mask img or the associated
+> brain maps ?
+> Would you put somewhere the mask img + the script on a gist so that we
+> reproduce the bug ?
+> Best,
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/nilearn/nilearn/issues/110#issuecomment-25659666
+> .
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","110","nilearn","nilearn","bthirion","2013-10-05 20:51:59","Sorry Banilo, I did not get the attached file. I'm not sure the github 
+interface makes it possible to send them. If not, please send it to me 
+(bertrand.thirion@inria.fr).
+Bertrand
+","",""
+"issue_comment","110","nilearn","nilearn","AlexandreAbraham","2013-10-05 21:09:27","Me too please !
+","",""
+"issue_comment","110","nilearn","nilearn","AlexandreAbraham","2013-10-05 21:21:38","I thought that Nan values were in the mask. In fact, mask computation is based on the histogram of values and Nan values mess it up.
+
+A workaround exists in compute_epi_mask (ensure_finite) but it is not accessible directly from the NiftiMasker. Maybe we should enable this option. At least, I think we should show a warning. Let's discuss it with Gael next week.
+","",""
+"issue_comment","110","nilearn","nilearn","AlexandreAbraham","2013-11-06 09:59:00","I've done a pass on all issues so I want to solve this one.
+
+On my side, I see this: you have a binary mask that you are trying to fit and all you obtain is a big square. I've seen no Nan in your file.
+First, you should simply feed the mask directly to the NiftiMasker: NiftiMasker(mask='MSDL_bin_0000.bin')
+Second, there is indeed a bug: compute_epi_mask was not made to fit a mask on binary data, althought I think that it should behave well in such a case.
+
+WDYT Gael ?
+","",""
+"issue_comment","110","nilearn","nilearn","AlexandreAbraham","2013-11-06 10:09:11","I found the problem. The heuristic to compute the mask is the following: we take the histogram of the image, cut the first and last values, look at the highest gradient in the histogram and take it as a threshold. As your file has a very low number of activated voxels, it is cut in the first step. Fitting the mask on your binary data works if you set mask_upper_cutoff=0.99999 in the NiftiMasker options.
+
+@GaelVaroquaux do you consider it as a bug ? I'm afraid that computing the mask could fail on very sparse fMRI (if only one ROI is aquired for example).
+","",""
+"issue_comment","110","nilearn","nilearn","AlexandreAbraham","2013-11-06 13:21:46","OK, so I close this issue.
+Duplicate #87 
+","",""
+"issue_comment","110","nilearn","nilearn","AlexandreAbraham","2013-11-06 13:37:06","The problem here is not that there are 2 values. It's the histogram cropping due to lower_cutoff and upper_cutoff. As the histogram is cut, all the 1s are removed and compute_epi_mask, without surprise, does not work on a full blank image.
+The current implementation works perfectly well with binary arrays if lower_cutoff is set to 0. and upper_cutoff to 0.99999 (I will make a patch to make it work with 1.). Are you suggesting that we should not crop the histogram when data is binary ? What should we do if we have a sequence of binary data ?
+","",""
+"issue_comment","110","nilearn","nilearn","AlexandreAbraham","2013-11-06 13:54:19","> What do you mean?
+> compute_epi_mask takes a 3D scan or a sequence of 3D scans. In case of a sequence of scans, we use the heuristic on the mean scan. If we have a sequence of binary scans, the mean will have continuous values and thus we will get back to the heuristic which may not be the best strategy. I just wanted to point out this case.
+","",""

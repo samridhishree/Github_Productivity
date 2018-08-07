@@ -1,0 +1,120 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","361","nilearn","nilearn","AlexandreAbraham","2015-01-21 12:18:04","Before releasing nilearn, I'd like to make a little poll to know how people use nilearn and what are the problems they encoutered. Please take some time to answer to this poll, even if it's only to write 3 lines.
+
+I propose this outline:
+1. What do you use in nilearn?
+2. What problems did you encounter? Did you find a workaround by yourself?
+3. What do you want to see in nilearn in the future
+4. Comments on nilearn in general (what you like / don't like...)
+# What do you use in nilearn?
+- `_utils.check_niimg`
+- `NiftiMasker`
+- `plotting.*`
+- `datasets.*`
+# What problems did you encounter? Did you find a workaround by yourself?
+## CanICA
+
+Given my pipeline, it was more practical for me to use CanICA directly on masked data. To do that, I copied the code in my repo and remove all that was related to masking. I tried to give a fake mask to use it (of shape `(n_voxels, 1, 1)`) but Nifti1Image does not allow it.
+
+After Andres' presentation, I wanted to try using Ward to compress data before ICA and compare it to a simple smoothing. Again, I can't do that in nilearn: NiftiLabelsMasker are not accepted in CanICA.
+## MultiNiftiMasker
+
+I don't find the caching system of the MultiNiftiMasker practical. Therefore I use a NiftiMasker with a loop and I cache the data myself. But this is specific to my needs since I move the data on several machines.
+## Nifti1Image
+
+This class is horrible. I created my own Niimg class a while ago. It supports indexing, iteration, and modification. It also does a bit more (like on the fly unmasking and weak references) but this is more specific to my usage. It also contains the id of the subject which is helpful to retrieve phenotypic information for example.
+# What do you want to see in nilearn in the future
+
+I am very enthuastic about some upcoming plotting features. This is really useful. We are also on our way to integrate new models which is definitely a big plus for reproducible science. I'm also waiting for the report features and notebook examples.
+# Comments on nilearn in general (what you like / don't like...)
+
+I am a bit frightened about the growth of the maskers in term of functionalities (time masking) and types (balls masker). In fact, adding options and increasing their number may lead to maintenance issues as each one has its own implementation.
+And in general, the most annoying thing is to have to import nibabel and create a new Nifti1Image everytime I need to modify something in the data.
+","start issue","Poll: your usage of nilearn, toughts about the future"
+"issue_closed","361","nilearn","nilearn","AlexandreAbraham","2015-02-10 10:19:57","","closed issue","Poll: your usage of nilearn, toughts about the future"
+"issue_comment","361","nilearn","nilearn","salma1601","2015-01-23 23:56:23","**What do you use in nilearn?**
+I used NiftiMapsMasker and datasets.
+**What problems did you encounter? Did you find a workaround by yourself?**
+From my naive point of view as a beginner in programming, I am frustrated with joblib. I rerun the Masker with different parameters without specifying different memory locations and I end up with a huge memory size of a series of files I never exploited because I don't know to which subject/set of parameters they correspond. Plus I had to move the root folder containing joblib and I had the impression that the cached files were no longer recognized.
+A different minor point is that I wanted to explore non standardized signals within my ROIs but the function signal.clean forces normalization of the input signals. I'm rather used to scaling the signal to its average across timepoints (PSC units). 
+**What do you want to see in nilearn in the future**
+I would like to have a hrf so that to deal with connectivity during task.
+**Comments on nilearn in general (what you like / don't like...)**
+I like in nilearn the excellent code quality: one can go into it and understand quickly what it does. But I feel like in the user guide and the given examples the stress is put on the model but not on the neuro point of view. For instance I expect regions or at least networks to be explicit on a connectivity matrix plot for real data.
+","",""
+"issue_comment","361","nilearn","nilearn","bthirion","2015-01-26 21:47:56","_What do you use in nilearn?_
+ NiftiMasker (mostly), visualization; get back to the examples when running clustering, ICA etc.
+
+_What problems did you encounter? Did you find a workaround by yourself?_
+Most of them have been fixed in the course of time. 
+
+_What do you want to see in nilearn in the future_
+I'd like to see it become a complete suite for volume-based (as opposed to surface-based) data analysis: design matrix, GLM, group statistics.
+Up-to-date dictionary learning.
+
+_Comments on nilearn in general (what you like / don't like...)_
+NA
+","",""
+"issue_comment","361","nilearn","nilearn","eickenberg","2015-01-27 13:13:27","## What do you use in nilearn?
+- `_utils.check_niimg`
+- resampling / cropping functionality
+- `NiftiMasker`
+- `plotting._plot_img_with_bg` ;) (but other ones, too, of course)
+- `datasets` fetchers!
+
+## What problems?
+- This is probably overfitting the Haxby2001 dataset usecase, but neither `NiftiMasker` nor `MultiNiftiMasker` are appropriate here, since `NiftiMasker` cannot set breakpoints for detrending and standardizing and `MultiNiftiMasker` needs different `niimgs` to do it. Potential solution: When slicing `niimgs` becomes possible, one could use the `MultiNiftiMasker` with slices
+- `plotting.plot_img`, the ""general"" plotting function is not a functional superset of `plotting.plot_stat_map` (no background possible IIRC)
+- `NiftiMasker.mask_strategy` is somehow always the wrong one for the data I want to treat ;)
+- not a problem if handled correctly: nilearn should not overfit usecases or become an eclectic collection of not universally accepted tools. Right now everything is OK.
+
+## Future?
+- GLM, please! In a way that can read onset descriptor files but doesn't oblige me to use them. Minimum amount of classes involved (e.g. ideally 0 or 1, implementing a transformer type interface).
+- Interactive plotting would to me be worth its number of lines in gold units. Every time I plot a stat map, I want to scroll around, but can't. This could be done with `pynax` in the slimmest possible way.
+
+## Comments on nilearn in general
+
+`sum` all comments of predecessors together. All in all I think nilearn can be said to be perceived as very reliable, with sane defaults, which is a lot of work and thought to create. So great work everybody!
+","",""
+"issue_comment","361","nilearn","nilearn","AlexandreAbraham","2015-02-10 10:19:51","Thanks everybody for your participation! So, apparently, most of people are using nilearn for masking, which is a good thing considering the effort that we put in the maskers ;).
+
+It's not the first time that I hear people complaining about the caching system. I will open an issue about that.
+
+AFAIK, the GLM will not be added in a near future but it's on the roadmap.
+","",""
+"issue_comment","361","nilearn","nilearn","fabianp","2015-02-26 13:26:25","I would be glad to participate with feedback and ideas on the GLM when time comes. From my experience the GLM in nipy would be a good starting point, but IMHO the API could be made simpler by  removing some of the classes in there.
+","",""
+"issue_comment","361","nilearn","nilearn","AlexandreAbraham","2015-02-26 13:49:10","Cool. @GaelVaroquaux is interested by that too. Do you think that we should open a brainstorming wiki page?
+","",""
+"issue_comment","361","nilearn","nilearn","eickenberg","2015-02-26 14:04:19","+1 -- the GLM in nipy is good, except that it has too many classes and
+afaik it depends on statsmodels, which is unnecessary. Constructing a
+better, intuitive architecture around it will be the main issue, and it may
+not be so easy, so +1 for brainstorming
+
+On Thu, Feb 26, 2015 at 2:49 PM, Alexandre Abraham <notifications@github.com
+
+> wrote:
+> 
+> Cool. @GaelVaroquaux https://github.com/GaelVaroquaux is interested by
+> that too. Do you think that we should open a brainstorming wiki page?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/361#issuecomment-76180361.
+","",""
+"issue_comment","361","nilearn","nilearn","mrahim","2015-01-27 23:07:25","## What do you use in nilearn?
+
+Mainly image manipulation, masking, and plotting.
+
+## What problems?
+
+A cosmetic issue when plotting positive values only, by using `plot_stat_map` on which are displayed symmetric values. I use `plot_img` as an alternative at this time.
+
+## Future?
+
+GLM, of course !
+
+## Comments on nilearn in general
+
+A great added value to nilearn is the easy way to accomodate with the functionalities through the well written examples, even for non-advanced Python programmers. Focus should be kept on it.
+","",""

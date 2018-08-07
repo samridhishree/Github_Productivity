@@ -1,0 +1,63 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","357","nilearn","nilearn","bcipolli","2015-01-20 01:41:51","This is obviously known (see, for example, https://github.com/nilearn/nilearn/commit/e0f77613240be008a131da1a4a2908a6ea26713c), but not currently reflected in the `README.md` file (currently says: `Python >= 2.6`).  I suggest changing the documentation until this is fixed.
+
+Here are the issues I've found so far; I figured it's useful to document, and I'm willing to start migrating code (and getting Travis to run tests for 2.6 and 3.4), if that's cool.
+
+Python 2.6:
+- Using string.format() with ""{}"" (`nilearn/version.py`, `nilearn/plotting/plot_glass_brain.py`)
+- Using dictionary comprehensions (`nilearn/plotting/plot_glass_brain.py`)
+- Using `try... except Exception, e` syntax
+- Use of `nose` `assert_x` functions that are 2.7+ (see https://docs.python.org/2/library/unittest.html)
+- `assert_raises` and `zipfile.ZipFile` are not context managers until 2.7+
+
+Python 3+:
+- Using `print ""string""` (vs. `print (""string"")`)
+- Using `urllib` / `urllib2` (in dataset download logic & tests)
+- Usage of `basestring` class (`nilearn/decomposition/multi_pca.py`)
+- Improper absolute imports of nilearn packages used (`nilearn/decomposition/__init__.py`, `nilearn/_utils/niimg_conversions.py`)
+- No `func_name` property available (`nilearn/_utils/cache_mixin.py`)
+- Use of `xrange`
+- Use of old-style octal literals (`0444` vs. `0o444`)
+","start issue","Nilearn not compatible with Python 3+ (compatibility with  Python 2.6 fixed)"
+"issue_closed","357","nilearn","nilearn","lesteve","2015-03-06 10:05:46","","closed issue","Nilearn not compatible with Python 3+ (compatibility with  Python 2.6 fixed)"
+"issue_comment","357","nilearn","nilearn","ogrisel","2015-03-06 13:11:23","\o/
+","",""
+"issue_comment","357","nilearn","nilearn","GaelVaroquaux","2015-01-20 06:30:34","Hey,
+
+I hadn't realized that we didn't work under Python 2.6.
+
+I agree that, as we are start to want more users, we should worry about
+compatibility with, first 2.6, and then 3.3 and 3.4.
+
+Here is the way that I suggest tackling this issue (thanks Ben for
+stepping up): first (for Python 2.6), port the ideas in scikit-learn's
+.travis.yml to have the tests running under 2.6, then get it running;
+submit a PR. Once the PR is in, do the same for Python 3.0.
+","",""
+"issue_comment","357","nilearn","nilearn","bcipolli","2015-01-20 06:37:58",":+1: Sounds great, and am very close to having exactly that done :)
+
+@GaelVaroquaux One question: `scikit-learn`'s `.travis.yml` file doesn't deal with `NEURODEBIAN`.  Can you let me know how you'd like to include testing `NEURODEBIAN`?  Perhaps just on Python 2.7?  Not too familiar with it, so no idea what might make sense.
+","",""
+"issue_comment","357","nilearn","nilearn","lesteve","2015-01-20 08:23:15","I reckon testing with NEURODEBIAN=1 only for Python 2.7 would be fine. 
+
+I am not sure you can use NEURODEBIAN=1 to work with python2.6. According to [this](http://docs.travis-ci.com/user/ci-environment/#CI-environment-OS), Travis boxes Linux distribution is based on Ubuntu 12.04 and Python 2.6 has been dropped from 12.04 according to this [link](https://wiki.ubuntu.com/Python). Just saying I am not sure how Travis python version interacts with apt-get install python-numpy for example.
+
+Maybe you have done that already but there is a way to set-up Travis so that it builds every time you are pushing into one of your branch, which is quite useful. Pandas developers page mentions this Travis [page](http://docs.travis-ci.com/user/getting-started/).
+","",""
+"issue_comment","357","nilearn","nilearn","lesteve","2015-01-20 08:35:43","Before I forget while you are touching .travis.yml, it'd be great to have the neurodebian specific stuff only executed when NEURODEBIAN=1. Right now getting the Neurodebian GPG key fails from time to time (sudo apt-key adv --recv-keys --keyserver pgp.mit.edu 2649A5A9) and we are doing it whether we are using the Neurodebian repo or not.
+","",""
+"issue_comment","357","nilearn","nilearn","lesteve","2015-01-20 08:38:55","Also Python3 compatibility would definitely be great. @ogrisel mentioned [futurize](http://python-future.org/futurize.html) last time we chatted about it.
+","",""
+"issue_comment","357","nilearn","nilearn","lesteve","2015-03-06 10:05:46","closed via #476 
+","",""
+"issue_comment","357","nilearn","nilearn","eickenberg","2015-03-06 13:12:20","Now Olivier can do neuroimaging!
+
+On Fri, Mar 6, 2015 at 2:11 PM, Olivier Grisel notifications@github.com
+wrote:
+
+> \o/
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/357#issuecomment-77556194.
+","",""

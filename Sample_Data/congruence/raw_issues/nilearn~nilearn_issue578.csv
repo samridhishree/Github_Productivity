@@ -1,0 +1,124 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","578","nilearn","nilearn","agramfort","2015-05-09 20:02:54","closes #577
+","start issue","[MRG] FIX : plot_stat_map with MGZ anat"
+"issue_closed","578","nilearn","nilearn","GaelVaroquaux","2015-05-11 09:24:43","","closed issue","[MRG] FIX : plot_stat_map with MGZ anat"
+"pull_request_title","578","nilearn","nilearn","agramfort","2015-05-09 20:02:54","closes #577
+","a64736c47b67bf97f60ce9f9b2af4be74fe69836","[MRG] FIX : plot_stat_map with MGZ anat"
+"pull_request_merged","578","nilearn","nilearn","GaelVaroquaux","2015-05-11 09:24:43","[MRG] FIX : plot_stat_map with MGZ anat","a2c80516a011eeae152a8914cb7bd25595b60c99","Pull request merge from agramfort/nilearn:fix_mgh_stat_map to nilearn/nilearn:master"
+"issue_comment","578","nilearn","nilearn","agramfort","2015-05-09 20:03:52","not sure how to add a test for this... just test new_img_like with an MGZ image? is it worth adding an mgz image to the repo for this?
+","",""
+"issue_comment","578","nilearn","nilearn","agramfort","2015-05-10 08:34:16","let's see if travis is happy...
+","",""
+"issue_comment","578","nilearn","nilearn","agramfort","2015-05-10 11:32:46","travis is happy
+","",""
+"issue_comment","578","nilearn","nilearn","agramfort","2015-05-10 16:14:10","ping @GaelVaroquaux 
+","",""
+"issue_comment","578","nilearn","nilearn","agramfort","2015-05-11 07:52:47","this avoids adding a file to the repo. Do you want to take over my PR?
+","",""
+"issue_comment","578","nilearn","nilearn","agramfort","2015-05-11 08:12:33","fine with me
+
+@GaelVaroquaux any objection?
+","",""
+"issue_comment","578","nilearn","nilearn","agramfort","2015-05-11 09:36:28","thanks !
+","",""
+"issue_comment","578","nilearn","nilearn","GaelVaroquaux","2015-05-09 21:29:46","It's worth adding a small mgz to the repo to test this. Just make it small.
+","",""
+"issue_comment","578","nilearn","nilearn","larsoner","2015-05-09 22:43:10","Travis complains on the `NIBABEL_VERSION=""1.1.0""` run:
+
+```
+line 83, in new_img_like
+    if isinstance(ref_img, nibabel.freesurfer.mghformat.MGHImage):
+AttributeError: 'module' object has no attribute 'freesurfer'
+```
+
+So I guess you'll have to also modify for old `nibabel`.
+","",""
+"issue_comment","578","nilearn","nilearn","AlexandreAbraham","2015-05-11 07:50:29","For the record, here is a small code to test accepted types in nibabel:
+
+``` python
+import nibabel
+import numpy as np
+
+
+def _nibabel_image_types():
+    for i in nibabel.__dict__:
+        if i.endswith('Image'):
+            yield nibabel.__dict__[i]
+
+
+types_to_test = [
+        np.int8,
+        np.uint8,
+        np.bool,
+        np.float64,
+]
+
+for image in _nibabel_image_types():
+    supp = []
+    unsupp = []
+    for t in types_to_test:
+        try:
+            image(np.zeros((10, 10, 10), dtype=t), np.eye(4))
+            supp.append(t)
+        except:
+            unsupp.append(t)
+    print('Type', image)
+    print('\tSupported:', supp)
+    print('\tUnsupported:', unsupp)
+```
+
+And here are the results:
+
+```
+Type <class 'nibabel.nifti1.Nifti1Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'bool'>]
+Type <class 'nibabel.minc2.Minc2Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'bool'>, <class 'numpy.float64'>]
+        Unsupported: []
+Type <class 'nibabel.spm99analyze.Spm99AnalyzeImage'>
+        Supported: [<class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>]
+Type <class 'nibabel.spm2analyze.Spm2AnalyzeImage'>
+        Supported: [<class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>]
+Type <class 'nibabel.freesurfer.mghformat.MGHImage'>
+        Supported: [<class 'numpy.uint8'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>, <class 'numpy.float64'>]
+Type <class 'nibabel.minc1.MincImage'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'bool'>, <class 'numpy.float64'>]
+        Unsupported: []
+Type <class 'nibabel.minc1.Minc1Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'bool'>, <class 'numpy.float64'>]
+        Unsupported: []
+Type <class 'nibabel.analyze.AnalyzeImage'>
+        Supported: [<class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'numpy.int8'>, <class 'bool'>]
+Type <class 'nibabel.nifti2.Nifti2Image'>
+        Supported: [<class 'numpy.int8'>, <class 'numpy.uint8'>, <class 'numpy.float64'>]
+        Unsupported: [<class 'bool'>]
+```
+
+So, 2 remarks:
+- we should extend the condition to Spm*AnalyzeImage because they don't support int8 either
+- when we use internal masks (90% of usecases if masks) we could rely on MincImage format since it supports bool. This would be easier than passing the data and affine separately in all the functions.
+","",""
+"issue_comment","578","nilearn","nilearn","AlexandreAbraham","2015-05-11 08:00:26","No, I think that your PR should be merged to solve your problem. Supporting all other image types is a bigger task and would take more time. I just wanted to raise this since you're talking about image types.
+
+:+1: for merge and creating an issue about other image types.
+","",""
+"issue_comment","578","nilearn","nilearn","GaelVaroquaux","2015-05-11 09:24:38","Thank you. Merging
+","",""
+"pull_request_commit_comment","578","nilearn","nilearn","GaelVaroquaux","2015-05-11 08:53:49","Please don't rename nibabel. It's not worth saving those 4 letters.
+","a64736c47b67bf97f60ce9f9b2af4be74fe69836","(None, '', u'nilearn/tests/test_niimg.py')"
+"pull_request_commit_comment","578","nilearn","nilearn","agramfort","2015-05-11 08:57:47","done
+","a64736c47b67bf97f60ce9f9b2af4be74fe69836","(None, '', u'nilearn/tests/test_niimg.py')"
+"pull_request_commit_comment","578","nilearn","nilearn","GaelVaroquaux","2015-05-11 08:59:08","Please tell us (in a one-line comment) why this test is useful.
+","a64736c47b67bf97f60ce9f9b2af4be74fe69836","(20, '', u'nilearn/tests/test_niimg.py')"
+"pull_request_commit","578","nilearn","nilearn","agramfort","2015-05-09 20:01:03","FIX : plot_stat_map with MGZ anat","10ec5d6a4324a0546659c29c2e6a1a8673b99580",""
+"pull_request_commit","578","nilearn","nilearn","agramfort","2015-05-10 08:30:38","add test with mgz file","d74d394094a71ac1b61c5c1591116d0d5efa0064",""
+"pull_request_commit","578","nilearn","nilearn","agramfort","2015-05-10 08:33:40","FIX for old nibabel","57fcc8e6c6661dff7b7716189c87547c728b5af5",""
+"pull_request_commit","578","nilearn","nilearn","agramfort","2015-05-10 08:33:49","pep8","e7c70dab275110c1b5f69cc86bf5cbbaf4416537",""
+"pull_request_commit","578","nilearn","nilearn","agramfort","2015-05-10 09:48:56","FIX v2 for old nibabel","076d52fc7421bead1342cfbe5e339519c7cdc342",""
+"pull_request_commit","578","nilearn","nilearn","agramfort","2015-05-11 08:57:04","nib -> nibabel","4e26f6114286a755bec2cbf12036bafe245d393b",""
+"pull_request_commit","578","nilearn","nilearn","agramfort","2015-05-11 09:12:35","doc misc","a64736c47b67bf97f60ce9f9b2af4be74fe69836",""

@@ -1,0 +1,64 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","84","nilearn","nilearn","pgervais","2013-06-25 16:39:31","The current state of logging in NiLearn is not satisfactory. To attempts at organizing something have been attempted so far: LogMixin in nifti_region.py and enclosing_scope_name() in _utils/class_inspect.py, used in BaseMasker. They go in different directions.
+
+The present pull request is an additional attempt to get to something usable. I completely abandoned the idea of a class Mixin, because it couldn't be used in a function. Thus, emitting a user message is performed with a function: log(). I added this function in _utils/logger.py. It can be used from anywhere (function, method, or top-level). 
+
+Typical usage in a method:
+
+```
+ logger.log(""message to the user"", verbose=self.verbose)
+```
+
+The `verbose=self.verbose` is required so far, because the function cannot get access to self.verbose directly. The main advantage is that logger.log() prepends the name of the method that the user has most likely used in her script, whatever the location of the call to log(). More precisely, if the user calls the fit() method on an estimator object, and a call to log(""message"") is performed deeper in the call stack, the user will see in the message something like ""[EstimatorClass.fit] message"". 
+
+This behaviour is achieved in log() by walking up the call stack, finding the topmost object that inherits from BaseEstimator, and reading the class and function names therein. This is much smarter than the stack_level trick used by `enclosing_scope_name`. stack_level is still supported though, but is used as a fallback is no object has been found.
+
+I only adapted `nifti_region.py` to the new system. Launch `plot_adhd_covariance.py` to see it in action.
+
+I would like to have feedback before proceeding.
+","start issue","New logging function"
+"issue_closed","84","nilearn","nilearn","pgervais","2013-09-02 13:19:40","","closed issue","New logging function"
+"pull_request_title","84","nilearn","nilearn","pgervais","2013-06-25 16:39:31","The current state of logging in NiLearn is not satisfactory. To attempts at organizing something have been attempted so far: LogMixin in nifti_region.py and enclosing_scope_name() in _utils/class_inspect.py, used in BaseMasker. They go in different directions.
+
+The present pull request is an additional attempt to get to something usable. I completely abandoned the idea of a class Mixin, because it couldn't be used in a function. Thus, emitting a user message is performed with a function: log(). I added this function in _utils/logger.py. It can be used from anywhere (function, method, or top-level). 
+
+Typical usage in a method:
+
+```
+ logger.log(""message to the user"", verbose=self.verbose)
+```
+
+The `verbose=self.verbose` is required so far, because the function cannot get access to self.verbose directly. The main advantage is that logger.log() prepends the name of the method that the user has most likely used in her script, whatever the location of the call to log(). More precisely, if the user calls the fit() method on an estimator object, and a call to log(""message"") is performed deeper in the call stack, the user will see in the message something like ""[EstimatorClass.fit] message"". 
+
+This behaviour is achieved in log() by walking up the call stack, finding the topmost object that inherits from BaseEstimator, and reading the class and function names therein. This is much smarter than the stack_level trick used by `enclosing_scope_name`. stack_level is still supported though, but is used as a fallback is no object has been found.
+
+I only adapted `nifti_region.py` to the new system. Launch `plot_adhd_covariance.py` to see it in action.
+
+I would like to have feedback before proceeding.
+","21a9ecd7640f92c77dd0bad67ba64e366aefa3ab","New logging function"
+"issue_comment","84","nilearn","nilearn","GaelVaroquaux","2013-08-01 13:10:19","Let's:
+
+a) Put comments in the file on the limitation of this approach
+
+b) Merge this guy and move on
+","",""
+"issue_comment","84","nilearn","nilearn","GaelVaroquaux","2013-08-29 12:19:07","Good apart from my comments.
+","",""
+"issue_comment","84","nilearn","nilearn","pgervais","2013-08-29 11:38:42","I'm going to need this PR very soon. A final review would be appreciated before merging.
+","",""
+"issue_comment","84","nilearn","nilearn","pgervais","2013-08-29 16:20:43","I made a lot of refactoring, corrected a bug. The code is now much clearer indeed.
+
+@GaelVaroquaux when you have a moment, can you tell me if the tests that I added are fine for you?
+","",""
+"issue_comment","84","nilearn","nilearn","pgervais","2013-09-02 13:19:53","Merged by rebasing.
+","",""
+"issue_comment","84","nilearn","nilearn","pgervais","2013-06-27 07:33:54","Sorry for the size of the example, but this is currently the only one in NiLearn that can be used for such a computation (all the others are not coregistered).
+","",""
+"pull_request_commit_comment","84","nilearn","nilearn","GaelVaroquaux","2013-08-01 13:06:55","We don't care about non CPython
+","21a9ecd7640f92c77dd0bad67ba64e366aefa3ab","(None, '', u'nilearn/_utils/logger.py')"
+"pull_request_commit_comment","84","nilearn","nilearn","GaelVaroquaux","2013-08-29 11:49:20","This should be in the ""notes"" section of the docstring, at the end.
+","21a9ecd7640f92c77dd0bad67ba64e366aefa3ab","(None, '', u'nilearn/_utils/logger.py')"
+"pull_request_commit_comment","84","nilearn","nilearn","GaelVaroquaux","2013-08-29 12:04:39","I much prefer string formatting to string algebra (+). It seems to me that you could write the few lines above using string formatting (with an if statement, and maybe a temporary string) and that it would be more readable.
+","21a9ecd7640f92c77dd0bad67ba64e366aefa3ab","(None, '', u'nilearn/_utils/logger.py')"
+"pull_request_commit_comment","84","nilearn","nilearn","GaelVaroquaux","2013-08-29 12:18:21","Shouldn't we capture sys.stdout to do more than smoke testing?
+","21a9ecd7640f92c77dd0bad67ba64e366aefa3ab","(None, '', u'nilearn/tests/test_logger.py')"

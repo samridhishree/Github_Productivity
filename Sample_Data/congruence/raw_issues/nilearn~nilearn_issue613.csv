@@ -1,0 +1,159 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","613","nilearn","nilearn","lesteve","2015-06-17 13:42:23","The idea is to reduce memory usage to be able to tackle data like HCP.
+","start issue","[WIP] IncrementalPCA in CanICA"
+"pull_request_title","613","nilearn","nilearn","lesteve","2015-06-17 13:42:23","The idea is to reduce memory usage to be able to tackle data like HCP.
+","ae5c17940725240e900f689445bc6de4d02d7d34","[WIP] IncrementalPCA in CanICA"
+"issue_comment","613","nilearn","nilearn","lesteve","2015-06-17 13:50:13","IncrementalPCA only exists in scikit-learn 0.16.1. Because of that the only tests we expect to pass at the moment is the python 3.4 ones using the latest versions of scikit-learn.
+
+To do/questions:
+- [ ] Failing tests: for some reason giving twice the same data doesn't produce the same eigenvectors in MultiPCA. Not sure how bad this is. **Edit**: very likely related to https://github.com/nilearn/nilearn/pull/829.
+- [x] Do we want to make this feature available for scikit-learn versions older than 0.16 ? From a quick look at it, it would be slightly painful.
+- [x] How do we want to support this feature, a boolean parameter in CanICA to toggle IncrementalPCA (False by default) ?
+- [x] Caching the result of the svd to mirror the previous behaviour
+","",""
+"issue_comment","613","nilearn","nilearn","lesteve","2015-06-17 14:01:00","Also not sure how to evaluate the quality of the maps.
+
+The following plots were obtained from the example script: examples/connectivity/plot_canica_resting_state.py.
+
+### master
+
+![canica_plots_master](https://cloud.githubusercontent.com/assets/1680079/8208820/e98eb720-1509-11e5-8913-7061a608f97b.png)
+
+### this PR
+
+![canica_plots_mine](https://cloud.githubusercontent.com/assets/1680079/8208836/fcaef874-1509-11e5-9c87-90c32a1af9ce.png)
+","",""
+"issue_comment","613","nilearn","nilearn","lesteve","2015-06-17 14:26:04","Some memory_profiler plots. Data is from @mrahim (221 subjects from ADNI, ~18GB, 40 components):
+
+### master
+
+![canica_master_memory_profile](https://cloud.githubusercontent.com/assets/1680079/8209293/89a79edc-150c-11e5-9c0d-b9e96585ed91.png)
+
+### this PR
+
+![canica_incremental_pca_memory_profile](https://cloud.githubusercontent.com/assets/1680079/8209306/93eda1f2-150c-11e5-9a87-d5b98356eec9.png)
+
+Memory usage decreased from 8GB to 2.5GB.
+Running time increased by a factor 2.
+","",""
+"issue_comment","613","nilearn","nilearn","bthirion","2015-06-17 15:33:44","On 17/06/2015 16:01, Loïc Estève wrote:
+
+> Also not sure how to evaluate the quality of the maps.
+> 
+> It is hard to say anything on quality, but it is useful to quantify how 
+> different the result is between two implementations. For this, I would 
+> use a hungarian algorithm and report the sums of correlations of matched 
+> components.
+","",""
+"issue_comment","613","nilearn","nilearn","GaelVaroquaux","2015-06-17 21:49:31","Great job! The maps look good. No problem with the variability that you observe.
+
+The memory reduction is great! It would be nice to use a profiler to see where the cost comes in terms of time. I suspect that doing a PR to scikit-learn to use randomized_svd in the IncrementalPCA would give you the speed back.
+
+Finally: we won't try to support this for versions of scikit-learn older than 0.16.
+","",""
+"issue_comment","613","nilearn","nilearn","lesteve","2015-06-19 06:17:02","I changed a few things, most notably the fact that there is a `group_incremental_pca` parameter in CanICA to use IncrementalPCA for the group PCA.
+
+As @ogrisel noticed the IncrementalPCA is going to center the data in contrary to randomized_svd, which is what is used in master, so we shouldn't expect matching between the two.
+
+Still haven't figured out why the tests were failing.
+","",""
+"issue_comment","613","nilearn","nilearn","banilo","2015-06-27 07:40:10","> Failing tests: for some reason giving twice the same data doesn't produce the same eigenvectors in MultiPCA. Not sure how bad this is.
+
+Given SVD should return the same result every time, is it not more likely that non-identical eigenvectors from MultiPCA are related to a) multi-processing and/or b) caching mechansims. Perhaps debug by ruling out joblib sources...?
+","",""
+"issue_comment","613","nilearn","nilearn","lesteve","2015-06-29 06:58:53","> Given SVD should return the same result every time, is it not more likely that non-identical eigenvectors from MultiPCA are related to a) multi-processing and/or b) caching mechansims. Perhaps debug by ruling out joblib sources...?
+
+I am afraid there is a misunderstanding here. The failing test is [here](https://github.com/nilearn/nilearn/blob/master/nilearn/decomposition/tests/test_multi_pca.py#L35):
+
+``` python
+components1 = multi_pca.fit(data).components_
+components2 = multi_pca.fit(2 * data).components_
+np.testing.assert_array_almost_equal(components1, components2)
+```
+
+`data` is a list of Nifti images. Twice the same data means `2 * data`. Unfortunately I don't have a good enough understanding of CanICA to know how important this test failure is.
+","",""
+"issue_comment","613","nilearn","nilearn","arthurmensch","2015-07-03 10:51:59","MultiPCA output different results depending on the run because of a lack of `random_state` in `session_pca`, which critically call `randomized_svd` when data is too large. I have a working branch where this issue is solved, I should clean it before proposing it.
+
+See PR #630 
+","",""
+"issue_comment","613","nilearn","nilearn","bthirion","2015-07-03 11:08:37","On 03/07/2015 12:51, Arthur Mensch wrote:
+
+> MultiPCA output different results depending on the run because of a 
+> lack of |random_state| in |session_pca|. I have a working branch where 
+> this issue is solved, I should clean it before proposing it.
+> 
+> —
+> Reply to this email directly or view it on GitHub 
+> https://github.com/nilearn/nilearn/pull/613#issuecomment-118314510.
+> 
+> Would be great indeed.
+","",""
+"issue_comment","613","nilearn","nilearn","AlexandreAbraham","2015-07-03 13:20:00","> MultiPCA output different results depending on the run because of a lack of random_state in session_pca, which critically call randomized_svd when data is too large. I have a working branch where this issue is solved, I should clean it before proposing it.
+
+I think that the problem is that the results are stable when using `randomized_pca` and not stable when using incremental PCA.
+","",""
+"issue_comment","613","nilearn","nilearn","lesteve","2016-04-26 07:56:40","I rescucitated this PR after the changes that went in related to the DictionaryLearning. Here are the updated maps coming from `examples/03_connectivity/plot_canica_resting_state.py`:
+
+#### Master
+
+![canica_components_master](https://cloud.githubusercontent.com/assets/1680079/14810739/b699d3ea-0b94-11e6-8714-155e8ec05f17.png)
+
+#### This PR with incremental_group_pca=True
+
+![canica_components_pr_incremental_group_pca](https://cloud.githubusercontent.com/assets/1680079/14810743/bca01ace-0b94-11e6-8240-edefc0b24475.png)
+
+There is still the same test failing as previously, not sure what to do about it.
+","",""
+"issue_comment","613","nilearn","nilearn","lesteve","2016-05-23 08:59:30","There is also this comment: https://github.com/nilearn/nilearn/pull/613#discussion_r61042980. Not sure whether we care how we split the data into batches to call partial_fit on.
+","",""
+"issue_comment","613","nilearn","nilearn","bthirion","2016-05-22 14:57:28","I don't see any blocker for merging that one.
+","",""
+"issue_comment","613","nilearn","nilearn","AlexandreAbraham","2016-05-23 08:11:06","> I don't see any blocker for merging that one.
+
+This one is still not merged because of weird instabilities when using Incremental PCA compared to regular or randomized PCA. If you say this is OK, we can lower the requirements to make the test pass and ignore these results.
+","",""
+"pull_request_commit_comment","613","nilearn","nilearn","banilo","2015-06-24 14:07:28","How about a simple warning instead of an exception in IncrementalPCA should not be available?
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","arthurmensch","2015-07-03 10:57:12","Is this the canonical way of hiding cached functions ? This is not what is used in other parts of nilearn. It looks clean though
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","arthurmensch","2015-07-03 11:18:57","I think we should work out a way to lazy load subject pcas : On HCP we typically use 100 components PCA on 1650 records, which approximately reduce the whole data set (1,5TB) of a factor 10 (1200 samples per records originaly) : `subject_pcas` will be around 150GB, which is too much for a laptop.
+
+The idea would be to mini-batch subjects pcas so as to benefit from parallelization : we should partial fit on batches of `subject_pcas` of size around `n_jobs`. This would require to put Parallel call into `session_pca`, and transform this function into a generator.
+
+Theoretically, we should then keep in memory `batch_size * single_subject_pca_size * 2`, which should be under 2GB even on HCP.
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","lesteve","2015-07-03 12:42:51","Another approach which is probably easier to implement (proposed by @GaelVaroquaux): use joblib.cache_and_shelve to reduce the memory usage.
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","AlexandreAbraham","2015-07-03 12:56:11","> This would require to put Parallel call into session_pca, and transform this function into a generator.
+
+This code already exists and is part of a PR that will be proposed after #585 is merged. I may be able to extract this particular part if you want.
+
+> use joblib.cache_and_shelve to reduce the memory usage.
+
+Not a good idea because of the IO overhead.
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","AlexandreAbraham","2015-07-03 13:01:32","This is the proper way if you are in function. Here, this code could be optimized by inheriting CacheMixin and using self._cache.
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","GaelVaroquaux","2015-07-03 13:25:25","> I think we should work out a way on lazy loading subject pcas : On HCP we
+> typically use 100 components for 1650 records, which approximately reduce the
+> whole data set of a factor 10 (1200 samples per records) : subject_pcas will be
+> around 150GB, which is too much for a laptop.
+
+The right thing to do is probably to use joblib shelving:
+https://pythonhosted.org/joblib/memory.html#shelving-using-references-to-cached-values
+
+Talk to @AlexandreAbraham: he has been using this in his related code.
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","GaelVaroquaux","2015-07-03 13:26:45","> ```
+> use joblib.cache_and_shelve to reduce the memory usage.
+> ```
+> 
+> Not a good idea because of the IO overhead.
+
+Should be optional, with an auto parameter that turns it on if the list
+of subjects is very big (eg more than 50).
+","ae5c17940725240e900f689445bc6de4d02d7d34","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","613","nilearn","nilearn","lesteve","2016-04-26 08:01:53","This is a bit hacky because now subject_pcas come in a single array instead of a list of per-subject PCA and the concatenation happens a bit deep in the BaseDecomposition code. I did that with the old code in mind but maybe I don't actually need to bother doing it ...
+","ae5c17940725240e900f689445bc6de4d02d7d34","(99, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit","613","nilearn","nilearn","lesteve","2016-04-25 14:37:52","wip","ae5c17940725240e900f689445bc6de4d02d7d34",""

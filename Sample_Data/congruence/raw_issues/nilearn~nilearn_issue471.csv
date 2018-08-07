@@ -1,0 +1,104 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","471","nilearn","nilearn","bcipolli","2015-03-01 05:36:02","Y'all know `numpy` better than I do, but I have seen deprecation warnings in the past that make me worry about the following issue.  I thought I'd post an issue to review things, because I've seen the warnings before and because the consequence can be not so good.
+
+In-place operations (`-=`, `+=`, `*=`, `/=`, maybe others?) have weird type-casting in numpy.  Specifically `[int array] -= [float]` implicitly type-casts the float to int (and emits a warnings).  This usually gives unexpected results, llke:
+
+``` python
+>>> abc = np.array([1,2,4])
+>>> abc -= abc.mean()
+>>> abc
+array([-1,  0,  1])
+```
+
+Even though
+
+``` python
+>>> abc - abc.mean()
+array([-1.33333333, -0.33333333,  1.66666667])
+```
+
+The warning emitted is as follows, and should not be ignored:
+`DeprecationWarning: Implicitly casting between incompatible kinds. In a future numpy release, this will raise an error. Use casting=""unsafe"" if this is intentional.`
+
+There are a number of places in the code where these operators are used, often like this:
+
+``` python
+            signals -= signals.mean(axis=0)
+```
+
+or
+
+``` python
+        data[slices] *= 1.e-3
+```
+
+If `signals` or `data` could be of type `int`, these will do different things than expected.  And again--I've seen these deprecation warnings before (but can't consistently reproduce them), so I'm unsure if this is a concern or not.
+
+Can someone confirm that this is not an issue?  I just want to make sure...
+","start issue","Do in-place operations always operate on floats?"
+"issue_comment","471","nilearn","nilearn","eickenberg","2015-03-01 07:58:35","given that nifti files in sufficiently raw state are usually of integer
+type, but more processed ones are often of type float, i see a potential
+for weird/""inexplicable"" behavior cropping up from time to time. it will
+become a tangible issue as soon as one of these phenomena causes a
+discrepancy that is on the order of magnitude of the signal, and i don't
+see why that shouldn't happen.
+
+probably a very good idea to keep a close eye on these warnings.
+
+On Sunday, March 1, 2015, Ben Cipollini notifications@github.com wrote:
+
+> Y'all know numpy better than I do, but I have seen deprecation warnings
+> in the past that make me worry about the following issue. I thought I'd
+> post an issue to review things, because I've seen the warnings before and
+> because the consequence can be not so good.
+> 
+> In-place operations (-=, +=, *=, /=, maybe others?) have weird
+> type-casting in numpy. Specifically [int array] -= [float] implicitly
+> type-casts the float to int (and emits a warnings). This usually gives
+> unexpected results, llke:
+> 
+> > > > abc = np.array([1,2,4])>>> abc -= abc.mean()>>> abc
+> > > > array([-1,  0,  1])
+> 
+> Even though
+> 
+> > > > abc - abc.mean()
+> > > > array([-1.33333333, -0.33333333,  1.66666667])
+> 
+> The warning emitted is as follows, and should not be ignored:
+> DeprecationWarning: Implicitly casting between incompatible kinds. In a
+> future numpy release, this will raise an error. Use casting=""unsafe"" if
+> this is intentional.
+> 
+> There are a number of places in the code where these operators are used,
+> often like this:
+> 
+> ```
+>         signals -= signals.mean(axis=0)
+> ```
+> 
+> or
+> 
+> ```
+>     data[slices] *= 1.e-3
+> ```
+> 
+> If signals or data could be of type int, these will do different things
+> than expected. And again--I've seen these deprecation warnings before (but
+> can't consistently reproduce them), so I'm unsure if this is a concern or
+> not.
+> 
+> Can someone confirm that this is not an issue? I just want to make sure...
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/471.
+","",""
+"issue_comment","471","nilearn","nilearn","bcipolli","2015-03-27 00:17:19","My (somewhat naive) recommendation would be to add a datatype assert anywhere there's this kind of in-place operation.  There are only a few. They should be efficient, would potentially save some headaches, and would not be lost as an ignored error (i.e. if this is hit in tests, it's likely to be ignored).
+","",""
+"issue_comment","471","nilearn","nilearn","GaelVaroquaux","2015-03-27 06:59:50","Indeed, these are a potential source of bug.
+
+In many places, the inplace operation is made to save memory, and we could have coded a non inplace operation. In these places, I wouldn't do an assert, which would raise errors when the user just wants to move forward. I would rather test if the data of float type, and convert if necessary, and for this I would use sklearn.utils.validation.as_float_array which will make sure to not cast to float64 when not necessary.
+
+In other places, maybe, the inplace is explicit: we are modifying an array that was given by the user, and the user is expecting it to be modified (typically when copy=False is given). In such places, I think we should raise an error.
+","",""

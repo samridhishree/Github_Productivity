@@ -1,0 +1,121 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","797","nilearn","nilearn","TheChymera","2015-10-19 09:52:29","I am looking for some python solutions to plot neuroimaging data from mice and rats.
+
+I was pleased (and surprised) to see that nilearn offers some apparently quite nice plotting functions (at least for human data). I am wondering:
+- Why does it make sense to package these plotting functions together with functions better described by ni_learn_? Would it not be more intuitive (and perhaps make the plotting function modules more readily recognisable as such)  to package them as ""niplot"" or something of the sort?
+- Is there any (more-or-less) easy way to plot some rodent data with the functions currently offered by nilearn?
+","start issue","Small Rodent Neuroimaging plots in Python"
+"issue_closed","797","nilearn","nilearn","mrahim","2017-03-03 16:53:07","","closed issue","Small Rodent Neuroimaging plots in Python"
+"issue_comment","797","nilearn","nilearn","eickenberg","2015-10-19 11:55:28","> what about the glass brain? Is drawing a set of contours myself the best
+> way to go about it? any advice on how to do that?
+
+Glass Brain was made by hand. Take a look at
+
+nilearn/nilearn/plotting/glass_brain_files/*.svg
+
+You will see that there are three vector drawings. If you can create these
+for the main gyri/sulci of the mouse brain, you can have a mouse glass
+brain.
+
+So it depends on how much effort you want to put into it.
+
+Michael
+
+On Mon, Oct 19, 2015 at 1:49 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> The glass brain is going to be specific to realigned humain brain.
+> 
+> Sorry, there is no ways outlines can be automatized.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/797#issuecomment-149192237.
+","",""
+"issue_comment","797","nilearn","nilearn","eickenberg","2015-10-19 12:23:54","On Mon, Oct 19, 2015 at 2:20 PM, Horea Christian notifications@github.com
+wrote:
+
+> So if I want a rodent glass brain, ""all"" I have to do is take one outer
+> and one inner structural slice for each axis, import it into inkscape, draw
+> some contours on top of it, delete the imported bitmap objects, and save
+> teh documents? Is there anything I am missing about this which would make
+> it particularly non-trivial?
+> 
+> Yes, you choose a slice of your normalized rodent brain (if this exists)
+> and use inkscape to draw the contours of relevance. For your purposes you
+> may just replace the human glass brain with yours. Otherwise the code needs
+> to be changed to allow different options.
+> 
+> What would the advantage of a PNG over a SVG be here? why would aligning
+> to a PNG be more difficult than aligning to a SVG?
+> 
+> I don't see a difference. It would just be to support more background
+> images. There is no realignment: The image is considered to be in MNI space
+> for human brains. It is then resampled if necessary to the right resolution
+> and plotted.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/797#issuecomment-149198662.
+","",""
+"issue_comment","797","nilearn","nilearn","AlexandreAbraham","2015-10-19 09:58:07","> Would it not be more intuitive (and perhaps make the plotting function modules more readily recognisable as such) to package them as ""niplot"" or something of the sort?
+
+This has been discussed and the code is not mature enough to be separated from the core.
+
+> Is there any (more-or-less) easy way to plot some rodent data with the functions currently offered by nilearn?
+
+You can customize the background image used for regular plotting functions. For `plot_glass_brain`, the background template can be customized but it is not trivial for the moment.
+
+What do you need exactly ?
+","",""
+"issue_comment","797","nilearn","nilearn","TheChymera","2015-10-19 10:13:11","Something like this would be really nice:
+
+![mouse_fMRI](https://cloud.githubusercontent.com/assets/950524/10575113/abbf6ee6-765a-11e5-8c42-63c338b6c70a.jpg)
+","",""
+"issue_comment","797","nilearn","nilearn","GaelVaroquaux","2015-10-19 11:31:52","If you have a mouse anatomy and statistical maps as nifti files, you can use plot_stats_maps to do what you want.
+","",""
+"issue_comment","797","nilearn","nilearn","TheChymera","2015-10-19 11:47:32","what about the glass brain? Is drawing a set of contours myself the best way to go about it? any advice on how to do that?
+","",""
+"issue_comment","797","nilearn","nilearn","GaelVaroquaux","2015-10-19 11:49:18","The glass brain is going to be specific to realigned humain brain.
+
+Sorry, there is no ways outlines can be automatized.
+","",""
+"issue_comment","797","nilearn","nilearn","AlexandreAbraham","2015-10-19 12:03:59","I have met people that would like to substitute the SVG file by freesurfer images. Maybe we should allow that.
+","",""
+"issue_comment","797","nilearn","nilearn","GaelVaroquaux","2015-10-19 12:05:54","> I have met people that would like to substitute the SVG file by freesurfer
+> images. Maybe we should allow that.
+
+With what king of input format?
+","",""
+"issue_comment","797","nilearn","nilearn","AlexandreAbraham","2015-10-19 12:13:21","Replacing it with a PNG should be fairly easy. The user just has to be sure that the image is aligned with the original SVG (which is difficult in the case of a rodent... I agree).
+","",""
+"issue_comment","797","nilearn","nilearn","TheChymera","2015-10-19 12:14:39","I am here partly because I want to get away from freesurfer - which almost all modern plotting functionalities seem to depend on. For what it's worth I would recommend against depending on it, freesurfer itself depends on very outdated versions of minc, and upstream is very non-responsive - even by scientific software standards...
+","",""
+"issue_comment","797","nilearn","nilearn","GaelVaroquaux","2015-10-19 12:16:54","In theory, I would be +1 for input of background as a PNG.
+
+However, I worry a lot about people not realigning their backgrounds
+well, and publishing plots that are incorrect.
+
+Also, I am afraid that this feature is going to generate a lot of user
+support problems (my brain is not well aligned, please help).
+
+I am a bit unsure whether it is wise to open this pandora box.
+","",""
+"issue_comment","797","nilearn","nilearn","AlexandreAbraham","2015-10-19 12:19:24","> However, I worry a lot about people not realigning their backgrounds well, and publishing plots that are incorrect. 
+
+This is already the case with the current background: we have no guarantee that the data provided is aligned with it.
+
+Maybe we can give a choice at least between the SVG and a 3D image?
+","",""
+"issue_comment","797","nilearn","nilearn","TheChymera","2015-10-19 12:20:26","So if I want a rodent glass brain, ""all"" I have to do is take one outer and one inner structural  slice for each axis, import it into inkscape, draw some contours on top of it, delete the imported bitmap objects, and save the documents? Is there anything I am missing about this which would make it particularly non-trivial?
+
+What would the advantage of a PNG over a SVG be here? why would aligning to a PNG be more difficult than aligning to a SVG?
+","",""
+"issue_comment","797","nilearn","nilearn","GaelVaroquaux","2015-10-19 12:26:35","> Maybe we can give a choice at least between the SVG and a 3D image?
+
+Maybe just a 3D mask image and we compute the online of it (easy, just
+compute the max along the direction and do a contour in matplotlib?
+
+This would be open for contributions, but I don't see my team investing
+in it in the short term, though, given how overcommitted we are.
+","",""

@@ -1,0 +1,48 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1003","nilearn","nilearn","GaelVaroquaux","2016-02-23 12:40:38","I've heard rumors that anaconda on CircleCI could speed up very much run of the examples. We should give it a try. MNE-Python is trying too, maybe we can draw inspiration from there work:
+https://github.com/mne-tools/mne-python/pull/2849/files
+
+It would be interesting to see a before/after account of execution time.
+
+This would be a first step in solving https://github.com/nilearn/nilearn/issues/1000
+","start issue","Use anaconda on CircleCI"
+"issue_closed","1003","nilearn","nilearn","AlexandreAbraham","2016-03-02 09:59:22","","closed issue","Use anaconda on CircleCI"
+"issue_comment","1003","nilearn","nilearn","lesteve","2016-02-25 15:34:24","At one point I toyed with the idea of using continuous_integration/install.sh on CircleCI i.e. use the same install script on both CIs. In case this is of any use:
+
+https://github.com/lesteve/nilearn/tree/use-install-sh-on-circleci
+
+I don't remember why I stopped though, probably it wasn't working perfectly ...
+","",""
+"issue_comment","1003","nilearn","nilearn","lesteve","2016-02-26 17:29:07","> They don't set a matplotlib version. I can try this.
+
+Actually do we want to make sure the examples run with the minimum matplotlib advertised version, namely 1.1.1? Off the top of my head 1.1.1 is the version in Ubuntu 12.04 so you shouldn't have the problems you mentioned.
+
+Side-comment: the conda env should have libpng installed so the problem you are describing is a bit surprising. Having said that from time to time conda does miss some dependency (like the libgfortran case that we saw for numpy some time ago) so it could well be the case here as well.
+","",""
+"issue_comment","1003","nilearn","nilearn","lesteve","2016-02-26 17:42:45","> In fact, the circle ci setup file uses matplotlib 1.3.1 but I can change this (probably later).
+
+It does in your branch. I am guessing you (or I in my original experimental branch) took it from one of the distrib in .travis.yml. Basically 1.3.1 is completely arbitrary. 
+
+All I was trying to say:
+- using 1.1.1 would make sense to test that all the examples run with the minimal matplotlib version advertised in README.md
+- potentially fix the problem you were reporting with the libpng incompatibilities.
+","",""
+"issue_comment","1003","nilearn","nilearn","lesteve","2016-02-29 10:15:17","Have you tried this?
+
+> using 1.1.1 would make sense to test that all the examples run with the minimal matplotlib version advertised in README.md
+","",""
+"issue_comment","1003","nilearn","nilearn","lesteve","2016-02-29 10:37:33","Same reason, meaning this?
+
+> The 1.1.1 version is used with python 2.6 in the travis build matrix and it's not compatible with the version of numpy we use with python 2.7 here : 1.8.2.
+
+You can find a numpy version compatible with matplotlib 1.1.1 inside conda. Just play locally with conda and you'll find one. I tried a few days ago and I am pretty sure numpy 1.6 worked.
+
+Also, before doing that and now that it works, have you looked whether the running time of the examples has decreased, since that the prime motivation of this issue.
+","",""
+"issue_comment","1003","nilearn","nilearn","lesteve","2016-02-29 11:33:50","> At least the setup step is faster: less than 2 minutes whereas it takes more than 10 minutes when using pip.
+
+As far as I remember that was the reason why I looked originally into using conda on CircleCI but then I realised that there were some virtualenv caching on CircleCI. I seem to remember sometimes the pip install step is super quick and it says ""dependencies already satisfied"". This is probably why I dropped the whole thing.
+","",""
+"issue_comment","1003","nilearn","nilearn","lesteve","2016-02-29 11:57:40","For the record virtualenv caching is using CircleCI cache (i.e. the same thing we are using for datasets):
+https://circleci.com/docs/how-cache-works
+","",""

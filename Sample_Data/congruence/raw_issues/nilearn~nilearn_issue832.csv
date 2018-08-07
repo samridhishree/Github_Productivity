@@ -1,0 +1,388 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","832","nilearn","nilearn","bcipolli","2015-11-06 23:00:16","This is an enhancement for #640. Not quite done, but far enough along to talk about the API I've implemented.
+
+To do:
+- [x] Implement an API for downloading selected images from http://neurovault.org/
+- [x] Create dataset documentation
+- [x] Create a basic example for downloading a subset of files.
+- [x] Create a more complex ICA-based example.
+- [x] Create tests
+- [x] Remove dependency on `requests` - use `urllib`
+- [x] Read from disk when offline.
+- [ ] Detect outdated cached collection or image metadata or data.
+
+Neurovault contains images in collections. Collections can be filtered via a few querystring arguments. Images to download and return should be limited by filters on collection and image metadata.
+
+To do this, I've included `collection_filters` and `image_filters` arguments.
+- If `isinstance(collection_filters, dict)`, the filters are used as querystring argument filters.
+- If `isinstance(*_filters, collections.Iterable)` (i.e. a list), the filters are assumed to be functions that receive a collection or image metadata, and returns `True` if the collection's images should be queried, or if the image should be downloaded.
+
+The function returns a `Bunch` of three:
+- `collections`: a dict (key: collection_id) of collection metadata for matched collections.
+- `images`: a list of image metadata (including local file paths) for matched & downloaded images.
+- `func_files`: a list of paths to downloaded files. Could be removed, but I kept it as many other functions return a list of paths to images.
+
+The example I've begun with is a `stop-go` task meta-analysis, ported from:
+https://github.com/NeuroVault/neurovault_analysis/blob/master/Stop%20vs.%20Go%20metaanalysis.ipynb
+
+Note that I avoided trying to convert things to a `pandas` dataframe. The previous examples downloaded all images and filtered using `pandas`; however, all `nilearn` dataset fetchers filter before returning to the user. It was simple enough to allow lambda functions as filters to make very powerful pre-fetch filtering available to the user, so I went that route.
+
+Looking for feedback on the overall API design to start. @chrisfilo and anyone else around! 
+","start issue","Add a NeuroVault fetcher"
+"issue_closed","832","nilearn","nilearn","AlexandreAbraham","2016-07-20 13:51:48","","closed issue","Add a NeuroVault fetcher"
+"pull_request_title","832","nilearn","nilearn","bcipolli","2015-11-06 23:00:16","This is an enhancement for #640. Not quite done, but far enough along to talk about the API I've implemented.
+
+To do:
+- [x] Implement an API for downloading selected images from http://neurovault.org/
+- [x] Create dataset documentation
+- [x] Create a basic example for downloading a subset of files.
+- [x] Create a more complex ICA-based example.
+- [x] Create tests
+- [x] Remove dependency on `requests` - use `urllib`
+- [x] Read from disk when offline.
+- [ ] Detect outdated cached collection or image metadata or data.
+
+Neurovault contains images in collections. Collections can be filtered via a few querystring arguments. Images to download and return should be limited by filters on collection and image metadata.
+
+To do this, I've included `collection_filters` and `image_filters` arguments.
+- If `isinstance(collection_filters, dict)`, the filters are used as querystring argument filters.
+- If `isinstance(*_filters, collections.Iterable)` (i.e. a list), the filters are assumed to be functions that receive a collection or image metadata, and returns `True` if the collection's images should be queried, or if the image should be downloaded.
+
+The function returns a `Bunch` of three:
+- `collections`: a dict (key: collection_id) of collection metadata for matched collections.
+- `images`: a list of image metadata (including local file paths) for matched & downloaded images.
+- `func_files`: a list of paths to downloaded files. Could be removed, but I kept it as many other functions return a list of paths to images.
+
+The example I've begun with is a `stop-go` task meta-analysis, ported from:
+https://github.com/NeuroVault/neurovault_analysis/blob/master/Stop%20vs.%20Go%20metaanalysis.ipynb
+
+Note that I avoided trying to convert things to a `pandas` dataframe. The previous examples downloaded all images and filtered using `pandas`; however, all `nilearn` dataset fetchers filter before returning to the user. It was simple enough to allow lambda functions as filters to make very powerful pre-fetch filtering available to the user, so I went that route.
+
+Looking for feedback on the overall API design to start. @chrisfilo and anyone else around! 
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","Add a NeuroVault fetcher"
+"issue_comment","832","nilearn","nilearn","AlexandreAbraham","2015-11-08 08:38:33","> Not quite done, but far enough along to talk about the API I've implemented.
+
+I think that the macanism of filters is too complicated for most of our users. We can keep it for advanced users but at some point we should provide simpler pre-made filters. For example, I think that a user should be able to specify the id of a collection or a list of ids (I know that it's possible through collection_filter). But we'll see that later.
+
+> The example I've begun with is a stop-go task meta-analysis
+
+Reproducing an example provided by neurovault is indeed the way to go.
+
+> Note that I avoided trying to convert things to a pandas dataframe. 
+
+So far, we have avoided this dependency but we may have to include it at some point. Is there a real benefit to use pandas here?
+
+The PR so far looks like really good work to me ;).
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-08 14:14:23","> We should maybe use a flag to work online / offline.
+
+Regardless of online or offline, there is an updating problem. When online, the code assumes that a cached copy of a particular collection or image metadata, or image data is correct / up-to-date. I have the `refresh` flag for controlling that behavior. A more automated mechanism is possible.
+
+Separate from that, the code needs to work in offline mode; currently it does not. I have added that to the WIP item list.
+
+> I think that the macanism of filters is too complicated for most of our users. We can keep it for advanced users but at some point we should provide simpler pre-made filters. For example, I think that a user should be able to specify the id of a collection or a list of ids (I know that it's possible through collection_filter). But we'll see that later.
+
+Right; glad to add more simple filters. It's very easy to map from the simple filters to the more complex ones. The complex filters were needed to mirror the logic of the example I ported, but I could also change it to use specific collections and images (and tell users they were determined by searches on the website).
+
+> So far, we have avoided this dependency but we may have to include it at some point. Is there a real benefit to use pandas here?
+
+In the previous examples, the benefit was using Pandas' filtering mechanisms, which tend to lead to simpler code. But I just don't see it as an option here, unless we limit users to very simple filters (which I think would be a shame).
+
+> The PR so far looks like really good work to me ;).
+
+:D
+","",""
+"issue_comment","832","nilearn","nilearn","chrisfilo","2015-11-10 03:11:42","Looks good to me so far! Let me know if you have any questions about the API (we can make improvements!)
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-10 17:02:36","Thanks @chrisfilo! One thing that might help is if the API endpoint could return headers indicating the response size; `nilearn` doesn't like not getting a `Content-Length` header, I believe.
+
+To reduce the number of requests made, it could also be helpful to be able to get image metadata for a specified set of collection IDs, rather than one at a time.
+","",""
+"issue_comment","832","nilearn","nilearn","chrisfilo","2015-11-10 17:04:52","On Tue, Nov 10, 2015 at 9:02 AM, Ben Cipollini notifications@github.com
+wrote:
+
+> Thanks @chrisfilo https://github.com/chrisfilo! One thing that might
+> help is if the API endpoint could return headers indicating the response
+> size; nilearn doesn't like not getting a Content-Length header, I believe.
+> 
+> That's for a single file download or part of JSON?
+> 
+> To reduce the number of requests made, it could also be helpful to be able
+> to get image metadata for a specified set of collection IDs, rather than
+> one at a time.
+> 
+> Hmm - we can work on adding this.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/832#issuecomment-155487633.
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-10 17:05:00","@AlexandreAbraham in order to remove the `requests` dependency, I needed to make changes to `_fetch_files` (#838 and #839; add overwrite option, modify output). Not sure this is a net positive; the code was simpler all around when using `requests`. Glad to get feedback!
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-10 17:06:32","> That's for a single file download or part of JSON?
+
+JSON. Downloading actual images works perfectly.
+","",""
+"issue_comment","832","nilearn","nilearn","AlexandreAbraham","2015-11-10 21:52:55","> nilearn doesn't like not getting a Content-Length header, I believe.
+
+This case should be handled properly.
+
+> the code was simpler all around when using requests
+
+I am not against adding requests as a dependency but you should ask to the big boss :P.
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-16 04:27:00","@chrisfilo Another issue I'm having with the NeuroVault API is that collection ID returned seems unordered. This means that, when I'm offline, I can't order collections as I get them when I'm online. This causes problems.
+
+Is it possible to get collection IDs returned in order?
+
+Here's what I see for collection IDs:
+
+```
+Downloading data from http://neurovault.org/api/collections  ...
+ [10, 862, 38, 55, 72, 75, 81, 82, 84, 554, 14, 71, 816, 723, 440, 556, 35, 67, 17, 66, 471, 92, 751, 4, 923, 496, 70, 921, 79, 93, 863, 89, 609, 542, 497, 784, 57, 109, 102, 114, 117, 119, 610, 103, 465, 612, 118, 115, 443, 494, 215, 882, 787, 795, 790, 105, 140, 796, 800, 794, 804, 865, 506, 495, 33, 308, 473, 500, 927, 510, 907, 809, 588, 625, 508, 190, 631, 572, 812, 573, 628, 231, 574, 295, 298, 292, 276, 294, 305, 408, 285, 287, 885, 319, 821, 356, 409, 323, 324, 329]
+
+Downloading data from http://neurovault.org/api/collections/?offset=100 ...
+[586, 331, 320, 340, 367, 335, 336, 886, 585, 337, 344, 360, 365, 376, 377, 929, 379, 814, 46, 391, 555, 822, 559, 576, 931, 887, 581, 486, 589, 594, 297, 597, 592, 598, 932, 934, 591, 903, 942, 601, 599, 596, 562, 448, 825, 889, 43, 398, 912, 551, 933, 563, 59, 187, 179, 94, 552, 451, 460, 826, 890, 648, 913, 203, 7, 418, 419, 550, 307, 650, 646, 461, 34, 640, 227, 641, 639, 915, 684, 553, 687, 655, 545, 681, 683, 315, 686, 893, 3, 527, 434, 526, 806, 515, 697, 700, 708, 709, 831, 519]
+```
+","",""
+"issue_comment","832","nilearn","nilearn","chrisfilo","2015-11-16 04:41:29","Hmm. I can add this, but it will slow down the API (not sure how much). Why
+is the order necessary?
+
+On Sun, Nov 15, 2015 at 8:27 PM, Ben Cipollini notifications@github.com
+wrote:
+
+> @chrisfilo https://github.com/chrisfilo Another issue I'm having with
+> the NeuroVault API is that collection ID returned seems unordered. This
+> means that, when I'm offline, I can't order collections as I get them when
+> I'm online. This causes problems.
+> 
+> Is it possible to get collection IDs returned in order?
+> 
+> Here's what I see for collection IDs:
+> 
+> Downloading data from http://neurovault.org/api/collections  ...
+>  [10, 862, 38, 55, 72, 75, 81, 82, 84, 554, 14, 71, 816, 723, 440, 556, 35, 67, 17, 66, 471, 92, 751, 4, 923, 496, 70, 921, 79, 93, 863, 89, 609, 542, 497, 784, 57, 109, 102, 114, 117, 119, 610, 103, 465, 612, 118, 115, 443, 494, 215, 882, 787, 795, 790, 105, 140, 796, 800, 794, 804, 865, 506, 495, 33, 308, 473, 500, 927, 510, 907, 809, 588, 625, 508, 190, 631, 572, 812, 573, 628, 231, 574, 295, 298, 292, 276, 294, 305, 408, 285, 287, 885, 319, 821, 356, 409, 323, 324, 329]
+> 
+> Downloading data from http://neurovault.org/api/collections/?offset=100 ...
+> [586, 331, 320, 340, 367, 335, 336, 886, 585, 337, 344, 360, 365, 376, 377, 929, 379, 814, 46, 391, 555, 822, 559, 576, 931, 887, 581, 486, 589, 594, 297, 597, 592, 598, 932, 934, 591, 903, 942, 601, 599, 596, 562, 448, 825, 889, 43, 398, 912, 551, 933, 563, 59, 187, 179, 94, 552, 451, 460, 826, 890, 648, 913, 203, 7, 418, 419, 550, 307, 650, 646, 461, 34, 640, 227, 641, 639, 915, 684, 553, 687, 655, 545, 681, 683, 315, 686, 893, 3, 527, 434, 526, 806, 515, 697, 700, 708, 709, 831, 519]
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/832#issuecomment-156911793.
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-16 04:44:47","I have a parameter to limit the number of images returned. If I iterate through collections differently online and offline, the image set will be different between the two.
+","",""
+"issue_comment","832","nilearn","nilearn","lesteve","2015-11-24 12:15:37","It looks like this needs a rebase on master.
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-24 12:20:44","Yep, a different version of the print/output changes were contained here. Just rebased to use the updated version of that code--thanks for merging!
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-30 21:33:39","Rebased to master.
+","",""
+"issue_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:12:21","Hey, @bcipolli , sorry for taking so long to look at this.
+
+My main comment is that the examples are a bit scary. The fact that we come up with such examples suggests that we don't fully have the right abstractions. This is probably mostly unrelated with this PR (and something like https://github.com/nilearn/nilearn/issues/847 might help). However, the current examples are going against the will of nilearn to reassure users that things are simple and will be alright.
+","",""
+"issue_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:36:10","I must now go to bed, and I won't be able to work on this before tomorrow afternoon. I have made many small comments on the example. I don't know if they make any sense. I was trying to figure out ways of simplifying it.
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-11-30 22:46:00","Thanks @GaelVaroquaux ! It will be great to simplify the example and make good use of the `nilearn` tools. I've obviously been out of the `nilearn` loop too long, so my chops have diminished. Looking forward to beefing them up over the next couple of days.
+
+Thanks for the detailed comments, and looking forward to getting pretty--and simple--examples done. :+1: 
+
+P.S. @AlexandreAbraham congrats ;)
+","",""
+"issue_comment","832","nilearn","nilearn","bcipolli","2015-12-23 15:09:01","@GaelVaroquaux I've updated the `plot_ica_neurovault` example to use more of the `nilearn` architecture, simplify the interface, and to push useful code into the fetcher function (useful filters, getting neurosynth terms). The example looks shorter and simpler to me now.
+
+There are a few changes to core nilearn code that do need comments (including one small new one, to avoid a warning I was getting). I could pull those out and submit those separately, if it helps.
+","",""
+"issue_comment","832","nilearn","nilearn","lesteve","2015-11-16 10:08:22","> I am not sure why tests are failing. 
+
+The Travis one fails for the Python 2.6 distrib. I am guessing the .header property doesn't exist for nibabel 1.1.0. You will need to stick with get_header instead.
+","",""
+"pull_request_commit_comment","832","nilearn","nilearn","AlexandreAbraham","2015-11-08 08:30:28","Why don't you use the file fetching functions of datasets here? I guess that we will have a problem of update with neurovault: a given request may return different results if the neurovault base has been updated. We should maybe use a flag to work online / offline.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2015-11-08 14:08:06","Yep, should definitely try to migrate this. If it requires tweaks to the fetching functions, will submit those as a separate PR.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-16 05:58:34","nitpick, but I think that I would rather avoid having calls to 'show' in the middle.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-16 06:39:09","I find that it is generally better to move these function outside of the enclosing scope, so that they can tested, debugged, and maybe one day reused more easily.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2015-11-17 21:27:54","`force` is not used if you may have missed it.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2015-11-17 21:28:44","May be it is not necessary since you have already explained above ?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2015-11-17 21:29:47","May be cutshorting ""="".
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2015-11-17 21:31:25","May be its not necessary `# print(......`
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2015-11-17 21:33:39","Taking into account reviews on my PR's, I think `src_nii` should be denoted as `src_img` same to `target_nii`.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2015-11-17 21:34:05","typo ""make""
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2015-11-17 21:40:57","""thresholded""
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/description/neurovault.rst')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:01:28","The notebook-style examples have been merged.
+
+Once rebased on master (which I think you have just done), and you turn all these '-' into '#', you should get pretty notebook-like rendering in the docs:
+https://circle-artifacts.com/gh/nilearn/nilearn/757/artifacts/0/home/ubuntu/nilearn/doc/_build/html/auto_examples/connectivity/plot_adhd_spheres.html
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:06:44","I think that I would prefer this as a default in the function signature.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:07:33","Could we have this as a default empty tuple (not list) in the function signature? To make things more explicit.
+
+The good thing about a tuple is that it is not mutable.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:07:44","Same remark about the tuple.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:09:38","@AlexandreAbraham : can you comment on this change. This is code that you wrote originally, and you probably have a good feeling of where it is useful.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(50, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:13:04","We don't need to cache this, do we?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:17:07","I have a hunch that this function could be simplified using nilearn.image.iter_img. 
+
+I am not sure quite how at a quick glance, but when I look at the function from a big picture, I have this feeling.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:19:02","This could probably use new_img_like?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:20:30","I believe that all the above (including the 'squeeze') should be possible to implement with iter_img. If it's not the case, we have gotten something wrong in the design of iter_img, and we need to fix that.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:21:18","If we remove this file saving from the example, I am not sure that we loose a lot of functionality, and we do remove a lot of lines. What do you think?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:23:45","Maybe we should special-case this filter in the fetch_neurovault function, if you think that it is very useful (it does seem so).
+
+What do you think?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:27:45","I think that if you used here 'check_niimg(..., ensure_ndim=3) you could pass in paths (which would simplify other parts of the example), and you would not need to squeeze.
+
+It would indeed mean that you are importing from a private module, _'utils', which feels wrong, but we can expose a public path for this function if it is useful.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:29:22","Start comment (content of the comment below, sorry, I don't see a better way of doing this)
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:31:42","End comment:
+
+I think that all the lines between the start of the comment, and the end of the comment (and the line getting rid of nans that was before) could be put in a public function companion of _extrapolate_out_mask. Maybe 'extropolate_thresholded_img'. It feels like a function that would be of general use.
+
+What do you think?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:33:42","I think that this is a fairly universal brain mask that is obtained by thresholding the SPM tissue probability maps. We should either put it in the nilearn datasets, or (better) have downloaders for the SPM TPMs. @AlexandreAbraham : what do you think?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2015-11-30 22:34:34","I am wondering: maybe we can do the resampling using the NiftiMasker's resampling functionality? If that's possible, it would simplify the example.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2015-12-07 22:24:44","Actually, it's expected that `collection_filters` is mutable, as some default arguments get converted into `collection_filters`. Which means, if someone passes in a tuple, things will break.
+
+I would prefer say `collection_filters = list(collection_filters)` to begin... is there a better way to handle this?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2015-12-07 22:29:06","Agreed, good idea. With `mem.cache`, there's really no reason to additionally re-save the images, and most of the complexity of the function is in the save.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2015-12-07 22:49:37","Perhaps a `exclude_known_bad_images` flag that adds all of the filters above your comment. (edited to change the parameter name)
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2015-12-07 22:54:26","One downside of `iter_img` is that it fails on a 3D image, rather than giving me an iterator for the one image. So I'll have to load the image and check if it's 4D before calling `iter_img`... that seems clunky to me.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2015-12-07 23:04:20","Looks like `itertools.chain()` is the preferred method. I will convert these to tuples, in this case.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2015-12-07 23:32:08","Oh, that's perfect--this makes memory caching easy too.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(None, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:32:30","Could you change these separators to use seperators like in the other examples of nilearn (one line of ""#"" and then the text below). That way sphinx-gallery knows how to split the example in a notebook-like example.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(15, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:35:00","Using the ' or """" ', are you trying to use the pattern '.get(key, default)' ?
+
+I would prefer to rely on that, because it is a standard Python pattern.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(17, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:36:21","Maybe it's also tell us that im (which is defined in the neurovault downloader) should be a defaultdict, with a default value of """".
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(17, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:36:48","Scrap that. It would probably make debugging hard.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(17, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:39:50","I'd rather not add this to all the downloaders. It's going to lead to subtle bugs in what people are doing. I'd rather have the download just crash if there is no internet.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(44, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2016-01-13 17:41:06","Just for some quick feedback: this is the JSON dict from neurovault. It can return blank or `None`, or sometimes the value isn't present at all. The idiom above is how I typically handle such cases.
+
+To simplify the example, I could try to normalize things inside the `fetch` function. Because I'm not sure what to expect from Neurovault (no documentation to that level) and after talking with @chrisfilo about the differences in metadata provided from different data sources, returning the raw JSON from `fetch` and letting users handle what they see, seemed like the safest thing.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(17, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:42:37","I think that ""bad_collects"" and 'bad_image_ids"" should be module-level constants under the name ""BAD_NEUROVAULT_COLLECTIONS and ""BAD_NEUROVAULT_IMAGE_IDS""
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(940, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:44:11","OK. I don't know what to conclude. I just find that the downloader is a
+bit difficult to use because of these pecularities.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(17, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2016-01-13 17:47:31","The choices are: try to normalize, and risk that we'll get things wrong, be agnostic and let the data be peculiar to work with, or convince @chrisfilo to normalize things more easily across the board. I have a couple of issues open on it: https://github.com/NeuroVault/NeuroVault/issues/395 https://github.com/NeuroVault/NeuroVault/issues/396
+
+I'm glad to go in whatever direction. I chose the direction that seemed seemed most flexible to me.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(17, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:48:58","> The choices are: try to normalize, and risk that we'll get things
+> wrong, be agnostic and let the data be peculiar to work with, or
+> convince @chrisfilo to normalize things more easily across the board. I
+> have a couple of issues open on it: NeuroVault/NeuroVault#395
+> NeuroVault/NeuroVault#396
+
+The best option would be convincing @chrisfilo.
+
+Please, pretty please with a cherry on top, @chrisfilo.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(17, '', u'examples/manipulating_visualizing/plot_neurovault_meta_analysis.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:52:47","I am not sure how this is tied to your PR. Can you comment on where it is used?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(27, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","bcipolli","2016-01-13 17:58:03","Indeed, I no longer use `iter_img` in `plot_ica_neurovault.py` after previous changes, so this is no longer needed. Will pull this and close the PR.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(27, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:58:20","We need a canonical brain mask added to nilearn. (issue created: #945)
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(69, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 17:59:42","In terms of variable name, I'd prefer 'transformable'. It's unclear to a non native English speaker what this means.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(80, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 18:00:42","Maybe for the sake of simplicity you could merge clean_img and cast_img.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(45, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 18:01:41","We prefer to use nilearn.plotting.show, because we are trying not to have to teach matplotlib to users if we don't have to.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(121, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 18:02:06","Is there a reason that you are not using the 'title' argument of plot_stat_map.
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(118, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-13 18:02:23","The control of the size, maybe?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(118, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","GaelVaroquaux","2016-01-25 13:11:46","Maybe we should use the sphinx syntax "":func:`nilearn.datasets.neurovault`""
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(8, '', u'doc/whats_new.rst')"
+"pull_request_commit_comment","832","nilearn","nilearn","jeromedockes","2016-05-13 15:14:38","constructing arrays like this from dict.keys() and dict.values() doesn't seem to work for me in python 3, because these functions don't return lists anymore but dict_keys and dict_values objects. Maybe we should turn them into lists first, or access them in another way?
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(58, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","jeromedockes","2016-06-08 15:26:38","passing a dictionary as image_filters or collections_filters will not work because it is always used as if it were a tuple of callables (the other possibility for filtering) anyway. 
+e.g.
+`fetch_neurovault(max_images=10, collection_filters={'DOI': '10.1016/j.neurobiolaging.2012.11.002'})`
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(943, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","832","nilearn","nilearn","KamalakerDadi","2016-06-10 07:57:41","FYI: mask is now available in nilearn, `datasets.load_mni152_brain_mask()`
+","67c3cc7321e033e44a73c20abcefaf5d0adc64a6","(69, '', u'examples/connectivity/plot_ica_neurovault.py')"
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-06 21:15:37","ENH: First pass on neurovault downloader.","52b55786239cdaabadf946871e8dcb04daa374c2",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-06 22:07:24","ENH: Add stop-go example; ported from https://github.com/NeuroVault/neurovault_analysis/blob/master/Stop%20vs.%20Go%20metaanalysis.ipynb","5cf80a5c902235eace32f4770d662279eb7758b1",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-06 22:23:16","DOC: adding and tweaking documentation.","bd68e68d1792151f9b530983d8a79828dedf2093",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-06 22:34:20","STY: code cleanup","e0848fe8c5d41982ea00aeac46d262699aff457b",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-06 22:41:53","BF: implement refresh=True","cedab35773946dca378ec1c4e9640102aaa1ff70",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-07 18:17:42","STY: images_meta => images; image_meta => im","86b2db7acf46c15249e423b67572fd807e1e7c3a",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 11:49:02","ENH: Get this working offline (still using requests).","e759a3a90ed24cbeab2c72076d079ab669e7e60d",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 14:26:32","RF: Use _fetch_files instead of requests.","cdb1bf3ba4aa431a5328181862fa61485a0123d3",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 15:14:22","DOC: remove info for printing errors that are then re-raised.","2f6f0f48ee307f39467757c2342216b67f260fdc",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 18:00:08","BF: refresh=>overwrite, don't allow offline if overwrite=True","f41b014c3a1169edd6e56424241973398fc8b360",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 18:00:21","BF: Use passed verbose value.","b3076266920e8ff6e34bb7f22cde0fe7b0ab3de2",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 18:00:40","BF: Return all matched collections, even if the collection has no matched images.","490a51fc14335bc954cff91aa42e7274bc04263b",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 18:01:02","TST: add neurovault tests (skip if offline)","15e11cc6ad50d72dc2cc76b5b304291f94854528",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 18:14:46","TST: if setup mock, tear it down","5b23e2e2ec48dd9b6c57a1b1ccfa41c178e9e5ff",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-16 06:22:05","RF: sort collections directories.","febc1b4c83f0adf76d20e55758b6d49c0d8bfc2b",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-16 15:19:42","ENH: Add port of ICA example.","f0065ff784e0ccaabc23ee2d6f1dcdeafbb32f4e",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-16 23:04:01","RF: Add joblib caching to entire process.","a6b675b40ca859164012088f70bbc920c4b3d6bd",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 00:42:57","RF: Move functions out of neurovault fetcher.","462b45b26fa565e19536868b07fd4d7e4f348abe",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 01:54:56","BF: Use newer neurosynth API","4905b08684aadfb50dd166c602e4a62d0fbbd6e5",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 11:55:54","BF: Clean code, make Py3 fixes.","aa69c96abae8f584bfcf4d19c3d25d0a64c5f38d",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 12:06:12","DOC: add docstrings to private neurovault functions.","13fb4580dafc07e10c72fbb670381766aa55c270",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 12:43:48","RF: don't show() until end of example.","7c939cacccdfdf08519fe4c23c318272f2209b52",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 12:54:12","BF: neurovault json is utf8 encoded.","6a3988e752759ed5c522831c4cbbb47a0951383c",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 12:57:06","BF: remove seaborn","d790e752d7a711c4e3e1126b370c693e404388bb",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 13:45:44","ENH: Add exclude_unpublished, collection_ids, image_types parameters & tests.","f1edb62059362327120f1b6b84ac220141b247eb",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 14:11:57","ENH: image_types=>map_types, add image_type, add image_ids, allow collection_ids and image_ids to be negative (exclusion)","70ef5c7ba45f7fa2d4f34ad1ffb47d9087978028",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 14:16:08","Fix logic for +/- filtering of IDs.","8e12e4c46c19ed9ba32fdeace61b7a946adc2fdb",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-18 23:11:21","STY: fixing up code for code review.","f38596d51c49c9324da0461ba8a731fac278910e",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-07 23:58:50","STY: delimit sections in notebook-style.","1a6c8a1af1f8e0816b6aa33d29d7a0e3da06ca02",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-07 23:59:33","RF: use resample_img, iter_img to simplify resampling code.","d28555582d1618cbefb2012354a13a6d3d6500b2",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-08 00:01:29","ENH: create exclude_known_bad_images parameter to fetch_neurovault.","190cbd7f4050c661e34251b35573917ab7f9b8a0",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-08 00:02:06","ENH: Extend iter_img to return iterator on 3D image (rather than failing).","b65dbf0300eadb3dd27fe6bea509a4160cca63f4",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-10 16:34:52","RF: Neurovault ICA example shortening.","99519cf7ea772d73991c4e7b2e61ab1f3b947e38",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-11 16:38:35","RF: move neurosynth decoding to an option within fetch_neurovault.","475ddd2970d373da23141aa83883c627b065f140",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-11 16:39:43","BF: avoid unnecessary warnings.","ca2469d03c4cfd978eff470a388f7305e160ef2e",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-23 20:10:31","BF: fix test failures.","7e7106a3338f01084de08ac5f3d53282d53b2e57",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-24 01:44:26","ENH: add _http to compat, for httplib/http Py2/3 difference.","c1f960502322488b1fc8315a2a486d7bb17105a1",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-27 18:23:42","ENH: add query_server, to avoid querying neurovault every time.","fdadebd36246fa924c5f5c270c226adc88820791",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2015-12-27 18:37:30","BF: handle None from neurosynth.","960ad146499e009378caefa1979d1921a57fd0e2",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2016-01-04 15:41:46","ENH: extend query_server for neurovault.","c6665a5a694416d389d6efb7e1abb28327430306",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2016-01-04 15:51:10","ENH: add query_server argument to all func fetchers.","bbea238c185e33e40ea4289c516e5d7d2c38450d",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2016-01-04 15:51:35","STY: pep8/pyflakes on datasets/func.py","983ae1d2b0b9f8eb4d83d270a06f38c5a9389a22",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2016-01-04 15:52:08","ENH: add query_server argument to _fetch_file*","1c5e096cddb1a78b91b4b7628f32f8fd2195c44e",""
+"pull_request_commit","832","nilearn","nilearn","bcipolli@ucsd.edu","2016-01-04 15:52:19","STY: pyflakes on neurovault example.","67c3cc7321e033e44a73c20abcefaf5d0adc64a6",""

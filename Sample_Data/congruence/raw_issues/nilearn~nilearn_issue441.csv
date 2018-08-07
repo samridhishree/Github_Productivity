@@ -1,0 +1,702 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","441","nilearn","nilearn","lesteve","2015-02-18 15:00:30","Remaining todos:
+- [x] sparse matrix support (haven't even tried yet)
+- [x] add connectome to plot_adhd_covariance.py
+- [x] more sanity checks on adjacency_matrix and nodes_coords
+
+How it looks:
+![connectome_plotting_1](https://cloud.githubusercontent.com/assets/1680079/6249380/2192bae4-b787-11e4-875e-4f37110e7a93.png)
+![connectome_plotting_2](https://cloud.githubusercontent.com/assets/1680079/6249387/27f64b9e-b787-11e4-908c-7ad1d1cbd1e0.png)
+
+A snippet to produce the connectome plots inside a ipython session:
+
+``` python
+import numpy as np
+
+from nilearn import image, plotting
+
+# Need to run the plot_adhd_covariance.py example
+%run examples/connectivity/plot_adhd_covariance.py
+
+imgs = list(image.iter_img(msdl_atlas_dataset.maps))
+coords = np.array([
+    map(np.asscalar, plotting.find_xyz_cut_coords(img)) for img in imgs])
+
+cov = gsc.covariances_[..., plotted_subject]
+
+from nilearn import plotting
+np.random.seed(42)
+node_colors = np.random.rand(39, 3)
+display = plotting.plot_connectome(cov, coords,
+                                   edges_threshold=0.38,
+                                   title='threshold=0.38',
+                                   nodes_kwargs={
+                                       's': 50, 'c': node_colors})
+
+display = plotting.plot_connectome(cov, coords,
+                                   edges_threshold='70%',
+                                   title='threshold=70%',
+                                   nodes_kwargs={
+                                       's': 50, 'c': node_colors})
+
+
+```
+
+Comments more than welcome while I go through the remaining todos.
+","start issue","[MRG] Connectome plotting"
+"issue_closed","441","nilearn","nilearn","lesteve","2015-02-26 08:05:52","","closed issue","[MRG] Connectome plotting"
+"pull_request_title","441","nilearn","nilearn","lesteve","2015-02-18 15:00:30","Remaining todos:
+- [x] sparse matrix support (haven't even tried yet)
+- [x] add connectome to plot_adhd_covariance.py
+- [x] more sanity checks on adjacency_matrix and nodes_coords
+
+How it looks:
+![connectome_plotting_1](https://cloud.githubusercontent.com/assets/1680079/6249380/2192bae4-b787-11e4-875e-4f37110e7a93.png)
+![connectome_plotting_2](https://cloud.githubusercontent.com/assets/1680079/6249387/27f64b9e-b787-11e4-908c-7ad1d1cbd1e0.png)
+
+A snippet to produce the connectome plots inside a ipython session:
+
+``` python
+import numpy as np
+
+from nilearn import image, plotting
+
+# Need to run the plot_adhd_covariance.py example
+%run examples/connectivity/plot_adhd_covariance.py
+
+imgs = list(image.iter_img(msdl_atlas_dataset.maps))
+coords = np.array([
+    map(np.asscalar, plotting.find_xyz_cut_coords(img)) for img in imgs])
+
+cov = gsc.covariances_[..., plotted_subject]
+
+from nilearn import plotting
+np.random.seed(42)
+node_colors = np.random.rand(39, 3)
+display = plotting.plot_connectome(cov, coords,
+                                   edges_threshold=0.38,
+                                   title='threshold=0.38',
+                                   nodes_kwargs={
+                                       's': 50, 'c': node_colors})
+
+display = plotting.plot_connectome(cov, coords,
+                                   edges_threshold='70%',
+                                   title='threshold=70%',
+                                   nodes_kwargs={
+                                       's': 50, 'c': node_colors})
+
+
+```
+
+Comments more than welcome while I go through the remaining todos.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","[MRG] Connectome plotting"
+"pull_request_merged","441","nilearn","nilearn","lesteve","2015-02-26 08:05:52","[MRG] Connectome plotting","e623a341c44c80eaa675b8849e13a580e3bc0df8","Pull request merge from lesteve/nilearn:connectome-plotting to nilearn/nilearn:master"
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-20 08:01:33","> node_kwargs / edge_kwargs is not a great API: it forces the user to 1) know the accepted kwargs for each of these, 2) build a dictionary. I would prefer if we could have specific arguments of the plot_connectome for the common cases, such as indeed, node color (argument could be ""node_color""), node size (argument could be ""node_size"").
+
+OK I just wanted to make sure that all the plt.scatter/plt.plot functionalities were available. We can have the main useful arguments as parameters of the function like node_color and node_size and still keep node_kwargs and edge_kwargs for the additional ones.
+","",""
+"issue_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-20 08:54:13","> is there an option / easy way to get a colorbar added to the plot?
+
+#379.
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-20 13:27:44","> > is there an option / easy way to get a colorbar added to the plot?
+> 
+> #379.
+
+although related that's not exactly the same thing. Having said that the patch in #379 may just work for this use case because the threshod is 0. In any case I propose to tackle the colorbar once this first iteration on the connectome plotting is merged.
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-20 16:17:53","+1 for merging this before tackling color bar 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 20, 2015, 14:27, at 14:27, ""Loïc Estève"" notifications@github.com wrote:
+
+> > > is there an option / easy way to get a colorbar added to the plot?
+> > 
+> > #379.
+> 
+> although related that's not exactly the same thing. Having said that
+> the patch in #379 may just work for this use case because the threshod
+> is 0. In any case I propose to tackle the colorbar once this first
+> iteration on the connectome plotting is merged.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/441#issuecomment-75237427
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-20 17:21:54","OK I tackled most of the comments I think. Something I still want to do is
+- [x] Have a nicer default so that the random colors code currently in plot_adhd_covariance.py is not necessary.
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-20 17:29:51","> OK I tackled most of the comments I think. Something I still want to do is
+> 
+>   • [ ] Have a nicer default so that the random colors code currently in
+>     plot_adhd_covariance.py is not necessary.
+
+What's wrong with just grey? Other option is that by default you put the
+z coordinate as a node color. But I think that this will just confuse
+users, and I suggest that by default there is a grey color.
+
+For the example, you can make it prettier by plotting the index of the
+node in the default ordering of the atlas.
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-20 17:46:42","> What's wrong with just grey?
+
+Admittedly I have very little idea how people look at these plots but I assumed that at the very least you want to be able to identify a given node across the three views in which case having a slightly separate color for each node seems like a good idea.
+
+If I understand your index suggestion correctly I think that is close to what I have in mind.
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-20 19:19:12","> Admittedly I have very little idea how people look at these plots but I
+> assumed that at the very least you want to be able to identify a given
+> node across the three views in which case having a slightly separate
+> color for each node seems like a good idea.
+
+That's not the way I usually work with these: the location in the brain
+tells me enough. But I see your point.
+
+> If I understand your index suggestion correctly I think that is close
+> to what I have in mind.
+
+Combined with some form of colorbar for nodes that links a color to a
+name, it would be great. However, let's leave that for a second PR.
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:03:58","Is there a reason that this is still a WIP? Could this become an MRG?
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-24 09:50:48","I think I tackled all the comments. Here is how the connectome plots look in plot_adhd_covariance.py:
+
+![group_sparse_covariance_connectome](https://cloud.githubusercontent.com/assets/1680079/6346731/b9a535a2-bc12-11e4-8b25-87bd13904aa2.png)
+
+![graph_lasso_connectome](https://cloud.githubusercontent.com/assets/1680079/6346737/bd559494-bc12-11e4-9838-8935261cdbee.png)
+
+I still have to:
+- [x] fix the documentation rst now that the plot_adhd_covariance plots have changed
+- [x] possibly add plot_connectome example to the plotting documentation
+- [x] some inconsistency between nodes_ and node_ and the same with edges_ and edge_ to fix
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 13:21:12","> I think I tackled all the comments. Here is how the connectome plots look in plot_adhd_covariance.py:
+
+It looks just beautiful. I think that I want it added on the first page.
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-24 13:53:28","> It looks just beautiful. I think that I want it added on the first page.
+
+Any preference between GroupSparseCovariance and GraphLasso? Also other parameters could be tweaked if needed.
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 14:46:05","> Any preference between GroupSparseCovariance and GraphLasso? Also other
+> parameters could be tweaked if needed.
+
+GraphLasso, and a threshold much higher (in terms of percentile)
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:39:57","I have no other comments than the one I have just made on the code. This is almost ready to merge! Bravo
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-25 08:18:50","> GraphLasso, and a threshold much higher (in terms of percentile)
+
+How does this one look (edge_threshold=95%)
+![graph_lasso_connectome_95percent](https://cloud.githubusercontent.com/assets/1680079/6367093/f33e1650-bcce-11e4-948c-bf1169f83376.png)
+
+For comparison this one is with edge_threshold=90%
+![graph_lasso_connectome_90percent](https://cloud.githubusercontent.com/assets/1680079/6367100/fb89bc74-bcce-11e4-859a-46f2ac827718.png)
+
+> I think that I want it added on the first page.
+> Should it replace the glass brain as the first carousel item on the website front page?
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-25 08:29:27","The percentile 90 looks great! 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 25, 2015, 09:18, at 09:18, ""Loïc Estève"" notifications@github.com wrote:
+
+> > GraphLasso, and a threshold much higher (in terms of percentile)
+> 
+> How does this one look (edge_threshold=95%)
+> ![graph_lasso_connectome_95percent](https://cloud.githubusercontent.com/assets/1680079/6367093/f33e1650-bcce-11e4-948c-bf1169f83376.png)
+> 
+> For comparison this one is with edge_threshold=90%
+> ![graph_lasso_connectome_90percent](https://cloud.githubusercontent.com/assets/1680079/6367100/fb89bc74-bcce-11e4-859a-46f2ac827718.png)
+> 
+> > I think that I want it added on the first page.
+> > Should it replace the glass brain as the first carousel item on the
+> > website front page?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/441#issuecomment-75921817
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-25 13:43:23","OK, tackled all the comments I think
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-25 13:50:28","If the docstrings render well, +1 for merge.
+","",""
+"issue_comment","441","nilearn","nilearn","banilo","2015-02-26 08:07:38",":beers: 
+","",""
+"issue_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-26 08:16:34","Yey! ! ! 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 26, 2015, 09:07, at 09:07, Danilo Bzdok notifications@github.com wrote:
+
+> :beers: 
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/441#issuecomment-76137473
+","",""
+"issue_comment","441","nilearn","nilearn","amadeuskanaan","2015-03-03 14:15:37","FYI.. connectome plotter fails if the matrix has nan's ... 
+returns ''ValueError: 'adjacency_matrix' should be symmetric''
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-03-03 14:26:37","Good point, thanks for reporting, would you mind opening a new issue about this problem?
+
+FWIW you can work around the problem by either using np.nan_to_num or using a masked array to mask out the NaNs.
+","",""
+"issue_comment","441","nilearn","nilearn","amadeuskanaan","2015-03-03 14:33:27","done.. and yes. works with 0's.
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-19 22:13:25","FYI I disabled coveralls automatic comments on PRs.
+","",""
+"issue_comment","441","nilearn","nilearn","lesteve","2015-02-20 07:44:31","> @lesteve : is there an option / easy way to get a colorbar added to the plot?
+
+Not at the moment I am afraid. It may be doable but I am not sure it should be part of this PR.
+","",""
+"issue_comment","441","nilearn","nilearn","coveralls","2015-02-18 15:14:52","[![Coverage Status](https://coveralls.io/builds/1949190/badge)](https://coveralls.io/builds/1949190)
+
+Coverage decreased (-0.08%) to 91.74% when pulling **d1d2d0d9549610e80ecdea9a64ca5685180586c8 on lesteve:connectome-plotting** into **5e1621db5baecee634883b45ffa7f53a96df6332 on nilearn:master**.
+","",""
+"issue_comment","441","nilearn","nilearn","coveralls","2015-02-19 13:05:28","[![Coverage Status](https://coveralls.io/builds/1955858/badge)](https://coveralls.io/builds/1955858)
+
+Coverage remained the same at 91.81% when pulling **ec1ec74ece96ab684e6b8fdd16055694e6c5d48d on lesteve:connectome-plotting** into **4ecf57695e3166f1157aa62220b25a0d00128200 on nilearn:master**.
+","",""
+"issue_comment","441","nilearn","nilearn","coveralls","2015-02-19 13:32:41","[![Coverage Status](https://coveralls.io/builds/1956027/badge)](https://coveralls.io/builds/1956027)
+
+Coverage remained the same at 91.81% when pulling **c9c602f3d69d4594fa10da553ba1c049b2185c1e on lesteve:connectome-plotting** into **4ecf57695e3166f1157aa62220b25a0d00128200 on nilearn:master**.
+","",""
+"issue_comment","441","nilearn","nilearn","coveralls","2015-02-19 13:43:02","[![Coverage Status](https://coveralls.io/builds/1956096/badge)](https://coveralls.io/builds/1956096)
+
+Coverage remained the same at 91.81% when pulling **c9c602f3d69d4594fa10da553ba1c049b2185c1e on lesteve:connectome-plotting** into **4ecf57695e3166f1157aa62220b25a0d00128200 on nilearn:master**.
+","",""
+"issue_comment","441","nilearn","nilearn","coveralls","2015-02-19 15:18:09","[![Coverage Status](https://coveralls.io/builds/1956773/badge)](https://coveralls.io/builds/1956773)
+
+Coverage remained the same at 91.95% when pulling **587bc603657c679751837d9a5a056d87a05f6d2d on lesteve:connectome-plotting** into **4ecf57695e3166f1157aa62220b25a0d00128200 on nilearn:master**.
+","",""
+"issue_comment","441","nilearn","nilearn","coveralls","2015-02-19 15:50:49","[![Coverage Status](https://coveralls.io/builds/1957001/badge)](https://coveralls.io/builds/1957001)
+
+Coverage remained the same at 91.95% when pulling **dcdf7c9cbcfafcc08229936b1c4e0b03d9133a4e on lesteve:connectome-plotting** into **4ecf57695e3166f1157aa62220b25a0d00128200 on nilearn:master**.
+","",""
+"issue_comment","441","nilearn","nilearn","banilo","2015-02-18 15:27:57","That looks pretty good! I would not have thought that it can be visualized that well with glass brain.
+kudos!
+","",""
+"issue_comment","441","nilearn","nilearn","bcipolli","2015-02-20 06:41:01","@lesteve : is there an option / easy way to get a colorbar added to the plot?
+","",""
+"issue_comment","441","nilearn","nilearn","mrahim","2015-02-19 18:05:01","me too ...
+
+2015-02-19 19:04 GMT+01:00 Alexandre Abraham notifications@github.com:
+
+> Am I the only one to find coveralls terribly annoying?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/441#issuecomment-75103369.
+","",""
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-19 11:22:07","From my naive point view: should it not be the other way round?
+
+``` python
+ispd = eigvalsh_min >= 0 if semi_definite else eigvalsh_min > 0
+```
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-19 11:59:23","Yeah I actually fixed this one locally this morning...
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/_utils/extmath.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","bcipolli","2015-02-19 19:34:15","I believe this should be `atlas_maps` instead of `msdl_atlas_dataset.maps`.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","bcipolli","2015-02-19 20:41:00","Instead of `39`, better to use `len(regions_coords)` (I'm using this function, but with a modified version of the maps image :) )
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-19 21:56:14","In the examples, the priority is often to make the code simpler (ie shorter), at the cost of genericity.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-19 21:57:19","I am wondering if it would not be interesting to use as node colors, simply the ordering of the node in the atlas. It would make the code simpler, and I believe that it has been chosen in a way that makes sense.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-19 21:59:44","Could we do a for loop rather than a map: this is going to confuse beginners.
+
+Also, a comment saying why this code is useful would help.
+
+Finally, I think that I would prefer not having a function defined for this, but simply code in the example, also in the interest of simplicity.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-19 22:00:35","I actually tackled both @bcipolli comments which were more than reasonable.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-19 22:02:11","The function should not be limited to accepting SPD matrices (or correlation matrices), we want to be able to plot any graph defined by its adjacency.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-19 22:42:29","I think that the line below is more likely to confuse beginners.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-19 22:45:00","In favor of a for loop, here too.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-19 22:47:56","Maybe add another half-sentence on the used atlas because not knowing MSDL might complexify the example quite a bit.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-19 22:49:44","in-line comments on s and c?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-19 22:55:33","Is there a reason to use slice here? Using integer values for axis seem more natural to me.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","bcipolli","2015-02-20 04:09:35","Isn't `atlas_maps` a string or a `Nifti1Image`?  This line isn't working for me.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","bcipolli","2015-02-20 04:48:47","I would prefer these get changed to `size` and `color`, or to follow @GaelVaroquaux suggestion of eliminating the `nodes_kwargs` and making them meaningful parameters in the function interface.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","bcipolli","2015-02-20 06:37:30",":+1: This check is preventing me from plotting interhemispheric connections only, for example.  I've commented it out locally, and the code still works like a champ:
+
+![image](https://cloud.githubusercontent.com/assets/4072455/6282307/ad3e31d0-b887-11e4-88b6-9328155e9292.png)
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-20 07:31:43","Fair enough, I don't remember when in the process I got convinced that it had to be correlation/covariance matrices.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-20 08:06:50","good point I'll fix that.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-20 08:07:45","> Is there a reason to use slice here?
+
+None comes to mind so I can change it.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-20 08:56:33","`s` and `c` are matplotlib standards. This is the first thing I would try.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-20 11:29:04","We don't want to force our users to learn matplotlib for simple things. We need to start from the idea that our base users do not know anything about matplotlib.
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 20, 2015, 09:56, at 09:56, Alexandre Abraham notifications@github.com wrote:
+
+> >  from nilearn.plotting import cm
+> > 
+> > +def plot_connectome(cov, atlas_maps, **kwargs):
+> > -    """"""Plot connectome given a covariance matrix and atlas maps""""""
+> > -    imgs = image.iter_img(atlas_maps)
+> > -    regions_coords = np.array([
+> > -        map(np.asscalar, plotting.find_xyz_cut_coords(img)) for img
+> >   in imgs])
+> > -    np.random.seed(42)
+> > -    node_colors = np.random.rand(len(atlas_maps), 3)
+> > -    plotting.plot_connectome(cov, regions_coords,
+> > -                             nodes_kwargs={'s': 50, 'c':
+> >   node_colors},
+> 
+> `s` and `c` are matplotlib standards. This is the first thing I would
+> try.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/441/files#r25056268
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:05:35","I think that a for loop here would be better than a list comprehension.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:06:48","I would rather avoid having a function, and directly use plot_connectome inlined.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:11:32","I think that I would call this method ""_add_points"" (or ""_add_markers""), because those points may have some meaning or some use outside the case of plotting graphs.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:19:35","Maybe these translation from node_color and node_size to arguments for scatter should be done in the plot_connectome function, and not here. The reason is that the notion of 'node' seems to me somewhat external to the function. It makes sense only when there are nodes and edges. I think that I would push for removing the term ""node"" from the code of this function.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:21:38","I would call this function 'add_lines', and I would have it take as input arguments a list of (start_point, end_point). I would do the resolution of the adjacency matrix + coords to lines in the ""add_graph"" function.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-22 03:51:30","Somewhat general comment: How about adding an option for a depth filter. E.g. when looking at the sagittal / medial glass brain, why not make it possible to not show the other / not directly looked at half of the brain? This should be easy to implement (re-filter the coordinate pools before scatter) and might be especially useful if many nodes are to be visualized.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-22 04:17:56","""For a maskED array""?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-22 13:01:47","The name of the function is also misleading. We should have a function named `find_poi` or so. And it could handle 3D and 4D imgs so that a loop is not necessary.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-22 13:03:05",":+1: for `_add_markers`
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-22 13:04:46","My feeling is YAGNI.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-22 13:05:42",":+1: 
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-22 13:08:31","`adjacency_matrix = adjacency_matrix.filled(0.)`
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-22 13:12:05","This should be an explicit kwarg I think.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-23 07:59:21","The thing is that this function is used twice, one for the GroupSparseCovariance and one for the GraphLasso. Also there is already a function to plot the matrices in this example.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-23 08:04:40","> The thing is that this function is used twice, one for the
+> GroupSparseCovariance and one for the GraphLasso.
+
+Yes, but the only thing that needs to be called twice is the call to
+plot_connectome. The rest is common.
+
+> Also there is already a function to plot the matrices in this example.
+
+I don't like that either :).
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-23 08:20:43","> I think that a for loop here would be better than a list comprehension.
+
+How so? Are you saying you want something like this:
+
+``` python
+region_coords = []
+
+for img in imgs:
+    region_coords.append(plotting.find_xyz_cut_coords(img))
+
+region_coords = np.array(region_coords)
+```
+
+> The name of the function is also misleading. We should have a function named find_poi
+
+maybe in a different issue?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-23 08:23:06","> My feeling is YAGNI.
+
+Agreed maybe in a further iteration.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-23 08:49:49","> > Also there is already a function to plot the matrices in this example.
+> 
+> I don't like that either :).
+
+Given that we advise people to install anaconda, they shoulds have statsmodel installed. We could use statsmodel function for that.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:35:38","I would put that below plot_stat_map: it's less likely to be what the user is looking for.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(18, '', u'doc/building_blocks/plotting.rst')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:39:53","I would replace the ""zip(*...)"" by ""marker_coods_2d.T"" which will do the same thing given that marker_coords_2d is an array.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:41:04","Same remark: I would use transposition rather than zip
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:42:30","Tell us which half you are using: the upper half, or the lower half?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(167, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:44:33","Any reason that you are not using ""50"" as a default in the function signature? I think that it would make it easier for the user to understand this parameter.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-24 12:51:18","Shouldn't we allow list of tuples and call `np.asarray`?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-24 12:54:16","Use `filled`
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-24 12:57:10","I am actually checking that the matrix is symmetric (and then using the lower half) at the moment.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(167, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-24 12:57:14","I usually use masked mask if it is really needed. There, you can just set those values to 0.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:59:12","> I am actually checking that the matrix is symmetric (and then using the lower
+> half) at the moment.
+
+OK. Don't put a tolerance on the check that is smaller than 1e-3 \* vmax,
+because the eye won't tell a difference anyhow.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(167, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-24 13:00:00","The main reason is something I have been mildly annoyed by: defaults duplicated at different levels. In this particular case I would need to define node_size default both in img_plotting.plot_connectome and displays.OrthoProjector.add_graph.
+
+I have to admit I don't think the None solution is fully satisfying.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 13:15:11","Right, it makes your life easier as a developper, but it makes the user's
+life harder. Here, I think our focus should be to make the user's life
+easier.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 13:17:06","> Somewhat general comment: How about adding an option for a depth filter. E.g.
+> when looking at the sagittal / medial glass brain, why not make it possible to
+> not show the other / not directly looked at half of the brain? This should be
+> easy to implement (re-filter the coordinate pools before scatter) and might be
+> especially useful if many nodes are to be visualized.
+
+I think that you are unto something very interesting. I usually find that
+plotting only half an hemisphere can be very useful. I'd rather go for
+that than something more general, which will be harder to use for the end
+user, and harder for us to code.
+
+Let's postpone that in a second step.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 13:18:27","> The name of the function is also misleading. We should have a function named
+> find_poi or so.
+
+I agree. I am +1 for renaming if there are good suggestion.
+
+> And it could handle 3D and 4D imgs so that a loop is not necessary.
+
+I am -0. I am afraid of errors in user code going unnoticed until too
+late to give a good error message.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 13:20:28","> Given that we advise people to install anaconda, they shoulds have statsmodel
+> installed. We could use statsmodel function for that.
+
+No. I've just had last week someone who was using Python in 3D slicer.
+Installing any package was quite a lot of work for that person. I am
+still trying to limit as much as possible the dependencies, including in
+the examples.
+
+However, in a later work, I think that we could integrate such function
+in nilearn.plotting. But later.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-24 13:25:11","wasn't this supposed to become a for-loop for the sake of simplicity?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","banilo","2015-02-24 13:27:00","My subjective feeling: we mostly use the older formatted printing with %. Should this be (roughly) consistent across examples?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-24 13:57:14","I am now wondering what was the percentage relative to when specifying edge_threshold as a percentage. At the moment it is a percentage of the number of possible node edges i.e. n \* (n - 1) / 2 if the adjacency matrix is of shape (n, n). I am leaning towards changing that to be a percentage of non zero edges. To spell it out even more, ""25%"" would mean I want to keep 75% of the non-zero edges with the highest absolute value.
+
+Any further thoughts or objections?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(180, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-24 13:57:26","Hmmm. It would be cool to have a sagittal view for the left hemisphere, another one for the right hemisphere, and then an axial view for the connexions between both of them.
+
+Regarding depth, it would be nice to be able to change the size of the nodes depending on the depth so that further nodes are smaller. We can't do that yet because the depth depends on the view (or we should do manually the 3 slices).
+
+But let's merge that first.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-24 14:15:57","Done.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(18, '', u'doc/building_blocks/plotting.rst')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-24 14:18:03","Feel free to create an issue about that. If we had to chose one I'd be personally in favour of using `.format` rather than `%`.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-24 14:19:52","I am afraid I don't see how a for loop is simpler.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 14:39:04","> Hmmm. It would be cool to have a sagittal view for the left hemisphere,
+> another one for the right hemisphere, and then an axial view for the
+> connexions between both of them.
+
+Yes. I can see a design where there would be an Axes that projects to the
+left hemisphere and one to the right. As in 'R', 'L'. We'll brain storm
+about this later.
+
+> Regarding depth, it would be nice to be able to change the size of the
+> nodes depending on the depth so that further nodes are smaller. We
+> can't do that yet because the depth depends on the view (or we should
+> do manually the 3 slices).
+
++1 for having an option 'node_color=""depth""'. In a later PR.
+
+Do you want to add 2 enhancements tickets for these features? I think
+that they are good ideas.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 14:40:15","> Shouldn't we allow list of tuples and call np.asarray?
+
++1. People will get it wrong elsewhere.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 14:44:49","> My subjective feeling: we mostly use the older formatted printing with %.
+> Should this be (roughly) consistent across examples?
+
+I think that we should use 'format'. It's the new recommended way of
+doing things. I am myself not doing it out of habit, because I started
+doing Python before it existed, but that's a bad thing.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 14:47:51","> Any further thoughts or objections?
+
+I think that I would like the percentage to be the filling factor of the
+graph. If I say threshold=""80%"", I want to see "".2 \* n (n - 1) / 2""
+edges.
+
+That way, we don't have an unstable behavior depending on wether people
+threshold the matrices or not.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(180, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 14:48:50","> I am afraid I don't see how a for loop is simpler.
+
+It's a construct that more people know. For someone who doesn't know
+Python, the list comprehension is a weird thing.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:17:00","I usually try to refrain from making such cosmetic changes, if I am not touching the corresponding lines of code, because they make merging and rebasing hard.
+
+Don't change it back, though.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(31, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:19:49","Same remark on the default value of the argument: I would prefer if it appears in the function signature.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:24:09","Rather than ""n"" in the error message, could you here be explicit about its value (and mentioned where the value comes from), something like 'Invalid shape for node_coords: you passed in an adjacency matrix of shape (%i, %i), therefore the shape of node_coords should be (%i, 3) while it is %r'
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:25:43","Please decrease the tolerance here. We don't want a user with code with slight numerical stability to have this code bailing on him: his numerical instabilities are his problem, not ours. I would use an rtol of 1e-3.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:28:00","Nice!
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(256, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:29:52","Doesn't the fast_abs_percentile already do the abs? In other words, can't you just pass it simply lower_diagonal_values?
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:35:22","I would avoid having ""**kwargs"" and use a ""glass_brain_kwargs"" rather, as it is not possible to guess from reading the function signature and docstring what these do.
+
+Also, do you really need these kwargs? I have the feeling that the usecases for them will be minor, and that advanced users that want to tweak everything should rather instanciate a glass brain and use the methods of the corresponding object.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:36:36","I would put 'output_file' and 'display_mode', 'title' and 'annotate' before 'edge_kwargs' and 'node_kwargs': I think that these are more important for end-users.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:38:51","For a minor speedup, you can remove the title here: you have already tested it earlier.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'nilearn/plotting/tests/test_img_plotting.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","AlexandreAbraham","2015-02-24 16:01:29","Now that we have `iter_img`, I would do:
+`atlas_regions_coords = map(plotting.find_xyz_cut_coords, iter_img(atlas_imgs))`
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-24 16:02:20","> Now that we have iter_img, I would do:
+> atlas_regions_coords = map(plotting.find_xyz_cut_coords, iter_img(atlas_imgs))
+
+Avoid map: on non advanced programmers it is incomprehensible.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(None, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","lesteve","2015-02-24 17:23:40","OK this is the current behaviour then.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(180, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-25 13:48:49","I think that you have an indentation problem here.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(163, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","441","nilearn","nilearn","GaelVaroquaux","2015-02-25 13:49:41","Maybe I am wrong. Could you just check that the docstrings render well.
+","7c6bc0f85143a5947f99d29699b86a76c3f8e00a","(163, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-19 12:22:51","Add accept_semi_definite to is_spd
+
+to allow to check that a matrix is positive semi-definite rather than positive definite.
+Add some tests","fd5545a3e68b743962cd468eeb1292aaba6843c2",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-19 12:36:10","Add nilearn.plotting.plot_connectome
+
+to plot connectomes from adjacency matrix and node coordinates on top of
+glass brain views","b2b052b392498b7cf4143034505f503b0e1bf878",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-19 13:21:04","Add connectome plot to plot_adhd_covariance.py","7facf4d7949d52c090c9dce2418333bba892f861",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-19 14:28:08","Remove lingering TODOs","6492402dbe740b7cf3f53500ac1979e0d33309e6",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-19 14:29:06","Fix edges_threshold logic
+
+The percentile should be in term of number of edges rather than size of the adjacency_matrix","ccce753ec43d83190b51dfd8e9c82327317bfc60",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-19 15:37:11","Use symmetric norm for edges color mapping","06d77538918b8c2e09239b5576ff9fb9357a3679",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-19 21:56:34","Cosmetic changes in plot_adhd_covariance.py","159dd8fbf0d6c1694af6122e35133b71cc6a9dc6",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-20 14:13:34","adjacency_matrix does not need to be positive semi-definite
+
+but only symmetric","c444ee2c8d3d2f42755e18a3477c112705a2eafd",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-20 14:24:58","Remove unneeded map construct","0eb1b5a156cc1fddafd4d10c22774721b2d681f6",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-20 14:27:51","Use list rather than slice for simplicity","3e4ee1e9295c19dd97aef28f5ef0267b4f82f6e4",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-20 14:35:34","Fix length of node_colors
+
+atlas_maps is a string in this case ...","5cb58389ae97dbe4b4f29818bd9c3dff4888557b",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-20 16:53:17","Add node_color and node_size to plot_connectome
+
+Those are the parameters more likely to be changed by the user. So it makes sense to
+take them out of the nodes_kwargs","622e3d795c6160634fe35e451f69711fe14f533d",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-20 16:56:13","Renaming of parameters
+
+nodes_kwargs -> node_kwargs and edges_kwargs -> edge_kwargs","cede62688d3b2189038d388a392b5279736bedec",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-23 07:26:28","Remove unneeded import","adfd32bd9f08e47cb125c79c37011315e0229e97",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-23 07:45:06","Fix typo","7554baf66aa1733e6f3a0a9d165de6d16e1a4f00",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-23 08:05:04","Fix lingering merge conflicts","5e28539469addeaa11bc127ea85d015c41133e65",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-23 08:24:53","Fix plot_adhd_covariance example","345130866d716173ee6ad24f0f4e542a49602e60",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-23 13:17:58","Fix axes aspect when black_bg is True
+
+Modify the other axes aspect everywhere else.","f862a12b005c28d39ada3dce1d07e24c1366b78a",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 08:50:09","Change frame_axis.imshow back to aspect=auto
+
+For black_bg=True the title was offset towards the middle somehow","bbf8f031ee4319c4341c6392e1060269897eab56",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 08:56:20","Refactoring of plot_connectome related-code
+
+* default node colors using Set2 color map
+* add edges_cmap to chose colormap for edges plotting
+* node -> markers in GlassBrainAxes
+* edges -> lines in GlassBrainAxes","dc02e910ae1c4f54ad2a46c7e95fc43cd88f3fa5",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 09:48:18","Remove unnecessary plot_connectome function
+
+from plot_adhd_covariance.py","e45c581237d9fba94f7b67654c200e7b15b47364",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 10:06:16","Fix wrong shape in docstring","09909f261fc8053674f83395f9cfe9e9109d1b4f",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 10:11:20","Renaming of nodes_ and edges_ variables
+
+Use singular for consistency","a50b3a4ff5b2f8b41364544d776edd5c5271f58a",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 10:14:48","Add test with edge_cmap argument","ea5f2f85a9e8c6cdb3ece7b83b10f88604d9375e",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 10:30:20","Fix figure numbering in functional_connectomes.rst
+
+to reflect plot_adhd_covariance.py changes","98b0d6e887573e4cd6ff2165db21552d75c252f9",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 10:30:51","Add plot_connectome documentation
+
+in doc/building_blocks/plotting.rst","d6a068d843383886d2b1f88983a51f7e2a2545d0",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 11:59:56","Minor docstring fix","5aad825ddd0d69c41aca0444db1ffc9ebef629e3",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 12:01:53","Reorder arguments for consistency","5790c98260b5742ef51fffe2e5c1cee2735ebe75",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 13:03:21","Move logic from plot_connectome to OrthoProjector.add_graph","4298ae69b19f2150b901eabfb3e65e892768c7b6",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 13:04:50","Move plot_connectome lower down the list","a13d6f3d39e4a1aca9701af9f23d481e49870ce2",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 13:08:35","Use transpose rather than zip","4ead5f16491232f095ced07b4c48c171afa662b6",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 13:09:35","Use .filled for simplicity","362004e4b7ac382e0d77ac4117b28eb110eef7e3",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 13:15:15","Allow node_coords to be array_like","0d8093c0c02fc4efbabf913859bd56c06d431d1e",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 14:14:01","Set function defaults in the function signature
+
+to be more helpful to the user. Also use ""auto"" for the automatic node colors","6ac2af208603290a464eeb9378a07a6872f1a084",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-24 14:19:50","np.array not necessary any more","024ce85954e77121cfd3058d91bcbdb06878d52c",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 07:35:50","Remove title in test for minor speedup","a9431f8d00211a5aa2b3169342001b94f8b70c7f",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 07:46:11","Improve error message when node_coords has the wrong shape","f49b646742d63d424e472a13c6b4c1a9b904910a",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 07:49:42","Increase tolerance on symmetricity test
+
+and update test","0812ff8d876d49f711d9e11cc5e62df7ae9061ba",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 07:51:23","fast_abs_percentile already does the abs","598a183c02684b9c231997fbc6c2f08bd5e818c8",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 07:52:36","Remove kwargs from plot_connectome","2f519b908cc61a2ca070150d3d7e8c6f2b46cdae",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 08:50:00","Move edge_kwargs, node_kwargs down in the parameter list
+
+not as likely to be used as other parameters","f0a2fad19275ed4b60bff3d34826d2877df807cb",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 12:48:14","Fix minor typo in comment","573e78b46ef345a3c932b56442d8f21c1a2eb72b",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 12:49:26","Use higher edge_threshold to have nicer connectome plots","acf7245d2c8a764abd34d864738eb749e79e56bf",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 12:50:54","Use GraphLasso plot for plot_connectome image
+
+in plotting documentation","8c3494c9ae97f72375e32352761fbab2954e93df",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 12:56:20","Add connectome plot to carousel
+
+* Had to tweak the css in order to align the img vertically inside the carousel
+* renamed reST substitution to be more explicit while I was at it","505de77d37f69c69c02b84b4f98748984b4e3206",""
+"pull_request_commit","441","nilearn","nilearn","lesteve","2015-02-25 13:13:36","Add check that adjacency_matrix mask is symmetric
+
+with tests","7c6bc0f85143a5947f99d29699b86a76c3f8e00a",""

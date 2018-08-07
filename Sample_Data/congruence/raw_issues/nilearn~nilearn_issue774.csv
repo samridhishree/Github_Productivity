@@ -1,0 +1,120 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","774","nilearn","nilearn","GaelVaroquaux","2015-09-03 21:44:00","Careful timing / profiling shows that the dual-gap of the proximal
+operator is sometimes decreased too far. As a result, the proximal
+operator spends a lot of time trying to reach this dual gap, for no good
+increase in overall energy. Profiling the code shows that this is the
+number one loss of time.
+
+Given that with warm-restart well implemented, decreasing on the fly the
+tolerance of the proximal isn't very costly, we can rely fully on the
+adaptative strategy, rather than on the paper of Schmidt et al (ie
+implement FAASTA as in the paper). I have done this here. Printing values
+of energies on the Haxby dataset shows that energy is decreased as well.
+
+The code seems to be around 1.5 times faster.
+
+I am sending a PR to see how this behaves on Travis / Circle
+
+Cc @dohmatob , @eickenberg : please have a look
+","start issue","[WIP] ENH: faster faasta (for TV-l1)"
+"issue_closed","774","nilearn","nilearn","GaelVaroquaux","2016-06-12 14:48:04","","closed issue","[WIP] ENH: faster faasta (for TV-l1)"
+"pull_request_title","774","nilearn","nilearn","GaelVaroquaux","2015-09-03 21:44:00","Careful timing / profiling shows that the dual-gap of the proximal
+operator is sometimes decreased too far. As a result, the proximal
+operator spends a lot of time trying to reach this dual gap, for no good
+increase in overall energy. Profiling the code shows that this is the
+number one loss of time.
+
+Given that with warm-restart well implemented, decreasing on the fly the
+tolerance of the proximal isn't very costly, we can rely fully on the
+adaptative strategy, rather than on the paper of Schmidt et al (ie
+implement FAASTA as in the paper). I have done this here. Printing values
+of energies on the Haxby dataset shows that energy is decreased as well.
+
+The code seems to be around 1.5 times faster.
+
+I am sending a PR to see how this behaves on Travis / Circle
+
+Cc @dohmatob , @eickenberg : please have a look
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","[WIP] ENH: faster faasta (for TV-l1)"
+"issue_comment","774","nilearn","nilearn","eickenberg","2015-09-04 07:25:34","> maybe we could increase (but not too much, so as not to degrade stat accuracy) the .2 in the code snip dgap_factor *= .2 (line 200).
+
++1
+","",""
+"issue_comment","774","nilearn","nilearn","eickenberg","2015-09-04 07:30:11","> According to circle-ci, we've lost at least 1.1% accuracy in TV-L1/haxby.
+
+Interesting, that means the change in dgap tolerance schedule has changed something about the convergence of the optimizer (for better or worse on the training set, with impact on the test set)
+
+As for numerical accuracy: Couldn't `saxpy` already do the trick? It may in general be faster to work with `float32` here.
+","",""
+"pull_request_commit_comment","774","nilearn","nilearn","eickenberg","2015-09-03 22:03:18","I recall from the ADMM version that this assignment to `z` was necessary there, too. If this operation really is in place, it wouldn't need the assignment to `z`. Does it work without it?
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(16, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit_comment","774","nilearn","nilearn","eickenberg","2015-09-03 22:05:48","makes sense.
+
+While we're at it, should we think about relaxing the dual gap tolerance again by line searching over it with warm starts? Probably for another PR.
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(26, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit_comment","774","nilearn","nilearn","GaelVaroquaux","2015-09-04 04:45:00","> I recall from the ADMM version that this assignment to z was necessary there,
+> too. If this operation really is in place, it wouldn't need the assignment to
+> z. Does it work without it?
+
+Actually, if z is not c-contiguous, there can be an implicit copy.
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(16, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit_comment","774","nilearn","nilearn","eickenberg","2015-09-04 05:51:31","makes sense - but we have full control over z as a local variable. Why
+would we let that happen? Or alternatively, shouldn't we warn about
+performance loss if this situation occurs?
+
+On Friday, September 4, 2015, Gael Varoquaux notifications@github.com
+wrote:
+
+> In nilearn/decoding/fista.py
+> https://github.com/nilearn/nilearn/pull/774#discussion_r38721405:
+> 
+> > @@ -184,7 +187,9 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
+> > 
+> > ```
+> >      # backward (prox) step
+> >      for _ in range(10):
+> > ```
+> > -            w, prox_info = f2_prox(z - stepsize \* gradient_buffer, stepsize,
+> > -            # z <- -stepsize \* gradient_buffer + z
+> > -            z = inplace_add_mult(gradient_buffer, z, a=-stepsize)
+> 
+> I recall from the ADMM version that this assignment to z was necessary
+> there, too. If this operation really is in place, it wouldn't need the
+> assignment to z. Does it work without it?
+> Actually, if z is not c-contiguous, there can be an implicit copy.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/774/files#r38721405.
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(16, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit_comment","774","nilearn","nilearn","GaelVaroquaux","2015-09-04 05:54:16","> makes sense - but we have full control over z as a local variable. Why
+> would we let that happen? Or alternatively, shouldn't we warn about
+> performance loss if this situation occurs?
+
+I am just being extra careful. I'd rather take a small performance hit
+rather than having code that might not work on a user's computer (eg
+because that user uses a BLAS that I don't know).
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(16, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit_comment","774","nilearn","nilearn","dohmatob","2015-09-04 07:05:14","+1.
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(6, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit_comment","774","nilearn","nilearn","dohmatob","2015-09-04 07:34:51","This looks really violent. At this point, we are 100% heuristic, and what is left of the convergence theory disappears. Will be nice to see convergence curves.
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(26, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit_comment","774","nilearn","nilearn","dohmatob","2015-09-04 07:45:27","ok, it seems `dgap_tol = abs(energy_delta) / (i + 1.)` was itself a heuristic, and so no 'harm' is done. Ignore previous comment.
+","fb3d73e4c1c626379e84f11bc860e535b14531bc","(26, '', u'nilearn/decoding/fista.py')"
+"pull_request_commit","774","nilearn","nilearn","GaelVaroquaux","2015-09-03 21:37:01","ENH: faster faasta (for TV-l1)
+
+Careful timing / profiling shows that the dual-gap of the proximal
+operator is sometimes decreased too far. As a result, the proximal
+operator spends a lot of time trying to reach this dual gap, for no good
+increase in overall energy. Profiling the code shows that this is the
+number one loss of time.
+
+Given that with warm-restart well implemented, decreasing on the fly the
+tolerance of the proximal isn't very costly, we can rely fully on the
+adaptative strategy, rather than on the paper of Schmidt et al (ie
+implement FAASTA as in the paper). I have done this here. Printing values
+of energies on the Haxby dataset shows that energy is decreased as well.
+
+The code seems to be around 1.5 times faster.
+
+I am sending a PR to see how this behaves on Travis / Circle","fb3d73e4c1c626379e84f11bc860e535b14531bc",""

@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","172","nilearn","nilearn","GaelVaroquaux","2014-03-18 23:15:07","We need an object that does:
+- Stratification (ie balancing) on the y labels
+- Leave-one-label-out like strategy on the confounding labels (eg sessions).
+
+This usecase appears often.
+","start issue","Add a stratified splitter with confounds"
+"issue_comment","172","nilearn","nilearn","rphlypo","2014-06-17 12:33:57","The easiest way to proceed is probably to split the Bunch object returned from the data fetchers in something X-like and something y-like, where `y` is the confounding label, and `X` is the data; this only requires a conversion to list of dicts from of a dict of lists, but would make it straightforward compatible with scikit-learn methods from there.
+
+The  object then is a matter of taking two entries: the keys in the `Bunch` object that should be used as `X` and `y`. Hence, it is essentially a wrapper for the cross-validation methods in scikit-learn.
+
+Actually, I was thinking of the outputs of `nilearn/datasets.py`, since they return the attributes/labels as keys in the Bunch object. But, in HCP-like data (where information is much richer), this is much more cumbersome, since estimators usually act on concatenations of LR and RL, given the session and the subject. One could then look at how to model across sessions (leave-one-out on sessions), or one may want to see how to model RL from LR and vice versa (leave-one-out on LR/RL), or perform stratified sampling over subjects based on behavioural/demographic data in the csv files (stratified shuffle split over subject gender for instance). It seems as if Pandas would be a good organisational tool here with the `group_by` method returning required iterators (see http://pandas.pydata.org/pandas-docs/stable/groupby.html) from which the data (or filepath) can then be obtained. Of course, the latter are still required to have `X` and `y` specified by the user to perform any stratified sampling.
+
+@GaelVaroquaux 
+This introduces a (unfortunate) dependency on `Pandas`, would `nilearn` be ok with that?
+","",""
+"issue_comment","172","nilearn","nilearn","rphlypo","2014-06-17 13:27:23","So, we would have a function that takes X, y and labels
+- doing first a stratified split, and then leave-one-label-out on the resulting train and test data, or
+- do a leave-one-label-out and then a stratified split on the labels given the remain labels, or
+- both?
+","",""
+"issue_comment","172","nilearn","nilearn","rphlypo","2014-06-17 14:08:26","> And probably confound_labels, where confound_labels could be something like a session indicator: typically I want to generalize across sessions, and not inside a session.
+
+Yes, I got that.
+
+> I think that you want to 'stratify' the labels of interest (that is y, and any other label of interest), and 'anti-stratify' the confound labels, that is make sure that they are not shared between the train set and the test set.
+
+So, there might be little guarantee on the `n_train` and `n_test`, but I'm giving it a go.
+","",""

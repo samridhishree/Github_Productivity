@@ -1,0 +1,413 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","476","nilearn","nilearn","bcipolli","2015-03-02 04:01:52","@lesteve has helped finish the work here, and I removed the dependency on #371, so I've removed the ""WIP"" and I think things are more ready to go.
+
+All code, tests, and examples should be runnable in Python 3.x.  We've enabled test coverage for Python 3.x, and the build is passing.  In addition, I tested with a version on #371 (resolving warnings), and verified that no new warnings are introduced by this code.
+
+The following conventions were used to migrate `nilearn` code to Python 2/3 compatibility:
+- All `nilearn` imports should be relative (except, perhaps, in tests)
+- Write `except Exception, e` as `except Exception as e`
+- Write `isinstance(x, types.ListType)` as `isinstance(x, list)`
+- Write `callable(x)` as `isinstance(x, collections.Callable)`
+- Write `operator.isSequenceType(x)` as `isinstance(x, collections.Sequence)`
+- Write `operator.isNumberType(x)` as `isinstance(x, collections.Number)`
+- Write `nose.tools.assert_equals` as `nose.tools.assert_equal`
+- Write `nilearn._utils.testing.assert_raises_regexp` as `nilearn._utils.testing.assert_raises_regex` (mirrors nose clarification)
+- Write `<Iterable>.next()` as `next(<Iterable>)`
+- Write `filename = os.tempnam()` as `(_, filename) = tempfile.mkstemp()`
+- Write `not key in dict` as `key not in dict` (this actually warns in Python 3.x!)
+- Make sure to use `with open('file') as f' syntax; any file pointers that are not used in a context manager nor explicitly closed throw warnings.
+
+**Python 3 changes that require care to be backwards compatible**
+- Non-unicode strings must be prefixed with `b`: `b'string'`(mostly an issue interacting with numpy, but also some low-level operations like gzip code)
+- Write `print ""%s"" % (message,)` as `print(""%s"" % (message,))`
+- Write integer division `3 / 2 == 1` as `3 // 2 == 1`
+- Write `<dict>.iteritems()` as `<dict>.items()` (there is no iteritems in Python 3)
+- Write `<dict>.itervalues()` as `<dict>.values()` (there is no itervalues in Python 3)
+- Write `itertools.izip()` as `zip()` (there is no `izip` in Python 3)
+- Write octal string `0100` `0o100`
+- Write `round` as `np.round` (avoids a numpy issue in Python 3)
+
+**Importing things from `six` instead of places you're used to**
+- Write `basestring` as `six.string_types` (requires `import six`)
+- Use the new urllib object structure instead of ulrllib/urllib2
+  - import from `six.moves.urllib`.
+  - there are no base-level functions/objects, all are present in subpackages
+- Import  `StringIO` and `cPickle from`six.moves`
+
+**Changes in how you design / write code**
+- Think carefully about any use of `xrange`.  If you _require_ an iterator, then you must import `past.builtins.xrange`.  Otherwise, just use `range` (which is a list in Python 2, and an interator in Python 3).
+- Most things that used to generate lists now generate iterators; any time you need a list, make sure to wrap it in `list()`
+  - **THIS WILL GET YOU!**
+  - Includes:
+    - `dict.keys()`, `dict.values()`
+    - `zip`
+    - `range`
+    - `map`
+","start issue","Python 3.x support in nilearn"
+"issue_closed","476","nilearn","nilearn","lesteve","2015-03-06 08:30:04","","closed issue","Python 3.x support in nilearn"
+"pull_request_title","476","nilearn","nilearn","bcipolli","2015-03-02 04:01:52","@lesteve has helped finish the work here, and I removed the dependency on #371, so I've removed the ""WIP"" and I think things are more ready to go.
+
+All code, tests, and examples should be runnable in Python 3.x.  We've enabled test coverage for Python 3.x, and the build is passing.  In addition, I tested with a version on #371 (resolving warnings), and verified that no new warnings are introduced by this code.
+
+The following conventions were used to migrate `nilearn` code to Python 2/3 compatibility:
+- All `nilearn` imports should be relative (except, perhaps, in tests)
+- Write `except Exception, e` as `except Exception as e`
+- Write `isinstance(x, types.ListType)` as `isinstance(x, list)`
+- Write `callable(x)` as `isinstance(x, collections.Callable)`
+- Write `operator.isSequenceType(x)` as `isinstance(x, collections.Sequence)`
+- Write `operator.isNumberType(x)` as `isinstance(x, collections.Number)`
+- Write `nose.tools.assert_equals` as `nose.tools.assert_equal`
+- Write `nilearn._utils.testing.assert_raises_regexp` as `nilearn._utils.testing.assert_raises_regex` (mirrors nose clarification)
+- Write `<Iterable>.next()` as `next(<Iterable>)`
+- Write `filename = os.tempnam()` as `(_, filename) = tempfile.mkstemp()`
+- Write `not key in dict` as `key not in dict` (this actually warns in Python 3.x!)
+- Make sure to use `with open('file') as f' syntax; any file pointers that are not used in a context manager nor explicitly closed throw warnings.
+
+**Python 3 changes that require care to be backwards compatible**
+- Non-unicode strings must be prefixed with `b`: `b'string'`(mostly an issue interacting with numpy, but also some low-level operations like gzip code)
+- Write `print ""%s"" % (message,)` as `print(""%s"" % (message,))`
+- Write integer division `3 / 2 == 1` as `3 // 2 == 1`
+- Write `<dict>.iteritems()` as `<dict>.items()` (there is no iteritems in Python 3)
+- Write `<dict>.itervalues()` as `<dict>.values()` (there is no itervalues in Python 3)
+- Write `itertools.izip()` as `zip()` (there is no `izip` in Python 3)
+- Write octal string `0100` `0o100`
+- Write `round` as `np.round` (avoids a numpy issue in Python 3)
+
+**Importing things from `six` instead of places you're used to**
+- Write `basestring` as `six.string_types` (requires `import six`)
+- Use the new urllib object structure instead of ulrllib/urllib2
+  - import from `six.moves.urllib`.
+  - there are no base-level functions/objects, all are present in subpackages
+- Import  `StringIO` and `cPickle from`six.moves`
+
+**Changes in how you design / write code**
+- Think carefully about any use of `xrange`.  If you _require_ an iterator, then you must import `past.builtins.xrange`.  Otherwise, just use `range` (which is a list in Python 2, and an interator in Python 3).
+- Most things that used to generate lists now generate iterators; any time you need a list, make sure to wrap it in `list()`
+  - **THIS WILL GET YOU!**
+  - Includes:
+    - `dict.keys()`, `dict.values()`
+    - `zip`
+    - `range`
+    - `map`
+","9b1a0272021c5c847e36569722aebc312fd67de3","Python 3.x support in nilearn"
+"pull_request_merged","476","nilearn","nilearn","lesteve","2015-03-06 08:30:03","Python 3.x support in nilearn","7b01897bb06842e85f63d7bf58681ae8a8fc0f6f","Pull request merge from bcipolli/nilearn:python-3.x to nilearn/nilearn:master"
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-02 09:10:25","First thanks a lot for removing the warnings related commits from the python 3 ones!
+
+Here are a few general comments, before I look at the changes in more details:
+- [x] we want to either use six or future but not both. Personally I'd be in favor of the latter.
+- [x] we should leave the documentation generation for a separate PR. Please revert any changes to doc/sphintext.
+
+Also this is quite a long PR to review. That would be really great if you could keep unrelated commits, like ""shorten numpy version idiom"" for separate PRs.
+
+> All nilearn imports should be relative (except, perhaps, in tests)
+
+not perhaps, tests should use absolute imports. For example it allows you to run a test from your git checkout with any nilearn that happens to be in your PYTHONPATH. For example this is quite useful to make sure that a test you just added was actually failing with a previous released nilearn version.
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-03 00:28:49","Thanks @lesteve for the comments!  Looks like things got a little messy after all from the merge / demerge / remerge I did; I will also review the code manually in addition to addressing your comments.
+
+Re: the dependency on `six`, did you have any ideas o removing the dependency on `six.string_types`?  I guess I could just copy their code into a `_utils` function, but that might be confusing for developers? (e.g.  `from nilearn._utils.compat import string_types`)?
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-03 07:34:16","> Re: the dependency on six, did you have any ideas o removing the dependency on six.string_types
+
+My guess was that future has something similar but I have to say I haven't checked.
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-03 07:39:30","@lesteve I didn't find anything, and I searched for a bit.  The code in `six` isn't complicated to copy, I just wanted to check that it would be an acceptable solution.
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-03 07:45:53","What about http://python-future.org/compatible_idioms.html#basestring?
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-03 15:56:01","> What about http://python-future.org/compatible_idioms.html#basestring?
+
+The first option adds a dependency to `past`, the second doesn't consider byte strings as strings.
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:00:02","As it turns our, `sklearn.externals` includes `six`.  How about I migrate to using `sklearn.externals.six`?
+
+Edit: looks like it's only introduced in `v0.14`.  Still, migrating off of `six` will be much more challenging then migrating off of `__future__` (which is used in one place).
+
+How about adding an installation dependency on `six` (or adding it to a nilearn `externals`) until the minimum version of `sklearn` is 0.14?
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:59:36","@lesteve I made all of the requested changes, I believe.  I chose to remove the dependency on `future` and keep that of `six`, since `six` is much more deeply embedded and is used in `scikit-learn`.  It is now listed as a dependency (which can be removed when minversion of `sklearn` >= 0.14).  Please let me know if that's acceptable.
+
+I will do a line-by-line code review myself later today and update here.
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-03 17:07:06","> >   What about http://python-future.org/compatible_idioms.html#basestring?
+> 
+> The first option adds a dependency to past, the second doesn't consider byte strings as strings.
+
+:confused: past is provided by python-future, isn't it?
+
+I may be dead wrong but I think your tests are going to fail because 'from past.builtins import bla' are going to raise, since future is not installed any more by setup.py ...
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-03 17:19:41","> :confused: past is provided by python-future, isn't it?
+
+Right, good point!  I decided to stick with `six` because it is heavily used in this PR; moving off of it would be challenging.  In addition, `sklearn` seems to be using `six`.  So that kind of made up things for me to respond to you.  But as always, willing to take a different direction if requested.
+
+> I may be dead wrong but I think your tests are going to fail because 'from past.builtins import bla' are going to raise, since future is not installed any more by setup.py ...
+
+The only dependency on `past` was the imports of `xrange`, and none of those should have been there anyway.  Those are all removed now, so I believe things should run well.  Let's see! :)
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-03 17:23:55","> Those are all removed now, so I believe things should run well. Let's see! :)
+
+Right should be fine then, I was probably still looking at an old diff.
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-03 19:36:51","Just finished a code review, no obvious issues remaining to me.  I just updated the ""magic_string"" info and migrated to use `xrange` from `six.moves`.  Once the tests pass, I think this is ready for further review.
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-04 14:56:44","@lesteve Addressed all of the requested issues except the `np.diag_indices` change, due to the numpy version issue.
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-04 21:29:00","OK, touched the few that were requested. :)
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-04 21:40:43","> OK, touched the few that were requested. :)
+
+Great stuff! I had something running my computer at work to make sure that all the datasets were downloading cleanly and the examples ran fine with Python 3. I'll double-checked that tomorrow and once this one is merged, we will all have one cheap excuse less to keep using Python 2!
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-04 22:10:54","No clue why the coverage reported by coveralls is misbehaving like this ... 
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-04 22:26:07","The only thing I could find in the travis [log](https://travis-ci.org/nilearn/nilearn/jobs/53106433) 
+
+```
+Coverage.py warning: Trace function changed, measurement is likely wrong: None
+```
+
+For reference a travis [log](https://travis-ci.org/nilearn/nilearn/jobs/53044084) from master.
+
+The coverage reports from nosetests in both logs do look different. 
+","",""
+"issue_comment","476","nilearn","nilearn","lesteve","2015-03-06 08:29:32","OK I am going to merge this one. Thanks a lot @bcipolli for your continued work on this !
+
+I haven't figured out the whole thing but I convinced myself there is something spurious going on with the coverage. For example I manually checked that some line labeled as missed were actually  executed using 1/0 markers.
+
+A temporary work-around that I found for now: disabling doctests within nose and use the python 3 distribution in Travis.
+
+Note that there is some known undesired interactions between coverage and doctest mentioned [here](http://nose.readthedocs.org/en/latest/plugins/doctests.html#source).
+
+I'll keep investigating to find a more statisfactory long-term solution.
+","",""
+"issue_comment","476","nilearn","nilearn","bcipolli","2015-03-06 13:09:05","Thanks @lesteve for your help on this one!
+
+A note to others that `six` is now a dependency of `nilearn`, so you may need to update your Python install.
+
+Also to those who have outstanding PRs, I recommend restarting the Travis build so that your code can be tested for Python 3.4 compatibility.
+","",""
+"issue_comment","476","nilearn","nilearn","GaelVaroquaux","2015-03-06 13:09:43","Great job! Thanks a lot
+","",""
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:06:37","please remove the newline before and add a newline after (the latter is to make the README.rst render properly on PyPI)
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'README.rst')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:08:12","Not too sure where this === comes from but I think it should be removed unless there is a missing title in the rst. 
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'README.rst')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:08:40","you probably didn't mean to include this file
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'doc/issues.txt')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:10:02","I think dtype doesn't need to be mentioned here similarly to what is done in the other haxby examples.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'examples/decoding/plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:20:55","slight niggle: assert_raises_regex does not exist for python 2.7 because it is called assert_raises_regexp (with a 'p' at the end) we should do something like this:
+
+``` python
+try:
+    from nose.tools import assert_raises_regex
+except ImportError
+    try:
+        from nose.tools import assert_raises_regexp as assert_raises_regex
+    except ImportError:
+        # for Python 2.6
+```
+
+Side-comment: very annoyingly PEP8 is not stable with respect to search and replace which means that most of the assert_raises_regexp -> assert_raises_regex replacements in this PR have introduced PEP8 violations...
+","9b1a0272021c5c847e36569722aebc312fd67de3","(26, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:22:07","I may have missed it but it looks like you are not using this function in this PR (kind of makes sense that it belongs in the warnings-related PR)
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:25:00","My understanding is that the round -> np.round replacement is only needed when the thing you are rounding is a numpy scalar. It doesn't seem necessary here. 
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/decoding/searchlight.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:26:26","not used it looks like
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:27:24","not really related to the PR ...
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:28:18","not used
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:29:36","just wondering whether you need the list here, since you are just iterating over the keys
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/plotting/cm.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:30:50","not used
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:31:50","is this magical 'xyzpdq' really needed?
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:35:26","assert_warns_regex isn not used
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:36:01","Interestingly enough this line is actually overriden by the next one which redefines np_version ...
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:37:24","not used
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:38:29","I seem to remember this was related to removing one warning so this change and the one above can be removed
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/tests/test_signal.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:38:52","does not seem to be used
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/version.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-02 18:41:07","xrange being imported but not used seems to happen quite a few times, can you check all of them?
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/region.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:25:08","Missed this commit.  I've rebased to remove it, thanks!
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/tests/test_signal.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:26:48","I see what happened; this was caused by rebase / merge / rebase confusion.  I eliminated the use of past completely now; none were actually meaningful.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:31:34","I'll revert this back to untouched; I thought it was causing an error from a merge conflict, but turns out it was in an import above.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:33:04","Thanks for the catch!  This made me realize, just now: one downside of using parentheses in imports is that sublime text no longer indicates which imports are being used.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:34:22","Fixed.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/plotting/cm.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:37:29","My understanding is the same.  I replaced it here while replacing in other places, as it seemed more robust to future changes and a good habit to simply use `np.round` in any code already importing numpy.
+
+Happy to change it back.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/decoding/searchlight.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:41:10","Nice catch.  There were two more commits from the `fix_warnings` branch that I missed here (from their commit comment, I couldn't tell).  Rebased to remove them.  
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:48:36","Fixed. Also dealt with those PEP8 violations... you are correct: that IS very annoying :)
+","9b1a0272021c5c847e36569722aebc312fd67de3","(26, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 16:50:04","Thanks for catching this.  I think this was my attempted solution for examples, before simply prefixing all strings as byte-strings.  I've removed now.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'examples/decoding/plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-03 17:04:14","... fixed all, except this one.  I am investigating this, I found this to be necessary (but will double-check).
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 07:53:39","Looks like there are still have changes in doc/sphintext that you haven't reverted
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 07:59:16","would
+
+``` python
+diagonal_indices = np.diag_indices(prec.shape[0])
+prec[diagonal_indices] = 0
+```
+
+work?
+","9b1a0272021c5c847e36569722aebc312fd67de3","(5, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 08:24:10","I don't think this is needed since np.pi is a float
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'examples/manipulating_visualizing/plot_affine_transformation.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 08:33:11","could we use np.arange here?
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 08:38:11","> not used it looks like
+
+still seems to be the case
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-04 14:50:24","Just looked, turns out there's a `np.fill_diagonal` function.  Both it, and `diag_indices` are new in numpy 1.4, and nilearn targets >= 1.3.  
+","9b1a0272021c5c847e36569722aebc312fd67de3","(5, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-04 14:55:35","Very strange, thanks for catching.  In fact none of the changes were present, I wonder if I pulled the commit when rebasing.  Did the same copy from master again!
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 15:00:11","Arrgh, probably one for soonish when we raise the minimum versions similarly to #397.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(5, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-04 15:06:02","How about opening an issue to track line changes for when the version gets bumped?  I'd be happy to do that, if that sounds useful.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(5, '', u'examples/connectivity/plot_adhd_covariance.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:21:45","slight niggle, the parentheses are not needed
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:22:08","i.e. you can use `_, filename = ...`
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-04 19:24:47","good point.  since only one argument is being used, how do you feel about removing the output argument list and just subscripting the function call: 
+`filename = tempfile.mkstemp(prefix=""nilearn_"", suffix="".nii"", dir=None)[1]`
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:25:26","Another one to keep in mind when we move the numpy requirement to 1.6. If you have some spare cycles, feel free to open an issue as you mentioned so that we don't forget about these things and reference #397 inside.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(154, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:32:29","Probably very subjective, but I find it reads better with `_, filename = ...`.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:35:18","I don't think this is needed since the dtype is int and frames is a multiple of 2 anyway.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/decoding/tests/test_searchlight.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:37:26","You can use // if that makes you feel a lot better ...
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/decoding/tests/test_searchlight.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:40:39","I am guessing this change (verbose > 0 rather than verbose > 10) wasn't meant to be there
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:41:47","Unneeded changes
+","9b1a0272021c5c847e36569722aebc312fd67de3","(7, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 19:44:46","Unneeded change
+","9b1a0272021c5c847e36569722aebc312fd67de3","(4, '', u'nilearn/region.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-04 19:54:54","`xrange` is a builtin in Python 2.x, but unavailable in Python 3.x.  Converting to `range` seemed suboptimal, since some of the ranges being iterated over are quite large.  So I added the imports so that the `xrange` function would be available in both.
+
+Do you prefer simply converting all `xrange` to `range` then?
+","9b1a0272021c5c847e36569722aebc312fd67de3","(4, '', u'nilearn/region.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 20:01:33","Ah sorry for that, I was in automatic diff processing mode and missed that completely, sorry for the noise ! I think it's fine to keep with xrange.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(4, '', u'nilearn/region.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 20:02:07","Ignore this one too ...
+","9b1a0272021c5c847e36569722aebc312fd67de3","(7, '', u'nilearn/mass_univariate/permuted_least_squares.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-04 21:02:41","Sorry, I thought it was previously requested that I change this.  All of the similar prints from within this function were for `verbose > 0`, so I thought I was asked to tweak this one while I was there.
+
+Please confirm either way, thanks!
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","bcipolli","2015-03-04 21:03:05","No problem, it's a huge diff that you've gone over a few times... really thanks!
+","9b1a0272021c5c847e36569722aebc312fd67de3","(4, '', u'nilearn/region.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 21:17:15","My recollection is that this is a print statement before immediately returning and that you want this only in some edge cases, for which you would set a crazy high verbosity. 
+
+I seem to remember one of such edge cases was if you want to differentiate between the fit taking a long time and the next step in your analysis taking a long time (and not doing any printing when it starts for some stupid reason).
+","9b1a0272021c5c847e36569722aebc312fd67de3","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","476","nilearn","nilearn","lesteve","2015-03-04 21:28:44","Actually I just checked and I misread the comment: there is no header argument in np.savetxt for numpy 1.6, which by the way is probably the older version we are testing on travis-ci.
+","9b1a0272021c5c847e36569722aebc312fd67de3","(154, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 01:07:52","Changing ""except Exception, e"" to ""except Exception as e""","f392523310b9eedd3edbe81f309e845b5396b505",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 01:37:09","Changing from `print ""str""` to `print (""str"")`
+
+Conflicts:
+	nilearn/_utils/niimg_conversions.py
+
+Conflicts:
+	nilearn/input_data/nifti_masker.py","f35b5d5655f11a964123787bf5eac89994a7f86d",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 05:30:13","Changing basestring to six.string_types","22f9d5846385cb4833ea320e4a8fb9964c95b066",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 05:33:45","Adding dependency on 'six' package.
+
+Conflicts:
+	README.rst","098b0a519fbecb57db42b0c7b50607ff446f2310",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 05:30:25","Changing to proper relative imports.","1d9719f96ee52d2e708effed64391a8aeb5bfe79",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 06:31:27","Converting old-style octal literal to Python 2.6+ literal syntax.","4f51268c87ecb1417725e2c59bf80cf737452b00",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:53:27","urllib/urllib2 migration.
+
+Conflicts:
+	nilearn/tests/test_datasets.py","0575ad61a01bd07b772875f999f92feb1ff8ccf9",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:49:02","Shift cPickle, c/StringIO to six.moves","642c818ed23eb8ec11d6cfc774e57ecb995da774",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:56:02","CAREFULLY migrate away from old iterators (iteritems, itervalues, izip)","14f68ba821d5220291f613ba38237736252fcbb5",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:57:21","Migrate away from deprecated type checking.","4c14115412ed569c7e6cf763c437c9c66e297482",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 22:22:57","Use np.round (instead of round) to avoid a bug in np that is exposed in Python 3 (see http://numpy-discussion.10968.n7.nabble.com/should-ndarray-implement-round-for-py3k-td29232.html)","a7ee632661d0a0ebd2522c468c13b6f762a88fd7",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-22 05:33:37","Enable Python 3.4 tests.","d3267e275d1ad06624197b1b35533b418185b138",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-26 07:40:14","Closing unclosed file pointers; migrating to use 'with open...' syntax.
+
+Conflicts:
+	nilearn/datasets.py","f552b3a20131de2a4c6ee5fe34168d59ca7cdbb5",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-26 07:49:30","Use // for integer division, be explicit when we expect floating point division.","3130a3a19d09dfc0a6dbaf288ffa512cdf064c88",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:48:42","assert_equals => assert_equal","e8fbe1a402af82121121068c786bb2e0a6194883",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:52:14","assert_raises_regexp => assert_raises_regex
+
+Conflicts:
+	nilearn/tests/test_datasets.py
+	nilearn/tests/test_masking.py
+	nilearn/tests/test_region.py","4fe7143bc5510f44c37e6a0ca0a78fc1d038fcd7",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:54:45","convert 3.4 iterators into lists where lists are required / expected.","5f012802ad6616e04747aa14def2dc33543ecf89",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:56:01","Non-unicode strings must be prefixed with b''","1680e00f66caf372a17a486272f2d3117e2ce54d",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:57:56","Linting and taking care of python idiom warnings.","7bcb14ec5577abf0f988213c804098cdac50d4d1",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 13:37:33","using contextlib again:","40a7f852273f2434738994333dc755c7d95b3e27",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 13:55:40","Trying to fix buffer problem","075a77d2163165f514c19ed5c0a4367d6bf2ef9a",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 07:32:10","Byte / Unicode straigtening out, for Python 2/3 compatibility.","b86239a01fb25f0bb8104b1b6ca46bbb4fae03ca",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 07:40:53","Fixing confusing zip issue.","83f28ae61e5fd73f5a8f4b771fd8b534222e1c51",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 10:03:39","Convert dataset filtering / string comparison to bytes.","18db86009f364d527cfdb73229c5f2e559264c1c",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 10:13:10","Use list(zip()) to convert iterator to list on assignment.","7932653814466974d95ad35a0a8b85a680a6925e",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-16 17:21:25","Fix problems after rebasing on master
+
+Conflicts:
+	nilearn/tests/test_region.py
+	nilearn/tests/test_signal.py","d4651e95fdd51bdf5d2b8571224d1ade210d63d6",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-16 17:24:33","Fix broken six imports","5d035d53b4b5f39f948e3c6c232c6716e245d54f",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-16 17:50:08","Fix plot_roi_extraction.py
+
+Use np.recfromcsv which is easier to make compatible for both python2 and 3.
+Use binary strings for string comparison","5317c10002117a341d2c9935612f3faafd291700",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 09:55:39","Make sure to compare using bytes.
+
+Conflicts:
+	examples/decoding/plot_haxby_different_estimators.py
+	examples/decoding/plot_haxby_searchlight.py
+	examples/manipulating_visualizing/plot_roi_extraction.py","fa7c49b88f020387a6184ad0ee6cf9c3e6289eb9",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-16 18:09:18","Remove space in 'print' function calls
+
+Conflicts:
+	nilearn/input_data/nifti_masker.py","9e84487c0e0acc3999862874ff5d7949d7be9fff",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-19 14:33:55","Replace basestring by six.string_types","c1b8c25904635df25463d8440e60527116001ceb",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-19 14:44:50","Add back future to try to get the tests passing again","22c61a7543d06283a500edc97fab7947c177863c",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-20 16:49:32","python3 fixes in examples","c607fe4cf21c1bf212655f53d2632814c0b78b37",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-27 11:34:21","Fix broken genfromtxt in doc
+
+the same way it has been fixed in the examples","1bfcfeef01ddef5edf039818f9e0c1490d141d95",""
+"pull_request_commit","476","nilearn","nilearn","lesteve","2015-02-27 11:35:06","Python3 fixes for assert_regexp, itertools.izip and basestring","96e6140dc8eb21f31224983552064657908ccaeb",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-02 00:33:03","Fixing missing keyword arg (Python 3.x only)","5cb1da24f4a7fd655093c6c367add0dfa1ee3b3b",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-03 16:09:48","Remove dependency on future.","9dcaf9c31b805a1f51c2c2a5da45b04f9a6b7bd0",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-03 16:24:27","Rename assert_raises_regexp to assert_raises_regex in Python 2.7","4ef1696ae7ddf8a6185be1463b137828a36e65a0",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-03 19:11:24","Small code cleanup and reversions from @lesteve's PR comments.","bc20ed8910d156c361c579add9598dc6df85f9e2",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-03 19:11:31","regexp -> regex","dcc4837f271617fac1129e21aa2daaefdb3c38e5",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-03 19:33:04","Redoing xrange via six.","259380ea1ce1cd7081a26c16d1db56611a8a740a",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-03 19:35:17","Adding a comment, and more explicit ""magic string"", for recfromcsv in fetch_abide_pcp.","1d0b8a83f2f9e42430aef7f17159091c01a8e67c",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-04 14:51:58","Revert sphinxext changes by copying files from master.","95ddd15be9b4679c977a61bbb5536113c7fe7bc1",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-04 14:53:18","Final code review tweaks (thanks @lesteve!)","bbb6003362e5cb2023ce438b45b02d71996048ec",""
+"pull_request_commit","476","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-04 21:28:24","Niggling w/ @lesteve :)","9b1a0272021c5c847e36569722aebc312fd67de3",""

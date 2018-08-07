@@ -1,0 +1,54 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1187","nilearn","nilearn","salma1601","2016-08-02 14:19:36","``` Python
+from nilearn import datasets, plotting
+icbm152 = datasets.fetch_icbm152_2009()
+plotting.plot_img(icbm152.gm)
+```
+
+gives me the following image
+![icbm152_gm](https://cloud.githubusercontent.com/assets/7080143/17331821/daeadb10-58cc-11e6-8110-cde4ccd95236.png)
+
+I also failed in displaying the image with `plotting.plot_anat`. Am I doing something wrong ?
+","start issue","plotting icbm152 gray matter with plot_img does not work"
+"issue_closed","1187","nilearn","nilearn","GaelVaroquaux","2016-10-03 06:39:50","","closed issue","plotting icbm152 gray matter with plot_img does not work"
+"issue_comment","1187","nilearn","nilearn","KamalakerDadi","2016-09-29 12:35:00","May be it is bad idea. Can we give parameter option `dtype` to plotting functions to control ? Any other ideas/hints ? Given that we have `dtype` plotting issues with some images.
+For your record, plot_prob_atlas is broken particularly with icbm templates.
+","",""
+"issue_comment","1187","nilearn","nilearn","KamalakerDadi","2016-09-30 13:04:31","FYI: This is been reported in nibabel https://github.com/nipy/nibabel/issues/490
+","",""
+"issue_comment","1187","nilearn","nilearn","salma1601","2016-08-03 11:17:25","Ok thanks
+","",""
+"issue_comment","1187","nilearn","nilearn","KamalakerDadi","2016-08-02 21:00:03","I am not sure if I should consider as bug or images should be in 4D space as (x, y, z, 1) ? It works like this.
+
+``` python
+from nilearn import datasets
+from nilearn._utils import check_niimg
+from nilearn import plotting
+
+icbm = datasets.fetch_icbm152_2009()
+gm = check_niimg(icbm.gm, atleast_4d=True)
+print(gm.shape)
+plotting.plot_roi(gm)
+```
+","",""
+"issue_comment","1187","nilearn","nilearn","KamalakerDadi","2016-08-17 13:55:23","Here for this issue, if I reorder_img before plotting. It is good to visualize.
+
+On the other side, if I plot as it is w/o reorder_img. I see variations deep inside the code. It breaks at line 171 in displays.py
+_Breaking is due to this: `y_map` has more length calculated 250 which is more than actual data length 233 in 'y' direction._
+What's going wrong here ? How does `self.coord` is given ?
+
+Some information related to that:
+
+``` python
+self.coord = 116.5 (may be half of affine in 'y' direction)
+data.shape
+(197, 233, 189)
+ affine
+array([[   1.,    0.,    0.,  -98.],
+       [   0.,    1.,    0., -134.],
+       [   0.,    0.,    1.,  -72.],
+       [   0.,    0.,    0.,    1.]])
+```
+","",""
+"issue_comment","1187","nilearn","nilearn","KamalakerDadi","2016-08-18 12:39:26","data type at some point is converted to `int32` with `check_niimg_3d(img, dtype='auto')` leading `find_xyz_cut_coords` to find wrong coordinates. I guess.
+","",""

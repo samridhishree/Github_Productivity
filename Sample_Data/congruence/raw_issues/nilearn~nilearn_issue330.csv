@@ -1,0 +1,64 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","330","nilearn","nilearn","ogrisel","2014-12-22 10:34:51","To reproduce, run the code of the following example:
+
+http://nilearn.github.io/auto_examples/connectivity/plot_ica_resting_state.html
+
+The use the `plot_glass_brain` function on the resulting data:
+
+``` python
+from nilearn.plotting import plot_glass_brain
+
+plot_glass_brain(nibabel.Nifti1Image(component_img.get_data()[:,:,:,12], 
+                                  component_img.get_affine()),
+                 threshold=1.5);
+```
+
+which yields:
+
+![glass brain of NYU Rest](https://cloud.githubusercontent.com/assets/89061/5523840/ec5daaa0-89cd-11e4-9bf0-b93a255d7d52.png)
+
+This is not a bug in `plot_glass_brain` as the same shift can be observed with the `plot_stat_map` function when the background image is missing:
+
+``` python
+from nilearn.plotting import plot_stat_map
+
+plot_stat_map(nibabel.Nifti1Image(component_img.get_data()[:,:,:,12], 
+                                  component_img.get_affine()));
+```
+
+![stat map of NYU Rest without background](https://cloud.githubusercontent.com/assets/89061/5523884/80b77780-89ce-11e4-8aae-4c2567f7ba04.png)
+","start issue","NYU dataset is not preprocessed (was NYU Rest dataset is not aligned in MNI space)"
+"issue_comment","330","nilearn","nilearn","AlexandreAbraham","2014-12-22 14:50:20","Using the provided anatomical scans as background gives a similar result.
+","",""
+"issue_comment","330","nilearn","nilearn","lesteve","2015-01-05 12:18:14","Just wondering whether the data is supposed to be in MNI space. Here is  a snippet that shows that it doesn't seem to be the case:
+
+``` python
+
+from nilearn import datasets, plotting, image
+
+nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
+func_filename = nyu_dataset.func[0]
+mean_img = image.mean_img(func_filename)
+
+cut_coords = (0, 0, 0)
+
+plotting.plot_anat(title='MNI anat', cut_coords=cut_coords)
+plotting.plot_anat(mean_img, title='mean_img',
+                   cut_coords=cut_coords)
+plotting.plot_anat(nyu_dataset.anat_anon[0], title='anat_anon',
+                   cut_coords=cut_coords)
+plotting.plot_anat(nyu_dataset.anat_skull[0], title='anat_skull',
+                   cut_coords=cut_coords)
+
+```
+
+![nyu_rest_alignment](https://cloud.githubusercontent.com/assets/1680079/5612933/aab4aada-94dc-11e4-834b-abc3c6a9e6d6.png)
+","",""
+"issue_comment","330","nilearn","nilearn","AlexandreAbraham","2015-01-05 12:41:40","The downloads come directly from NITRC and data is not preprocessed. Should we upload a preprocessed version of the dataset?
+","",""
+"issue_comment","330","nilearn","nilearn","GaelVaroquaux","2015-01-05 12:51:05","> The downloads come directly from NITRC and data is not preprocessed. Should we
+> upload a preprocessed version of the dataset?
+
+That would be an option. I actually have such data on my disk. Let's make
+this an ENH issue, and do it when we have time.
+","",""

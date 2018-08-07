@@ -1,0 +1,17 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","624","nilearn","nilearn","banilo","2015-07-01 12:26:48","I have raised a similar issue a while ago, yet I still believe that it would be convenient to add the possibility to perform some preprocessing on the `imgs` passed to `SearchLight.fit()`. As the fit function expects Nifti-like objects, it is not easy to manipulate each image individually or apply some overall statistic. This is especially cumbersome in data-rich scenarios as it might incur doubling the data to be fit.
+
+Use cases:
+- standardize BOLD images before passing them to SearchLight.fit()
+- apply np.nan_to_num() to wipe out NaN's
+
+Alternatively, one might always standardize the input data by default given that Max Kuhn holds that mean-centering + unit-variance scaling should never hurt but can often be useful or even necessary (particularly for SVM-based classification in our case).
+","start issue","searchlight: add image-preprocessing option?"
+"issue_comment","624","nilearn","nilearn","AlexandreAbraham","2015-07-03 09:13:39","Searchlight belongs to the family of algorithm where signal from a structuring element is extracted and then processed. This is similar to `NiftiLabelsMasker`, `NiftiMapsMasker` and `NiftiSpheresMasker` (especially the latter). In #585, I started to factorize the code of these three objects but, as it is not the goal of the PR, I won't go further for the moment. Once this PR is merged, it will be easy to create a common function for all these objects and it will automatically enable the power of Masker\* options for Searchlight.
+
+Is that good enough or do you need more?
+","",""
+"issue_comment","624","nilearn","nilearn","banilo","2015-07-03 09:28:50","> it will automatically enable the power of Masker\* options for Searchlight
+
+Yes, passing on arguments to the internal searchlight masker (i.e., detrend and standardize) appears to be a viable solution. Good idea!
+","",""

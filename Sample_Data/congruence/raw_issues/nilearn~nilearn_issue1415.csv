@@ -1,0 +1,39 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1415","nilearn","nilearn","banilo","2017-03-17 14:21:20","I am using nilearn 0.2.5 and tried to apply a conventional grey matter mask on ~500 VBM images from the HCP dataset. Unfortunately, the NiftiMaskers still do not seem to scale to this size of datasets. Running the following line (vbm_files containing paths to the structural images from the HCP500 release) did not finish on my MacBook Pro with 16GB working memory after 3 hours (no other Python or other big processes running at the same time):
+
+``` python
+%timeit -n1 -r1 FS = masker.transform(vbm_files)
+```
+
+Perhaps an internal batching approach could be thinkable. When I perform the transform() in chunks of say 50 images the transforming operation is rather fast. The big inconvience however is that the confound removal option of the nifti maskers cannot be easily deployed in this way.
+
+Any ideas?","start issue","transform() of NiftMasker family does not seem ready for big-data"
+"issue_closed","1415","nilearn","nilearn","GaelVaroquaux","2017-11-06 20:43:24","","closed issue","transform() of NiftMasker family does not seem ready for big-data"
+"issue_comment","1415","nilearn","nilearn","GaelVaroquaux","2017-03-21 12:52:22","> I tried again with the MultiNiftiMasker. It also took >1 hour to transform 500 VBM images.
+
+Are you sure that you are not resampling? For instance by specifying a
+mask that is on a different grid than the the data. If that's the case,
+it's not surprising that it is taking time. Resampling is a costly
+operation. If that's not the case, than please profile the run, so that
+we understand what's going on, for instance using ""%run -p"".
+
+
+","",""
+"issue_comment","1415","nilearn","nilearn","GaelVaroquaux","2017-03-29 13:23:09","> As such, the explanation based on a costly resampling procedure is not likely.
+
+Then profile.
+","",""
+"issue_comment","1415","nilearn","nilearn","GaelVaroquaux","2017-11-06 20:43:24","I am closing this issue: it's not helpful. It's a general comment, and not something that someone (eg an external person to the project) can tackle.","",""
+"issue_comment","1415","nilearn","nilearn","AlexandreAbraham","2017-03-17 15:34:39","To complete Kamalaker's answer: if you use NiftiMasker, data will be concatenated and masked, precisely to be able to run confound removal. The concatenation of your 500 VBM images takes time and memory. With the MultiNiftiMasker, your input will be treated as a list so the images will be loaded one by one.
+
+What worries me is that somebody that has been around nilearn's dev team does not know that. That means that our external users may do the same mistake. Is there a reasonable way to warn users when the input seems fishy in the NiftiMasker?","",""
+"issue_comment","1415","nilearn","nilearn","banilo","2017-03-21 12:02:44","I tried again with the ```MultiNiftiMasker```. It also took >1 hour to transform 500 VBM images.
+
+Plus, gathering the whole data internally to be able to run confound removal is by itself not in conflict with internally using a loop over batches. This may prevent memory peaks and the batches can still be concatenated for ```signal.clean()```.","",""
+"issue_comment","1415","nilearn","nilearn","banilo","2017-03-29 13:21:48","> Are you sure that you are not resampling?
+
+As I said above (""When I perform the transform() in chunks of say 50 images the transforming operation is rather fast.""), it is considerably faster if I do the same transform() on the same images in batches. As such, the explanation based on a costly resampling procedure is not likely.","",""
+"issue_comment","1415","nilearn","nilearn","mrahim","2017-03-17 14:30:53","Already said in #1281 ","",""
+"issue_comment","1415","nilearn","nilearn","MartinPerez","2017-03-21 12:49:41","I will join this discussion because its relevant to Nistats. I was wondering why the masker was consuming so much memory when processing all runs. Actually for a moment @bthirion was using MultiNiftiMasker in some parts instead of NiftiMasker. This different way to handle memory did not come up in our discussion when deciding the default masker to use everywhere. In Nistats we do not really use any confound removal, so its better to avoid the concatenation, I also think this is not clear from the documentation. ","",""
+"issue_comment","1415","nilearn","nilearn","KamalakerDadi","2017-03-17 14:35:38","Have you tried MultiNiftiMasker ? It can be scalable in your big size case.","",""
+"issue_comment","1415","nilearn","nilearn","bthirion","2017-03-17 21:41:40","If I'm not mistaken only one example uses it. This is not enough.","",""

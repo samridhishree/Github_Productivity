@@ -1,0 +1,93 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1419","nilearn","nilearn","dinga92","2017-03-23 17:52:50","Hi, 
+After cleaning confounds with signal.clean, the outputted timeseries are correlated with confound even if they were not before. I don't know if it's a bug or I am using it wrong. Here is code I used
+
+    confounds = time_series_raw[:,0]
+    signals = time_series_raw
+    cleaned_signals = signal.clean(signals, confounds=confounds, standardize=False, detrend=False)
+
+    plt.plot(signals)
+    plt.title('Time series before cleaning')
+    plt.legend(['confound', 'signal', 'signal', 'signal'])
+    plt.show()
+
+    cleaned_signals[:,0] = confounds*-1
+    plt.plot(cleaned_signals)
+    plt.title('Time series after cleaning')
+    plt.legend(['-1 * confound', 'signal', 'signal', 'signal'])
+    plt.show()
+
+And here are images of the timeseries before and after cleaning
+
+![before](https://cloud.githubusercontent.com/assets/10049011/24261288/d2d139e2-0ff6-11e7-9379-d64a16aab8fc.png)
+![after](https://cloud.githubusercontent.com/assets/10049011/24261300/dac59cce-0ff6-11e7-8618-9511e3b474a4.png)
+
+I would expect that the timeseries would be more or less straight after cleaning. Here it seems that by trying to remove artefacts, I am adding them even to voxels that were previously fine.
+","start issue","signal.clean introduce noise to data"
+"issue_comment","1419","nilearn","nilearn","GaelVaroquaux","2017-03-24 09:00:13","> Note by Judea Pearl on how the notion of ""confound"" is not settled yet ;-)
+
+Yes, Simpson's paradox is still not understood by practionners. It has
+spured a controversy on ""global signal regression"" with thousands of
+citations that can simply be explained by the fact that more people need
+to read the wikipedia pages on statistical paradoxes.
+","",""
+"issue_comment","1419","nilearn","nilearn","banilo","2017-03-24 08:56:53","Note by Judea Pearl on how the notion of ""confound"" is not settled yet ;-)
+
+![image](https://cloud.githubusercontent.com/assets/3907396/24287027/18b9058a-1078-11e7-886a-623981f11fd5.png)
+","",""
+"issue_comment","1419","nilearn","nilearn","banilo","2017-03-24 10:09:47","> And users kept pointing to this. May be we should make the possible behaviours/usecases clear once for all in the doc ?
+
++1","",""
+"issue_comment","1419","nilearn","nilearn","salma1601","2017-03-24 09:51:56","@dinga92 we had a lot of discussions about confounds removal, e.g. issue #963 and #1064
+And users kept pointing to this. May be we should make the possible behaviours/usecases clear once for all in the doc ? ","",""
+"issue_comment","1419","nilearn","nilearn","bthirion","2017-03-23 21:39:04","This is probably because of the 'detrend=False' option.
+
+Bertrand
+
+On 23/03/2017 18:52, dinga92 wrote:
+>
+> Hi,
+> After cleaning confounds with signal.clean, the outputted timeseries 
+> are correlated with confound even if they were not before. I don't 
+> know if it's a bug or I am using it wrong. Here is code I used
+>
+> |confounds = time_series_raw[:,0] signals = time_series_raw 
+> cleaned_signals = signal.clean(signals, confounds=confounds, 
+> standardize=False, detrend=False) plt.plot(signals) plt.title('Time 
+> series before cleaning') plt.legend(['confound', 'signal', 'signal', 
+> 'signal']) plt.show() cleaned_signals[:,0] = confounds*-1 
+> plt.plot(cleaned_signals) plt.title('Time series after cleaning') 
+> plt.legend(['-1 * confound', 'signal', 'signal', 'signal']) plt.show() |
+>
+> And here are images of the timeseries before and after cleaning
+>
+> before 
+> <https://cloud.githubusercontent.com/assets/10049011/24261288/d2d139e2-0ff6-11e7-9379-d64a16aab8fc.png>
+> after 
+> <https://cloud.githubusercontent.com/assets/10049011/24261300/dac59cce-0ff6-11e7-8618-9511e3b474a4.png>
+>
+> I would expect that the timeseries would be more or less straight 
+> after cleaning. Here it seems that by trying to remove artefacts, I am 
+> adding them even to voxels that were previously fine.
+>
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly, view it on GitHub 
+> <https://github.com/nilearn/nilearn/issues/1419>, or mute the thread 
+> <https://github.com/notifications/unsubscribe-auth/AAOT1sZ2lbL0FqisLhBYYnObVJtVLq0Aks5rorFygaJpZM4MnIVv>.
+>
+
+","",""
+"issue_comment","1419","nilearn","nilearn","dinga92","2017-03-24 00:24:28","Thanks for your response. I think it happens because confounds are not being centered if detrend and standardize are False. It works if `detrend = True` however in that case the cleaned time series are centered. It cleans the timeseries without centering the outputs if I set detrend and standardize to False and input already centered confounds.
+
+Is this an expected behavior? 
+
+BW,
+Richard","",""
+"issue_comment","1419","nilearn","nilearn","bthirion","2017-03-24 08:35:09","I think so. 
+1. In general, I see no reason not to detrend / normalize.
+2. We want users to be able to work with undetrended signal, but then the confounds are not detrended either which leads to the weird results that you obtained.
+3. ""Manually"" detrending the confounds is an option. I see that as a feature for advances users, so it is reasonable not ta have it as a default behavior.","",""
+"issue_comment","1419","nilearn","nilearn","KamalakerDadi","2017-03-24 10:02:47",">And users kept pointing to this. May be we should make the possible behaviours/usecases clear once for all in the doc ?
+
++1","",""

@@ -1,0 +1,903 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1516","nilearn","nilearn","jeromedockes","2017-09-28 12:05:23","Hello @GaelVaroquaux , @mrahim , @agramfort, @juhuntenburg  and others,
+ this is a PR about surface plotting.
+
+nilearn has some awesome functions to plot surface data in
+nilearn.plotting.surf_plotting. However, it doesn't offer a conversion from
+volumetric to surface data.
+
+It would be great to add a function to sample or project volumetric data on the
+nodes of a cortical mesh; this would allow users to look at surface plots of
+their 3d images (e.g. statistical maps).
+
+In this PR we will try to add this to nilearn.
+
+Most tools which offer this functionality (e.g. caret, freesurfer, pycortex)
+usually propose several projection and sampling strategies, offering different
+quality / speed tradeoffs. However, it seems to me that naive strategies are not
+so far behind more elaborate ones - see for example [Operto, Grégory, et al.
+""Projection of fMRI data onto the cortical surface using anatomically-informed
+convolution kernels."" Neuroimage 39.1 (2008): 127-135].
+For plotting and visualisation, the results of a simple strategy are probably
+accurate enough for most users.
+
+I therefore suggest to start by including a very simple and fast projection
+scheme, and we can add more elaborate ones later if we want.
+I'm just getting started but I think we can already start a discussion.
+
+The proposed strategy is simply to draw a sample from a 3mm sphere around each
+mesh node, and average the measures.
+
+The image below illustrates that strategy: each red circle is a mesh node.
+Samples are drawn from the blue crosses that are attached to it, and are inside
+the image, and then averaged to compute the color inside the circle.
+(This image is produced by the show_sampling.py example, which is only there to clarify
+the strategy implemented in this PR and will be removed).
+
+
+![illustration_2d](https://user-images.githubusercontent.com/9196501/30964668-aa433a20-a452-11e7-96d6-5a0f8c05c959.png)
+
+
+Here is an example surface plot for a brainpedia image (id 32015 on Neurovault,
+https://neurovault.org/media/images/1952/task007_face_vs_baseline_pycortex/index.html),
+produced by brainpedia_surface.py:
+
+![brainpedia_inflated](https://user-images.githubusercontent.com/9196501/30964957-c747b55a-a453-11e7-8a38-777e359d3461.png)
+
+And here is the plot produced by pycortex for the same image, as shown on
+Neurovault:
+
+![brainpedia_pycortex](https://user-images.githubusercontent.com/9196501/30964987-e38cd4de-a453-11e7-9d5f-f1c284f93954.png)
+
+Note about performance: in order to choose the positions of the samples to draw
+from a unit ball, for now, we cluster points drawn from a uniform distribution
+on the ball and keep the centroids (we can think of something better). This
+takes a few seconds and the results are cached with joblib for the time being,
+but since it only needs to be done once, when we have decided how many samples
+we want, the positions will be hardcoded once and for all (no computing, no
+caching). with 100 samples per ball, projecting a stat map of the full brain
+with 2mm voxels on an fsaverage hemisphere mesh takes around 60 ms.
+","start issue","[MRG] Cortex surface projections"
+"issue_closed","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 19:01:26","","closed issue","[MRG] Cortex surface projections"
+"pull_request_title","1516","nilearn","nilearn","jeromedockes","2017-09-28 12:05:23","Hello @GaelVaroquaux , @mrahim , @agramfort, @juhuntenburg  and others,
+ this is a PR about surface plotting.
+
+nilearn has some awesome functions to plot surface data in
+nilearn.plotting.surf_plotting. However, it doesn't offer a conversion from
+volumetric to surface data.
+
+It would be great to add a function to sample or project volumetric data on the
+nodes of a cortical mesh; this would allow users to look at surface plots of
+their 3d images (e.g. statistical maps).
+
+In this PR we will try to add this to nilearn.
+
+Most tools which offer this functionality (e.g. caret, freesurfer, pycortex)
+usually propose several projection and sampling strategies, offering different
+quality / speed tradeoffs. However, it seems to me that naive strategies are not
+so far behind more elaborate ones - see for example [Operto, Grégory, et al.
+""Projection of fMRI data onto the cortical surface using anatomically-informed
+convolution kernels."" Neuroimage 39.1 (2008): 127-135].
+For plotting and visualisation, the results of a simple strategy are probably
+accurate enough for most users.
+
+I therefore suggest to start by including a very simple and fast projection
+scheme, and we can add more elaborate ones later if we want.
+I'm just getting started but I think we can already start a discussion.
+
+The proposed strategy is simply to draw a sample from a 3mm sphere around each
+mesh node, and average the measures.
+
+The image below illustrates that strategy: each red circle is a mesh node.
+Samples are drawn from the blue crosses that are attached to it, and are inside
+the image, and then averaged to compute the color inside the circle.
+(This image is produced by the show_sampling.py example, which is only there to clarify
+the strategy implemented in this PR and will be removed).
+
+
+![illustration_2d](https://user-images.githubusercontent.com/9196501/30964668-aa433a20-a452-11e7-96d6-5a0f8c05c959.png)
+
+
+Here is an example surface plot for a brainpedia image (id 32015 on Neurovault,
+https://neurovault.org/media/images/1952/task007_face_vs_baseline_pycortex/index.html),
+produced by brainpedia_surface.py:
+
+![brainpedia_inflated](https://user-images.githubusercontent.com/9196501/30964957-c747b55a-a453-11e7-8a38-777e359d3461.png)
+
+And here is the plot produced by pycortex for the same image, as shown on
+Neurovault:
+
+![brainpedia_pycortex](https://user-images.githubusercontent.com/9196501/30964987-e38cd4de-a453-11e7-9d5f-f1c284f93954.png)
+
+Note about performance: in order to choose the positions of the samples to draw
+from a unit ball, for now, we cluster points drawn from a uniform distribution
+on the ball and keep the centroids (we can think of something better). This
+takes a few seconds and the results are cached with joblib for the time being,
+but since it only needs to be done once, when we have decided how many samples
+we want, the positions will be hardcoded once and for all (no computing, no
+caching). with 100 samples per ball, projecting a stat map of the full brain
+with 2mm voxels on an fsaverage hemisphere mesh takes around 60 ms.
+","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","[MRG] Cortex surface projections"
+"pull_request_merged","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 19:01:26","[MRG] Cortex surface projections","6269fdee4a048b5f6cbf8c5bb36f99e505c93e34","Pull request merge from jeromedockes/nilearn:cortex_surface_projections to nilearn/nilearn:master"
+"issue_comment","1516","nilearn","nilearn","bthirion","2017-09-28 21:34:27","Thx !
+
+I have a general question: overall the difference with pycortex is not that large -- yet we lose a few details, like in the pSTS region. However, you seem to suggest that your strategy is much faster: have you checked ? Can you clarify the difference ? Why didn't you use pycortex or very similar code ?
+
+","",""
+"issue_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:39:15","Beautiful and pedagogical contribution !
+Thx. I should say, I'm convinced. I only remain a bit surprised that the line/linear approach doe not really work better than the ball, but this is not a huge difference.
+I'll look more in detail at the PR now.","",""
+"issue_comment","1516","nilearn","nilearn","eickenberg","2017-10-20 22:24:26","This looks like a great thing to have so easily and transparently accessible to the user.
+
+After some email discussion on the topic, here is a proposal to make it even more clear what is being done, with potentially huge benefits to seasoned users and perfect transparency for all of those who don't care:
+
+Many of these transformations (here volume to surface projections, but think also volume to volume transformations, ROI extractions, ...) are linear operations on the data vectors. Many of them can be represented as very sparse matrices (e.g. one vertex in this specific surface projection case will not consider the values of more than say 10 voxels).
+
+The idea would be to make this linear transformation explicit and hand it to experienced users if they request it. Ideally this would be done by representing the transformation as a scipy sparse matrix, or, at least as a scipy linear operator (by providing an adjoint/rmatvec transformation in addition to the forward direction). This would aid in
+
+- caching (just save it)
+- understandability of the object as well as its cached version (you know what it is and have it in your hands)
+- flexibility (advanced users can use them explicitly and mold them to their purposes)
+- potential savings in computation for complicated operations (imagine wanting to select values of a surface ROI in fsaverage, maybe a very small ROI. Concatenating volume -> individual surface -> fsaverage -> ROI projector can turn this operation into a linear operation on probably very few voxels of an individual brain. Likewise: you can easily use heavily masked voxel data as a starting point for these projections.)
+
+Thoughts?","",""
+"issue_comment","1516","nilearn","nilearn","eickenberg","2017-10-22 23:38:11","> What's the usecase?
+
+I can think of many. Here are 3
+
+1. This is a first stepping stone to very efficient projectors from subject volume to e.g. mean activations across a cortical atlas defined in fsaverage space. There are so many imaginable conjugations of this setting where you can circumvent blowing dimensionality/memory usage out of proportion in intermediate calculations before collapsing back to a small space. Especially with large amounts of images/subjects this can be beneficial
+
+2. It gives you a immediate access and understanding of what the projector is doing. You could use it easily to understand weird patterns in surface projection due to partial volume effects (e.g. one voxel going across a sulcus and projecting to different and disjoint parts of the surface). Simply doable by analyzing the columns of this projector matrix
+
+3. Educational purposes: Making this sparse matrix representation clear will make it possible to shed light on what possible differences there can be between e.g. a GLM performed before or after surface projection. It turns out that the beta-maps are 1-to-1 translatable if that matrix is invertible. But the noise estimates and thus the activation maps might be different. 
+
+In addition to this they are numpy/scipy objects and contain an understandable representation of the projector. Caching them can be done in a quasi-human-understandable manner.","",""
+"issue_comment","1516","nilearn","nilearn","eickenberg","2017-10-23 17:05:12","> hence the cost/benefit ratio seems small
+
+It does seem small (although I think you want to argue that it is large :) ). If the projection were internally prepared and implemented as a sparse matrix multiplication (leading to no difference in functionality), then 
+
+1. future developers, who may incidentally also be people close to the lab, might understand the linear nature of all these projections just by looking at the code they are working on
+
+1.5 If atlas transformations for fsaverage atlases are incorporated, developers could create efficient projectors under the hood, because they understand that they are nothing other than a choice of linear projection.
+
+2. these sparse matrices **could or could not** be exposed to the user. If exposing these matrices is considered a high maintenance cost because the change is outward-facing and will need to be handled with care, then don't expose it. Just let advanced enough users copy and paste the code use it at their own risk. That said, exposing these might add three lines and a docstring. The only downside is then being bound to maintaining these matrices (and who knows, maybe sparse matrices are slow compared to something more smart, but this can be tested)
+
+","",""
+"issue_comment","1516","nilearn","nilearn","larsoner","2017-11-19 18:35:49","> fsaverage is good enough. I suspect that it covers the 90% usecases
+
+IIUC all Freesurfer subjects have an affine transformation file that can applied to get data into MNI space. This is what we plan to use in MNE to transform to use `plot_glass_brain` for individual subjects, e.g.:
+
+https://github.com/mne-tools/mne-python/pull/4496/files#diff-c38906291c7d4fa5e1df2d494b9c27d2R129
+
+It would be great if the `nilearn` functionality in this PR can be used the same way, in other words, it's compatible with any data already in MNI space -- that seems sufficently general to me.
+
+If you want to extend it to subjects other than `fsaverage` (which has an identity MNI transformation), though, I'd probably do it in a separate PR since this one already has a ton of discussion. But if you do want to do it now (or later) let me know and I'm happy to coordinate to help you work with the publicly available `sample` subject from the MNE dataset, which has a complete Freesurfer recon and time-varying volume and surface source estimates.","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-10-17 20:43:27","> Thx !
+> 
+> I have a general question: overall the difference with pycortex is not that large -- yet we lose a few details, like in the pSTS region. However, you seem to suggest that your strategy is much faster: have you checked ? Can you clarify the difference ? Why didn't you use pycortex or very similar code ?
+
+Hello @bthirion , sorry for the late answer.
+
+I think that the extra sharpness you see in the neurovault snapshot is mostly
+due to the rendering and the fact that with pycortex, pixels on the screen are
+mapped directly into the brain volume. In our case, we first map the mesh
+vertices into the volume, then let matplotlib render the surface (by
+interpolating surrounding mesh values for each pixel).
+
+Fig. 4 in the pycortex paper (Gao, J. S., Huth, A. G., Lescroart, M. D., &
+Gallant, J. L. (2015). Pycortex: an interactive surface visualizer for fMRI.
+Frontiers in neuroinformatics, 9.) illustrates that:
+![pycortex](https://user-images.githubusercontent.com/9196501/31687769-8b9666fa-b38a-11e7-9751-c2986623b77c.jpg)
+
+
+
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4586273/
+
+
+This mapping of pixels into the image is done by WebGL, a javascript wrapper
+around OpenGl, which allows pycortex to do this in reasonable time by performing
+the computations on the graphics card.
+
+I think we don't want this because these dependencies are heavy (and obviously
+not python libraries), and the code would be much bigger. It is better to get
+values for each vertex in the mesh, so that we can rely on the existing nilearn
+surface plotting functions and matplotlib for the display. Moreover, someone may
+want to use these values interpolated at mesh nodes to do analysis of surface
+data (although I don't think I would recommend it).
+
+There is a possibility to get a value for each mesh vertex with pycortex, but as
+you can see in the images below the results are closer to ours. This projection
+on the cortical mesh, unlike pixel mapping, doesn't require OpenGL.
+
+I have added sampling along a normal to the cortex to what is implemented in
+this PR. So now, using the 'kind' keyword, the user can choose between the ball
+sampling that we originally proposed, and what is done by pycortex and others:
+draw a normal to the cortex, select some points on this normal, interpolate
+image values at those points, and average them.
+
+for now, the PR has the two interpolation methods offered in scipy: nearest and
+linear. Note that 'nearest' is not taking the value of the voxel nearest to the
+vertex: it is taking the voxel nearest to each of several points along the
+normal before averaging them. In the same way, linear computes an interpolation
+for several points along the normal and averages them. On top of nearest and
+linear, pycortex offers the lanczos filter, which is an approximation of an
+optimal filter for preserving the frequencies in the image. I can easily add
+this as well, but I think the images are very similar (see below), and the
+interpolation is much slower: it takes several seconds for one image with the
+fsaverage mesh, using all 4 cores and most of the memory of my laptop - so I'd
+recommend sticking with scipy's nearest and linear interpolations. (For some
+reason, even when choosing 'nearest', using scipy interpolation is several times
+slower the indexing we did when I opened the PR, but let's keep it if we want
+the linear interpolation).
+
+There are still some extra details in the pycortex images. Some possible explainations:
+- pycortex forces you to perform registration of your volume with the surface
+  subject using freesurfer. This is much more annoying for the user (e.g. me),
+  but there may be a reason for it.
+- pycortex wants a full freesurfer subject. There are lots of information in
+  there, but one thing which can help have nicer surface plots is that they have
+  both the pial and white matter surfaces, and therefore take the values inside
+  the cortex, between these surfaces. We only have one surface, so we take
+  values symmetrically from both sides of it. This is maybe less fancy, but it
+  means that you can use the output of nilearn.datasets.fetch_surf_fsaverage5.
+- maybe we need to tune a bit the size of the neighbourhood we use (I'm using 3
+  mm)
+
+Finally, it is a bit hard to compare computation times because of pycortex's
+caching, but the methods are similar so if you map the mesh (not the pixels) and
+use either nearest or linear interpolation, it should be about the same. This
+can give an idea:
+
+pycortex:
+---------
+nearest: 288 ms
+linear: 1.81 s
+lanczos: 6.65 s
+
+nilearn:
+--------
+nearest (line): 79 ms
+linear (line): 107 ms
+ball: 56 ms
+
+If the objective is just to plot one image, all of these are fine (except maybe
+lanczos).
+
+I think that all images look kind of similar and the projection doesn't have a
+huge impact, which is why probably why caret offers projection methods such as
+simply taking the voxel the node falls within, averaging the values of this
+voxel's neighbours, averaging values in a cube, or placing a gaussian blob on
+the node
+(http://brainvis.wustl.edu/wiki/index.php/Caret:Operations/MapVolumeToSurface)
+
+some examples for two images (neurovault ids 32015 and 36044): 
+
+image 32015:
+------------
+
+pycortex lanczos:
+![pycortex_brainpedia_32015_lanczos](https://user-images.githubusercontent.com/9196501/31687606-16e8c528-b38a-11e7-98b2-8cdcb8bd7309.png)
+
+
+pycortex linear:
+![pycortex_brainpedia_32015_linear](https://user-images.githubusercontent.com/9196501/31687617-1b94b7e4-b38a-11e7-8b3f-1b5d0cc164d8.png)
+
+
+pycortex nearest:
+
+![pycortex_brainpedia_32015_nearest](https://user-images.githubusercontent.com/9196501/31687625-1f5ffb86-b38a-11e7-9386-d8e5cdf81e42.png)
+
+nilearn ball, 5mm:
+
+![brainpedia_32015_nilearn_ball_5mm](https://user-images.githubusercontent.com/9196501/31688334-5934ec70-b38c-11e7-949e-7faeff69b034.png)
+
+
+nilearn line, linear:
+
+![nilearn_brainpedia_32015_line_linear_3mm](https://user-images.githubusercontent.com/9196501/31687648-2f467cc8-b38a-11e7-8a59-71fd63037b8b.png)
+
+
+nilearn line, nearest:
+
+![nilearn_brainpedia_32015_line_nearest_3mm](https://user-images.githubusercontent.com/9196501/31687659-3b1c7dfe-b38a-11e7-9508-a76ae8d36380.png)
+
+
+nilearn ball (nearest):
+![nilearn_brainpedia_32015_ball_3mm](https://user-images.githubusercontent.com/9196501/31687672-44ef5856-b38a-11e7-8fb9-b0ad3b6aa5f3.png)
+
+
+image 36044:
+------------
+
+pycortex lanczos:
+
+![pycortex_brainpedia_36044_lanczos](https://user-images.githubusercontent.com/9196501/31687688-5003766e-b38a-11e7-8658-c740795cb957.png)
+
+
+pycortex linear:
+![pycortex_brainpedia_36044_linear](https://user-images.githubusercontent.com/9196501/31687712-59b005ba-b38a-11e7-89db-5340de1c8589.png)
+
+
+pycortex nearest:
+![pycortex_brainpedia_36044_nearest](https://user-images.githubusercontent.com/9196501/31687711-591e05ca-b38a-11e7-82a1-bd448d2609b0.png)
+
+
+nilearn line, linear:
+![nilearn_brainpedia_36044_line_linear_3mm](https://user-images.githubusercontent.com/9196501/31687727-62420462-b38a-11e7-8d80-e4bf373b97bb.png)
+
+
+nilearn line, nearest:
+![nilearn_brainpedia_36044_line_nearest_3mm](https://user-images.githubusercontent.com/9196501/31687732-67a4a6d0-b38a-11e7-994d-085285d4089e.png)
+
+
+nilearn ball (nearest):
+![nilearn_brainpedia_36044_ball_3mm](https://user-images.githubusercontent.com/9196501/31687738-6f548602-b38a-11e7-9f8c-6fef6ed2512c.png)
+","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-10-19 16:32:30","> THe ball is an approximation of a Gaussian sampling by considering it as a density and choosing an small set of optimal points to approximate it.
+
+The one we use now is a uniform distribution inside the ball. I can replace it with Gaussian if we want.","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-10-21 23:46:53","> The idea would be to make this linear transformation explicit and hand it to experienced users if they request it. Ideally this would be done by representing the transformation as a scipy sparse matrix
+
+Sounds very interesting!
+","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 21:15:51","> I am trying to reproduce one of the travis failure: xml.parsers.expat.ExpatError: no element found: line 1, column 0 but could not.
+
+cannot reproduce either
+","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 21:32:33","> I haven't gone through tests yet. I tried to do with ica maps but could not.
+
+@KamalakerDadi could you send something to help me reproduce this?","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 22:10:47","> I haven't gone through tests yet. I tried to do with ica maps but could not.
+> 
+>     @KamalakerDadi could you send something to help me reproduce this?
+> 
+> from nilearn import datasets
+> from nilearn.plotting import niimg_to_surf_data, plot_surf_stat_map
+> 
+> 
+> fsaverage = datasets.fetch_surf_fsaverage5()
+> texture = niimg_to_surf_data('CanICA_resting_state.nii.gz', fsaverage.pial_left)
+> plot_surf_stat_map(fsaverage.pial_left, texture, cmap='bwr')
+
+texture here will be a 2d array: each column is a surface map for the corresponding image. plot_surf_stat_map just wants one surface map at a time, try this:
+
+```python
+from nilearn import datasets, plotting
+
+brainpedia = datasets.fetch_neurovault(collection_id=1952, max_images=7)
+fsaverage = datasets.fetch_surf_fsaverage5()
+texture = plotting.vol_to_surf(brainpedia.images, fsaverage.pial_left)
+
+for img_texture in texture.T:
+    plotting.plot_surf_stat_map(fsaverage.infl_left, img_texture)
+
+plotting.show()
+```
+
+ps what is the error you get?","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 23:14:37","> it seems to me that the projection code should not live in the namespace of the plotting code
+
+Done. I think the examples should be moved as well, where would you put them?","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 23:25:58","questions we haven't answered yet:
+  - do we create a new subfolder in examples/ ? where do we put
+    plot_3d_map_to_surface_projection.py and
+    plot_surface_projection_strategies.py?
+  - when some mesh vertices are outside the provided volume, is it ok to return
+    nan for these vertices? should we provide a fill_value kwarg?","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-15 17:52:04","> The user-facing example is at the right place. The internal example should be moved to a sub directory of plotting.
+
+moved it to subdirectory. should I edit gen_gallery.py so that the subdirectory is also explored to generate the gallery? ","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-15 20:35:27","> For other failure, I am trying to find a solution in nibabel issue tracker nipy/nibabel#581. It might be that xml.parser.Expat.version or valid GIFTI in failing travis containers.
+
+It seems to be due to the mocking of fetching of the fsaverage files. The surface files I am trying to load are empty","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-15 21:08:46","> I would expect to fail on laptop if trying to load empty ?
+
+Not necessarily: maybe you already have the fsaverage files on the laptop, so
+they don't need to be fetched.
+
+The problem was that test_fetch_mixed_gambles in
+nilearn/datasets/tests/test_func.py was using @with_setup(setup_mock), but
+forgot to @with_setup(setup_mock, teardown_mock). As a result, after executing
+this test, dataset module was unusable: urllib.request was mocked, and any fetch
+dataset would be a bunch of empty files.
+
+travis passing now.","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-15 21:17:03","> So, I close the issue opened in nibabel ?
+
+Yes I think so. I have checked that the file was actually empty, so this was not a nibabel issue.
+
+Thanks a lot for your help debugging these 3 errors!
+I'll look into appveyor now","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:55:01","> I don't think that you need to edit anything. You only need to add a README.txt in the subdirectory.
+
+still not showing up :cry: ","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 21:36:45","> What are you trying to add ? Sorry, I could not catch.
+
+the technical detail example does not show up in the examples index of the documentation, at least when I build it locally","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-17 21:55:41","> We are almost close to merge.
+
+Thanks for all your help Kamalaker!","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-18 02:17:35","> I only remain a bit surprised that the line/linear approach doe not really work better than the ball
+
+The images look very similar, but the linear interpolation is more stable when resampling the input image (using either the ball or normal sample positions)","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 03:48:47","> I am preparing a PR to do this.
+
+is  #1564 going to be merged before this? should I remove anything related to scipy 0.13 support?","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 04:08:38","> . @jeromedockes should know if it beneficial to do this at a performance level ?
+
+About performance:
+- for one image, there is no big difference, linear takes about x1.5 more time
+- for many images, since it is written as a dot product with a sparse matrix, nearest scales much better: for 100 images, linear takes x20 more time (2.86s for linear and 156ms for nearest on my laptop)
+","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 08:10:47","apart from toy generated meshes, we have only been using fsaverage; does anyone have in mind other cortical meshes in mni space that are easily available and that we could try? ","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 17:10:43","> I didn't have time in mind, but more reabability
+
+ah ok, in this case I change it","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 17:28:08","> I didn't have time in mind, but more reabability: we are moving around anobject that we are inverting. That is a bit surprising.
+
+How is this for a compromise:
+- inside _masked_indices, which was doing a lot of logical_not, I manipulate kept indices, but I return ~kept
+- outside this function, masked is used once as-is, twice after doing NOT (if I was returning kept it would be twice as-is, once after taking NOT)
+
+I just find it easier to understand what this is when it is called 'masked' something.
+what do you think?","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 18:52:14","@larsoner it should work fine for any mesh and image if they're both in the same space - in particular if they're both in MNI space. My comment was simply that I would have liked to try and test it with a few other meshes, you can ignore it","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 19:02:26","> If you want to extend it to subjects other than fsaverage (which has an identity MNI transformation), though, I'd probably do it in a separate PR since this one already has a ton of discussion. But if you do want to do it now (or later) let me know and I'm happy to coordinate to help you work with the publicly available sample subject from the MNE dataset, which has a complete Freesurfer recon and time-varying volume and surface source estimates.
+
+I know nothing about eeg or meg so this sounds like a cool learning opportunity if it can be useful to nilearn users. happy to work on it after today's release (as you said it would be a different PR). In the meanwhile, anything that is an affine transformation away from the image space is fine for the current functionality","",""
+"issue_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 19:04:03","> OK, tests ran. I think that this is good to go. Merging!
+
+Great! many thanks to everyone involved in the reviews and discussion; it has been fun and very interesting for me","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-09-30 08:24:40","FYI: CircleCI is now fixed and full details about the FIX can be found in this [thread](https://github.com/conda/conda/issues/6030)","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 12:25:54",">(This image is produced by the show_sampling.py example, which is only there to clarify
+the strategy implemented in this PR and will be removed).
+
+I am -1 on this. I would like to keep the example for user understanding. Similar thing is there for plot_affine_transformation.py
+","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 14:00:13","Sorry for the merge noise. Could you please rebase ?","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 20:26:58","I am trying to reproduce one of the travis failure: xml.parsers.expat.ExpatError: no element found: line 1, column 0 but could not.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 21:42:05",">I haven't gone through tests yet. I tried to do with ica maps but could not.
+
+>@KamalakerDadi could you send something to help me reproduce this?
+
+```python
+from nilearn import datasets
+from nilearn.plotting import niimg_to_surf_data, plot_surf_stat_map
+
+
+fsaverage = datasets.fetch_surf_fsaverage5()
+texture = niimg_to_surf_data('CanICA_resting_state.nii.gz', fsaverage.pial_left)
+plot_surf_stat_map(fsaverage.pial_left, texture, cmap='bwr')
+```
+[CanICA_resting_state.nii.gz](https://github.com/nilearn/nilearn/files/1472608/CanICA_resting_state.nii.gz)
+","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 22:03:48",">    I am trying to reproduce one of the travis failure: xml.parsers.expat.ExpatError: no element found: line 1, column 0 but could not.
+
+>cannot reproduce either
+
+I can post the issue to nibabel tomorrow to get some help. Meanwhile, I was quickly going through this issue but with no striking thoughts. https://github.com/nipy/nibabel/issues/469","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 22:17:40",">ps what is the error you get?
+
+No problem now. :+1: I ran script with canica maps.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-15 08:48:58",">when some mesh vertices are outside the provided volume, is it ok to return
+nan for these vertices? should we provide a fill_value kwarg?
+
+Is there any value we can fill to make it even with background ? What is the practise other softwares does in this missing vertices ?","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-15 15:07:49","* Quickly scanning through Surface plotting PR. The reason for first travis env failure might be. As mentioned in testing function ```test_load_surf_mesh_file_gii``` in nilearn/tests/test_surface.py:
+“If nibabel is of older version we skip tests as nibabel does not  support intent argument and intent codes are not handled properly with  older versions”. That's why we don't see the failure in other envs which have nibabel>2.1.0
+Given this, we can first try by generating a dummy surface mesh object using ```_generate_surf``` rather than testing with pial_left surface mesh object.
+Second try is upto dicussion if we want to skip test.
+
+* Because one of the environment tests without matplotlib it fails if you do ```import matplotlib``` outside plotting module. Because of this all plotting functions are tested by setting the matplotlib backend in nilearn/plotting/__init__.py For instance, see this PR #546
+
+* ~~For other failure, I am trying to find a solution in nibabel issue tracker https://github.com/nipy/nibabel/issues/581. It might be that xml.parser.Expat.__version__ or valid GIFTI in failing travis containers.~~
+~~Can you please try to print the xml.parser.Expat.__version__ in new commit. Try to import and print before load_surface_mesh call ? And also, print(sha256sum --version). I am not sure how to do this ?~~","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-15 20:51:34",">   For other failure, I am trying to find a solution in nibabel issue tracker nipy/nibabel#581. It might be that xml.parser.Expat.version or valid GIFTI in failing travis containers.
+
+>It seems to be due to the mocking of fetching of the fsaverage files. The surface files I am trying to load are empty
+
+I would expect to fail on laptop if trying to load empty ?","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-15 21:12:27",">Not necessarily: maybe you already have the fsaverage files on the laptop, so
+>they don't need to be fetched.
+
+>The problem was that test_fetch_mixed_gambles in
+>nilearn/datasets/tests/test_func.py was using @with_setup(setup_mock), but
+>forgot to @with_setup(setup_mock, teardown_mock). As a result, after executing
+>this test, dataset module was unusable: urllib.request was mocked, and any fetch
+>dataset would be a bunch of empty files.
+
+Great catch. :+1: 
+
+>travis passing now.
+
+So, I close the issue opened in nibabel ?","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-15 21:22:03","> I'll look into appveyor now
+
+I will make another review now.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:48:17","I think we are almost there.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 13:00:50","The technical examples in sub folders can't be seen anymore in the gallery ?
+examples/01_plotting/technical_details/plot_surface_projection_strategies.py","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 13:03:04","> I am -1 on this. I would like to keep the example for user understanding.
+ >Similar thing is there for plot_affine_transformation.py
+
+>I think that we could create a subfolder of the plotting folder for such
+examples called something like ""Technical matters"" and move these two
+examples in there.
+
+I think plot_affine_transformation.py needs to be moved as well to technical_details sub folder.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 21:18:19",">I don't think that you need to edit anything. You only need to add a README.txt in the subdirectory.
+
+>still not showing up :cry:
+
+What are you trying to add ? Sorry, I could not catch.
+
+Also, sorry to ask lot of times to rebase. Travis failures should be fixed by rebase.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 21:51:57","I am reading the documentation: It says
+""You can have sub-folders in your examples directory, those will be processed by the gallery extension and presented in the gallery, as long as they also have a README.txt file. Sub-folders have to respect the same structure examples folder.""","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 22:10:08",">OK, I am sorry, I had it wrong: sphinx-gallery does not explore in depth the directories (we could suggest this as an enhancement). 
+
+May be it can be done by upgrading to new version. Right now we are at 0.1.11. I can take care of upgrading and testing this sub folder arch.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-17 21:07:01","Could you please add .. versionadded:: 0.3.2 to vol_to_surf ?","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-17 21:08:05","I don't think I have much to say here. We are almost close to merge.","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-18 19:51:27"," >linear (trilinear) is available from 0.14 scipy.
+>OK, how about we bump dependency to 0.14 for scipy?
+
+I have no problem bumping to 0.14. @jeromedockes should know if it beneficial to do this at a performance level ?","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-19 09:00:38",">I am preparing a PR to do this.
+
+>is #1564 going to be merged before this? should I remove anything related to scipy 0.13 support?
+
+Discussion was to have linear by default. We are bumping the scipy to 0.14","",""
+"issue_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-19 15:29:00","I guess it was accidentally closed. Reopening again.","",""
+"issue_comment","1516","nilearn","nilearn","codecov[bot]","2017-11-15 21:43:21","# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=h1) Report
+> Merging [#1516](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/dc6b15ea17c39327549233ba6e54fc684b041729?src=pr&el=desc) will **increase** coverage by `0.12%`.
+> The diff coverage is `98.86%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1516/graphs/tree.svg?width=650&height=150&src=pr&token=KpYArSdyXv)](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1516      +/-   ##
+==========================================
++ Coverage   94.29%   94.42%   +0.12%     
+==========================================
+  Files         122      125       +3     
+  Lines       14997    15264     +267     
+==========================================
++ Hits        14142    14413     +271     
++ Misses        855      851       -4
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/plotting/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9fX2luaXRfXy5weQ==) | `83.33% <ø> (-0.67%)` | :arrow_down: |
+| [nilearn/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9fX2luaXRfXy5weQ==) | `100% <ø> (ø)` | :arrow_up: |
+| [nilearn/datasets/tests/test\_func.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy90ZXN0cy90ZXN0X2Z1bmMucHk=) | `100% <100%> (ø)` | :arrow_up: |
+| [nilearn/surface/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9zdXJmYWNlL19faW5pdF9fLnB5) | `100% <100%> (ø)` | |
+| [nilearn/plotting/surf\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9zdXJmX3Bsb3R0aW5nLnB5) | `84.16% <100%> (-3.11%)` | :arrow_down: |
+| [nilearn/plotting/tests/test\_surf\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy90ZXN0cy90ZXN0X3N1cmZfcGxvdHRpbmcucHk=) | `100% <100%> (+0.98%)` | :arrow_up: |
+| [nilearn/surface/surface.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9zdXJmYWNlL3N1cmZhY2UucHk=) | `98.33% <98.33%> (ø)` | |
+| [nilearn/surface/tests/test\_surface.py](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree#diff-bmlsZWFybi9zdXJmYWNlL3Rlc3RzL3Rlc3Rfc3VyZmFjZS5weQ==) | `99.21% <99.21%> (ø)` | |
+| ... and [4 more](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=tree-more) | |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=footer). Last update [dc6b15e...b86bfb9](https://codecov.io/gh/nilearn/nilearn/pull/1516?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+","",""
+"pull_request_commit_comment","1516","nilearn","nilearn","banilo","2017-09-28 22:01:44","Perhaps consider adding a more verbose error message","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","banilo","2017-09-28 22:02:26","this does not yet seem to make the standard mention of nii-like image compatability","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","banilo","2017-09-28 22:04:58","several imports in here appear to not follow the ""basic->more specific/elaborate"" convention... ","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/tests/test_surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-09-29 08:53:34","You need a docstring with a title, for the gallery. Sphinx-gallery will not accept to build a gallery item from this.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/brainpedia_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-09-30 18:33:45","I would like to avoid uncontroled RNGs in the codebase. The right way of doing this is to create a like RNG:
+<pre>
+rng = np.random.RandomState(0)
+image = rng.uniform(...)
+</pre>","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/show_ball_sampling.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-09-30 18:35:38","Sorry, I hadn't realized that this was an example, and not a test.
+
+I would simply seed the global RNG here: it's simpler and the side effect is less important.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/show_ball_sampling.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-09-30 18:36:22","+1. This will not help the user.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:42:43","Please add a bit more here.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/show_ball_sampling.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:46:06","Overall the structure of this second example does not follow the Nilearn conventions for examples (present them as a script rather than functions). Can this be reorganized a little bit ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/show_ball_sampling.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:49:33","there's a function for that.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:50:51","How do you unsure that these are outer normals. Is is from the mesh triangle encoding conventions (should be made explicit then) ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:54:25","I find this a bit surprising for a  non-public functions","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:55:46","I would take only the outer normal; Why do you center the interval ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 10:56:14","n_points=10 probably suffices as a default ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 11:01:57","test_ball_sampling()","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/tests/test_surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","bthirion","2017-10-19 11:05:00","Please add comment to explain what you're testing.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/tests/test_surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-10-19 16:29:52","Yes if we keep it this example should be reworked. Originally, I had only thrown
+it in there to illustrate the sampling method for reviewers by producing the 2d
+plot at the top of the PR, and was planning to remove it. However @GaelVaroquaux
+suggested that it might be interesting to users as well. The only problem is
+that in that case we need a coord_transform that can handle 2d images, which is
+why I'm not using nilearn.image.coord_transform for now. It's a one-line
+function though.
+If we keep it I will also add an illustration for the line sampling.
+
+","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/show_ball_sampling.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-10-19 16:30:10","Yes, image.resampling.coord_transform. But it only handles 3d data, so if we
+want to keep the example which illustrates the sampling methods in 2d we need
+this (see comment). or is there another function for coord transforms in
+nilearn?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-10-19 16:30:54","Usually when faces in a triangular mesh are described by their ordered vertices,
+the normal given by the right-hand rule points ""outwards"". I think that this
+convention is respected by cortical meshes because that is what matplotlib
+expects, and surf_plotting.plot_surf passes the faces to matplotlib without
+modifying them (and it works fine). Can anyone confirm? I will make this explicit.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-10-19 16:31:19","The problem is that I was not sure if we would always get a pial surface, or
+sometimes a white matter surface, or something in between. If it's always pial
+we can shift the interval inwards. We could also expose the shift as a
+parameter, or ask the user to specify what kind of surface it is. Finally, I
+think we should still keep at least a small portion of it on the other side to
+be more robust to small registration problems (this is what caret does).
+","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-12 18:05:03","Can you leave empty line after so that hopefully sphinx failures can be fixed ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-12 18:05:27","Same here can you leave empty line after ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-12 18:12:05","Seems like this is new from SciPy 0.14.x. Do you know if there any alternatives for < 0.14 SciPy version. Because we support 0.13.3","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-13 17:34:22","Thanks for pointing this out. I'm not sure that there is an easy alternative,
+because interpolation of data on a regular grid was introduced in 0.14. Before
+that, the linear interpolation accepts a bunch of arbitrary points and computes
+a delaunay triangulation, which is prohibitively slow - I waited 10 mn for the
+2mm MNI template before giving up.
+We could:
+  - write our own linear interpolation, which would give us the opportunity to
+    present it as a sparse matrix, with the same advantages we got from doing
+    this for the nearest voxel interpolation.
+  - issue a warning and fall back to nearest neighbour interpolation when the
+    scipy version is < 0.14. Since the resulting images are almost identical
+    (at least qualitatively, i.e. the plots will look the same), this seems
+    reasonable to me.
+
+What do you think?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-14 13:57:20","Can you use the map in other visualization examples rather:
+https://2698-1235740-gh.circle-artifacts.com/0/home/ubuntu/nilearn/doc/_build/html/auto_examples/01_plotting/plot_demo_glass_brain.html#sphx-glr-auto-examples-01-plotting-plot-demo-glass-brain-py
+
+That way it's easier to compare examples. Also, this map is easy to understand (it's a simple button press map)","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 13:59:36",">What do you think?
+
+2 option looks reasonable compromise. So, here nearest neighbour is faster compared to linear one ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 14:03:03","I am just trying to understand. ""Projecting a 3D statistical map onto"" ........ if this function is more suitable to plot statistical maps. 3D brain image seems like a more general or averaged one across timeseries of images.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'doc/plotting/index.rst')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-14 14:03:20","People would say ""a 3d brain volume""","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'doc/whats_new.rst')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 14:05:21","I would write filename as plot_3d_map_to_surface_projection.py ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 14:12:03","I would write ""Download a 3D statistical map from"". Because you said 3D data after.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 14:46:59","General comment: Is there any easy way to compare between volume and surface projection of same statistical map ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-14 14:47:32","We prefer relative imports.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 15:04:08","I hit nans while using faverage.infl_left or infl_right. How can we overcome this problem in ```niimg_to_surf_data``` ?
+Keeping them to zero works ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 15:19:27","""3d volume""","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_cortex_projection_strategies.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 15:38:42","Ok. It only works for mesh data but not depth data ? For instance, depth data I am referring to sulc_left or right ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 15:41:51","We are able to import ```from nilearn.plotting import niimg_to_surf_data```. I think we can say simply plotting.niimg_to_surf_data","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_cortex_projection_strategies.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 15:42:40","same here plotting.plot_surf_stat_map for easy import understanding to user.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_cortex_projection_strategies.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 15:49:08","I would write filename as plot_surface_projection_strategies.py","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_cortex_projection_strategies.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:22:43","In all plotting functions, we said image->img if it not specific to statistical image. Otherwise, stat_map_img.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:23:44","mask -> mask_img ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:24:58","n capital **N**iimg","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:29:16","I would go for neighbouring -> neighboring","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:35:03","Just to be consistent ======= -> -------------","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:39:55","capital n","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:41:57","array -> numpy.ndarray","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:46:03","Simply ""If image was a 3D image"" to ""If 3D image is provided""","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:46:45","Same here: ""If image was a 4d image"" to ""If 4D image is provided""","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:51:21","May be we could simply use this in the first line and remove nilearn.image.load_img","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:56:21","I haven't checked doing surface plotting with functions we have using 4D stat map image. Did you checked it works ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 16:58:28","Why not ```from nilearn import image``` and use functions in image module ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 17:07:20","Is it a good idea to use the same interpolation method as specified/specifies at the function level ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 17:10:17","Given that resampling is costly, can we do resampling only if both images are not in same FOV ? Or Is it necessary to do resampling to get better sampling points positions ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:22:32","nearest neighbour does not use scipy.interpolate so it does not have this issue.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:37:32","should we plot both the surface projection and some slices or a glass brain in this example?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:47:20","- infl_left and infl_right are the inflated surfaces: the nodes of the mesh have
+  been moved to make the surface of the cortex smoother, inflated for display.
+  They are not any more at their original position in the cortex, so it doesn't
+  really make sense to sample the volume at these positions. I think what people
+  would do is: use pial_left and pial_right, the true positions of the cortical
+  mesh, to get the projectin, then use infl_left and infl_right, along with the
+  computed projection, to make the display.
+
+- for now, we get nans for vertices that are outside the image, or outside the
+  mask if one is provided. I also don't really like returning nans, but values
+  at these nodes truly aren't defined. we could provide a fill value kwarg?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:52:16","It should be a mesh of the cortex. depth data does not give a mesh of the cortex, but the depth of the sulci at each position of such a mesh. From what I understand it is used mostly for shading the surface plots (although I don't see a difference in the resulting plot whether I pass this to  plot_surf_stat_map or not). So it is a different kind of data, not relevant for the projection. the description of the 'mesh' parameter has been copied from existing surface plotting functions","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:07:19","I want to load it first to get its original shape. How would you do it?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:09:59","I checked it words, and in test_surf_plotting.test_niimg_to_surf_data, I check we get the same result when we project an image by itself or as part of a 4d image. Maybe it needs more tests?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:11:37","This is not related to sampling around mesh vertices, it is just to align the mask and the image. I use nearest because it is fast and preserves the datatype of the mask (continuous would transform the boolean mask into a floating-point image)","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 19:21:27","I don't know much about surface plotting. I am justing trying to visualize both projections and thinking how would they look like. May be a general comment.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 19:29:10","Surface plotting users know exactly which mesh to use to get right display. You are right nans are problem. But keeping them zero is also not valid. What would be your choice of filling value ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:50:44","I don't think there is any reasonable default for filling value except nan, but we could allow the user to  choose a different one. If we use anything else than nan, e.g. 0, the user will not now if the image intensity at this point was 0, or it was filled because outside of mask or image","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-14 19:53:04","I haven't gone through tests yet. I tried to do with ica maps but could not.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 20:25:10","added a glass brain to compare","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-14 20:26:36","If it's easy could you send me the failing example? ","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 09:27:43","I would write: ""This example demonstrates about projection of 3D statistical map
+onto a cortical mesh using :func:`nilearn.surface.vol_to_surf`. Display
+a projected map with surface plot using :func:`nilearn.plotting.plot_surf_stat_map`.""","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_to_surface_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 09:53:10","Can you please write what type of image you expect here ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 10:00:22","Can you please make Notes section and add few important technical details about 'line' and 'ball' sampling. I saw you have mentioned lot of technical details in the discussion. 
+
+Can you pick very few and important ones. I think those will be useful to users ? ","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 10:01:21","In addition to this comment, may be details about performance, methods (kmeans), etc, etc.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 10:28:53","Can you please use ```check_niimg``` for mask_img before passing to resample_to_img ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 10:29:34","You are right I cannot think of a better alternative.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 10:33:17","How can we improve to make sure that passed gifti file has empty object ? I am thinking of exactly the travis failures quite a while ago. Is it something should be checked in ```load_surf_mesh``` ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 10:34:09","Also, we accept path to Nifti object.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 11:05:48","Could you please also check if n_samples and radius is ```import numbers.Number``` ? AFAIK there is no validation on this ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 11:42:31","Why don't we directly assign n_points here rather kwargs ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 11:43:23","pair of numpy.ndarray(s)","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 11:51:53","numpy.ndarray","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:07:30","We don't need this. We dropped supporting nibabel=1.2.0. Minimum version is 2.0.2","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/tests/test_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:12:38","can you please also test expected sample locations shape ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/tests/test_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:19:32","can you please test given mask ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/tests/test_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:19:46","same here, can you please test with mask ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/tests/test_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:20:23","I understand that you have tested masked_indices but I would like to test with vol_to_surf ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/tests/test_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:29:06","I could not find _points_in_unit_ball ?
+
+I am trying to understand why it is there now and why it will be removed after PR is ready to merge ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:30:53","So, this will fall back to nearest interpolation when scipy is < 0.14 and linear is given. Isn't it ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:31:56","Can you add comment why need nan for masking ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:33:21","Can you add comment regarding assigning nan values ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:39:06","Why is it public ? What is the use case of sparse matrix ? Useful only when interpolation='nearest' ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:44:13","Can you please comment for this version check ? Why we need version check ? Just to be clear for everybody","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/tests/test_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 12:44:50","Can you please comment for version check ?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/tests/test_surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-16 14:19:08","We should break out these imports in the cells where they are used. It's easier for beginners.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'examples/01_plotting/plot_3d_map_to_surface_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:17:13","Is this something that we usually do? In other nilearn functions I don't see this kind of type checking","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 20:21:03","Just to make it much user friendly if accidentally got some weird inputs. I think it is a minor comment which you can avoid.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:22:35","I think this was a very particular situation due to mocking of fetchers in our tests, I'm not sure it is likely to happen in user code. We can check the length of the surface files, but they could be corrupted in many other ways than being empty. Do you agree that this is a separate issue? so far this PR doesn't touch load_surface_mesh or any of the pre-existing surface plotting code.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:31:56","Sorry this comment is obsolete. In order to use the 'ball' sampling strategy, we
+need n points uniformly spread in the unit ball. How I do this now is by drawing
+many samples from a uniform distribution over the unit ball, performing k-means
+on these monte-carlo samples, and keeping the n centroids.
+
+This is not great, so if you can think of a smarter way, let's change it.
+
+Otherwise, these computed centroids need to be cached in some way: they are
+independant of the image and the mesh, and take a little while to compute.
+During development, I was using joblib, but I think we could compute the
+centroid positions once and for all for a few values of n_samples, e.g. [20, 40,
+80, 160], and ship these coordinates with the code, in csv files for example.
+@KamalakerDadi  and @GaelVaroquaux  What do you think?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-16 20:31:57",">Do you agree that this is a separate issue? so far this PR doesn't touch load_surface_mesh or any of the pre-existing surface plotting code.
+
+Agreed that's different. Not part of your PR.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:33:04","The idea was to let the callee (the projector) set the default if the user doesn't provide one","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:35:09","There has been quit a bit of discussion about this between @GaelVaroquaux  and @eickenberg (see above in this thread). Apparently having the projection matrix could be useful for advanced users. I have no problem with making this function private if you think it is better.
+And yes for now this is only available for nearest neighbour interpolation","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:37:53","yes, this function will never be called if scipy < 0.14","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-17 21:04:49","Just to be aware that could you please comment saying that plot_surf_stat_map works  ?
+
+NOTE: Example needs matplotlib version higher than 1.3.1.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(39, '', u'examples/01_plotting/plot_3d_map_to_surface_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-17 21:06:14","While we are at it. I think it is a better option to also state default samples for 'line'.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-17 21:42:38","I'm sorry what should the comment say?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(39, '', u'examples/01_plotting/plot_3d_map_to_surface_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-17 21:42:56","I added your NOTE to the docstring","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(39, '', u'examples/01_plotting/plot_3d_map_to_surface_projection.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-18 16:59:36","Can you add load_surf_data and load_surf_mes here","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'doc/modules/reference.rst')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-18 19:03:13","Maybe I missed the discussion, but does setting the interpolation to ""nearest"" by default affect negatively the quality of the results?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","KamalakerDadi","2017-11-18 19:32:02","linear (trilinear) is available from 0.14 scipy.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 03:45:55","yes the results are more stable when resampling and applying affine transforms to the input 3d image when using linear interpolation rather than nearest. I put nearest by default because users of scipy 0.13 who try to use linear get a warning saying that we are falling back to nearest","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 14:39:32","We should invert the order of ""interpolation"" and ""kind"" in the arguments as interpolation is probably more important to the user.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 14:41:05","We should invert the order of this description with ""kind""","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 14:42:02","TODO: remove this.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 14:45:37","We should repeat a sentence on the speed of linear vs nearest interpolation above, in the documentation of the corresponding argument.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 14:50:20","We can remove this comment: we will now support only scipy >= 0.14","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 15:18:22","I have the impression that you are doing a lot of ""not"" operations when you are building this mask and using it. I wonder if it wouldn't be beneficial to invert the function and return the selected indices.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(211, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","GaelVaroquaux","2017-11-19 15:21:13","I would like here a warning that says that the function is experimental and that minor details such in the interpolation could change.
+
+The reason that I would like this, is that we are considering merging this just before a release, and hence we have little insight on the best choices for hyperparameters. I want to be able to change those hyperparameters.
+
+We'll remove the warning in the near future.","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(None, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:34:25","I'll try to change it and see if it makes a difference. I did it like this because it was easier to find a good name for the function. I really don't know if it makes a difference on the total time vol_to_surf takes to return (my guess is no)","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(211, '', u'nilearn/surface/surface.py')"
+"pull_request_commit_comment","1516","nilearn","nilearn","jeromedockes","2017-11-19 17:04:32","I have written a patch inverting this function to _kept_indices. playing around with %timeit I see no difference, which makes sense: it takes 1 microsecond to do a logical not on an array of the size of fsaverage on my machine; around 6 microseconds for an array ten times bigger. Since we are dealing with dozens of milliseconds in vol_to_surf, this is very small. should I push this commit anyway?","b86bfb9208a09da54e33de5a7edff2d02c10cfb9","(211, '', u'nilearn/surface/surface.py')"
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-28 07:49:14","add simple sampling of volume on mesh","b966ac9d230841f343979d64346582e0d0b5f37d",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-28 11:33:49","add 4d","07881d05571aa865b3a90305a9d4524a77dd4c04",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-28 12:21:37","import joblib from sklearn.externals","0f29725e8372e434a17f71c986be5b5e849c1683",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-28 12:49:56","remove tuple unpacking for python2","07713747fae213db6f13c6cdcfb922e094b34775",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-28 14:10:45","add tests for cortex projections","e15d04b3b7b027bc5e9623fbc848105d823a241f",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-29 08:28:38","mention niimg-like compatibility inv niimg_to_surf docstring","c0c39d3cade000f98f53a2da0fbb3875c9eb4aa2",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-29 08:33:28","reorder imports in test_surf_plotting","398965de8b620fd92215ee7fdb3d8d78d2782f06",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-09-29 09:06:39","titles on vol to surf examples","4589a95dc30d5e35ec672c4824939d64bacba235",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-10 02:17:34","add computing normals at mesh vertices","c7af4b1e468e8121a8a3730d2a39772adebacb33",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-11 18:10:23","add sampling along normal","9f84b24af25db7bc2d46ae3937cf45843f5a3db2",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-11 20:21:11","use scipy for interpolation to allow linear interpolation
+
+as a result, surface projection is slower, even when using
+interpolation='nearest'","0c3e1d41d854c85b6c25c8d8fcb7069c038eddca",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-17 21:51:29","choose kind and interpolation","c5d83b5498f556aefea0fba24f1ed968bd39a386",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-21 21:31:52","make the direction of mesh normals more explicit","d1d9536d0bd3a2fde7c1b8527e34875a54c715db",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-21 21:37:47","remove handling of None affine in non-public functions in surf_plotting","cdcbed1c07caeefe4e24eec374571df4fa20b4f4",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-21 21:47:29","only ten points on normal projection by default
+
++ let the sampling implementation choose the default number of sample points","58bd2f8b274afd8dedcbc746c7b6b4415638bf2f",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-21 23:03:36","improve surf plotting tests","33bb932997395d168c4f2f40a9db08fde1d37e66",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-10-21 23:41:36","improve ball sampling example","536cc191d00e8cf912294a48cddddfb2982974a0",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-09 00:57:22","change cortical projection illustration example","389851d1b8b1644ceadb94571035c544973a6e80",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-09 00:58:24","Merge branch 'master' into cortex_surface_projections","07d62bdf659caa51826035292dbfd0cabb2f0ce2",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-09 01:04:59","img.affine rather than utils.compat.get_affine(img)","9fb10f0eebc82b41a9ed8060b8c3928f71ef2fc7",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-09 21:51:27","improve surface projection docstrings","d836a6f6de8c00bad92aafbd0dcde7d469591632",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-09 22:42:04","update surface plotting docs, examples and whats new","57049488b4af0d8661016e45c74edb82573d8da4",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-11 00:33:53","add possibility to give a mask + speedup nearest neighbour sampling","eef506089efdbb7f236a363d92a2cac77455bb75",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-11 00:39:58","more tests","85624ab752b60e758e5ba8a4c0af166c2f1a2806",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-11 00:46:19","improve docstrings","6da5a924d2e2e58b0f17035c8acc06ea9c2b378b",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-12 00:20:36","surf_plotting details (mostly docstrings)","c234e607afff0dc92de303d45d15a2777ca7f588",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-12 02:09:27","add tests for sample locations and masking","3cf1f358e95b9e45aceaced544e21051885e114e",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-13 17:36:14","whitespace for sphinx gallery","8ad1071e9bba85d775988ce783fcf2a3c4ff14cd",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-13 18:30:39","resample mask to image","2e585d5eb8d236473d3995bce914ae7aa6391e60",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-13 19:43:18","test projection_matrix","21a7ff0de41eb4a3f2ba697241837d8b7f203c8e",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-13 19:58:01","more sampling tests","bfe4c74654885293336d617435ce67bda5e9c2eb",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:25:26","Merge branch 'master' into cortex_surface_projections","11e8c17d08405106253d439ee57e687b492d3184",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:35:16","3d brain image -> 3d brain volume","ecd96c380f32f6e3ad183206b7ac3a3621111e11",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:39:51","rename example plot_3d_map_projection.py -> plot_3d_map_to_surface_projection.py","63533ecfc8173419c9f450253ac41d4249c2e7ff",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:40:29","relative import of nilearn.image.load_img","9d16db739efb3a7425d4f18861805bec4c66b1ec",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:53:15","shorter imports in plot_cortex_projection_strategies.py narrative","c6e34a1e03cde30fb367a7afb6ab1b92f83cbfad",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:54:19","rename plot_cortex_projection_strategies.py -> plot_surface_projection_strategies.py","c49c5c0f0a5879604f8da52bfa2b0f28e3360209",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:56:45","image -> img","25ae312c0095a3289b352bdf7ef077939bc21b63",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 18:59:12","mask -> mask_img","2a20304ed9c339828505e8297afe4a4994d80902",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:00:10","niimg -> Niimg","4739d223de9b69bfc82c4f3b85abbea7e4a6b26b",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:00:44","neighbouring -> neighboring","6ac2386596cb6be278a5030a7075648a09a6baa3",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:02:47","===== -> -----","1f55f47723929c55e940b2d73c4ff6ef2d962a90",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:04:19","in doc array -> numpy.ndarray","e8cc677fea6179142bdda347077aad3cc1dd98e5",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:06:00","detail niimg_to_surf_data docstring","55878d65b82e26f0695e4503d20b64ea2b7c439d",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 19:12:23","avoid copy when resampling mask","6f309adf124b673b1f3b2e63a37288c05fdd6f74",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 20:22:10","use localizer_button_task rather than a brainpedia image for surf projection example","c50a5c3fd26f43eb11b53877b542f59e7c4f54a2",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 20:33:07","niimg_to_surf_data -> vol_to_surf","77dd10f2a04fb9a033756a97fe3cf171c816ce18",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 21:14:42","fix whats new","c5eea1dfa3483fb58ba796febb315edcadbe9ea3",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 21:59:26","fall back to nearest neighbours when scipy < 0.14","6aa3f1264f6636000f4831f610b8e9aa9bc2e8af",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 23:12:36","move surface manipulation functions to nilearn.surface","fe494982860d3d55c4f64a40980b88e02f09d492",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-14 23:35:17","skip surf proj with interpolation test if scipy < 0.14","244eab21c3f4fa2d9c4c2a1b8a0ba0b36d499d77",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 17:45:46","move technical detail example","6ba9b536ebd3bc3bf824b563da83238be52eed56",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 18:22:12","don't load fsaverage in tests if nibabel <= 1.2.0","76d4f50aa92702812eee7672934acd1cdef84a99",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 18:28:22","use scipy for triangulation -> don't import matplotlib out of plotting","1cbd3b369afce1f84b36eeabf43f1ac6c92ef7b8",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 19:14:52","prettier surface projection example","754b83404ee517be3d19fabe64f22648ef14c3b8",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 20:08:35","don't use scipy delaunay in tests if scipy < 0.14","7d8505130f49c8f370879cc55ce1c5647b4e6da1",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 20:28:26","check fsaverage file","f1f3836d5f1ae11d56bc5313cacafa79f927d615",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 20:49:21","missing teardown_mock in datasets test_func","fa838cfc0dfb5ae58e540bd35f837758815b95d9",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 21:12:03","remove useless print","83ca7a4859d403231b44ae6026c88600bbe4b318",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-15 21:41:13","make _uniform_ball_cloud deterministic","40bbfa473f9e92d4103ecafb53d33587d808830c",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 18:36:39","improve surf projection example description + move imports","d3d69c2ed88ebfbd5e23419a46c9b1cf67cf06f1",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 19:00:59","vol_to_surf docstring detail","d0982ad1525ef8ed0841acd0bfaa7a62a4b0df03",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 19:02:05","check_niimg of mask for surf projection","2128c77b1583f0a92a0da208c9fd43b7e6f81947",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 19:06:20","numpy.ndarray in docstrings","fcb8954b3a54d53e3deeccc05593ed11328cb8e6",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:15:49","details about projection method in vol_to_surf docstring","73c3d25e73ad0b213ea71ca4bfd7abe560a9599e",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:37:13","Merge branch 'master' into cortex_surface_projections","e0bd9b88ee47fa81669d1ebb38f99ed961d68816",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:40:08","make projection_matrix private","756bd31ceb827a04a1a0b2db8d7138eafbd3dbe4",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 20:48:56","add readme to 01_plotting/technical_details","6785cda54716418535c3b8a93208b1066b11197d",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 21:34:21","add precomputed ball positions for n_points in 10, 20, 40, 80, 160","2c74c847ad6e2b72c51dbb7b63defcc104db3c6d",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 21:35:45","Merge branch 'master' into cortex_surface_projections","43bae74e0392654d3aa5b43b9904b8ea106ab9d6",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 21:44:47","comment about returning NaN for bad vertices","bf904e32f544e36e59014ca38ed2f78ad6134dc5",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 21:47:07","check sample_locations shape","5e5f2648fcead8ad4c86cd1c4e451eb9b7f3e0da",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 21:53:32","comments about scipy version checks","59049a892ebd5ccf252ed5ad752379e17ae6796d",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 21:54:01","no need to check for nibabel > 2.0.2","ea3f39e0834b1e1b4cd468dcf79265f7ef57bfc3",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 22:05:30","test vol_to_surf with mask","94cf01c786925abc000b0e4da4ca30ad0163229d",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 22:07:09","move example back to 01_plotting/","b11d0d12783cc5c455f6d61d58066b7fca50c03e",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 22:26:48","define EfficiencyWarning if not in sklearn (new in 0.18)","fca0e78016d50e6e572a09fa8838c12b98b66541",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 22:30:29","fix indentation","1f03b77fea1c5d7f76f321fc6643ade21bf4c11a",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 22:41:46","import assert_warns from nilearn","cec5afdfc305f5dc0386e228ba201d027b6dbc9c",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-16 23:09:57","add ball cloud csvs to package data","43e4be28cae0f407c3ec928e121edf63d8cc12a6",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 00:02:22","surface in its own package","91b2c17a48e10616a5b838ddef5bb7ccbaeaef62",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 00:57:03","fix surface test data location in setup","ed016cc28ce676b4183bd4c0f4ff57c5d6d1514b",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 01:29:55","skip comparison of ball sample locations with cached values if sklearn < 0.18
+
+k-means has been changed in 0.18","a70bb83e448bdafefa4446a4692fd384e85eeeff",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 01:57:18","example description detail","f313e3dcef8f2915f904a33ce20fa41c920caa82",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 17:49:53","link to function in example narrative","c0d56d648d6f97905b7ddbed424e5989423f5428",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 20:16:39","minor comment","82d7670c8bf6f2ba65b302596cc93cdc5d1ae0bc",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 20:32:02","docstring formatting","a00d6427be9d2de265d555ef36ebe4900e5a8586",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 21:39:35","add note example needs matplotlib 1.3.1 to plot_3d_map_to_surface...","e38ecb9c43b569a1700e28a95828d9815847bf3b",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 21:44:44","state n_samples defaults in vol_to_surf doc","9f294a8e0d6db20773bce77754b2ea0c870c72e7",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-17 21:52:49","add versionadded to vol_to_surf","e71705981c608821026bb8e7c940ec685752e3bd",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-18 17:32:57","import load_surf_data from nilearn.surface in plot_surf_stat_map ex","079ddcd86850d1f91ec0a3b81f2f0581312d81c9",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-18 17:35:13","add load_surf_data and load_surf_mesh to doc/index.rst","25a09f68b3cf6c9b24fa8d95d5c8eab51acf5452",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-18 17:45:01","add README.txt to nilearn/surface/data","9e52d9f89fa1b55a2e04a20cf138a738a25b1a1c",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 04:24:26","make interpolation='linear' the default in vol_to_surf
+
+add a few more details about performance in docstring","1b2aec14366dd89a200b4a7723415d8573cb9495",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 04:26:05","Merge branch 'master' into cortex_surface_projections","6c2244fa70ff8c9dd82052a7efd70a3dd2e362d3",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 06:17:52","update vol_to_surf docstring to linear is the default","4cca98a253ae96ed70c0b08d3f5c43b957d59bc7",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:06:06","invert order of interpolation and kind in vol_to_surf signature","ed78a66797972545bccced89d5e8233607e2f65f",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:14:54","improve vol_to_surf docstring","3376c5155ba8d5ede5ea05236399396347c91393",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:22:00","Merge branch 'master' into cortex_surface_projections","d1a57794cce80185c72024c85163599c31f5f550",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:22:23","remove checks for scipy < 0.14 (supported version has been bumped)","c8c440d3058a618eff9d0ebd4b3af19fa24cf353",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:25:12","add WARNING experimental to vol_to_surf docstring","1ad5546e1af835539f0bca6665d5d1bc34ba3196",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:28:19","unused import","28c26a03f359de392628a70613faab6ee600764f",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 16:50:16","use a _kept_indices rather than _masked_indices to avoid ~ operations","256a8b19d0e0fa03bce9e758d54680a35fe75cf2",""
+"pull_request_commit","1516","nilearn","nilearn","jeromedockes","2017-11-19 17:24:11","revert to _masked_indices but manipulate kept internally","b86bfb9208a09da54e33de5a7edff2d02c10cfb9",""

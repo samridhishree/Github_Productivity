@@ -1,0 +1,23 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1352","nilearn","nilearn","salma1601","2016-12-23 12:38:52","I am using `image.math_img` to create a binary mask 
+```Python
+from nilearn import image
+dwi = nibabel.load(dwi_filename)
+mask_img = image.math_img(""img[..., 0] > 50"", img=dwi)
+```
+but my `ANTS` processing using this mask is failing with an error ""Inputs do not occupy the same physical space!"". 
+When I manually generate the mask
+```Python
+mask_data = dwi.get_data()[..., 0] > 50
+manual_mask_img = nibabel.Nifti1Image(mask_data.astype(np.int8), dwi.affine, dwi.header)
+```
+the same preproc works.
+I am not sure of what causes the problem but seems like `math_img` does not preserve the qform.
+```Python
+print(np.all(manual_mask_img.header.get_qform() == dwi.header.get_qform()))
+```
+prints `True` while
+```Python
+print(np.all(mask_img.header.get_qform() == dwi.header.get_qform()))
+```
+prints `False`","start issue","image.math_img does not preserve qform"

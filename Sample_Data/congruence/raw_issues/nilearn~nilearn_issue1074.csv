@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1074","nilearn","nilearn","jeromedockes","2016-04-07 15:32:20","Hello,
+the `__init__`method of estimators found in `nilearn.decomposition`, such as `CanICA` and `DictLearning`, accepts parameters for their masker. When `fit` is called we use `check_embedded_nifti_masker`, from `input_data.masker_validation`, to create an apropriate masker. At some point this function checks that none of the masker's parameters overrides parameters passed to the estimator's `__init__`(which does not seem necessary in the case in which no mask was given to the estimator, since in this case the masker's parameters are read directly from the estimator's) and emit a warning if they do. However, this check is performed using `if(estimator_param != masker_param)` , and some of these parameters are numpy arrays, resulting in an exception being raised by the `__nonzero__` method of the result of the comparison since it has more than one element:
+
+`ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+`
+the error can be reproduced with:
+
+```
+from nilearn import datasets, decomposition
+from nilearn._utils import testing
+
+def pass_masker_params_to_estimator():
+    image = testing.generate_fake_fmri()
+    target_img = datasets.load_mni152_template()
+    estimator = decomposition.DictLearning(target_affine=target_img.affine, 
+                               target_shape=target_img.shape)
+    estimator.fit(image)
+
+pass_masker_params_to_estimator()
+```
+
+in  `check_embedded_nifti_masker` the problem arises here:
+
+```
+   # Raising warning if masker override parameters
+   conflict_string = """"
+   for param_key in sorted(estimator_params):
+       if new_masker_params[param_key] != estimator_params[param_key]:
+```
+","start issue","passing masker parameters to decomposition estimator"
+"issue_closed","1074","nilearn","nilearn","KamalakerDadi","2016-08-02 09:18:24","","closed issue","passing masker parameters to decomposition estimator"
+"issue_comment","1074","nilearn","nilearn","AlexandreAbraham","2016-08-02 09:16:02","Of course ! I let you click the button. When you are sure that the problem is solved, you can close it directly and one can reopen it if necessary.
+","",""
+"issue_comment","1074","nilearn","nilearn","bthirion","2016-04-07 21:03:53","Would `().any()` work ?
+","",""
+"issue_comment","1074","nilearn","nilearn","jeromedockes","2016-04-08 11:13:49","yes `np.any(new_masker_params[param_key] != estimator_params[param_key])` should work
+","",""
+"issue_comment","1074","nilearn","nilearn","bthirion","2016-04-08 11:23:39","Can you issue a PR ?
+","",""
+"issue_comment","1074","nilearn","nilearn","KamalakerDadi","2016-08-02 09:12:24","Can I close this issue ? as it is solved by PR #1075 
+","",""

@@ -1,0 +1,19 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","187","nilearn","nilearn","schwarty","2014-04-16 16:54:29","Trying to load images containing NaNs with a masker that is given a mask (and therefore doesn't compute one during the fit) returns empty images. I guess in my case it is because of the resampling. I know there are some plans on imputation of missing data, but should we do something simpler in the meantime like settings the NaNs to zero?
+The least we should do is raise a warning.
+","start issue","NaNs are annoying"
+"issue_closed","187","nilearn","nilearn","GaelVaroquaux","2014-05-19 13:07:02","","closed issue","NaNs are annoying"
+"issue_comment","187","nilearn","nilearn","GaelVaroquaux","2014-04-17 09:01:56","I think that the resampling could be made more clever to deal with NaNs
+automatically. It's a bit of work, but it's really worth it.
+","",""
+"issue_comment","187","nilearn","nilearn","GaelVaroquaux","2014-04-22 14:57:05","Proposed solution: tackle the problem at the resampling level:
+
+If they are NaNs in the data, take a mask of these, do an imputation of the data in this mask (using our imputation method that works by growing the data from the edges of the mask), resample the imputed data. In the mean-while, resample the mask and use the resampled mask to insert NaNs in the output image. This last step would be optional, to keep the imputed values in the output image.
+
+Also, of course, we would spit a big nasty warning if there are NaNs, and the imputation option is not turned on.
+","",""
+"issue_comment","187","nilearn","nilearn","GaelVaroquaux","2014-05-19 13:07:02","Fixed by #188
+","",""
+"issue_comment","187","nilearn","nilearn","bthirion","2014-04-16 21:43:34","Silently imputing by 0's will probably create many issues: it should be required explictly by the user.
+Raising a warning is clearly necessary. 
+","",""

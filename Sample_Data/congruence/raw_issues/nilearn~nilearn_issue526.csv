@@ -1,0 +1,32 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","526","nilearn","nilearn","banilo","2015-03-28 22:39:36","As a tentative bug report: I used a combination of plot_stat_map() + plt.subplots() + plt.savefig() several thousand times in a script. This used up several hundred MB of disk space and slowed my computer down until crash. Commenting out just the plotting-loop solved all these problems.
+
+Is it possible that plot_stat_map does not cleanup some figure handles or something like that?
+","start issue","Massive plot_stat_map calls crash a MacBookPro"
+"issue_closed","526","nilearn","nilearn","lesteve","2015-04-01 10:14:56","","closed issue","Massive plot_stat_map calls crash a MacBookPro"
+"issue_comment","526","nilearn","nilearn","GaelVaroquaux","2015-03-28 22:54:58","Yes it does not. As stated in the documentation, you need to close the figure when you are done with it. This is done automatically when you specify an output_file argument. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Mar 28, 2015, 23:39, at 23:39, Danilo Bzdok notifications@github.com wrote:
+
+> As a tentative bug report: I used a combination of plot_stat_map() +
+> plt.subplots() + plt.savefig() several thousand times in a script. This
+> used up several hundred MB of disk space and slowed my computer down
+> until crash. Commenting out just the plotting-loop solved all these
+> problems.
+> 
+> Is it possible that plot_stat_map does not cleanup some figure handles
+> or something like that?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/526
+","",""
+"issue_comment","526","nilearn","nilearn","AlexandreAbraham","2015-03-28 22:55:00","Yes. matplotlib does not release the memory of the plot if you don't close it. call pylab.close() or matplotlib.pyplot.close() after saving your figure. Or use the option in plot_stat_map to directly save in a file.
+","",""
+"issue_comment","526","nilearn","nilearn","banilo","2015-03-28 22:59:12","Thanks @Galex !
+","",""
+"issue_comment","526","nilearn","nilearn","AlexandreAbraham","2015-03-28 23:10:15","Nota: check your logs but marplotlib usually output a warning xhen mre than 20 figures are opened at the same time.
+","",""

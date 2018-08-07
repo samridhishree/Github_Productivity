@@ -1,0 +1,129 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1502","nilearn","nilearn","PyTimGit","2017-08-25 07:21:15","Dear all, 
+I would like to extract all voxels contained in a mask using nilearn. In short, my code goes something like this: 
+```python
+from nilearn.image import load_img
+from nilearn.image import new_img_like
+from nilearn.input_data import NiftiMasker
+
+#*get ROI infos from atlas
+full_atlas = load_img(myAtlasFile).get_data() # getting data e.g. from AAL
+my_roi = new_img_like(myAtlasFile, mask == 7001) # I would like to extract all voxels == 7001 which corresponds to the left Caudate in the AAL atlas) 
+
+#*extract all voxels in the ROI
+masker = NiftiMasker(mask_img=my_roi)
+in_imgs = 'some_vbm_image.nii', 'yet_another_vbm_image.nii' # some imgs from which I would like to extract the ROI data
+roi_data = masker.fit_transform(in_imgs)
+```
+I am worried now that the wrong voxels might be extracted as the in_imgs (my data) 
+1. might have a different ORIENTATION (i.e. affine transformation)
+2. a different grid space (i.e. VOXEL SIZE)
+3. might be of different view types (e.g. LPS vs. RAS)
+
+In principle, I would like to adjust the ROI-mask to the orientation, voxel size and view type etc. of the first input image. Is there any way to do this in Nilearn?
+
+Thanks a lot once again!
+Best,
+Tim","start issue","Using nilearn atlases"
+"issue_closed","1502","nilearn","nilearn","PyTimGit","2017-08-26 09:42:42","","closed issue","Using nilearn atlases"
+"issue_comment","1502","nilearn","nilearn","mrahim","2017-08-25 07:47:12","Hi Tim,
+you can set `target_shape` and `target_affine`   in `NiftiMasker` such that it will ensure having the same orientation, voxel size ...","",""
+"issue_comment","1502","nilearn","nilearn","mrahim","2017-08-25 11:51:39","The mask is resampled with a continuous interpolation.
+I think you should first resample the mask with nearest interpolation : 
+```python
+my_roi = resample_img(my_roi, target_affine=img.affine, target_shape=img.shape, interpolation='nearest')
+```","",""
+"issue_comment","1502","nilearn","nilearn","GaelVaroquaux","2017-08-25 07:46:36","I am not sure that I understand your question. Nilearn will resample the
+data on the grid of the mask. If you want to control the resampling grid
+you can use nilearn.image.resample_img to resample the mask (beware to
+use nearest-neighbor interpolation).
+","",""
+"issue_comment","1502","nilearn","nilearn","PyTimGit","2017-08-25 10:15:21","Thanks for your quick answers. Following your suggestions, I tried to use NiftiMasker's target_affine and target_shape to achieve the same orientation and voxel size: 
+```python
+in_imgs = 'some_vbm_image.nii', 'yet_another_vbm_image.nii' # some imgs from which I would like to extract the ROI data
+img = load_img(in_imgs[0]) * I would like to transform the mask to the characteristics of the first input image
+masker = NiftiMasker(mask_img=my_roi, target_affine=img.affine, target_shape=img.shape)
+roi_data = masker.fit_transform(in_imgs)
+```
+However, this throws an error (below) stating that not all values are 0 or 1 eventhough np.unique(my_roi._data) clearly indicates (0, 1). 
+Just to clarify my goal: I have an atlas of a certain voxel size and affine transform that is different from the voxel size and affine transform of my data. I would like to resample the atlas so that it matches my data (as this should be much faster than resampling all of my data). Am I missing something?
+
+Thanks a lot for your help with this. It seems as if this should be a common problem when using atlas masks.
+Cheers,
+Tim
+
+```pytb
+C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\image\resampling.py:481: UserWarning: Casting data from int8 to float32
+  warnings.warn(""Casting data from %s to %s"" % (data.dtype.name, aux))
+C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\scipy\ndimage\interpolation.py:462: UserWarning: The behaviour of affine_transform with a one-dimensional array supplied for the matrix parameter has changed in scipy 0.18.0.
+  ""The behaviour of affine_transform with a one-dimensional ""
+Traceback (most recent call last):
+  File ""C:\Program Files\JetBrains\PyCharm 2017.2\helpers\pydev\pydevd.py"", line 1596, in <module>
+    globals = debugger.run(setup['file'], None, None, is_module)
+  File ""C:\Program Files\JetBrains\PyCharm 2017.2\helpers\pydev\pydevd.py"", line 1023, in run
+    pydev_imports.execfile(file, globals, locals)  # execute the script
+  File ""C:\Program Files\JetBrains\PyCharm 2017.2\helpers\pydev\_pydev_imps\_pydev_execfile.py"", line 18, in execfile
+    exec(compile(contents+""\n"", file, 'exec'), glob, loc)
+  File ""C:/Users/hahnt/Photon_Neuro0/BrainAtlas.py"", line 237, in <module>
+    roi_data = myAtlas.transform(X=dataset_files) # ROI indices
+  File ""C:/Users/hahnt/Photon_Neuro0/BrainAtlas.py"", line 91, in transform
+    single_roi = masker.fit_transform(X)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\input_data\base_masker.py"", line 206, in fit_transform
+    return self.fit(**fit_params).transform(X, confounds=confounds)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\input_data\base_masker.py"", line 176, in transform
+    return self.transform_single_imgs(imgs, confounds)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\input_data\nifti_masker.py"", line 293, in transform_single_imgs
+    copy=copy
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\sklearn\externals\joblib\memory.py"", line 283, in __call__
+    return self.func(*args, **kwargs)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\input_data\nifti_masker.py"", line 53, in filter_and_mask
+    confounds=confounds, copy=copy)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\input_data\base_masker.py"", line 98, in filter_and_extract
+    memory_level=memory_level)(imgs)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\sklearn\externals\joblib\memory.py"", line 283, in __call__
+    return self.func(*args, **kwargs)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\input_data\nifti_masker.py"", line 28, in __call__
+    return masking.apply_mask(imgs, self.mask_img_), get_affine(imgs)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\masking.py"", line 561, in apply_mask
+    mask, mask_affine = _load_mask_img(mask_img)
+  File ""C:\Users\hahnt\AppData\Local\Continuum\Anaconda3\lib\site-packages\nilearn\masking.py"", line 63, in _load_mask_img
+    % values)
+ValueError: Given mask is not made of 2 values: [ -8.56953397e-16  -8.36136715e-16  -8.11850587e-16 ...,   2.27248775e-16
+   2.48932819e-16   1.00000000e+00]. Cannot interpret as true or false
+```","",""
+"issue_comment","1502","nilearn","nilearn","GaelVaroquaux","2017-08-25 11:15:41","What's an atlas mask?
+","",""
+"issue_comment","1502","nilearn","nilearn","PyTimGit","2017-08-25 11:48:33","I just meant the mask (0/1) we obtain from any atlas (multiple indices). But of course the problem also occurs when using just a single mask.","",""
+"issue_comment","1502","nilearn","nilearn","PyTimGit","2017-08-26 08:57:41","Thanks. That seems to work for the voxel sizes. However, I still get the same warning in the beginning
+
+`D:\Anaconda\lib\site-packages\scipy\ndimage\interpolation.py:462: UserWarning: The behaviour of affine_transform with a one-dimensional array supplied for the matrix parameter has changed in scipy 0.18.0.   ""The behaviour of affine_transform with a one-dimensional`
+
+which makes me worry if everything went ok regarding the affine transformation. Did it take place at all?
+Could you give me a hint on why this warning pops up?
+Cheers,
+Tim","",""
+"issue_comment","1502","nilearn","nilearn","GaelVaroquaux","2017-08-26 09:33:59","This warning pops up because scipy changed something. But we deal with it,  so it's fine 
+
+⁣Sent from my phone, please excuse typos and briefness​
+
+On Aug 26, 2017, 10:57, at 10:57, PyTimGit <notifications@github.com> wrote:
+>Thanks. That seems to work for the voxel sizes. However, I still get
+>the same warning in the beginning
+>
+>`D:\Anaconda\lib\site-packages\scipy\ndimage\interpolation.py:462:
+>UserWarning: The behaviour of affine_transform with a one-dimensional
+>array supplied for the matrix parameter has changed in scipy 0.18.0.  
+>""The behaviour of affine_transform with a one-dimensional`
+>
+>which makes me worry if everything went ok regarding the affine
+>transformation. Did it take place at all?
+>Could you give me a hint on why this warning pops up?
+>Cheers,
+>Tim
+>
+>-- 
+>You are receiving this because you commented.
+>Reply to this email directly or view it on GitHub:
+>https://github.com/nilearn/nilearn/issues/1502#issuecomment-325104905
+","",""
+"issue_comment","1502","nilearn","nilearn","PyTimGit","2017-08-26 09:42:39","great. I'll test some more to make sure, but all should be fine then. Thanks alot!","",""

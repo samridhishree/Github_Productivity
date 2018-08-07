@@ -1,0 +1,220 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","241","nilearn","nilearn","lesteve","2014-09-15 15:12:08","Fixes #233.
+","start issue","Use simple smoothing in find_cut_slices rather than a gaussian filter"
+"issue_closed","241","nilearn","nilearn","lesteve","2014-10-01 12:14:51","","closed issue","Use simple smoothing in find_cut_slices rather than a gaussian filter"
+"pull_request_title","241","nilearn","nilearn","lesteve","2014-09-15 15:12:08","Fixes #233.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","Use simple smoothing in find_cut_slices rather than a gaussian filter"
+"pull_request_merged","241","nilearn","nilearn","lesteve","2014-10-01 12:14:51","Use simple smoothing in find_cut_slices rather than a gaussian filter","99b0a53b6de5a4facaca24142820c509cea5d493","Pull request merge from lesteve/nilearn:simple-smoothing-in-find-cuts to nilearn/nilearn:master"
+"issue_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-16 09:19:14","You are lacking a test. No code goes in nilearn without tests. You could for instance test that an image full of ones stays full of ones. That will fail, because the normalization isn't right. So maybe we need a keyword argument 'preserve_scale', True by default, that will make sure that np.ones stays np.ones (aside from the sides).
+","",""
+"issue_comment","241","nilearn","nilearn","lesteve","2014-09-30 06:56:12","@GaelVaroquaux any objections to merging this?
+","",""
+"issue_comment","241","nilearn","nilearn","lesteve","2014-09-30 09:03:58","Sure, no real hurry.
+","",""
+"issue_comment","241","nilearn","nilearn","lesteve","2014-10-01 09:38:54","Yep I think I answered all your comments.
+","",""
+"issue_comment","241","nilearn","nilearn","lesteve","2014-10-01 10:48:26","Good catch, I have added it now.
+","",""
+"issue_comment","241","nilearn","nilearn","lesteve","2014-10-01 12:00:54","For completeness a quick and dirty comparison of the performance gain:
+
+``` python
+import nibabel as nib
+from nilearn.image import image
+from nilearn import datasets
+
+localizer = datasets.fetch_localizer_contrasts([""left vs right button press""],
+                                               n_subjects=4,
+                                               get_anats=True)
+
+img = nib.load(localizer.cmaps[3])
+print 'shape: ', img.get_data().shape
+
+for fwhm in [3, 6, 9, 12, 'fast']:
+    print 'fwhm: ', fwhm
+    %timeit image._smooth_array(img.get_data(), img.get_affine(), fwhm=fwhm, copy=True)
+```
+
+and the result on my computer:
+
+```
+shape:  (53, 63, 46)
+fwhm:  3
+100 loops, best of 3: 5.59 ms per loop
+fwhm:  6
+100 loops, best of 3: 6.32 ms per loop
+fwhm:  9
+100 loops, best of 3: 7.92 ms per loop
+fwhm:  12
+100 loops, best of 3: 9.51 ms per loop
+fwhm: fast
+100 loops, best of 3: 2.78 ms per loop
+```
+","",""
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-15 15:12:57","Just wondering, is this comment about discrete values still relevant?
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-15 15:16:00","Open to better wording for the function name and the doc below.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-16 09:12:35","For the function name: fast_smooth_img, and the function should be in nilearn.image.image, next to 'smooth_img'.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-16 09:13:11","You probably want to say that it is less computationally expensive than smooth_img, which uses scipy.ndimage.gaussian_filter
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-16 09:15:03","To be PEP8 you need two empty lines between function definitions.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-16 09:15:40","I indeed think that the comment on discrete values is not relevant.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-16 09:44:01","By the way it looks like the smoothing is done only when the dtype is a signed integer. Is that on purpose?
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-16 10:32:22","No. It's wrong
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","bthirion","2014-09-25 06:31:46","In the documentation, say explicitly what smoothing is performed: it is only spatial smoothing, the filter is [.2 1 .2] in each direction.
+Bzw, using [.2 .6 .2] might preserve the value on constant images ?
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-26 13:49:51","I added some documentation for the smoothing, let me know whether the wording can be improved.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","bthirion","2014-09-26 13:51:45","Shouldn't this be usable on 4D arrays ? if no, this should be clear in the function name.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-26 14:07:38","As long as you want to only smooth the 3 first dimensions it should work on a ndarray. I'll tweak the doc to make it similar to _smooth_array.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","bthirion","2014-09-26 14:09:41","OK, this is what I meant.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-26 14:38:53","> As long as you want to only smooth the 3 first dimensions it should work on a
+> ndarray. I'll tweak the doc to make it similar to _smooth_array.
+
+We had discussed integrating this into _smooth_array, with a special
+argument 'fast' to the kernel size. This would factor code out.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","bthirion","2014-09-26 14:45:25","[.2, 1, .2]
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-26 15:57:58","I spotted this one while tweaking the doc and fixed [it](https://github.com/lesteve/nilearn/commit/33d4615a5f9d0a318fe04c6d61baa8af8773422c)
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-26 16:05:29","For completeness, this is what I have done, I think.
+
+Also about the naming of the functions, I am fine adding 3d explicitely to `_smooth_array` or `_fast_smoth_array` if you think it is better. Maybe something like `_smooth_array_three_first_dims`? Better suggestions welcome! 
+
+In this case should the 'public' function smooth_img be renamed too?
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","bthirion","2014-09-27 15:50:51","On 26/09/2014 18:05, Loïc Estève wrote:
+
+> In nilearn/image/image.py:
+> 
+> > @@ -82,6 +82,50 @@ def high_variance_confounds(niimgs, n_confounds=5, percentile=2.,
+> >                                             detrend=detrend)
+> > 
+> > +def _fast_smooth_array(arr):
+> > -    """"""Simple smoothing which is less computationally expensive than
+> > -    applying a gaussian filter.
+> >   +
+> > -    The filter is [.2, 1, 2] in each direction with a normalisation to
+> > -    preserve the scale.
+> >   +
+> > -    Parameters
+> > -    ----------
+> > -    arr: 3D ndarray
+> >   +
+> 
+> For completeness, this is what I have done, I think.
+> 
+> Also about the naming of the functions, I am fine adding 3d 
+> explicitely to |_smooth_array| or |_fast_smoth_array| if you think it 
+> is better. Maybe something like |_smooth_array_three_first_dims|? 
+> Better suggestions welcome!
+> 
+> In this case should the 'public' function smooth_img be renamed too?
+> 
+> —
+> Reply to this email directly or view it on GitHub 
+> https://github.com/nilearn/nilearn/pull/241/files#r18097493.
+> 
+> The docstrings have to indicate that this acts on the first three axes 
+> of the image (which is a basic convention in many NiLearn functions), 
+> and does not act along potential additional axes. This means that I'm 
+> fine with the current state of the code. I don't think that renaming is 
+> necessary.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-30 13:37:25","It would be more efficient (and less readable :) ) if you did something like
+
+<pre>
+smoothed_arr =  arr / (scale * neighbor_weight)
+smoothed_arr += arr[1:]
+...
+smoothed_arr *= neighbor_weight
+</pre>
+
+
+Indeed, as each '+=' line, you are doing a costly multiplication.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-30 14:09:38","We have a policy against testing with previously computed values when they are not obviously correct. I would:
+
+Test that the center of the array is one (to check the scaling)
+
+Test on an array that only has one non zero that the support is correct.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-30 14:26:00","I think that here I would use directly _fast_smooth_array, that operates on arrays. That was you don't need to construct a temporary NiftiImage for no good reason.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-09-30 14:41:37","But then don't you need to test all the edge cases (pun not intended), i.e. depending on how many neighbors the 1 has (in the second test)?
+
+What if I made the 'expected' array a bit less magical, for example by defining 
+
+``` python
+value_with_3_neighbors = (1 + 3 * neighbor_weight) / (1 + nb_neighbors * neighbor_weight)
+```
+
+and replacing 0.72727273 by value_with_3_neighbors. I would do something similar with the value for 4, 5 and 6 neighbors.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-09-30 14:47:29","> What if I made the 'expected' array a bit less magical, for example by defining
+> 
+> value_with_3_neighbors = (1 + 3 \* neighbor_weight) / (1 + nb_neighbors \* neighbor_weight)
+> 
+> and replacing 0.72727273 by value_with_3_neighbors. I would do something
+> similar with the value for 4, 5 and 6 neighbors.
+
+Than I would be happy :).
+
+The problem with precomputed values is that when things break a few years
+down the line, it's harder to diagnose the break down, because you don't
+know how the reference has been generated.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/image/tests/test_image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-10-01 07:14:18","I assumed the leading underscore in the function more or less implied that it wasn't supposed to be used across modules. Also, smooth_img always removes non-finite values (via _smooth_array).
+
+Maybe if we really don't want to create a temporary NiftiImage we can use _smooth_array with fwhm='fast'?
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","lesteve","2014-10-01 07:22:43","BTW, would it make sense to add the neighbor weight as a parameter and possibly make it default to 0.2?
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(4, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-10-01 07:34:31","> I assumed the leading underscore in the function more or less implied that it
+> wasn't supposed to be used across modules.
+
+No, it only implies that end-users shouldn't be using it.
+
+> Also, smooth_img always removes non-finite values (via _smooth_array).
+
+Hum, that's a good point. Maybe we want to be using _smooth_array than.
+
+> Maybe if we really don't want to create a temporary NiftiImage we can use
+> _smooth_array with fwhm='fast'?
+
+Agreed.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-10-01 07:35:06","> BTW, would it make sense to add the neighbor weight as a parameter and
+> possibly make it default to 0.2?
+
+I think that it's a case of YAGNI. If we feel the need for it at some
+point, we'll add it later.
+","2c2335e113af4d5fdf194f388edeaf67e9d8557f","(4, '', u'nilearn/image/image.py')"
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-09-15 12:52:39","Add simple smoothing and use it in find_cut_slices rather than a gaussian filter","01d943a50fd13f53cd003b9488c530dc34e16409",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-09-16 07:23:01","Fix typo","9df1a3b04452e7fc45d6d46c4c626cc52fab8a74",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-09-26 13:14:12","Add fast smoothing when fwhm='fast' in image.smooth_img
+
+* Fast smoothing has been moved from plotting.find_cuts to image.image
+* Test have been added for fast smoothing
+* Fix buglet where data was only smoothed in find_cuts for integer arrays","e64e5f0ff1279d7a27cf62967188fe657ea3594f",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-09-26 13:48:05","Tweak documentation and rename data -> arr for consistency","a27ac991f4c086f4233ca470d65d8a00f5a10bdd",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-09-26 14:19:15","DOC: make _fast_smooth_array documentation more consistent with _smooth_array","33d4615a5f9d0a318fe04c6d61baa8af8773422c",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-10-01 07:54:43","Reduce the number of multiplications in _fast_smooth_array","f2e9b3f969b0cf6bcd3b39a4a41a816c11ca11e2",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-10-01 09:22:25","Make provenance of the expected result a tad less magical","cdb637fddd4d7e88c9c2fd8cc2db2d3151adb8ae",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-10-01 09:30:21","Use _smooth_array rather than smooth_img to avoid creating a temporary Nifti1Image","415e74869335f19eb996c3697c6bf7b7c9fd05e2",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-10-01 10:47:29","Add documentation for fwhm='fast' case in smooth_img","faf450bb3e33bec8cde1a7cdfec5f96396b92934",""
+"pull_request_commit","241","nilearn","nilearn","lesteve","2014-10-01 11:01:46","DOC: add all possible arguments for fwhm and some rephrasing + minor tweak","2c2335e113af4d5fdf194f388edeaf67e9d8557f",""
+"pull_request_commit_comment","241","nilearn","nilearn","GaelVaroquaux","2014-10-01 10:50:14","In the type description, it should say: 'scalar, numpy.ndarray or ""fast""'.
+","faf450bb3e33bec8cde1a7cdfec5f96396b92934","(None, None, None)"
+"pull_request_commit_comment","241","nilearn","nilearn","bthirion","2014-10-01 10:50:22","followed by a normalization to preserve the (local) average value.
+","faf450bb3e33bec8cde1a7cdfec5f96396b92934","(6, 225, u'nilearn/image/image.py')"

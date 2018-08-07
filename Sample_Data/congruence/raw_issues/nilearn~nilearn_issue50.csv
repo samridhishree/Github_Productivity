@@ -1,0 +1,145 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 09:14:22","Compute_multi_epi_mask now offers to resample image. Fix issue #48 
+Also changes parameters in masking functions to take mask as niimg instead of 3D ndarray.
+","start issue","Multi mask resample"
+"issue_closed","50","nilearn","nilearn","pgervais","2013-04-30 08:47:03","","closed issue","Multi mask resample"
+"pull_request_title","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 09:14:22","Compute_multi_epi_mask now offers to resample image. Fix issue #48 
+Also changes parameters in masking functions to take mask as niimg instead of 3D ndarray.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","Multi mask resample"
+"pull_request_merged","50","nilearn","nilearn","pgervais","2013-04-30 08:47:03","Multi mask resample","135ca8bf7f2763e0457efd09ddd03a2a302718b5","Pull request merge from nilearn/nilearn:multi_mask_resample to nilearn/nilearn:master"
+"issue_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 16:18:35","You'll have to have @pgervais review this PR, but to me it looks good.
+
+Something important is that when designing these APIs, you should feel that they enable you to write clearer code in your research. That should be the tell-tale.
+","",""
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 15:43:12","Yup! Let's stick to a naming convention that all niimg objects and with '_img'. Thanks!
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(5, '', u'nisl/io/base_masker.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 15:50:10","Naming convention: it should be '3d', not '3D'.
+
+Also, I believe that the return type of this function has changed. I don't see this in the diff.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 15:52:06","Should also be named '_nd' and not '_nD', like in 'ndarray'.
+
+Is there a reason that we are exposing to the user these functions (unmask_3d, unmask_nd) to the user? should they not be private: '_unmask_3d', '_unmask_nd'?
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 15:58:37","I think that they can be hidden but I will let Philippe answer as he may have had an idea when he created these functions.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 16:01:08","I think that we should raise an exception if we are given a non integer type:
+
+<pre>
+mask = mask_img.get_data()
+assert mask.dtype.kind == 'i', ""Meaningful error message""
+</pre>
+
+
+I can see people shooting themselves in the foot because there are not careful with what they do.
+
+What do you think?
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 16:02:27","I think that mask should be renamed to mask_img. I think that a consistent naming convention to see types quickly will help usability.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 16:04:08","Hum, why that?
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(5, '', u'setup.cfg')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 16:09:40","mask.shape should be equal to mask_img.shape. I don't mind changing the name here but I think I may be missing your point.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 16:10:19","I don't understand why this file is changed... I'll revert it.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(5, '', u'setup.cfg')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-24 16:17:10","Wrong line :$. I don't know why my message appeared here. I believe that I wanted to comment on the signature of the 'unmask' function.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:20:36","The fact that Nifti1Image cannot contain boolean arrays is **really** annoying. Several calls to astype() can't be avoided for this reason, which incurs a copy each time. One can argue that this is usually not a bottleneck, but I think we should do something about it. I created in df08e063a0ae9fe466b61ca4149a1c90a0f2ec12 (see also PR #47) a NislImage class, that just contains two methods get_data() and get_affine() for this reason. It is a valid niimg according to is_a_niimg(), but cannot be saved as a Nifti file easily.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:21:24","""of shape the image shape"" is rather cryptic. What do you mean?
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:22:30","copy().astype(int) can be replaced by astype(int) alone: it already makes a copy.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:24:24","mask.ndim is not supposed to exist for a niimg.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:29:04","Use utils.as_ndarray is this case:
+
+```
+mask = utils.as_ndarray(mask_img.get_data(), dtype=np.bool)
+```
+
+It ensures that as few copies as possible are made, and the data is loaded for disk as fast as possible (there are some corner cases that make your top-notch SAS hard disk drive behave like a floppy disk). See the source code of utils.py for details.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:33:37","Unless there is a reason that I didn't see, this should be factored out in unmask(). Both unmask_3d() and unmask_nd() are private functions that are not subject to the same constraint as unmask() itself. The call to check_niimgs() should be factored out too.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:36:13","I agree. Imposing a boolean array as input is probably too restrictive, especially because Nifti1Image cannot contain boolean data, but allowing any type to be passed is too much. If someone wants to use a floating-point array as a mask, then she must explicitly do the conversion to an int/boolean.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-25 08:37:12","Same remark than before of ndim not existing for niimgs. Use ""number of dimensions"" instead.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-04-25 08:49:31","That comment is from previous code. I agree we should change it.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-04-25 09:04:39","OK, now I have reverted it, I see why :)
+
+CEA version of nosetests does not support ignore-files.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(5, '', u'setup.cfg')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-04-25 09:15:40","We currently have 1 dataset that provide a mask (Haxby) and the mask is a nifti file with float values (0., 1.). If I remeber well, FSL and SPM also output float files when you compute a mask.
+So if we forbid any other type than int, that will force people to load and convert manually the masks intead of giving the path directly to the Nifti Masker.
+
+Maybe we could check that the image has only 2 values as it is done in intersect masks ?
+
+<pre>
+assert len(np.unique(mask)) == 2, ""Meaningful error message""
+</pre>
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-25 09:51:14","> Maybe we could check that the image has only 2 values as it is done in
+> intersect masks ?       assert len(np.unique(mask)) == 2, ""Meaningful error
+> message""
+
+ok! That's a good idea.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","GaelVaroquaux","2013-04-25 21:46:58","> The fact that Nifti1Image cannot contain boolean arrays is really annoying.
+
+It's the nifti standard that wants this.
+
+> Several calls to astype() can't be avoided for this reason, which
+> incurs a copy each time.
+
+Technically, if you can store int8 in Niftis, you don't need a memory
+copy:
+
+```
+In [4]: a = np.ones(10, dtype=np.int8)
+
+In [6]: b = a.view(np.bool)
+
+In [7]: b.shape
+Out[7]: (10,)
+
+In [8]: np.may_share_memory(a, b)
+Out[8]: True
+```
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-26 07:10:27","I already found this solution (using a view instead of a copy), but wondered if the storage of boolean as int8 was standard in numpy or could vary with architecture. @AlexandreAbraham gave me the answer: it is standard, and can be relied on. So I'll use view() everywhere I can, I may be able to get rid of the NislImage class this way. Thanks.
+","7051946b80ca0e76f41d44a44d520dcfac0f7e9b","(None, '', u'nisl/masking.py')"
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 08:47:17","Allow resampling in compute_multi_epi_mask. Associated test.","06c7548b81a45cf821cc29a3cb96d81e13fbb178",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 09:07:14","Unmask uses nifti-like images","37996a87635bf03e95c489eeeb3f69302e5a737a",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 09:09:42","Fix issue #48","87e01080603021d07063e71fc194173cf72c2c7a",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-24 15:55:38","Fix name of unmasking functions. Fix doc.","968a5e66de615311085c08b265d4c15f3c9e28d5",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-25 09:04:45","unmask_3d and unmask_nd private. unmask do the conversion to nifti","e512dcc44e74d8c1a27f4dd2e3e5031dead03e2f",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-29 08:33:37","Better checking of mask integrity.","680e23af102c80fff13d1e6b393a05a91c51f51d",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-29 12:21:17","Correct error message","568a38d977a6419e4159e86a0ff6388da31e13a1",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-29 15:16:54","Correct paramter name in intersect_mask","4a48a85abc2162eb18c9c4142ea1d65909f239dc",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-29 16:41:09","Bug: threshold ignored in compute_multi_epi_mask","1f770c91d79cb129ffed1eba50a5cdea77e4d103",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-30 07:25:35","Type and comment fix.","6cb12e3a826ead016900a75cefc1523ee1f51b1b",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-30 07:53:26","Merge branch 'multi_mask_resample' of https://github.com/nisl/tutorial into multi_mask_resample","8ac2999d3a5a0b9aa1fc5849751b5e89abc6f821",""
+"pull_request_commit","50","nilearn","nilearn","AlexandreAbraham","2013-04-30 07:54:04","Doc","7051946b80ca0e76f41d44a44d520dcfac0f7e9b",""
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-04-29 08:53:03","Message really unclear. Understanding ""completely False"" is impossible for the end-user. ""no region defined"" would be better.
+","680e23af102c80fff13d1e6b393a05a91c51f51d","(26, 35, u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-05-03 12:14:31","@AlexandreAbraham This return value is inconsistent with check_niimg(): I except check_mask_img() to return a niimg.
+Either change the output or rename the function, please...
+","680e23af102c80fff13d1e6b393a05a91c51f51d","(39, 48, u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-05-03 12:15:41","Use as_ndarray() : it will be more efficient if _mask_ is an int8 array. There is a lot of places where the same remark applies.
+","680e23af102c80fff13d1e6b393a05a91c51f51d","(38, 47, u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-05-03 12:44:55","Fixed in commit 0874e3d981df4813ce8b060597e0dba4926acb0c
+","680e23af102c80fff13d1e6b393a05a91c51f51d","(38, 47, u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","AlexandreAbraham","2013-05-03 12:45:32","Fixed in commit 0874e3d981df4813ce8b060597e0dba4926acb0c
+
+I changed the name of the function because it is not possible to return a Nifti1Image containing boolean data.
+","680e23af102c80fff13d1e6b393a05a91c51f51d","(39, 48, u'nisl/masking.py')"
+"pull_request_commit_comment","50","nilearn","nilearn","pgervais","2013-05-03 12:50:19","```
+I changed the name of the function because it is not possible to return a Nifti1Image containing boolean data. 
+```
+
+There is a solution: use an int8 instead in Nifti1Image. Provided as_ndarray is used everywhere to convert to np.bool, there is almost no additional cost (np.bool and np.int8 are close to being the same thing for numpy).
+","680e23af102c80fff13d1e6b393a05a91c51f51d","(39, 48, u'nisl/masking.py')"

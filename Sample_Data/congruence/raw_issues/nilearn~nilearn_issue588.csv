@@ -1,0 +1,38 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","588","nilearn","nilearn","KamalakerDadi","2015-05-15 14:27:23","I am trying to do 4D plotting using contours. I am able to plot contours on an anatomical image MNI template using Harvard Oxford 4D atlas maps. As shown below:
+
+``` python
+import nibabel
+import matplotlib.pyplot as pl
+from nilearn import plotting, datasets
+from nilearn.image import iter_img
+import pylab as plt
+
+atlas_img_4D, labels = datasets.fetch_harvard_oxford('cort-prob-2mm')
+img = nibabel.load(atlas_img_4D)
+
+n_colors= img.shape[3]
+node_colors = [plt.cm.spectral(i / float(n_colors))
+                                                for i in range(n_colors)]
+display = plotting.plot_anat()
+for i, cur_img in enumerate(iter_img(atlas_img_4D)):
+    display.add_contours(cur_img, levels=[30], linewidths=2,      
+                         colors = [node_colors[i][0:3]])
+
+pl.show()
+```
+
+Output:
+![fcontour](https://cloud.githubusercontent.com/assets/11410385/7654518/00cdd048-fb1e-11e4-965c-606916b8bc5f.png)
+
+However, I am raising problems using a MSDL Atlas. I could not able to show contours on default MNI template in `plot_anat.py`. Any advise on how to resample each map to MNI space ?
+","start issue","4D plotting resampling issue using MSDL atlas"
+"issue_closed","588","nilearn","nilearn","AlexandreAbraham","2015-05-18 10:04:56","","closed issue","4D plotting resampling issue using MSDL atlas"
+"issue_comment","588","nilearn","nilearn","GaelVaroquaux","2015-05-15 16:12:41","Hi @KamalakerDadi 
+
+You should not need to resample.
+
+Could you do a pull request with the code that you have as a function in img_plotting and an example that produces the problem that you are having with the MSDL atlas.
+","",""
+"issue_comment","588","nilearn","nilearn","AlexandreAbraham","2015-05-18 10:04:56","Change the `levels` parameter in `add_contours` to `0.1` and it will work.
+","",""

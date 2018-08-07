@@ -1,0 +1,161 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1333","nilearn","nilearn","banilo","2016-11-30 16:18:27","Perhaps related to previous discussion #282, running nilearn plotting functions on niftis with NaN still causes some hickups. Funnily enough, even when the nifti image has already been cleaned from the NaNs. Here is the error message:
+
+``` python
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-43-783fec404ef0> in <module>()
+----> 1 plotting.plot_epi(clean_n)
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in plot_epi(epi_img, cut_coords, output_file, display_mode, figure, axes, title, annotate, draw_cross, black_bg, cmap, vmin, vmax, **kwargs)
+    554                        threshold=None, annotate=annotate,
+    555                        draw_cross=draw_cross, black_bg=black_bg,
+--> 556                        cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+    557     return display
+    558 
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in plot_img(img, cut_coords, output_file, display_mode, figure, axes, title, threshold, annotate, draw_cross, black_bg, colorbar, **kwargs)
+    277         threshold=threshold, annotate=annotate,
+    278         draw_cross=draw_cross, resampling_interpolation='continuous',
+--> 279         black_bg=black_bg, colorbar=colorbar, **kwargs)
+    280 
+    281     return display
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in _plot_img_with_bg(img, bg_img, cut_coords, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, draw_cross, black_bg, vmin, vmax, bg_vmin, bg_vmax, interpolation, display_factory, cbar_vmin, cbar_vmax, **kwargs)
+    181                             threshold=threshold, interpolation=interpolation,
+    182                             colorbar=colorbar, vmin=vmin, vmax=vmax,
+--> 183                             **kwargs)
+    184 
+    185     if annotate:
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in add_overlay(self, img, threshold, colorbar, **kwargs)
+    583         # with plot_stat_map
+    584         kwargs.setdefault('interpolation', 'nearest')
+--> 585         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
+    586 
+    587         if colorbar:
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in _map_show(self, img, type, resampling_interpolation, threshold, **kwargs)
+    652         for display_ax in self.axes.values():
+    653             try:
+--> 654                 data_2d = display_ax.transform_to_2d(data, affine)
+    655                 # To obtain the brain left view, we simply invert the x axis
+    656                 if display_ax.direction == 'l':
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in transform_to_2d(self, data, affine)
+    161                                                coords[1],
+    162                                                coords[2],
+--> 163                                                np.linalg.inv(affine))]
+    164         if self.direction == 'y':
+    165             cut = np.rot90(data[:, y_map, :])
+
+ValueError: cannot convert float NaN to integer
+```
+
+Here is a minimal example:
+``` python
+import numpy as np
+import nibabel as nib
+from nilearn import plotting
+from matplotlib import pyplot as plt
+
+n = nib.load('BD_Action.Execution.Speech.nii')
+d = n.get_data()
+clean_n = nib.Nifti1Image(
+    np.nan_to_num(d),
+    n.get_affine(),
+    header=n.get_header()
+)
+
+# does not crash
+plotting.plot_epi(clean_n, cut_coords=(30, 40, 50))
+plt.show()
+
+# crashes
+plotting.plot_epi(clean_n)
+plt.show()
+
+# crashes
+plotting.plot_stat_map(clean_n, cut_coords=(30, 40, 50))
+plt.show()
+
+# crashes
+plotting.plot_stat_map(clean_n)
+plt.show()
+```
+
+The input file is attached to this mail. Happy to receive your advice.
+
+
+[BD_Action.Execution.Speech.nii.zip](https://github.com/nilearn/nilearn/files/622314/BD_Action.Execution.Speech.nii.zip)
+
+","start issue","Still more NaN's"
+"issue_closed","1333","nilearn","nilearn","GaelVaroquaux","2017-02-08 06:44:47","","closed issue","Still more NaN's"
+"issue_comment","1333","nilearn","nilearn","robince","2017-02-09 11:39:14","I'm seeing similar NaN related problems (I think) in contour glass brain plots:
+```
+display = plotting.plot_glass_brain(None)
+display.add_contours(nimg)
+```
+But in my version of nilearn (just pip updated 0.2.6), `_safe_get_data` doesn't have an `ensure_finite` kwarg. 
+Is there an alternative?
+","",""
+"issue_comment","1333","nilearn","nilearn","KamalakerDadi","2016-11-30 16:42:16","You can try this way:
+```python
+from nilearn.image import load_img, new_img_like
+from nilearn._utils.niimg_conversions import _safe_get_data
+from nilearn import plotting
+
+img = load_img('BD_Action.Execution.Speech.nii')
+d = _safe_get_data(img, ensure_finite=True)
+clean_n = new_img_like(img, d, affine=img.get_affine())
+
+# does not crash
+plotting.plot_epi(clean_n, cut_coords=(30, 40, 50))
+
+# now does not crashes
+plotting.plot_epi(clean_n)
+
+# now does not crashes
+plotting.plot_stat_map(clean_n, cut_coords=(30, 40, 50))
+
+# now does not crashes
+plotting.plot_stat_map(clean_n)
+plotting.show()
+```
+Let me know if problem still persists ?","",""
+"issue_comment","1333","nilearn","nilearn","TeresaMK","2016-12-02 12:36:03","Thanks, it worked!","",""
+"issue_comment","1333","nilearn","nilearn","GaelVaroquaux","2016-12-02 12:53:08","> TypeError: _safe_get_data() got an unexpected keyword argument 'ensure_finite'
+
+You need the development version of nilearn.
+","",""
+"issue_comment","1333","nilearn","nilearn","KamalakerDadi","2016-12-10 04:58:23",">Thanks, it worked!
+
+Great!
+
+Shall I close it ?
+","",""
+"issue_comment","1333","nilearn","nilearn","TeresaMK","2016-12-10 09:56:23","Sure!
+
+Am 10.12.2016 05:58 schrieb ""KamalakerDadi"" <notifications@github.com>:
+
+Thanks, it worked!
+
+Great!
+
+Shall I close it ?
+
+—
+You are receiving this because you commented.
+Reply to this email directly, view it on GitHub
+<https://github.com/nilearn/nilearn/issues/1333#issuecomment-266179409>,
+or mute
+the thread
+<https://github.com/notifications/unsubscribe-auth/AVvNYxUnUucPvD_03JGGs59iZSnA9dzQks5rGjFxgaJpZM4LAYZ->
+.
+","",""
+"issue_comment","1333","nilearn","nilearn","GaelVaroquaux","2016-12-10 10:34:36","> Shall I close it ?
+
+No, we need to include this by default so that plotting functions work
+always on files with NaNs without any lines of code. It entails using
+ensure_finite inside the plotting functions.
+","",""

@@ -1,0 +1,36 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1365","nilearn","nilearn","ahoyosid","2017-01-25 14:33:44","I'm trying to use the check_embedded_nifti_maskfer from masker_validation, instead of #1351.
+However, I'm having some troubles as all the maskers use memory=Memory(cachedir=None).
+
+For example: 
+```
+from nilearn.input_data.masker_validation import check_embedded_nifti_masker
+
+class Toto(object):
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def fit(self, X, *args, **kwargs):
+        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        self.masker_.fit(X)
+
+from nilearn.datasets import fetch_haxby
+dataset = fetch_haxby(n_subjects=1)
+
+from sklearn.externals.joblib import Memory
+# case 1: works like a charm
+toto1 = Toto(memory=Memory(cachedir=None), memory_level=1, verbose=False)
+toto1.fit(dataset.func[0])
+
+# case 2: it breaks as toto has no attribute cachedir
+toto2 = Toto(memory=None, memory_level=1, verbose=False)
+toto2.fit(dataset.func[0])
+```
+In the second case, 
+AttributeError: 'NoneType' object has no attribute 'cachedir'
+
+One possible solution is to leave only memory=None in the __init__, and doing the validation somewhere else.
+
+Note: I suppose this goes the same direction as #1066  ","start issue","check_embedded_nifti_masker assumes a cachedir attribute"
+"issue_closed","1365","nilearn","nilearn","ahoyosid","2017-02-23 10:55:56","","closed issue","check_embedded_nifti_masker assumes a cachedir attribute"

@@ -1,0 +1,54 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","896","nilearn","nilearn","rschmaelzle","2015-12-08 22:03:25","Hi All,
+I am hitting a cast error with this line
+
+``` python
+hv_confounds = nilearn.image.high_variance_confounds(func_filename)
+```
+
+The error goes like this
+
+```
+.....
+ --> 144     signals -= np.mean(signals, axis=0)
+    145     if type == ""linear"":
+    146         # Keeping ""signals"" dtype avoids some type conversion further down,
+
+TypeError: Cannot cast ufunc subtract output from dtype('float64') to dtype('<i2') with casting rule 'same_kind'
+....
+```
+
+the versions we have installed are: nilearn 0.1.4.post1  and numpy 1.10.1
+Any help is much appreciated! Love nilearn!
+Best, Ralf.
+
+PS see this seems to relate to https://github.com/scikit-learn/scikit-learn/issues/5397
+PPS tried downgrading to previous numpy ""conda install numpy=1.9.1"", but then there are dependencies to scipy... 
+","start issue","cast/type issue in high_variance confounds"
+"issue_closed","896","nilearn","nilearn","GaelVaroquaux","2015-12-20 09:51:14","","closed issue","cast/type issue in high_variance confounds"
+"issue_comment","896","nilearn","nilearn","lesteve","2015-12-09 07:44:04","> PS see this seems to relate to scikit-learn/scikit-learn#5397
+
+What's your scikit-learn version? I would have thought this would be fixed in scikit-learn 0.17.
+
+Conda tip: not sure exactly why, but you need to explicitly specify dependencies in conda when using conda install with a specific version, e.g. something like:
+`conda install numpy=1.9.1 scipy scikit-learn'
+
+otherwise you'll keep scipy and scikit-learn compiled with whatever your previous version of numpy was.
+","",""
+"issue_comment","896","nilearn","nilearn","rschmaelzle","2015-12-17 20:52:06","Hi ,
+in nilearn's signal.py function I changed the following:
+      `from sklearn.utils import as_float_array, check_array, check_symmetric`
+and 
+in line 146 of the _detrend function, where the error was thrown in the line before (signals -= np.mean(signals, axis=0))
+      `signals = as_float_array(signals)    
+`
+That seems to fix it for me and for now. Happy to proceed with learning nilearn.
+Best r
+","",""
+"issue_comment","896","nilearn","nilearn","GaelVaroquaux","2015-12-18 07:30:07","Fix submitted in #920 . The problem will be fixed in nilearn 0.2.2
+","",""
+"issue_comment","896","nilearn","nilearn","rschmaelzle","2015-12-09 17:26:39","Thanks lesteve,
+I tried to update to scikit learn 0.17, but this didn't solve the issue. 
+Am still testing to get it to work via downgrading (thanks for the tip), which involved more dependency issues than scipy and scikit-learn.
+Best, Ralf.
+","",""

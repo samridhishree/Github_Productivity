@@ -1,0 +1,30 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","466","nilearn","nilearn","AlexandreAbraham","2015-02-27 09:28:54","Originally, two functions were created to load niimages:
+- `check_niimg` for 3D images
+- `check_niimgs` for 4D images
+
+However, both have grown to accept the other type of images. `check_niimg(ensure_3d=False)` can load 4D images. `check_niimgs(accept_3d=True)` can load 3D images. This is pertinent in certain cases (eg, some sessions are represented by several 4D nifti with shape `[..., 1]`) but ATM the functions are clearly doing more than they should. Since both functions seem to converge, we may want to consider having only one function.
+
+Issue #463 should be addressed during this refactoring.
+
+Please discuss this matter here but use this wiki page as working document: https://github.com/nilearn/nilearn/wiki/Loading-niimgs
+","start issue","Refactor check_niimg*"
+"issue_closed","466","nilearn","nilearn","AlexandreAbraham","2015-04-08 08:49:05","","closed issue","Refactor check_niimg*"
+"issue_comment","466","nilearn","nilearn","banilo","2015-02-27 12:38:40","Another related issue appears to be #273 
+
+Is there any hard reason why we cannot merge the two functions into a single `check_niimgs` with the functionality of both, that is:
+- return iterables
+- autoresample
+- (not) accepted 3D niimg-like objects
+- caching
+","",""
+"issue_comment","466","nilearn","nilearn","AlexandreAbraham","2015-02-27 12:50:47","I suggested that:
+
+> Since both functions seem to converge, we may want to consider having only one function.
+
+I think that having two functions is saner because:
+- the 4D would make call to the 3D function (which is better than having recurrence and `if` statements)
+- some functionalities are exclusive to the 4D function (`return_iterator` for example).
+","",""
+"issue_comment","466","nilearn","nilearn","AlexandreAbraham","2015-04-08 08:49:05","Fixed
+","",""

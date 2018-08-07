@@ -1,0 +1,114 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","353","nilearn","nilearn","AlexandreAbraham","2015-01-16 14:02:11","Many studies use 6mm balls around seeds to extract signal. A Masker could take these seeds and extract the corresponding signal. I already have some code to get the sphere around a seed in MNI space:
+
+``` python
+def _sqr_distance_matrix(array, affine, seed):
+    # You need a lot of faith to believe in this code!
+    seed = np.asarray(seed)
+    # Create an array of shape (3, array.shape) containing the i, j, k indices
+    indices = np.vstack((np.indices(array.shape), np.ones((1,) + array.shape)))
+    # Transform the indices into original space
+    indices = np.tensordot(affine, indices, axes=[[1], [0]])[:3]
+    # Compute square distance to the seed
+    indices = ((indices - seed[:, None, None, None]) ** 2).sum(axis=0)
+    return indices
+
+
+def _create_sphere(array, affine, seed, radius):
+    dist = _sqr_distance_matrix(array, affine, seed)
+    array[dist <= radius ** 2] = 1
+```
+
+Note that this code use a bit of memory in `_sqr_distance_matrix` and could be optimized (at the cost of execution time). But if it is called seed by seed it shouldn't be a problem.
+","start issue","Create NiftiSpheresMasker (was NiftiBallsMasker)"
+"issue_closed","353","nilearn","nilearn","AlexandreAbraham","2015-06-22 15:42:33","","closed issue","Create NiftiSpheresMasker (was NiftiBallsMasker)"
+"issue_comment","353","nilearn","nilearn","GaelVaroquaux","2015-01-16 14:18:54",">   • NiftiBallsMasker is a funny name in a slightly unfortunate way :) (Might
+>     have to use the misnomer sphere to avoid this ...)
+
++1. I am the one who suggested it :$
+","",""
+"issue_comment","353","nilearn","nilearn","GaelVaroquaux","2015-01-20 10:21:58","OK, to be pragmatic, in the neuroimaging litterature, the term of sphere
+is widely used, eventhough it is incorrect. I think that it is used more
+often than ""balls"". So let's go for ""NiftiSpheresMasker"".
+","",""
+"issue_comment","353","nilearn","nilearn","GaelVaroquaux","2015-01-20 21:01:23","> More concretely, do you anticipate that people will use spheres/balls for
+> somethings else than time-series extraction for seed correlation or graph
+> analyses? If not, then NiftiSeedMasker might be a viable alternative.
+
+That would be a horrible misnomer. A seed is not necessary a ball. And
+the ball is not always used for seeding (eg with graph analyses). While
+the sphere/ball is a small misnomer, that one would be misleading.
+","",""
+"issue_comment","353","nilearn","nilearn","eickenberg","2015-01-16 14:17:47","Definitely looks like it does what it is supposed to do :)
+
+Some cosmetics / potential benchmark questions:
+- I'd use `np.concatenate([...], axis=0)` instead of `np.vstack` just to be clear what is being done
+- apart from `np.tensordot`, there is also the option to just `reshape(4, -1)` and `np.dot` (probably faster). (And the slower option: `np.einsum`)
+- [We may be able to transform the other way round, i.e. transform the seed into voxel space. For (up to permutation) symmetric 3x3 parts of the affine, we would then be able to just shrink or dilate along the principle axes and thus be able to use `ogrid`. But that is probably way to complicated for the simple generation of a mask]
+- `None == np.newaxis`
+- `NiftiBallsMasker` is a funny name in a slightly unfortunate way :) (Might have to use the misnomer _sphere_ to avoid this ...)
+
+Why does `_create_sphere` set that part of `array` to 1? Is the rest known to be 0?
+","",""
+"issue_comment","353","nilearn","nilearn","AlexandreAbraham","2015-01-19 11:50:55","> NiftiBallsMasker is a funny name in a slightly unfortunate way :) (Might have to use the misnomer sphere to avoid this ...)
+
+Gaël suggested it and I did not change it on purpose. For the same reason, we used the word ""sphere"" instead of ""ball"" in the SearchLight code/documentation and the main feedback I had on this was ""but Searchlight uses balls, not spheres"". A sphere is a surface, a ball is a volume and people knows that. If you have a solution to make the name more serious, I'd like to know it, but I think that using ""sphere"" would be a mistake.
+","",""
+"issue_comment","353","nilearn","nilearn","bcipolli","2015-01-19 16:04:47","Can the `s` be dropped?  `NiftiBallMasker` is something I'd be willing to say out loud... :)
+","",""
+"issue_comment","353","nilearn","nilearn","eickenberg","2015-01-20 10:00:39","@AlexandreAbraham I am aware of the mathematical definition of these words, and even the non-mathematical definition of a sphere in Wikipedia clearly indicates that it refers to the 2D surface in 3D space. However, I think the effect of names is not to be underestimated and it is beneficial to avoid sources of awkwardness where we can ... :)
+
+@bcipolli I think that is probably the best option. Thanks for the suggestion!
+
+Otherwise something like `NiftiRadiusMasker` should probably be descriptive enough as well.
+","",""
+"issue_comment","353","nilearn","nilearn","banilo","2015-01-20 10:11:56","Am I the only one who is forced to think of this regarding the masker name?
+
+![image](https://cloud.githubusercontent.com/assets/3907396/5815319/091d1c1a-a095-11e4-8774-b2b92f997ef9.png)
+","",""
+"issue_comment","353","nilearn","nilearn","lesteve","2015-01-20 10:18:16","> NiftiBallMasker is something I'd be willing to say out loud
+
+Just to point it out in case it wasn't obvious already: the slightly annoying thing with NiftiBallMasker (without s) is that the other maskers use the plural: NiftiLabel**s**Masker, NiftiMap**s**Masker.
+","",""
+"issue_comment","353","nilearn","nilearn","banilo","2015-01-20 20:24:54","Sorry for crashing the party, my impression is that ""sphere"" and ""ball"" is what usually comes up in method sections, where the radius is specified etc. Yet, in the (actually more often read) introduction and discussion sections frequent notions appear to be
+- seed
+- ROI / region of interst
+- VOI / volume of interest
+
+More concretely, do you anticipate that people will use spheres/balls for somethings else than time-series extraction for seed correlation or graph analyses? If not, then NiftiSeedMasker might be a viable alternative.
+","",""
+"issue_comment","353","nilearn","nilearn","banilo","2015-01-20 20:25:38","Sorry for crashing the party, my impression is that ""sphere"" and ""ball"" is what usually comes up in method sections, where the radius is specified etc. Yet, in the (actually more often read) introduction and discussion sections frequent notions appear to be
+- seed
+- ROI / region of interst
+- VOI / volume of interest
+
+More concretely, do you anticipate that people will use spheres/balls for somethings else than time-series extraction for seed correlation or graph analyses? If not, then NiftiSeedMasker might be a viable alternative.
+","",""
+"issue_comment","353","nilearn","nilearn","eickenberg","2015-01-20 20:26:08","""""""searchlight""""""?
+
+On Tuesday, January 20, 2015, Danilo Bzdok notifications@github.com wrote:
+
+> Sorry for crashing the party, my impression is that ""sphere"" and ""ball"" is
+> what usually comes up in method sections, where the radius is specified
+> etc. Yet, in the (actually more often read) introduction and discussion
+> sections frequent notions appear to be
+> - seed
+> - ROI / region of interst
+> - VOI / volume of interest
+> 
+> More concretely, do you anticipate that people will use spheres/balls for
+> somethings else than time-series extraction for seed correlation or graph
+> analyses? If not, then NiftiSeedMasker might be a viable alternative.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/353#issuecomment-70726147.
+","",""
+"issue_comment","353","nilearn","nilearn","banilo","2015-01-20 20:28:49","> searchlight
+
+Are you suggesting SeedMVPAMasker?
+","",""
+"issue_comment","353","nilearn","nilearn","bthirion","2015-01-20 20:43:35","-1 for me. First we need homogeneity in the naming. Second, a seed is not necessary a ball (it can be  a predefined ROI, a single voxel). I think that the term does not convey an accurate idea about the object.
+","",""
+"issue_comment","353","nilearn","nilearn","AlexandreAbraham","2015-06-22 15:42:33","Fixed by #430.
+","",""

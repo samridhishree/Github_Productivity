@@ -1,0 +1,21 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1308","nilearn","nilearn","dillonplunkett","2016-10-11 18:30:56","Is it intended for the output from concat_imgs to always have `qform_code` of 0 and `sform_code` of 2? For example, 
+
+```
+from nilearn import image, datasets
+dset = datasets.fetch_haxby()
+filename = dset.func[0]
+
+img_one = image.index_img(filename, (0, 2))
+img_two = image.index_img(filename, (1, 3))
+concatenated = image.concat_imgs([img_one, img_two])
+
+print img_one.header[['qform_code', 'sform_code']]        # (0, 0)
+print img_two.header[['qform_code', 'sform_code']]        # (0, 0)
+print concatenated.header[['qform_code', 'sform_code']]   # (0, 2)
+```
+
+Similarly, with a 4D image with `qform_code` and `sform_code` of 1, extracting two subset images and then concatenating them also produces an output with `qform_code` of 0 and `sform_code` of 2.
+","start issue","concat_imgs always sets qform_code and sform_code to 0 and 2, respectively?"
+"issue_comment","1308","nilearn","nilearn","AlexandreAbraham","2016-10-13 11:12:57","Some header values may be invalidated after concatenating images. This is why we did not copy the header in the first place (I have not a lot of expertise in Nifti headers).
+","",""

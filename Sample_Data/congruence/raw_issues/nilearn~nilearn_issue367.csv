@@ -1,0 +1,128 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","367","nilearn","nilearn","lesteve","2015-01-23 09:41:26","- scikit-learn 0.10 is required by nilearn/version.py and the nilearn tests pass with 0.10 on Travis
+- README.rst says 0.12.1 is required (looking at git history this is probably because at one point at least one example needed 0.12.1 to run)
+- to be able to run all the examples, scikit-learn 0.14.1 is required
+
+My question is:
+- do we just accept that running the examples may need a more recent version of scikit-learn than just using nilearn and add a note about that in README.rst?
+- Should we try to modify the examples so that they run with a scikit-learn version older than 0.14.1?
+
+For completeness, here is some summary of the errors with scikit-learn 0.11, 0.12.1 and 0.13.1 (0.10 is not available through conda, hence it is absent from the summary):
+
+```
+doc_sklearn_0.11.log-  File ""plot_nifti_simple.py"", line 44, in <module>
+doc_sklearn_0.11.log:AttributeError: 'FastICA' object has no attribute 'fit_transform'
+doc_sklearn_0.11.log-  File ""plot_haxby_simple.py"", line 60, in <module>
+doc_sklearn_0.11.log:TypeError: __init__() got an unexpected keyword argument 'n_folds'
+doc_sklearn_0.11.log-  File ""plot_ica_resting_state.py"", line 36, in <module>
+doc_sklearn_0.11.log:AttributeError: 'FastICA' object has no attribute 'fit_transform'
+doc_sklearn_0.11.log-  File ""plot_haxby_searchlight.py"", line 60, in <module>
+doc_sklearn_0.11.log:TypeError: __init__() got an unexpected keyword argument 'n_folds'
+doc_sklearn_0.11.log-  File ""plot_haxby_full_analysis.py"", line 42, in <module>
+doc_sklearn_0.11.log:ImportError: No module named dummy
+doc_sklearn_0.11.log-  File ""plot_simulated_data.py"", line 114, in <module>
+doc_sklearn_0.11.log:TypeError: __init__() got an unexpected keyword argument 'l1_ratio'
+doc_sklearn_0.11.log-  File ""plot_haxby_different_estimators.py"", line 49, in <module>
+doc_sklearn_0.11.log:TypeError: __init__() got an unexpected keyword argument 'scoring'
+doc_sklearn_0.11.log-  File ""plot_miyawaki_reconstruction.py"", line 214, in <module>
+doc_sklearn_0.11.log:ImportError: cannot import name accuracy_score
+----------------------------------------
+doc_sklearn_0.12.1.log-  File ""plot_haxby_simple.py"", line 60, in <module>
+doc_sklearn_0.12.1.log:TypeError: __init__() got an unexpected keyword argument 'n_folds'
+doc_sklearn_0.12.1.log-  File ""plot_haxby_searchlight.py"", line 60, in <module>
+doc_sklearn_0.12.1.log:TypeError: __init__() got an unexpected keyword argument 'n_folds'
+doc_sklearn_0.12.1.log-  File ""plot_haxby_full_analysis.py"", line 42, in <module>
+doc_sklearn_0.12.1.log:ImportError: No module named dummy
+doc_sklearn_0.12.1.log-  File ""plot_simulated_data.py"", line 114, in <module>
+doc_sklearn_0.12.1.log:TypeError: __init__() got an unexpected keyword argument 'l1_ratio'
+doc_sklearn_0.12.1.log-  File ""plot_haxby_different_estimators.py"", line 49, in <module>
+doc_sklearn_0.12.1.log:TypeError: __init__() got an unexpected keyword argument 'scoring'
+doc_sklearn_0.12.1.log-  File ""plot_miyawaki_reconstruction.py"", line 214, in <module>
+doc_sklearn_0.12.1.log:ImportError: cannot import name accuracy_score
+----------------------------------------
+doc_sklearn_0.13.1.log-  File ""plot_haxby_full_analysis.py"", line 73, in <module>
+doc_sklearn_0.13.1.log:TypeError: cross_val_score() got an unexpected keyword argument 'scoring'
+doc_sklearn_0.13.1.log-  File ""plot_haxby_different_estimators.py"", line 49, in <module>
+doc_sklearn_0.13.1.log:TypeError: __init__() got an unexpected keyword argument 'scoring'
+```
+","start issue","Running examples needs a more recent scikit-learn version than advertised in README.rst"
+"issue_closed","367","nilearn","nilearn","AlexandreAbraham","2015-07-20 00:53:58","","closed issue","Running examples needs a more recent scikit-learn version than advertised in README.rst"
+"issue_comment","367","nilearn","nilearn","GaelVaroquaux","2015-01-24 10:27:23","We need to support at least 0.12.1 to be able to support the latest
+Ubuntu LTS. If we don't support 0.10.1, we have a problem, as the
+examples won't work under the standard Neurospin install, which is going
+to be really a problem to target users.
+
+> doc_sklearn_0.11.log:AttributeError: 'FastICA' object has no attribute 'fit_transform'
+
+Which example is that? I think that it should probably be modified to not
+use ICA but some other scikit-learn transformer. Right now the example
+has little value compared to CanICA.
+
+> doc_sklearn_0.11.log:TypeError: **init**() got an unexpected keyword argument 'n_folds'
+
+Yes, I see that this is going to be a problem.
+
+Looking at your list, I am in favor of supporting 0.12.1, but not older.
+It might pose a problem for the neurospin install, so we will have to see
+what we can do.
+","",""
+"issue_comment","367","nilearn","nilearn","GaelVaroquaux","2015-01-25 10:15:36","> It's coming from plot_ica_resting_state.py
+
+That guy should be changed to not be an ICA, as we have CanICA for that.
+
+> ```
+>     doc_sklearn_0.11.log:TypeError: init() got an unexpected keyword
+>     argument 'n_folds'
+> 
+> Yes, I see that this is going to be a problem.
+> ```
+> 
+> the n_folds argument was called k before, but the order of the arguments I
+> think remains the same so there is probably a syntax that can work for a wide
+> range of scikit-learn versions.
+
+Good idea.
+
+> An other way would be to add code for this in nilearn/_utils/fixes.
+
+I am not very excited about that.
+","",""
+"issue_comment","367","nilearn","nilearn","lesteve","2015-01-24 13:49:43","> Which example is that? I think that it should probably be modified to not use ICA but some other scikit-learn transformer. Right now the example has little value compared to CanICA.
+
+It's coming from plot_ica_resting_state.py (the line above the error is showing the file the error is coming from):
+
+```
+doc_sklearn_0.11.log-  File ""plot_ica_resting_state.py"", line 36, in <module>
+doc_sklearn_0.11.log:AttributeError: 'FastICA' object has no attribute 'fit_transform'
+```
+
+> > doc_sklearn_0.11.log:TypeError: **init**() got an unexpected keyword argument 'n_folds'
+> 
+> Yes, I see that this is going to be a problem.
+
+the `n_folds` argument was called `k` before, but the order of the arguments I think remains the same so there is probably a syntax that can work for a wide range of scikit-learn versions. An other way would be to add code for this in nilearn/_utils/fixes. The danger in all this obviously is to make the examples more obscure.
+
+I have to say I haven't looked at the other errors in too much detail.
+","",""
+"issue_comment","367","nilearn","nilearn","bthirion","2015-04-18 13:56:53","To summarize that one, the only pending work is to explicitly require sklearn 0.14.1 ?
+","",""
+"issue_comment","367","nilearn","nilearn","lesteve","2015-07-20 05:11:03","@AlexandreAbraham did you mean you close this one? Until we require scikit-learn 0.14 I reckon some examples will still break.
+","",""
+"issue_comment","367","nilearn","nilearn","AlexandreAbraham","2015-07-20 05:54:33","Well, I solved it by stating in the README.rst that some examples require scikit-learn 0.14.
+","",""
+"issue_comment","367","nilearn","nilearn","lesteve","2015-07-20 06:30:59","OK sounds good.
+","",""
+"issue_comment","367","nilearn","nilearn","lesteve","2015-02-04 15:39:30","Just some additional details: all the examples run with 0.14.1 meaning that we are fine with:
+- Ubuntu 12.04 LTS + neurodebian (sklearn 0.14.1)
+- bog-standard Ubuntu 14.04 LTS (sklearn 0.14.1)
+
+Supporting bog-standard Ubuntu 12.04 LTS (sklearn 0.10) seems out of reach.
+
+The minimum sklearn version to run all the examples should be mentioned in README.rst (alongside the matplotlib one) and on the examples gallery page.
+
+We could have a per-example error mechanism if the version of sklearn is not recent enough or a warning at sklearn import time mentioning that sklearn may not be recent enough to run all the examples.
+","",""
+"issue_comment","367","nilearn","nilearn","lesteve","2015-02-04 15:40:50","I have no strong sense of whether any sklearn versions between 0.10 and 0.14.1 is strategic enough to target.
+","",""
+"issue_comment","367","nilearn","nilearn","lesteve","2015-04-20 08:51:10","I reckon the consensus is to live with this limitation until we deemed appropriate to require scikit-learn 0.14.1. FWIW there is a warning about this at the top of the examples [page](http://nilearn.github.io/auto_examples/).
+","",""

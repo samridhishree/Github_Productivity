@@ -1,0 +1,91 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","459","nilearn","nilearn","bcipolli","2015-02-24 09:53:39","Fix for #458.  Now, a bit more checking occurs before allocating memory:
+- If a transposed matrix (n_features, n_slices) is passed in, it is transposed before assignment.
+- If a 2D matrix with no dimensions of size `n_features` exists, a friendly error is thrown.
+","start issue","Avoid exploding memory on transpose error"
+"issue_closed","459","nilearn","nilearn","AlexandreAbraham","2015-02-27 00:19:29","","closed issue","Avoid exploding memory on transpose error"
+"pull_request_title","459","nilearn","nilearn","bcipolli","2015-02-24 09:53:39","Fix for #458.  Now, a bit more checking occurs before allocating memory:
+- If a transposed matrix (n_features, n_slices) is passed in, it is transposed before assignment.
+- If a 2D matrix with no dimensions of size `n_features` exists, a friendly error is thrown.
+","370ea18296bd5a77327342ce259e49d868d2b094","Avoid exploding memory on transpose error"
+"pull_request_merged","459","nilearn","nilearn","AlexandreAbraham","2015-02-27 00:19:29","Avoid exploding memory on transpose error","8f320793bc538831f31425fc059b87ff8cae13ea","Pull request merge from bcipolli/nilearn:issue-458 to nilearn/nilearn:master"
+"issue_comment","459","nilearn","nilearn","eickenberg","2015-02-24 10:12:23","While you are at it, could you look at the docstring of `_unmask_3D`, I think the shape of the input is wrong.
+
+Also, I would propose to rename `_unmask_nd` to `_unmask_4d`, because it doesn't do any n-d at all and may confuse people trying to understand the code.
+","",""
+"issue_comment","459","nilearn","nilearn","bcipolli","2015-02-24 10:26:01","Thanks for the comments!  Should all be set.
+","",""
+"issue_comment","459","nilearn","nilearn","eickenberg","2015-02-24 10:29:51","Could you change l628 from `(n_samples,)` to `(n_features,)`? (Or am I wrong about this?)  
+","",""
+"issue_comment","459","nilearn","nilearn","bcipolli","2015-02-24 10:35:27","@eickenberg good eye!  Just pushed that change now as well.
+","",""
+"issue_comment","459","nilearn","nilearn","lesteve","2015-02-24 11:57:31","You have one test failing, probably the one with the auto transpose logic that was removed.
+","",""
+"issue_comment","459","nilearn","nilearn","bcipolli","2015-02-24 16:21:23","@lesteve Fixed that.
+@banilo Changed that and added tests (there were none).
+Also, while creating new tests, noticed that the 3D and 4D errors for wrong shape were different.  Added the similar shape check to the 3D code, and updated the tests.
+","",""
+"issue_comment","459","nilearn","nilearn","AlexandreAbraham","2015-02-27 00:19:37","Thanks !
+","",""
+"pull_request_commit_comment","459","nilearn","nilearn","lesteve","2015-02-24 10:00:18","I'd be enclined to always throw if `X.shape[-1] != n_features` rather than have a special edge case that automagically works.
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","AlexandreAbraham","2015-02-24 10:00:32","I don't like this kind of magic it could lead to very weird edge cases. I think we should just raise an error.
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","lesteve","2015-02-24 10:00:58","Could you remove these two additional lines?
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","lesteve","2015-02-24 10:01:26","Any particular reason why you rename this function?
+","370ea18296bd5a77327342ce259e49d868d2b094","(52, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","eickenberg","2015-02-24 10:02:48","Nitpick: Can we have `X.shape[1]` here? (By the previous checks, `X` must be 2D, and it is better to be explicit)
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","eickenberg","2015-02-24 10:04:25","I would prefer `if X.shape[0] == n_features and X.shape[1] != n_features` in order not to have inexplicable transposes one day somebody uses a lot of data or a very small mask.
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","eickenberg","2015-02-24 10:09:59","Or what Alex says, didn't see that.
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","bcipolli","2015-02-24 10:25:42","This tests errors, not warnings.
+","370ea18296bd5a77327342ce259e49d868d2b094","(52, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","lesteve","2015-02-24 10:36:53","Right I didn't properly expand the diff and only saw the ""2D X (should be ok) test"", sorry for that
+","370ea18296bd5a77327342ce259e49d868d2b094","(52, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:22:49","+1
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 24, 2015, 11:00, at 11:00, ""Loïc Estève"" notifications@github.com wrote:
+
+> > @@ -665,7 +665,15 @@ def _unmask_nd(X, mask, order=""C""):
+> >      if mask.dtype != np.bool:
+> >          raise ValueError(""mask must be a boolean array"")
+> >      if X.ndim != 2:
+> > -        raise ValueError(""X must be a 2-dimensional array"")
+> > -        raise TypeError(""X must be a 2-dimensional array"")
+> > -    n_features = mask.sum()
+> > -    if X.shape[-1] != n_features:
+> > -        # Handle (potential) transpose as a special case, as this
+> > -        #   mistake can lead to system-fatal memory allocation
+> >   below.
+> > -        if X.shape[0] == n_features:
+> > -            X = X.T
+> > -        else:
+> > -            raise TypeError('X must be of shape (samples, %d).' %
+> >   n_features)
+> 
+> I'd be enclined to always throw if `X.shape[-1] != n_features` rather
+> than have a special edge case that automagically works.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/459/files#r25240484
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","459","nilearn","nilearn","banilo","2015-02-24 15:14:15","rather TypeError?
+","370ea18296bd5a77327342ce259e49d868d2b094","(None, '', u'nilearn/masking.py')"
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-23 20:07:15","Use TypeError for matrix dimensionality issues, for consistency.
+
+Conflicts:
+	nilearn/masking.py","c2064dfa564827a3db7549f818047db8c947f7d5",""
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-23 22:05:47","Avoid exploding memory on transpose error.","9e27961a5c6118f963c08558287d8b8cf3ace9d3",""
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-23 23:24:21","Fix up tests.","05c420524945de799ebb7bde0f1a1406bde08149",""
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-24 09:43:25","Updating tests.","bbc1d0618f0be8d66b7305cf7159142adaced721",""
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-24 10:23:57","Remove auto-magic conversion of transpose, use index 1 instead of -1.","10f53c6309a92c27fb84ee94d1da755ff2dffc18",""
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-24 10:34:38","Fix up comments, rename function, re-lint test file.","6ae58a832fe69458d916c124638e5cf2294a0144",""
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-24 16:19:25","Switch mask.dtype != bool to TypeError, add tests.","eb1ceb9e2cca025de3e3ae5e68480e338e831e5b",""
+"pull_request_commit","459","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-24 16:19:57","Add corresponding shape error change to 3D case, add tests.","370ea18296bd5a77327342ce259e49d868d2b094",""

@@ -1,0 +1,66 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 10:56:26","Rebased version of https://github.com/nilearn/nilearn/pull/563 by @salma1601 
+
+Fixes #561
+","start issue","[MRG+1] Pr 563 rebased: Deal with non-full rank confounds"
+"issue_closed","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 15:20:34","","closed issue","[MRG+1] Pr 563 rebased: Deal with non-full rank confounds"
+"pull_request_title","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 10:56:26","Rebased version of https://github.com/nilearn/nilearn/pull/563 by @salma1601 
+
+Fixes #561
+","2df12d7a2d295d14288d825f25977cd353db9c3e","[MRG+1] Pr 563 rebased: Deal with non-full rank confounds"
+"pull_request_merged","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 15:20:34","[MRG+1] Pr 563 rebased: Deal with non-full rank confounds","4e6b60f0018d7371b94649c812c7e4464f7164c2","Pull request merge from GaelVaroquaux/nilearn:pr_563_rebase to nilearn/nilearn:master"
+"issue_comment","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 12:45:49","This is ready to go, as far as I am concerned.
+
+Somebody, a review? @AlexandreAbraham ?
+","",""
+"issue_comment","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 13:31:58","I'll wait for travis to finish before merging.
+","",""
+"issue_comment","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 15:20:28","Travis finished. I am merging.
+","",""
+"pull_request_commit_comment","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 11:01:32","Oops: you are modifying in place the output here. I'll fix ths.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(None, '', u'nilearn/signal.py')"
+"pull_request_commit_comment","580","nilearn","nilearn","AlexandreAbraham","2015-05-11 13:03:42","I got an headache trying to find out if a copy is done in all the call tree. I would either:
+- do an explicit copy at the beginning of the function, and the rest inplace
+- do everything inplace and make an explicit copy above
+
+For the moment, there is a bug since the code expects _standardize to do a copy of signals and the copy is not done if no treratment is requested.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(None, '', u'nilearn/signal.py')"
+"pull_request_commit_comment","580","nilearn","nilearn","AlexandreAbraham","2015-05-11 13:04:07","I trust you on this one.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(41, '', u'nilearn/signal.py')"
+"pull_request_commit_comment","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 13:07:59","Good point. This copy wasn't necessary. I got confused by the merge mess.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(None, '', u'nilearn/signal.py')"
+"pull_request_commit_comment","580","nilearn","nilearn","eickenberg","2015-05-11 13:10:59","that part is fine: What we want is the projector `confounds.dot(np.linalg.pinv(confounds)).dot(signals)`, which is `confounds.dot(pinv(confounds.T.dot(confounds))).dot(confounds.T).dot(signals)`, which amounts to what is written, because `confounds = Q.dot(R)` and `confounds.T.dot(confounds) = R.T.dot(Q.T).dot(Q).dot(R)` and `Q` disappears because it is orthogonal.
+
+But as mentioned in an outside comment, this would have been handled by `confounds.dot(pinv(confounds).dot(signal))` also. The only question is where `pinv` cuts off singular values. AFAIK this is at `1e-15`.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(41, '', u'nilearn/signal.py')"
+"pull_request_commit_comment","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 13:14:08","How about we cut our losses here and stop discussing minute details to
+focus on the big picture: the problem is solved, and we want to release
+0.1.3 to get bug fixes out to our users.
+
+You may perfectly be right. I would welcome a PR with corresponding
+timings showing that it is possible to simplify the code with the same
+numerical stability and speed. But in the mean time, I really want to get
+0.1.3 out.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(41, '', u'nilearn/signal.py')"
+"pull_request_commit_comment","580","nilearn","nilearn","AlexandreAbraham","2015-05-11 13:22:35","Yeah, I think that writing down the equations in a comment would be easier to read than the code and would allow us to double check  the logic more easily. We can create a PR in that sense. In the meantime, let's merge it.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(41, '', u'nilearn/signal.py')"
+"pull_request_commit_comment","580","nilearn","nilearn","eickenberg","2015-05-11 13:28:53","I totally agree. The code works, which is the most important part. My comments are entirely for future readability reasons, and this only speaking for my `pinv`-biased point of view, so they probably don't even generalize to other people.
+
++1 from my side for merging this.
+","2df12d7a2d295d14288d825f25977cd353db9c3e","(41, '', u'nilearn/signal.py')"
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-27 12:14:22","demo with synthetic data of confounds regression","7dc0a92f82534b1c70bfd9e47f3da9d94daf962e",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 12:29:53","fix non-full rank confounds regression","92eeed8bec6caa20dc6d366178b8cff9dab68ca0",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 12:31:29","suppressed demo","7422fe99649ac8576b9bdea19065913e7645d8b3",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:39:45","null eigenvalue threshold from float precision","618237a851584d6e7acc0a9eeccf47f22fd6e2d3",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:48:08","added demo","b3a6577f9bba62a474237a737423786bc55b7c9a",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:57:02","removed demo","ac751e5b766a4fa8ac5b861a34aa0ca37a0f4627",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-04-28 13:59:12","updated threshold for zero","43d9b8c11d1c7cd3724d1b953a236db00936713d",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-05-09 07:36:53","softned precision in test confounds","35d12dce5080902b9e2aa80fdf809ed04a96d9e1",""
+"pull_request_commit","580","nilearn","nilearn","sb238920@is223297.intra.cea.fr","2015-05-11 09:43:36","non-full rank regression for scipy 0.9, added test","79c6992228a6490fc10f0be1bfc9b57c439f2d34",""
+"pull_request_commit","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 11:18:38","MISC: avoid a side effect","03f29e31f4998ea64f8558ce3ca128c5009e59fc",""
+"pull_request_commit","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 11:33:29","MISC: undo unnecessary changes
+
+After discussion with @salma1601, these changes were probably introduced
+by a struggle with rebase.","f8b7a34c0c91e46a431fa400fccba49a6e32dc76",""
+"pull_request_commit","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 11:51:29","MISC: cleaning more merge problems","fa5a3f70f7ddbaf9b0418a62e3dbb1efe47eeb70",""
+"pull_request_commit","580","nilearn","nilearn","GaelVaroquaux","2015-05-11 13:07:48","MISC: remove unnecessary copy","2df12d7a2d295d14288d825f25977cd353db9c3e",""

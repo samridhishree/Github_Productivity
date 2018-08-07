@@ -1,0 +1,329 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1267,nilearn,nilearn,salma1601,2016-09-07 16:47:57,"Is it expected behavior to get negative labels after resampling ?
+
+``` Python
+import numpy as np
+import nibabel
+from nilearn import datasets, image
+aal = datasets.fetch_atlas_aal()
+adhd = datasets.fetch_adhd(n_subjects=1)
+resampled_aal_img = image.resample_to_img(aal.maps, adhd.func[0],
+                                          interpolation='nearest')
+resampled_aal_data = resampled_aal_img.get_data()
+print(np.unique(resampled_aal_data))
+```
+
+gives
+
+``` Python
+[-30445 -30189 -29661 -29430 -29174 -27885 -27629 -27101 -26360 -26104
+ -25325 -25320 -25069 -25064 -24541 -24305 -24049 -23800 -23544 -23265
+ -23009 -21981 -21745 -21489 -20705 -20449 -19421 -19185 -19180 -18929
+ -18924 -18165 -18145 -17909 -17889 -17125 -16869 -16861 -15095 -14839
+ -14301 -12025 -11769 -11741 -10985 -10729  -4845  -4589   -760   -504
+      0    281    537   1296   1552   1801   2057   2336   2592   3856
+   4112   4361   4617   4896   5152   6421   6677   6921   7177  10506
+  10531  10762  10787  13066  13091  13322  13347  13576  13832  14616
+  14872  15651  15907  16136  16392  17176  17432  18211  18467  19736
+  19992  20756  20771  21012  21027  22811  23067  23331  23587  24841
+  25097  25371  25627  25891  26147  26896  27152  27931  27936  28187
+  28192  28451  28707  28951  29207  31011  31267]
+```
+",start issue,negative labels when resampling AAL
+2,issue_closed,1267,nilearn,nilearn,KamalakerDadi,2017-06-23 23:00:19,,closed issue,negative labels when resampling AAL
+3,issue_comment,1267,nilearn,nilearn,AlexandreAbraham,2016-09-08 08:50:27,"Nailed it. The dtype of aal.maps is '>i2', so big endian. image._resample_one_img creates an output image of the same type, '>i2' for the output. But scipy.ndimage.affine_transform writes values in little endian, hence the mess.
+",,
+4,issue_comment,1267,nilearn,nilearn,salma1601,2017-06-23 07:46:27,"Yep ! No negative labels now, thanks !",,
+5,issue_comment,1267,nilearn,nilearn,KamalakerDadi,2017-03-13 10:24:25,"Similar big endian problem appeared when using ```largest_connected_component``` from _utils.ndimage on AAL atlas.
+```ValueError: Big-endian buffer not supported on little-endian compiler```
+
+Basically, this will also have impact on this PR #1409 
+",,
+6,issue_comment,1267,nilearn,nilearn,KamalakerDadi,2017-06-23 00:51:28,"With current master, we don't see any negative labels after resampling. @salma1601 Can you please confirm this one ?",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1263,nilearn,nilearn,salma1601,2016-09-06 20:06:45,"`bg_img` can not be set to `False` as said in doc
+https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/img_plotting.py#L584
+
+``` Python
+from nilearn import datasets, plotting
+aal = datasets.fetch_atlas_aal()
+plotting.plot_roi(aal.maps, bg_img=False)
+```
+
+throws
+
+> TypeError: Data given cannot be loaded because it is not compatible with nibabel format:
+> False
+
+It's rather `None` to remove background
+",start issue,bg_img=None instead of bg_img=False in plotting.plot_roi doc
+2,issue_closed,1263,nilearn,nilearn,AlexandreAbraham,2016-09-27 14:18:58,,closed issue,bg_img=None instead of bg_img=False in plotting.plot_roi doc
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1262,nilearn,nilearn,salma1601,2016-09-06 04:51:44,"I am doing it after manually getting my masks data, I am not sure there is a better way
+
+``` Python
+import nibabel
+from nilearn.image import new_img_like
+datas = [nibabel.load(mask_file).get_data() *  index for
+             (index, mask_file) in enumerate(mask_files)]
+img = new_img_like(mask_files[0], np.sum(datas, axis=0))
+```
+",start issue,best way to build 3D labels image from multiple non-overlapping masks
+2,issue_closed,1262,nilearn,nilearn,salma1601,2016-09-27 10:46:00,,closed issue,best way to build 3D labels image from multiple non-overlapping masks
+3,issue_comment,1262,nilearn,nilearn,AlexandreAbraham,2016-09-06 06:16:00,"`np.argmax`
+",,
+4,issue_comment,1262,nilearn,nilearn,salma1601,2016-09-06 21:26:34,"nice ! thanks
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1264,nilearn,nilearn,salma1601,2016-09-06 20:19:54,"Each time a explicitely cache a function with `Memory` from `sklearn.joblib.externals` I got an ugly warning
+
+> DeprecationWarning: Changing the shape of non-C contiguous array by
+> descriptor assignment is deprecated. To maintain
+> the Fortran contiguity of a multidimensional Fortran
+> array, use 'a.T.view(...).T' instead
+
+Is there a way to solve it ?
+",start issue,is there a way to avoid joblib Deprecation Warning
+2,issue_closed,1264,nilearn,nilearn,GaelVaroquaux,2017-11-06 21:13:12,,closed issue,is there a way to avoid joblib Deprecation Warning
+3,issue_comment,1264,nilearn,nilearn,GaelVaroquaux,2017-11-06 21:13:12,Closing this as we won't fix it in the nilearn codebase. It will just disappear by itself :),,
+4,issue_comment,1264,nilearn,nilearn,aabadie,2016-09-06 20:43:19,"This warning was fixed in upstream Joblib in [this PR](https://github.com/joblib/joblib/pull/309). I think this fix is also in the latest version of scikit-learn.
+Maybe updating scikit-learn would solve your issue.
+",,
+5,issue_comment,1264,nilearn,nilearn,aabadie,2016-09-06 20:53:55,"Just verified and scikit-learn 0.17.1 (latest stable release) contains the fix so consider upgrading your installed version.
+
+```
+pip install scikit-learn --upgrade
+```
+
+or 
+
+```
+conda update scikit-learn
+```
+
+if you use anaconda.
+",,
+6,issue_comment,1264,nilearn,nilearn,aabadie,2016-09-07 07:55:52,"@salma1601, my bad, my scikit-learn installation was ""partched"" with a more recent version of joblib (0.10.0) which itself contains the fix.
+The default scikit-learn installation (0.17.1) still uses 0.9.4, sorry. The next release of scikit-learn should be out by the end of this month.
+",,
+7,issue_comment,1264,nilearn,nilearn,lesteve,2016-09-08 07:55:41,"In the mean time, if you find them really annoying, you can get rid of the warnings by either use the `warnings` module in your script or set the `PYTHONWARNINGS` environment variable. Something like this after your imports in your script (some package modify the warnings filters at import time which can override the filter you are trying to set) should work:
+
+``` py
+import warnings
+warnings.simplefilter('ignore', DeprecationWarning)
+```
+",,
+8,issue_comment,1264,nilearn,nilearn,KamalakerDadi,2016-09-06 20:41:14,"As far as warnings, I don't think there is a way.
+
+But, you can ignore the warnings by catch the warnings and tell to ignore them. Watch at Neurovault fetcher PR particularly example to make sense of what I am talking. Feel free to close it if you think this issue still not be kept hold.
+",,
+9,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-06 21:27:18,"I just upgraded sklearn to 0.17.1
+
+``` Python
+In [1]: import sklearn
+In [2]: sklearn.__version__
+Out[2]: '0.17.1
+```
+
+but I still got the warnings
+",,
+10,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-06 21:35:30,"It is strange because I have the old version of the file joblib `hashing` file (not tacking into account the mentioned PR) although I upgraded sklearn
+",,
+11,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-07 16:45:26,"Ok thanks for the explanations !
+",,
+12,issue_comment,1264,nilearn,nilearn,salma1601,2016-09-08 08:38:43,"Ok, thanks !
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,375,nilearn,nilearn,lesteve,2015-01-30 14:49:10,"see #196 for context.
+
+Rebased on master, fixed merge conflicts and updated examples to follow the changes that have happened since.
+
+Things that still need to be done:
+- [ ] Look at non-tackled comments in #196
+- [ ] verbose parameters and print statements may need to be updated following #369
+- [ ] example .py and .png in the rst doc need to be updated because examples have moved around
+- [ ] small differences between #196 plots and the ones obtained from this PR need reviewing
+- [ ] examples rst titles (just (2) added to the non-RPBI example title) is not great and sometimes you don't actually see a difference in the gallery titles.
+- [ ] just checking: there is a standardize=True for the masker in plot_haxby_rpbi.py with a comment that says that it is important for RPBI. The thing is that standardize=True is not used for the other RPBI examples. Any reason why?
+",start issue,[WIP] Random Parcellation Based Inference continued PR
+2,issue_closed,375,nilearn,nilearn,lesteve,2016-09-06 14:23:12,,closed issue,[WIP] Random Parcellation Based Inference continued PR
+3,pull_request_title,375,nilearn,nilearn,lesteve,2015-01-30 14:49:10,"see #196 for context.
+
+Rebased on master, fixed merge conflicts and updated examples to follow the changes that have happened since.
+
+Things that still need to be done:
+- [ ] Look at non-tackled comments in #196
+- [ ] verbose parameters and print statements may need to be updated following #369
+- [ ] example .py and .png in the rst doc need to be updated because examples have moved around
+- [ ] small differences between #196 plots and the ones obtained from this PR need reviewing
+- [ ] examples rst titles (just (2) added to the non-RPBI example title) is not great and sometimes you don't actually see a difference in the gallery titles.
+- [ ] just checking: there is a standardize=True for the masker in plot_haxby_rpbi.py with a comment that says that it is important for RPBI. The thing is that standardize=True is not used for the other RPBI examples. Any reason why?
+",67ea6bb4111eeb610f6a7bb9fbda79a59ca468d4,[WIP] Random Parcellation Based Inference continued PR
+4,issue_comment,375,nilearn,nilearn,bcipolli,2015-02-23 06:07:03,"@lesteve I have been looking at this today, I think it could be useful for some of the RSA things I've been doing in the background.
+
+I'd be happy to help push this forward.  I can take care of the merge conflicts and take care of the printing / verbose issues, for example.  I also think the coding of the `plot_haxby_rpbi` example could be simplified.    
+
+I also had a couple of questions about analysis choices made in the `plot_haxby_rpbi` example.  I worry that my questions / concerns may be naive (I am still very new to neuroimaging analysis), but I will follow up with them in case they're questions others might have in learning from the examples.
+",,
+5,issue_comment,375,nilearn,nilearn,bcipolli,2015-02-23 06:44:02,"2 questions to start:
+- Why does the Haxby example limit data to houses and faces?  I think a comment there would be helpful.
+- The code mentions that it takes the mean image per condition, as different samples within the same session have dependencies in time.
+  - Isn't this issue also true (to a lesser degree) between conditions (house vs. face)?
+  - Would this be (at least partially) alleviated by passing `detrend=True` in the mask?
+  - Is this really a concern in a block design (24s per stimulus, 12s of rest in-between)?
+",,
+6,issue_comment,375,nilearn,nilearn,lesteve,2015-02-27 09:36:28,"> I'd be happy to help push this forward.
+
+That would be great indeed! There was some interest about working on it during the 0.1 sprint but other issues were deemed more important at the time.
+
+I guess the first thing would be to rebase on master and fix merge conflicts. The bullet points mentioned in my message at the very top are good next steps.
+",,
+7,issue_comment,375,nilearn,nilearn,eickenberg,2015-02-27 12:01:11,"> Isn't this issue also true (to a lesser degree) between conditions (house vs. face)?
+
+Probably, but the extent depends on long range temporal interactions (which are typically drift components) that are difficult to quantify
+
+> Is this really a concern in a block design (24s per stimulus, 12s of rest in-between)?
+
+Drift cutoff in nipy GLM is set by default to a period of 128s. If the interactions are really that long, then this would be a concern. 
+
+> Would this be (at least partially) alleviated by passing detrend=True in the mask?
+
+Probably. But as mentioned elsewhere, this detrending needs to be done by chunks (as indicated by the `chunk` variable in the label data)
+",,
+8,issue_comment,375,nilearn,nilearn,bcipolli,2015-02-28 20:47:02,"Rebased to master / fixed merge conflicts:
+https://github.com/bcipolli/nilearn/tree/rpbi
+
+Thanks @eickenberg ; I can perhaps include some of that in the example (like the detrending in chunks), and a bit more in comments.  I also think the code can be cleaned up a bit (after working through the example for some of the RSA-focused work I'm doing).
+
+I'll also take a look at the bullet points listed!
+",,
+9,issue_comment,375,nilearn,nilearn,AlexandreAbraham,2015-01-30 15:34:21,"> just checking: there is a standardize=True for the masker in plot_haxby_rpbi.py with a comment that says that it is important for RPBI. The thing is that standardize=True is not used for the other RPBI examples. Any reason why?
+
+We should check in RPBI that data is standardize and raise a warning if not.
+",,
+10,issue_comment,375,nilearn,nilearn,AlexandreAbraham,2015-12-18 13:22:40,"Should we kill this one? Or resurrect it?
+",,
+11,issue_comment,375,nilearn,nilearn,bthirion,2015-12-18 13:36:16,"I am wondering what the right placeholder for that method is: Nilearn/Nistats. There are two blockers: 
+- the structure instantiated to obtain the p-values through permutation is a bit complex / hard to maintain.
+- Ward clustering is very slow. Renn should be implemented instead.
+  The second point is easy to address, not the first one.
+
+An idea that we have currently is to have a procedure that does not require the permutations, but this is a topic of research. Should go to nilearn-sandbox ?
+",,
+12,issue_comment,375,nilearn,nilearn,lesteve,2016-09-06 14:23:10,"Closing this one, since this is in nilearn_sandbox now, see https://github.com/nilearn/nilearn_sandbox/pull/8.
+",,
+13,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-20 10:22:27,"Fixed merged conflicts
+
+Tests passing",857d59b91e1e6c2856a47475c36453ccad898cb7,
+14,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-20 10:23:12,plot_haxby_rpbi.py harmonised and working,9e8d1e912bf93345630a0c9b1847e26ea7b05f1e,
+15,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-20 14:46:23,plot_localizer_rpbi.py harmonised and working,54e5d97a639c69721f06ecddec9b3b07f0deab2d,
+16,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-23 12:06:43,plot_oasis_vbm_rpbi.py harmonised and working,6ddbbaebd94a0972ccae6eb82ff805f1d1303252,
+17,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-23 14:12:58,Python 2.6 fix,6409eb49b2fea74ddec1f68b3b49aa28409b6a40,
+18,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-26 12:43:02,"Used delayed import
+
+to ensure that matplotlib backend is set properly by nilearn/plotting/__init__.py
+in an environment without X",6a311462f7c7593f4c5a0a7627992af26fd444ac,
+19,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-26 12:54:10,Remove unnecessary changes to .gitignore,d868ad219bae8097203ef54f1b3d774325739518,
+20,pull_request_commit,375,nilearn,nilearn,lesteve,2015-01-30 14:11:56,Rename orthonormed -> orthonormalized,e8b13f7fe602c8fb06a1872d1ab24f19cf02b792,
+21,pull_request_commit,375,nilearn,nilearn,lesteve,2015-02-02 08:06:56,Fix merging gone wrong,67ea6bb4111eeb610f6a7bb9fbda79a59ca468d4,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 07:33:14,"Because `coord_transform` returns either a list of arrays or a list of number, iterating on the return values fails if only one point is transformed. I decided to directly add an option in `coord_transform` instead of ""catching"" the problem in the searchlight because I think it may be useful for other usage.
+
+Update:
+
+For the bug fix: We have two masks in SearchLight: mask_img, that masks voxels outside of the brain and process_mask_img that ""selects"" the voxels to process. Before, mask_img was not used properly, process_mask_img was used instead. I fixed it.
+",start issue,[MRG] SearchLight cannot handle one-voxel mask
+2,issue_closed,1232,nilearn,nilearn,AlexandreAbraham,2016-09-08 14:22:46,,closed issue,[MRG] SearchLight cannot handle one-voxel mask
+3,pull_request_title,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 07:33:14,"Because `coord_transform` returns either a list of arrays or a list of number, iterating on the return values fails if only one point is transformed. I decided to directly add an option in `coord_transform` instead of ""catching"" the problem in the searchlight because I think it may be useful for other usage.
+
+Update:
+
+For the bug fix: We have two masks in SearchLight: mask_img, that masks voxels outside of the brain and process_mask_img that ""selects"" the voxels to process. Before, mask_img was not used properly, process_mask_img was used instead. I fixed it.
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,[MRG] SearchLight cannot handle one-voxel mask
+4,pull_request_merged,1232,nilearn,nilearn,AlexandreAbraham,2016-09-08 14:22:46,[MRG] SearchLight cannot handle one-voxel mask,59aaf95f757e766c2b45c08072701eac25dffb5f,Pull request merge from AlexandreAbraham/nilearn:test_sl to nilearn/nilearn:master
+5,issue_comment,1232,nilearn,nilearn,GaelVaroquaux,2016-08-19 09:57:07,"LGTM, but it would be nice to have a test on coord_transform.
+",,
+6,issue_comment,1232,nilearn,nilearn,KamalakerDadi,2016-08-18 15:59:00,"Is it worth to add tests for `coord_transform` ?
+",,
+7,pull_request_commit_comment,1232,nilearn,nilearn,bthirion,2016-08-09 09:28:33,"Did you forget this print instruction ?
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(None, '', u'nilearn/decoding/searchlight.py')"
+8,pull_request_commit_comment,1232,nilearn,nilearn,bthirion,2016-08-09 09:30:07,"Should this be the default behavior ?
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(None, '', u'nilearn/image/resampling.py')"
+9,pull_request_commit_comment,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 09:37:44,"I wondered. From a developper POV, this is indeed the most wanted behavior. From a user POV, being able to transform only one point is nice.
+
+Another option I thought of is this:
+`coord_transform(1, 2, 3, np.eye(4))` returns a 3-tuple `(1, 2, 3)`
+and
+`coord_transform([1], [2], [3], np.eye(4))` returns a 3-tuple of list `([1], [2], [3])`
+
+Maybe this is more natural?
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(None, '', u'nilearn/image/resampling.py')"
+10,pull_request_commit_comment,1232,nilearn,nilearn,bthirion,2016-08-09 20:48:21,"Sorry, I am missing the point. The scores are uniformly zero. Shouldn't we have a non-zero score at [0, 0, 0].
+Maybe I missed the logic of this update.
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(None, '', u'nilearn/decoding/tests/test_searchlight.py')"
+11,pull_request_commit_comment,1232,nilearn,nilearn,AlexandreAbraham,2016-08-10 13:34:27,"Answer is in the conversation. For your question in particular, no, the score is 0 because the sphere is too small to grab the voxel containing the signal.
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(None, '', u'nilearn/decoding/tests/test_searchlight.py')"
+12,pull_request_commit_comment,1232,nilearn,nilearn,GaelVaroquaux,2016-08-19 07:22:59,"> > -def coord_transform(x, y, z, affine):
+> > +def coord_transform(x, y, z, affine, squeeze=True):
+> 
+> Should this be the default behavior ?
+
+I don't think so. It's always annoying to have to deal with a number of
+dimensions that can fluctuate.
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(None, '', u'nilearn/image/resampling.py')"
+13,pull_request_commit_comment,1232,nilearn,nilearn,GaelVaroquaux,2016-08-19 07:30:24,"It might be good to have a test, testing that input shape == output shape.
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(13, '', u'nilearn/image/resampling.py')"
+14,pull_request_commit_comment,1232,nilearn,nilearn,GaelVaroquaux,2016-08-19 07:30:45,"> > Should this be the default behavior ?
+> 
+> I don't think so. It's always annoying to have to deal with a number of
+> dimensions that can fluctuate.
+
+Looks like you addressed that comment :$
+",28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,"(None, '', u'nilearn/image/resampling.py')"
+15,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 07:30:34,Add a regression test for #1216,2c3586e517348aa7962d1ed4eacbbb80e546d18e,
+16,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 07:58:34,Make searchlight handle one voxel masks,d8e9064a4cdca6213849303e2532284883fd5590,
+17,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 08:28:28,Fix another coord_transform,fe8098b3f342944a649b495639ace9be8d468a8b,
+18,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 09:32:55,Remove debug print.,0f870e0e84c02f3cfd49d671e23b5948840455d0,
+19,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-08-09 09:41:12,Makes coord_transform type more natural,a99aa8bf259015cce0b19a17615bf444219047d1,
+20,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-08-10 13:29:21,Fix bug in SL again.,23805dcd4106b5a6662a52959839fb738a280778,
+21,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-08-10 13:32:48,Fix previous patch. Add test,83e42cfbc856d968734d5754f401e8540d9924e0,
+22,pull_request_commit,1232,nilearn,nilearn,AlexandreAbraham,2016-09-08 07:51:08,Add test for doord_transform,28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1266,nilearn,nilearn,aabadie,2016-09-07 14:15:50,"When generating the html documentation I had lots of warning with `ln` command trying to create an already existing link.
+Using `-f`option (--force) silent them.
+",start issue,DOC: fix cache symlinks warnings when generating doc.
+2,issue_closed,1266,nilearn,nilearn,aabadie,2016-09-07 15:46:00,,closed issue,DOC: fix cache symlinks warnings when generating doc.
+3,pull_request_title,1266,nilearn,nilearn,aabadie,2016-09-07 14:15:50,"When generating the html documentation I had lots of warning with `ln` command trying to create an already existing link.
+Using `-f`option (--force) silent them.
+",d2ad87ff6a97777beac01610deec1d0a4789e4c7,DOC: fix cache symlinks warnings when generating doc.
+4,pull_request_merged,1266,nilearn,nilearn,aabadie,2016-09-07 15:46:00,DOC: fix cache symlinks warnings when generating doc.,24bd95d7a6c7fbd2467816c287b347f60a2b6ca6,Pull request merge from aabadie/nilearn:fix_symlinks_warning to nilearn/nilearn:master
+5,issue_comment,1266,nilearn,nilearn,aabadie,2016-09-07 15:45:55,"I had an oral agreement from @AlexandreAbraham for merging this one once CI are green.
+Everything is green => Merging !
+",,
+6,issue_comment,1266,nilearn,nilearn,lesteve,2016-09-07 14:42:50,"AFAIR this is a kludge to share nilearn_cache from different examples folders on CircleCI, the simpler the better ...
+",,
+7,issue_comment,1266,nilearn,nilearn,AlexandreAbraham,2016-09-07 14:33:56,"Maybe testing if the link exist is more clever? This would let open the possibility to customize these links. This is just an open question, this is not something that I do.
+",,
+8,pull_request_commit,1266,nilearn,nilearn,aabadie,2016-09-07 14:12:57,DOC: fix cache symlinks warnings when generating doc.,d2ad87ff6a97777beac01610deec1d0a4789e4c7,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1265,nilearn,nilearn,Titan-C,2016-09-07 09:57:50,"This update allows to download all examples of the gallery at once, plus
+improved support of the RST to markdown conversion for the Jupyter
+notebooks
+",start issue,[MAINT] Update to Sphinx-Gallery 0.1.4
+2,issue_closed,1265,nilearn,nilearn,GaelVaroquaux,2016-09-30 09:02:01,,closed issue,[MAINT] Update to Sphinx-Gallery 0.1.4
+3,pull_request_title,1265,nilearn,nilearn,Titan-C,2016-09-07 09:57:50,"This update allows to download all examples of the gallery at once, plus
+improved support of the RST to markdown conversion for the Jupyter
+notebooks
+",40bb7b3378857c23392b6be3633358d73d1f29f2,[MAINT] Update to Sphinx-Gallery 0.1.4
+4,pull_request_merged,1265,nilearn,nilearn,GaelVaroquaux,2016-09-30 09:02:01,[MAINT] Update to Sphinx-Gallery 0.1.4,7143e3ab62661e464d20929d61d686d1148143b3,Pull request merge from Titan-C/nilearn:sphinxgallery to nilearn/nilearn:master
+5,issue_comment,1265,nilearn,nilearn,GaelVaroquaux,2016-09-30 09:01:59,"Merging this. Thanks @Titan-C .
+Sorry for having taken so long.
+",,
+6,issue_comment,1265,nilearn,nilearn,AlexandreAbraham,2016-09-08 14:26:45,"LGTM
+",,
+7,pull_request_commit,1265,nilearn,nilearn,Titan-C,2016-09-07 09:56:44,"[MAINT] Update to Sphinx-Gallery 0.1.4
+
+This update allows to download all examples of the gallery at once, plus
+improved support of the RST to markdown conversion for the Jupyter
+notebooks",40bb7b3378857c23392b6be3633358d73d1f29f2,

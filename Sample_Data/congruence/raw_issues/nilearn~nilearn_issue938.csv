@@ -1,0 +1,150 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","938","nilearn","nilearn","bthirion","2016-01-11 18:05:13","The following code yields does not  converge on my box:
+
+```
+from nilearn import datasets
+from nilearn.regions import RegionExtractor
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    [""checkerboard"", ""horizontal checkerboard"", ""vertical checkerboard""],
+    n_subjects=1, get_tmaps=True, get_masks=True)
+extraction = RegionExtractor(localizer_dataset.tmaps, min_region_size=100,
+                             threshold=98, thresholding_strategy='percentile')
+extraction.fit()
+```
+
+Does somebody understand what's going on ?
+","start issue","Region Extractor fails to converge in some cases"
+"issue_comment","938","nilearn","nilearn","AlexandreAbraham","2016-01-14 10:21:39","We just checked that and this is a scikit-image issue when a seed is alone in the image (all the values around are masked).
+","",""
+"issue_comment","938","nilearn","nilearn","AlexandreAbraham","2016-01-14 10:35:13","The issue is there: https://github.com/scikit-image/scikit-image/issues/1875
+","",""
+"issue_comment","938","nilearn","nilearn","AlexandreAbraham","2016-01-14 13:43:11","> Since we're at it, here is another sample image that triggers an error: https://transfert.inria.fr/fichiers/2382a74e545211398cfdc28c6284e333/mental-random.nii.gz
+
+Isnt'it the same error?
+","",""
+"issue_comment","938","nilearn","nilearn","AlexandreAbraham","2016-01-14 14:39:30","Can you post it or a snippet? Because I can't reproduce.
+","",""
+"issue_comment","938","nilearn","nilearn","AlexandreAbraham","2016-01-14 14:48:19","Oh, ok, I have reported this error along with the other in my skimage issue.
+","",""
+"issue_comment","938","nilearn","nilearn","AlexandreAbraham","2016-01-21 10:05:22","> Yes, merged in master which means this issue is partially fixed.
+
+NaN problem is fixed. But problem of lonely seeds remain. I can fix it but only next week because I'm busy.
+","",""
+"issue_comment","938","nilearn","nilearn","AlexandreAbraham","2016-01-28 12:21:08","> @AlexandreAbraham Can you propose your idea or hint ?
+
+We are discussing it in the skimage issue.
+","",""
+"issue_comment","938","nilearn","nilearn","GaelVaroquaux","2016-01-21 07:23:53","Has this been fixed by @KamalakerDadi 's recent improvements (merged in master)?
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-21 08:38:36","Yes, merged in master which means this issue is partially fixed. 
+
+This is still remained https://github.com/scikit-image/scikit-image/issues/1875
+","",""
+"issue_comment","938","nilearn","nilearn","banilo","2016-01-21 11:38:40","> NaN problem is fixed. But problem of lonely seeds remain.
+
+Sorry, but you sound like yoda here :-P
+
+![image](https://cloud.githubusercontent.com/assets/3907396/12479515/d5648e40-c03b-11e5-95b6-3c1d622e9390.png)
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-11 18:21:45","I will check
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-11 18:27:15","Quickly checking, I see some NAN values may be thats causing not converging ?
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-11 19:46:53","> I've tried with images from one contrast across subjects (also with NaNs) and did not get the problem.
+
+Just curious, which contrast ?
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-12 10:04:50","> 'left button press (auditory cue)'
+
+I don't see NANs in this contrast. 
+
+> So we need to convert NaNs to zeros.
+
+May be fix for this kid of bug would be as @GaelVaroquaux said to convert NANs to zeros.
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-14 10:33:28","Side note:
+slightly reducing threshold from 98 -> 95 worked. No error triggered. We are trying to reproduce with scikit-image and report a bug issue.
+
+![bert_issue](https://cloud.githubusercontent.com/assets/11410385/12322102/6c701fa0-bab2-11e5-8900-b5a6d7c24deb.png)
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-14 14:44:53","``` python
+from nilearn.image import threshold_img
+from nilearn.regions import connected_regions
+
+img = 'mental-random.nii.gz'
+threshold_maps = threshold_img(img, threshold='98%')
+regions_img, ind = connected_regions(threshold_maps, extract_type='local_regions', min_region_size=150)
+```
+
+```
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-5-a25e93b56148> in <module>()
+----> 1 regions_img, ind = connected_regions(threshold_maps, extract_type='local_regions', min_region_size=150)
+
+/home/kamalakar/Kamalakar/work/nilearn/nilearn/regions/region_extractor.pyc in connected_regions(maps_img, min_region_size, extract_type, smoothing_fwhm, mask_img)
+    147             # Assign -1 to values which are 0. to indicate to ignore
+    148             seeds_label[map_3d == 0.] = -1
+--> 149             rw_maps = _random_walker(map_3d, seeds_label)
+    150             # Now simply replace ""-1"" with ""0"" for regions separation
+    151             rw_maps[rw_maps == -1] = 0.
+
+/home/kamalakar/Kamalakar/work/nilearn/nilearn/_utils/segmentation.py in _random_walker(data, labels, beta, tol, copy, spacing)
+    280     labels = np.atleast_3d(labels)
+    281     if np.any(labels < 0):
+--> 282         lap_sparse = _build_laplacian(data, spacing, mask=labels >= 0, beta=beta)
+    283     else:
+    284         lap_sparse = _build_laplacian(data, spacing, beta=beta)
+
+/home/kamalakar/Kamalakar/work/nilearn/nilearn/_utils/segmentation.py in _build_laplacian(data, spacing, mask, beta)
+    146     weights = _compute_weights_3d(data, spacing, beta=beta, eps=1.e-10)
+    147     if mask is not None:
+--> 148         edges, weights = _mask_edges_weights(edges, weights, mask)
+    149     lap = _make_laplacian_sparse(edges, weights)
+    150     del edges, weights
+
+/home/kamalakar/Kamalakar/work/nilearn/nilearn/_utils/segmentation.py in _mask_edges_weights(edges, weights, mask)
+    133     ind_mask = np.logical_and(mask0, mask1)
+    134     edges, weights = edges[:, ind_mask], weights[ind_mask]
+--> 135     max_node_index = edges.max()
+    136     # Reassign edges labels to 0, 1, ... edges_number - 1
+    137     order = np.searchsorted(np.unique(edges.ravel()),
+
+/home/kamalakar/anaconda/lib/python2.7/site-packages/numpy/core/_methods.pyc in _amax(a, axis, out, keepdims)
+     24 # small reductions
+     25 def _amax(a, axis=None, out=None, keepdims=False):
+---> 26     return umr_maximum(a, axis, None, out, keepdims)
+     27 
+     28 def _amin(a, axis=None, out=None, keepdims=False):
+
+ValueError: zero-size array to reduction operation maximum which has no identity
+```
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-14 14:48:05","At some point, `labels` array contains no seed points which gives us failure.
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-14 15:24:01","Again a side-note, to not to block with bug, `extract_type=connected_components` can be used to get an idea on the data. 
+
+``` python
+regions_img, ind = connected_regions(threshold_maps, extract_type='connected_components', min_region_size=150)
+```
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-14 16:46:39","``` python
+from nilearn import plotting
+from nilearn.image import threshold_img
+from nilearn.regions import connected_regions
+
+img = 'mental-random.nii.gz'
+# threshold should be in string if you are using 'percentile', by default strategy is 'percentile'
+threshold_stat_img = threshold_img(img, threshold='98%') 
+regions_img, index = connected_regions(threshold_stat_img, extract_type='connected_components', min_region_size=150)
+plotting.plot_prob_atlas(regions_img)
+```
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-14 16:59:51","In case if you missed it: there is an example made for 3D stat image.
+
+http://nilearn.github.io/auto_examples/manipulating_visualizing/plot_extract_rois_statistical_maps.html#sphx-glr-auto-examples-manipulating-visualizing-plot-extract-rois-statistical-maps-py
+","",""
+"issue_comment","938","nilearn","nilearn","KamalakerDadi","2016-01-28 11:21:20","> I can fix it but only next week because I'm busy.
+
+@AlexandreAbraham Can you propose your idea or hint ?
+","",""

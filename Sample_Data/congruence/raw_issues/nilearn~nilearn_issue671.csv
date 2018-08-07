@@ -1,0 +1,69 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","671","nilearn","nilearn","dohmatob","2015-07-15 08:19:43","This following fault happens, and the whole ""make doc"" process halts.  We should catch errors in line 320 return.
+# Sphinx version: 1.2.2
+# Python version: 2.7.6
+# Docutils version: 0.11 release
+# Jinja2 version: 2.7.2
+# Loaded extensions:
+
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/dist-packages/sphinx/cmdline.py"", line 253, in main
+    warningiserror, tags, verbosity, parallel)
+  File ""/usr/lib/python2.7/dist-packages/sphinx/application.py"", line 139, in **init**
+    self._init_builder(buildername)
+  File ""/usr/lib/python2.7/dist-packages/sphinx/application.py"", line 201, in _init_builder
+    self.emit('builder-inited')
+  File ""/usr/lib/python2.7/dist-packages/sphinx/application.py"", line 400, in emit
+    results.append(callback(self, *args))
+  File ""/home/parietal/dohmatob/CODE/FORKED/nilearn/doc/sphinxext/sphinxgallery/gen_gallery.py"", line 51, in generate_gallery_rst
+    generate_dir_rst(directory, fhindex, examples_dir, gallery_dir, gallery_conf, plot_gallery, seen_backrefs)
+  File ""/home/parietal/dohmatob/CODE/FORKED/nilearn/doc/sphinxext/sphinxgallery/gen_rst.py"", line 277, in generate_dir_rst
+    backrefs = generate_file_rst(fname, target_dir, src_dir, gallery_conf, plot_gallery)
+  File ""/home/parietal/dohmatob/CODE/FORKED/nilearn/doc/sphinxext/sphinxgallery/gen_rst.py"", line 570, in generate_file_rst
+    make_thumbnail(first_image_file, thumb_file, 400, 280)
+  File ""/home/parietal/dohmatob/CODE/FORKED/nilearn/doc/sphinxext/sphinxgallery/gen_rst.py"", line 320, in make_thumbnail
+    img = Image.open(in_fname)
+  File ""/usr/lib/python2.7/dist-packages/PIL/Image.py"", line 2028, in open
+    raise IOError(""cannot identify image file"")
+IOError: cannot identify image file
+","start issue","make_thumbnails function of gen_rst.py not fault-tolerant enough"
+"issue_closed","671","nilearn","nilearn","AlexandreAbraham","2015-07-15 08:23:57","","closed issue","make_thumbnails function of gen_rst.py not fault-tolerant enough"
+"issue_comment","671","nilearn","nilearn","GaelVaroquaux","2015-07-15 09:18:32","> Closed #671.
+
+We need this fixed, though. The whole doc building framework is broken
+currently, and it's penalizing the sprint a lot.
+","",""
+"issue_comment","671","nilearn","nilearn","GaelVaroquaux","2015-07-15 09:42:51","> Can you clarify the problem? And why do people need to build the doc?
+> 
+> make doc should be working but yes, it requires heavy downloads.
+
+Just 'make' should not require downloads
+","",""
+"issue_comment","671","nilearn","nilearn","GaelVaroquaux","2015-07-15 10:15:49","> make do not require downloads. It runs nosetests, which requires no data and
+> doctest which are broken since last doc refactoring.
+
+That's issue #668
+
+I am on it. Almost fixed
+","",""
+"issue_comment","671","nilearn","nilearn","GaelVaroquaux","2015-07-15 10:19:52","> Adding a few # doctest: +SKIP in introduction.rst worked for me!
+
+Sent a PR
+","",""
+"issue_comment","671","nilearn","nilearn","GaelVaroquaux","2015-07-15 10:26:45","> Just 'make' should not require downloads
+
+We are not able to reproduce this problem. Probably a user error. This is
+telling me that we need to work on developer documentation soon.
+","",""
+"issue_comment","671","nilearn","nilearn","AlexandreAbraham","2015-07-15 09:41:11","Can you clarify the problem? And why do people need to build the doc?
+
+`make doc` should be working but yes, it requires heavy downloads.
+","",""
+"issue_comment","671","nilearn","nilearn","AlexandreAbraham","2015-07-15 10:14:50","> Just 'make' should not require downloads
+
+`make` does not require downloads. It runs nosetests, which requires no data and doctest which are broken since last doc refactoring.
+","",""
+"issue_comment","671","nilearn","nilearn","AlexandreAbraham","2015-07-15 10:19:07","Adding a few `# doctest: +SKIP` in `introduction.rst` worked for me!
+","",""
+"issue_comment","671","nilearn","nilearn","AlexandreAbraham","2015-07-15 10:27:59","I diagnosed it in #669. It's a sphinx problem.
+","",""

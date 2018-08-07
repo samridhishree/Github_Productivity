@@ -1,0 +1,60 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1319","nilearn","nilearn","pbellec","2016-10-27 15:21:59","A number of issues were raised with the COBRE preprocessed dataset since its integration:
+- First and foremost, the dataset was too big (8 GB)
+- Too many steps of the preprocessing had been fixed (""scrubbing"", regression of certain confounds, etc) while this could be done easily with nilearn
+- also there were some discrepancies between the ids used to name the files and the ids used in the public phenotypic data
+
+I have prepared a new figshare release that addresses these issues:
+- fMRI data is now resampled at 6 mm isotropic and encoded with 16 bit integers. Size has dropped to 620 MB.
+- Data is now released with minimal preprocessing (motion correction, BOLD-T1, T1-template registration, no smoothing, no regression of confounds, no scrubbing). A spreadsheet (gzipped tabular-separated values) is released for each fMRI dataset, with a fairly comprehensive list of confounds. Those can be grabbed to run regression/scrubbing in nilearn, although some of these operations can also be done independently using nilearn tools. 
+- Data come with a consolidated phenotypic_data.tsv.gz file. It includes demographics and diagnostic data, as well as measures of motion with/without scrubbing, that can be used to filter the subjects or match patients/controls based on motion levels. 
+
+The confounds and phenotypic data are described in two separate json files. The files as well as a markdown description of the dataset (README.md) are available here https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4106844
+
+Note that the registration of all volumes have been checked visually. An interactive report (including registration and motion) is available here
+https://simexp.github.io/qc_cobre/registration.html
+
+@KamalakerDadi could you update the cobre fetcher and companion tutorial?
+","start issue","update COBRE fetcher"
+"issue_closed","1319","nilearn","nilearn","GaelVaroquaux","2017-02-22 16:54:01","","closed issue","update COBRE fetcher"
+"issue_comment","1319","nilearn","nilearn","GaelVaroquaux","2016-10-27 15:36:51","> That sounds great indeed.
+
++1! Pretty awesome.
+
+I'd like to change all our example to use COBRE rather than ABIDE at some
+point, as the prediction of phenotype actually somewhat works on COBRE.
+","",""
+"issue_comment","1319","nilearn","nilearn","GaelVaroquaux","2017-01-26 15:45:36","The json file giving the list of download_url is no longer up to date. I think that found the proper request to figshare to get the json with the list of files: https://api.figshare.com/v2/articles/4197885","",""
+"issue_comment","1319","nilearn","nilearn","GaelVaroquaux","2017-01-26 15:49:53","That's probably for the version 1 of the API.","",""
+"issue_comment","1319","nilearn","nilearn","pbellec","2016-10-28 00:38:05","I should have double checked the release. Althgouh all files are listed, with the correct size, the download links are broken. I probably messed up with their upload API. I've contacted figshare support, will let you know when it works. 
+","",""
+"issue_comment","1319","nilearn","nilearn","pbellec","2016-11-03 00:52:07","So this took me much more time than I would have liked, but I finally figured out their API. The collection is now stored here: https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885 I checked and the ""download all"" works, and files are identical to what I uploaded. So I think it's now ready to go, sorry about the hicup. FYI over my university network I had download  speeds of 500k-1M/sec, so it took a good 15 mns to download the whole collection of ~150 subjects. 
+","",""
+"issue_comment","1319","nilearn","nilearn","pbellec","2017-02-07 01:04:09","@darya-chyzhyk sorry I missed that. Would it be useful if I updated list_files.json ? Best,
+
+Pierre","",""
+"issue_comment","1319","nilearn","nilearn","darya-chyzhyk","2017-01-26 17:02:35","Details of the files:
+1. list_files.json from new release https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885
+
+the json is invalis because of this text in the beginning of the file:
+HTTP/1.1 200 OK
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Headers: Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Max-Age: 3600
+Content-Type: application/json; charset=UTF-8
+Date: Fri, 28 Oct 2016 16:53:02 GMT
+Server: nginx
+Vary: Accept-Encoding
+Content-Length: 139992
+Connection: keep-alive
+
+and the links to the files are wrong.
+
+2.  “files” file from https://figshare.com/api/articles/4197885/1/files contains the information just of the part of the data
+3. from https://api.figshare.com/v2/articles/4197885 has different structure  from previous release data, but is manageable.","",""
+"issue_comment","1319","nilearn","nilearn","darya-chyzhyk","2017-02-07 07:52:29","Thank you @pbellec ! 
+
+It would be helpful.
+Could you please also update keys_phenotypic_data.json and keys_confounds.json.
+","",""

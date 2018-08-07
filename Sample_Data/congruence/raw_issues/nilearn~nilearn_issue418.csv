@@ -1,0 +1,83 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","418","nilearn","nilearn","bcipolli","2015-02-08 15:09:03","I looked at the docstring for the `NiftiMasker` class, and for `detrend` it says:
+
+```
+    detrend : boolean, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+```
+
+I expected that it would have one of the two semantics:
+1. `NiftiMasker` will detrend to compute the mask, then the detrending computed on the mask would be applied to the image passed to `transform`
+2. `NiftiMasker` will detrend to compute the mask, and will not detrend input data.
+
+Instead a third semantic was applied:
+- `NiftiMasker` detrends to compute the mask.  It then detrends any image that it receives (even if that image is 3D), _using the input images only_.
+
+I'm not sure what the designed behavior is (or why), but at the very least a warning would be helpful.  When I passed a 3D image into a masker with `detrend=True`, I got an image  back out that was all zeros.
+
+Note: this probably also applies to standardize.
+","start issue","Detrending 3D image puts all values to 0 (was Masking with detrend=True has an undocumented, unexpected semantic.)"
+"issue_closed","418","nilearn","nilearn","GaelVaroquaux","2015-04-20 07:20:32","","closed issue","Detrending 3D image puts all values to 0 (was Masking with detrend=True has an undocumented, unexpected semantic.)"
+"issue_comment","418","nilearn","nilearn","bcipolli","2015-02-08 15:15:51","The use-cases I have in mind are:
+- Combine masks by calling `mask.transform` on another mask's 3D image.
+- Mask a subset of data (calling `mask.transform` on the result of `index_img`.
+
+In this case, I'd prefer that `fit` and `transform` each accept `detrend` (and other parameters).  If they're kept in the constructor, then I'd expect the first semantic: the detrending to be stored and applied to any `transform`ed image.
+
+I'm not sure what makes sense for other designed scenarios.
+","",""
+"issue_comment","418","nilearn","nilearn","eickenberg","2015-02-08 15:37:32","3D images shouldn't be detrended, because as you say, the result is 0, because it subtracts the mean per voxel. Thanks for spotting this!
+
+Otherwise, the functionality doesn't seem shocking to me: Every 4D image has different temporal trends that need to be removed somewhere in the pipeline. Hence semantic 1 is not useful. Semantic 2 is a possible point for confusion, which may be resolved by renaming the keyword `detrend=` to `detrend_data=`, but I am not sure whether that is necessary. The mask is always computed on undetrended images AFAIK, and both masking strategies employ mean images.
+
+Combining masks can be done using e.g. `nilearn.masking.intersect_masks` or by working on the binary masks directly.
+
+Scikit-learn convention forbids the use of keyword arguments in `fit` and `transform`.
+","",""
+"issue_comment","418","nilearn","nilearn","bcipolli","2015-02-08 15:57:17","@eickenberg Thanks for the info.  Two additional comment:
+- `detrend_data` doesn't clear up the ambiguity either; which data: the data used to compute the mask (via fit), or the data passed in `transform`?  It's 
+- If I want a mask that is computed from detrended EPI data, but I only want to apply that mask to a subset of my data (e.g. `label == 'face'`), I want the detrending computed across the entire dataset used (not detrending on the subset of images I've passed to the transform).
+
+I still find it odd that detrending to compute the mask, and detrending on the data passed to the transform, are semantically tied.  I'd rather have my image class know how to detrend and standardize, it doesn't seem like a ""Masking"" operation to me.  
+
+I think I'd prefer a `normalize_img` function (that takes `detrend` and `standardize` as parameters), and use Masks for computing and applying spatial masks.
+","",""
+"issue_comment","418","nilearn","nilearn","eickenberg","2015-02-08 16:10:50","> `detrend_data` doesn't clear up the ambiguity either; which data: the data used to compute the mask (via fit), or the data passed in `transform`
+
+As far as I remember and as far as I can tell by skimming over the code, detrending is not performed to compute the mask, neither for `compute_epi_mask`, nor for `compute_background_mask`. Both are called from [here](https://github.com/nilearn/nilearn/blob/master/nilearn/input_data/nifti_masker.py#L165).
+
+>  I want the detrending computed across the entire dataset 
+
+valid point, especially when you are extracting very few, non-contiguous conditions. The masker should actually do its job before this extraction. Otherwise you need to switch detrending off, which it is by default in order to avoid surprises.
+
+The `NiftiMasker` is supposed to facilitate ""data preparation"" such as masking and optionally smoothing and detrending, which one often gets wrong if one applies them separately (e.g. in the smoothing case forgetting anisotropic voxel sizes)
+
+That said, it is true that it is quite bloated with functionality.
+","",""
+"issue_comment","418","nilearn","nilearn","bthirion","2015-02-08 17:40:33","Let me just point a detail in the discussion: besides numerical errors, detrending should have no effect on mask estimation. So I don't really get the use case  "" the mask that is computed from detrended EPI data"".
+","",""
+"issue_comment","418","nilearn","nilearn","AlexandreAbraham","2015-02-08 21:02:40","Like @bthirion said, there is absolutely no reason to detrend data before computing the mask. We can precise that in the doc, but given that the user has absolutely no knowledge of the heuristic used to compute the mask, I don't see why he should take care of that.
+
+> I think I'd prefer a normalize_img function
+
+See the answer of @eickenberg, I agree with him.
+
+> Mask a subset of data (calling mask.transform on the result of index_img.
+
+See PR #291 for that.
+
+I am :+1: to make the documentation more precise, just put that in #355.
+","",""
+"issue_comment","418","nilearn","nilearn","eickenberg","2015-02-08 21:12:02","3D images transformed by a masker with `detrend=True` or `standardize=True` yielding 0 or crashing should also be mentioned or even prevented.
+","",""
+"issue_comment","418","nilearn","nilearn","AlexandreAbraham","2015-02-08 21:19:40","Oh yeah, sorry, this one is definitely a bug.
+","",""
+"issue_comment","418","nilearn","nilearn","AlexandreAbraham","2015-02-27 09:08:39","@eickenberg Do you think that we should crash or juste mask without doing detrending?
+","",""
+"issue_comment","418","nilearn","nilearn","eickenberg","2015-02-27 09:51:37","crash or warn would be my first reflex. However, somebody masking a 3D image probably just wants a masked 3D image, so from that point of view a little magic from our side should actually be beneficial.
+
+How about this: If `detrend == True or standardize == True` and the masker gets a call to transform a 3D image, we could warn that we are not going to detrend it, making the user aware of the problem, but returning what most users would expect, i.e. a masked image.
+","",""
+"issue_comment","418","nilearn","nilearn","AlexandreAbraham","2015-02-27 10:12:34",":+1:
+","",""

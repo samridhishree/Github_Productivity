@@ -1,0 +1,39 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","807","nilearn","nilearn","GaelVaroquaux","2015-10-29 21:44:36","There is no easy to have a colorbar in plot_connectome. We need to add this, controlled by a 'colorbar' argument.
+","start issue","Add a colorbar to plot_connectome"
+"issue_closed","807","nilearn","nilearn","lesteve","2016-02-26 06:14:04","","closed issue","Add a colorbar to plot_connectome"
+"issue_comment","807","nilearn","nilearn","lesteve","2015-11-03 15:21:53","> @GaelVaroquaux Can you be more explicit about no easy ? Will _colobar_show in displays.py be not useful here ?
+
+I remember playing with this a while ago and I vaguely remember that it wasn't that simple to reuse our colorbar code. From my notes:
+
+the colorbar stuff is done in add_overlay
+so that passing cmap=edge_cmap and colorbar=True in plot_glass_brain
+doesn't do anything ...
+
+Something I hacked together in img_plotting.py (not even sure that was working TBH)
+
+``` python
+    display = plot_glass_brain(None,
+                               display_mode=display_mode,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate,
+                               black_bg=black_bg)
+
+    class PseudoImage(object):
+        def __init__(self, norm, cmap):
+            self.norm = norm
+            self.cmap = cmap
+
+    from matplotlib import colors
+    norm = colors.Normalize(vmin=-1, vmax=1)
+    display._colorbar_show(PseudoImage(norm, edge_cmap), None)
+
+    display.add_graph(adjacency_matrix, node_coords,
+                      node_color=node_color, node_size=node_size,
+                      edge_cmap=edge_cmap, edge_threshold=edge_threshold,
+                      edge_kwargs=edge_kwargs, node_kwargs=node_kwargs)
+
+```
+
+Also I am not sure whether we want to make the colorbar depend on the values of the adjacency matrix.
+","",""

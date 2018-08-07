@@ -1,0 +1,115 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","351","nilearn","nilearn","bcipolli","2015-01-15 18:13:46","Addresses #350, and does a bit of code & comment cleanup.
+Tweaked the function to report download information:
+- Pass along `initial_size` - the size of anything that was downloaded previously.
+- Use `initial_size` to help compute the `download_rate`, and then the `time_remaining`.
+- Remove comments (and code) suggesting that any of the parameters are optional.
+
+**Testing:**
+- Tested download from scratch.   Gave a reasonable time remaining.
+- Tested resuming download at various stages of download.  Gave a reasonable time remaining.
+","start issue","Tweak download rate reporting to account for resuming."
+"issue_closed","351","nilearn","nilearn","lesteve","2015-01-18 13:50:27","","closed issue","Tweak download rate reporting to account for resuming."
+"pull_request_title","351","nilearn","nilearn","bcipolli","2015-01-15 18:13:46","Addresses #350, and does a bit of code & comment cleanup.
+Tweaked the function to report download information:
+- Pass along `initial_size` - the size of anything that was downloaded previously.
+- Use `initial_size` to help compute the `download_rate`, and then the `time_remaining`.
+- Remove comments (and code) suggesting that any of the parameters are optional.
+
+**Testing:**
+- Tested download from scratch.   Gave a reasonable time remaining.
+- Tested resuming download at various stages of download.  Gave a reasonable time remaining.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","Tweak download rate reporting to account for resuming."
+"pull_request_merged","351","nilearn","nilearn","lesteve","2015-01-18 13:50:27","Tweak download rate reporting to account for resuming.","d7b2eed877687e82d903d48f29a60d84e4e25fd3","Pull request merge from bcipolli/nilearn:download_resume_reporting to nilearn/nilearn:master"
+"issue_comment","351","nilearn","nilearn","GaelVaroquaux","2015-01-18 15:19:03","Thanks @bcipolli !
+","",""
+"issue_comment","351","nilearn","nilearn","lesteve","2015-01-18 13:24:15","> I suggest to move on.
+
+Sounds good to me. It makes more sense if we merged this branch, I'd say. Shouldn't be too hard to do (not tested):
+
+```
+git reset @~2 --hard
+git push origin download_resume_reporting -f
+```
+","",""
+"issue_comment","351","nilearn","nilearn","bcipolli","2015-01-18 13:48:02","@lesteve not tested... but perfect :)  ready to go!
+","",""
+"issue_comment","351","nilearn","nilearn","lesteve","2015-01-18 13:50:19","Good stuff, merging then.
+","",""
+"issue_comment","351","nilearn","nilearn","bcipolli","2015-01-15 21:24:24","@AlexandreAbraham I added the code to use `uptime` when available, let me know what you think when you have a min!
+","",""
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 18:14:58","Blew away the old algorithm (well, it's essentially the same, but easier to PEP8)
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(29, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","AlexandreAbraham","2015-01-15 18:24:46","This code is used when the size of the file is not sent in the http request header. It must stay.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","AlexandreAbraham","2015-01-15 18:28:55","If you feel like it, I was planning at some point to change that by the uptime of the machine. otherwise, the estimated time is false if your computer goes to sleep.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 18:40:13","Ah, ok--I thought it was there for the 'optional argument'.  Will put back with a comment.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 18:47:06","Do you know a simple way to do that?  I did a quick search and didn't see anything simple to get around that issue.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","AlexandreAbraham","2015-01-15 19:02:18","There is an uptime module in python.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","AlexandreAbraham","2015-01-15 21:58:17","Do you think that we should put a message like `- stalled` when the bitrate is very low? This is the behavior of `wget`.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","AlexandreAbraham","2015-01-15 22:01:23","This is a tricky question... If uptime calculation is not supported on a system, will it fail at import or at function call? Apart from that, this PR is ready to go.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 22:17:21","I think this better wait for a different system, where:
+- callbacks are not based on getting packets, but rather on a timer (otherwise, if you get hung on a packet, you get no update)
+- we keep track of only the most recent packets; otherwise, if you download 300MB at a fast speed, it'll be a long time before we report being ""stalled"" (since the current scheme is cumulative over the entire download)
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 22:18:39","Good point--this `try..catch` is good for when the module is not installed, but potentially NOT good for if `uptime` is installed but not supported.  I can call `uptime.uptime()` and catch whatever error (will check the docs) there too.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 22:19:56","Indeed, according to the docs, there _IS_ no error thrown--`uptime.uptime()` simply returns `None`.   Will account for that...
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","AlexandreAbraham","2015-01-15 22:23:29","That's true but I don't think that we want to spend more time on this matter. Your PR fix several annoying bugs and that's good but I think that there are more urgent things to fix ;).
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 23:37:52",":+1: I meant to be suggesting that we move on too :)
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-15 23:38:01","Just pushed an update for this.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","lesteve","2015-01-16 14:20:33","I am just wondering if we should bother about uptime. My point is that yes it makes the total download time more accurate but:
+- it does so only in a very restricted edge case: you have to interrupt the download of a dataset and shut down your computer for a while
+- it's not like the dataset download time is a critical piece of information and I must say I have probably never paid attention to it ...
+- uptime is quite an obscure 3rd party package and it is very unlikely to be installed on anyone's machine. 
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","GaelVaroquaux","2015-01-16 14:22:05","> I am just wondering if we should bother about uptime. 
+
+I was thinking the same. It seems that the cost / benefit ratio isn't
+really very good. It terms of long term maintenance, my gut feeling is to
+favor the simpler solution.
+
+G
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-16 15:31:31","I am somewhat agnostic, but I would suggest that the data fetching part of this package could really be an attractive aspect of it.  I think having excellent download tools is going to be extremely important for the USA's BRAIN initiative (among others; it's the one I'm most familiar with) and the current push for data sharing.
+
+I plan to post an issue to discuss later, but I think that the `nilearn` dataset functionality can be used as a starting point for something much bigger.  This is something I would be happy to work on, and I think I have some contacts that could help get some traction on it.  For this reason, I suggest keeping this kind of code in--I think it'll become more important over time.
+
+With that said, it's such a simple snippet, I would only mention this once now and leave it to others to decide what's the right way to go!
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","AlexandreAbraham","2015-01-16 21:33:06","> it's not like the dataset download time is a critical piece of information and I must say I have probably never paid attention to it ...
+
+I think that's the point: you never needed it so you never paid attention. But when you want to know (typically when you have a slow connection), having false information is very annoying. And this is not an edge case: when downloading a big dataset, I put my computer to sleep a lot (I do it 3 times a day: when commuting and when sleeping). Also, when I wanted to get my bandwith back temporary, I paused the process using Ctrl + Z, this also invalidate estimated time. Because of that, I ended up using wget instead of nilearn.
+But I agree: this solution is not optimal (I thought that uptime was a standard module as it was installed on my box) and this is not the most important bug. Do we have a solution that can be coded fast and solve this problem ?
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","GaelVaroquaux","2015-01-17 10:26:42","> I am somewhat agnostic, but I would suggest that the data fetching part
+> of this package could really be an attractive aspect of it.
+
+Maybe, but we are speculating on the future. Who knows how the resources
+to maintain nilearn are going to evolve, and how the demand is going to
+evolve. Right now, we are a small team, and I am afraid that the
+complexity of the download code is starting to become disproportionate to
+its usefulness. Importantly, the priority of nilearn is to be useful to
+neuroimaging and we need to invest best our efforts to find the simplest
+way to achieve this goal.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","GaelVaroquaux","2015-01-17 13:21:38","> Do we have a solution that can be coded fast and solve this problem ?
+
+Implement a residual time based on a local speed of download. Or simply
+move on.
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","351","nilearn","nilearn","bcipolli","2015-01-17 19:34:46","I suggest to move on.  
+
+If so, the first commit contains the original changes and none of this uptime stuff.  Perhaps it can be cherry-picked into master?  Or do you prefer I force the change to my branch, so we can merge here? 
+","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit","351","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-15 18:56:00","Tweak download rate reporting to account for resuming.","3451a2a4e81d1c8c0b469b42f025185e4ab51ec5",""

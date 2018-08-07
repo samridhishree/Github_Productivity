@@ -1,0 +1,80 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","212","nilearn","nilearn","GaelVaroquaux","2014-06-17 10:31:40","We need a mosaic mode
+","start issue","mosaic"
+"issue_comment","212","nilearn","nilearn","GaelVaroquaux","2014-06-17 10:33:13","Cc @chrisfilo
+","",""
+"issue_comment","212","nilearn","nilearn","GaelVaroquaux","2015-01-29 15:28:09","> Is there a critical need for this feature or can we postpone it?
+
+Postpone
+","",""
+"issue_comment","212","nilearn","nilearn","AlexandreAbraham","2014-09-16 13:08:25","What do you mean by mosaic mode?
+","",""
+"issue_comment","212","nilearn","nilearn","bcipolli","2015-02-24 19:24:26","I use this kind of mosaic mode often, so I'd like to try and tackle this.  Here's what I'm thinking:
+- Create a generic function for mosaic plotting, that takes a bunch of the normal plotting args (title, etc), as well as info about the functions to plot and the shape of the mosaic (aspect_ratio, shape)
+
+``` python
+def plot_mosaic(imgs, plot_fn, aspect_ratio=1.3333, shape=None,
+                 output_file=None, display_mode='ortho',
+                 title=None, threshold='auto',
+                 annotate=True,
+                 black_bg=False,
+                 cmap=None,
+                 alpha=0.7):
+```
+
+Each argument can be iterable, or a single value.  There will be a loop over each subplot, and the args will be zipped up there and passed to the plot_fn (which can also be a list).  Then I'll do a bit of massaging of the figure to make the subplots look nice.
+
+This function will public for slightly advanced users (hi!).  I also plan to define lightweight wrappers (`plot_epi_mosaic`, etc) for simplified scenarios for less adventurous users  These wrapper functions can do things like set the face color, so that `plot_epi_mosaic` would be all black, for example.
+
+Any feedback on this proposed design is welcome!  I have a function similar to this already as ... I do a lot of mosaic plots.
+
+(edited to remove figure, axes arguments)
+","",""
+"issue_comment","212","nilearn","nilearn","bcipolli","2015-02-24 19:56:32","I tried using named args above, as I thought it would be requested, but I think using `**kwargs` is better--different functions may require different parameters.  The wrapper functions (e.g. `plot_epi_mosaic`) can have a more well-defined parameter list.
+","",""
+"issue_comment","212","nilearn","nilearn","eickenberg","2015-02-24 20:34:30","Should it use subplots or rather just rearrange slices into one big image, similarly to [here](https://github.com/gallantlab/pycortex/blob/649979c11436a9e95f3fcf34acd67ceb7b2b5e17/cortex/volume.py#L85)?
+","",""
+"issue_comment","212","nilearn","nilearn","banilo","2015-02-24 20:38:39","Mosaic does sound cool.
+
+Just some anecdotal evidence: plot_stat_map+subplot was comfortable plotting 40 times x/y/z slices into a single image...
+","",""
+"issue_comment","212","nilearn","nilearn","bcipolli","2015-02-24 21:12:13","@eickenberg the pycortex code seems to be dumping slices directly to an image, so more simple than what is intended here.   Are you suggesting that I render each subplot as an image, build a single grid from that, and show that?
+
+I think supporting both is useful; those who want to tweak the results afterwards will want to use subplot; those who want to plot a lot of images and python starts choking on the size will want to render to image.
+
+I suggest doing as subplot only as a first pass.  Subplotting will allow wrapper functions to tweak the plot (if desired) before rendering to the user.  Rendering to an image is definitely useful but doesn't seem immediately necessary to me, and could be a second PR.
+
+How does that sound?
+","",""
+"issue_comment","212","nilearn","nilearn","eickenberg","2015-02-24 21:49:36","The one big image thing is only for quickness, at least in my experience it is a lot faster to make a big panel of images and show it than 96 subplots. I put the reference to the pycortex mosaic just to inform of its existsnce. Experienced users can just take the data and magic into a panel with the right calls to  `reshape`, `transpose` and `reshape`.
+
+For rendering nice plots, it the mosaic should build on existing plots that can only extend horizontally and add the second axis.
+","",""
+"issue_comment","212","nilearn","nilearn","bcipolli","2015-02-24 22:37:32","> For rendering nice plots, it the mosaic should build on existing plots that can only extend horizontally and add the second axis.
+
+@eickenberg I'm newer to this code; can you write a bit more about this?  Are there plots that only extend horizontally, or you want me to prevent that?  And what axis is the second axis you're thinking of?
+","",""
+"issue_comment","212","nilearn","nilearn","bcipolli","2015-02-25 00:37:07","Any feedback / suggestions welcome.  See https://github.com/nilearn/nilearn/issues/461#issuecomment-75882292 for a current image of the direction I'm heading in.
+","",""
+"issue_comment","212","nilearn","nilearn","bcipolli","2015-02-25 00:42:39","One more enhancement I am thinking of: a ""grid"", that would allow one to span over multiple subplots very simply.  It's a very small extension from what I have so far.
+","",""
+"issue_comment","212","nilearn","nilearn","AlexandreAbraham","2015-02-25 08:06:17","Most of the issues in nilearn are not solved not because of the code involved (we all have code to do mosaic plotting) but because we don't know what is the best way to expose that to the user. So I think that we should settle down before taking any decision.
+
+First, the usage. I guess that it more likely to be used to display beta maps, a probabilistic atlas (typically ICA components), or several hard atlases for comparison (ward, kmeans...). Note that those could be the examples.
+
+So what do we want? Well, my first feature request for that would be having a common colorbar / legend. And this the non trivial part of my own mosaic code. Because maybe we just want an informative colorbar (no values, no problems, we just have to normalize the images) or maybe we want to have the same valued colorbar for all which means that we should automatically set vmax to the max across all maps.
+
+Now for the implementation. We have to choose whether we several small functions or a ""god"" one. I prefer small functions but a common colorbar is easier to implement in a general function. Also, a concern is that matplotlib functions can already take fixed values or iterable depending on the expected behavior. For example, `plot_connectome` can take one color if you want your nodes to be the same color, or a list of colors if you want to give a specific color to each node. So, if the number of nodes is equal to the number of plots in your grid, you won't be able to know if there is one option per plot or the same list of option for all the plots.
+
+Finally, like @banilo, I don't think that performances are a problem. One easy thing is to use `rasterized=True` if there is a lot of plots (we should test on a regular desktop what id the limit of reasonably plottable images). If it is still too long, we should advise people to switch to qtagg (or gtkagg) backend because it is much faster.
+","",""
+"issue_comment","212","nilearn","nilearn","AlexandreAbraham","2015-02-25 12:36:17","Also, note that the original issue was simply to span slices in 'z' mode (for example) on several rows, not to have several plots in one figure.
+","",""
+"issue_comment","212","nilearn","nilearn","bcipolli","2015-02-25 14:22:35","@AlexandreAbraham thanks for the comments and guidance!  I figured y'all had your own things and glad to understand better what could be valuable for the group.
+
+I agree on the colorbar issue--almost added a comment about it yesterday, after posting the result.  It should be easy to implement either within this ""god"" function or as a utility function that others call into.  
+
+Also, the ""grid"" feature I mentioned yesterday should take care of the ""span slices in 'z' mode"" case.
+
+So, I'm hopeful that all this can get taken care of in a function that's powerful, but not overly complex.  I'll try the above out today, and would look forward to any further comments.
+","",""

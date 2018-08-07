@@ -1,0 +1,66 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1196","nilearn","nilearn","AlexandreAbraham","2016-08-02 22:10:00","Fixes:
+- #1189: always returns a list
+- #1190: always returns a point in real world coordinate or raise a meaningful error
+- #1191: internally converts to float during masking (can be discussed later)
+- #1193: force mask to be a niimg (I did not change the parameter name but maybe I should?)
+- #1194: now works for binary images
+
+I am still a bit doubtful about the ""second threshold"" and all the magic it does. Do we have a reference about that somewhere?
+","start issue","Fix the find_xyz_cut_coord function"
+"pull_request_title","1196","nilearn","nilearn","AlexandreAbraham","2016-08-02 22:10:00","Fixes:
+- #1189: always returns a list
+- #1190: always returns a point in real world coordinate or raise a meaningful error
+- #1191: internally converts to float during masking (can be discussed later)
+- #1193: force mask to be a niimg (I did not change the parameter name but maybe I should?)
+- #1194: now works for binary images
+
+I am still a bit doubtful about the ""second threshold"" and all the magic it does. Do we have a reference about that somewhere?
+","4603d997fdf69abdb7ecf431e50abce50e22a518","Fix the find_xyz_cut_coord function"
+"issue_comment","1196","nilearn","nilearn","GaelVaroquaux","2016-08-02 23:50:34","You have a bunch of failing tests. I'll let you look at them.
+","",""
+"issue_comment","1196","nilearn","nilearn","GaelVaroquaux","2016-08-03 06:20:56","> Raising an error seems more natural to me.
+
+The error is a bad idea: think of an automated pipeline with plotting:
+you don't want it to crash because of the plotting when the image is
+fully sparse.
+","",""
+"issue_comment","1196","nilearn","nilearn","GaelVaroquaux","2016-08-03 16:50:08","The tests are still failing: you need to use sklearn.utils.testing.assert_raises_regexp"" to be compatible with old versions of numpy.
+","",""
+"issue_comment","1196","nilearn","nilearn","GaelVaroquaux","2016-08-03 17:10:08","> I think that the problem lies in the ambiguity of the function. It is used to
+> find cut coords in plotting functions (in that case, returning the center is
+> OK) but people clearly uses it to find points of interest in their maps (in
+> that case, returning the center is invalid).
+
+Do they really? What's the definition of a point of interest? If people
+want peak detections, than this function is not what they should be
+using.
+
+I think that where I've seen it used it to find where to put a marker in
+the center of a region, eg in a plot_connectome. That's also a
+visualization usecase, hence acceptable to be lenient with input, and
+blurry with output.
+
+Beside, it's in the plotting sub-module, so I would expect such a
+behavior.
+
+We cannot merge a PR removing this behavior. This behavior is important
+eg in QC pipelines that use nilearn for quick visualization. We would
+break their usage.
+","",""
+"pull_request_commit_comment","1196","nilearn","nilearn","GaelVaroquaux","2016-08-02 23:46:42","Can we call this ""mask_imgs""?
+","4603d997fdf69abdb7ecf431e50abce50e22a518","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","1196","nilearn","nilearn","GaelVaroquaux","2016-08-02 23:47:17","Can we call this mask_img?
+","4603d997fdf69abdb7ecf431e50abce50e22a518","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","1196","nilearn","nilearn","GaelVaroquaux","2016-08-02 23:49:45","I believe that the copy is necessary to get rid of the memmapping in a robust way. However, I am not sure how useful this is. 
+","4603d997fdf69abdb7ecf431e50abce50e22a518","(121, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","1196","nilearn","nilearn","banilo","2016-08-03 15:50:41","add comment what the slightly-hacky-looking code below does
+","4603d997fdf69abdb7ecf431e50abce50e22a518","(None, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","1196","nilearn","nilearn","banilo","2016-08-03 15:58:24",";-)
+","4603d997fdf69abdb7ecf431e50abce50e22a518","(149, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit_comment","1196","nilearn","nilearn","AlexandreAbraham","2016-08-05 09:08:18","Let's leave it for now.
+","4603d997fdf69abdb7ecf431e50abce50e22a518","(121, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit","1196","nilearn","nilearn","AlexandreAbraham","2016-08-02 22:03:48","Fix the find_xyz_cut_coord function","3bc2ce8cac5266de024610dee2fd6fbd50189c33",""
+"pull_request_commit","1196","nilearn","nilearn","AlexandreAbraham","2016-08-03 06:02:45","Rename variables","29aec03ff1b45b661913bc077ca0ff61a18a38ee",""
+"pull_request_commit","1196","nilearn","nilearn","AlexandreAbraham","2016-08-03 06:17:23","Fix tests","bd5b47505ce10fcf3df23c15d27936b4bd37e6e6",""
+"pull_request_commit","1196","nilearn","nilearn","AlexandreAbraham","2016-08-05 09:20:31","Restore previous error behavior, adapt tests","4603d997fdf69abdb7ecf431e50abce50e22a518",""

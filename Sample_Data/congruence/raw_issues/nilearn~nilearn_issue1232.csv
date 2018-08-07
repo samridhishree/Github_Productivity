@@ -1,0 +1,62 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 07:33:14","Because `coord_transform` returns either a list of arrays or a list of number, iterating on the return values fails if only one point is transformed. I decided to directly add an option in `coord_transform` instead of ""catching"" the problem in the searchlight because I think it may be useful for other usage.
+
+Update:
+
+For the bug fix: We have two masks in SearchLight: mask_img, that masks voxels outside of the brain and process_mask_img that ""selects"" the voxels to process. Before, mask_img was not used properly, process_mask_img was used instead. I fixed it.
+","start issue","[MRG] SearchLight cannot handle one-voxel mask"
+"issue_closed","1232","nilearn","nilearn","AlexandreAbraham","2016-09-08 14:22:46","","closed issue","[MRG] SearchLight cannot handle one-voxel mask"
+"pull_request_title","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 07:33:14","Because `coord_transform` returns either a list of arrays or a list of number, iterating on the return values fails if only one point is transformed. I decided to directly add an option in `coord_transform` instead of ""catching"" the problem in the searchlight because I think it may be useful for other usage.
+
+Update:
+
+For the bug fix: We have two masks in SearchLight: mask_img, that masks voxels outside of the brain and process_mask_img that ""selects"" the voxels to process. Before, mask_img was not used properly, process_mask_img was used instead. I fixed it.
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","[MRG] SearchLight cannot handle one-voxel mask"
+"pull_request_merged","1232","nilearn","nilearn","AlexandreAbraham","2016-09-08 14:22:46","[MRG] SearchLight cannot handle one-voxel mask","59aaf95f757e766c2b45c08072701eac25dffb5f","Pull request merge from AlexandreAbraham/nilearn:test_sl to nilearn/nilearn:master"
+"issue_comment","1232","nilearn","nilearn","GaelVaroquaux","2016-08-19 09:57:07","LGTM, but it would be nice to have a test on coord_transform.
+","",""
+"issue_comment","1232","nilearn","nilearn","KamalakerDadi","2016-08-18 15:59:00","Is it worth to add tests for `coord_transform` ?
+","",""
+"pull_request_commit_comment","1232","nilearn","nilearn","bthirion","2016-08-09 09:28:33","Did you forget this print instruction ?
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(None, '', u'nilearn/decoding/searchlight.py')"
+"pull_request_commit_comment","1232","nilearn","nilearn","bthirion","2016-08-09 09:30:07","Should this be the default behavior ?
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 09:37:44","I wondered. From a developper POV, this is indeed the most wanted behavior. From a user POV, being able to transform only one point is nice.
+
+Another option I thought of is this:
+`coord_transform(1, 2, 3, np.eye(4))` returns a 3-tuple `(1, 2, 3)`
+and
+`coord_transform([1], [2], [3], np.eye(4))` returns a 3-tuple of list `([1], [2], [3])`
+
+Maybe this is more natural?
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","1232","nilearn","nilearn","bthirion","2016-08-09 20:48:21","Sorry, I am missing the point. The scores are uniformly zero. Shouldn't we have a non-zero score at [0, 0, 0].
+Maybe I missed the logic of this update.
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(None, '', u'nilearn/decoding/tests/test_searchlight.py')"
+"pull_request_commit_comment","1232","nilearn","nilearn","AlexandreAbraham","2016-08-10 13:34:27","Answer is in the conversation. For your question in particular, no, the score is 0 because the sphere is too small to grab the voxel containing the signal.
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(None, '', u'nilearn/decoding/tests/test_searchlight.py')"
+"pull_request_commit_comment","1232","nilearn","nilearn","GaelVaroquaux","2016-08-19 07:22:59","> > -def coord_transform(x, y, z, affine):
+> > +def coord_transform(x, y, z, affine, squeeze=True):
+> 
+> Should this be the default behavior ?
+
+I don't think so. It's always annoying to have to deal with a number of
+dimensions that can fluctuate.
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","1232","nilearn","nilearn","GaelVaroquaux","2016-08-19 07:30:24","It might be good to have a test, testing that input shape == output shape.
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(13, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","1232","nilearn","nilearn","GaelVaroquaux","2016-08-19 07:30:45","> > Should this be the default behavior ?
+> 
+> I don't think so. It's always annoying to have to deal with a number of
+> dimensions that can fluctuate.
+
+Looks like you addressed that comment :$
+","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 07:30:34","Add a regression test for #1216","2c3586e517348aa7962d1ed4eacbbb80e546d18e",""
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 07:58:34","Make searchlight handle one voxel masks","d8e9064a4cdca6213849303e2532284883fd5590",""
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 08:28:28","Fix another coord_transform","fe8098b3f342944a649b495639ace9be8d468a8b",""
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 09:32:55","Remove debug print.","0f870e0e84c02f3cfd49d671e23b5948840455d0",""
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-08-09 09:41:12","Makes coord_transform type more natural","a99aa8bf259015cce0b19a17615bf444219047d1",""
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-08-10 13:29:21","Fix bug in SL again.","23805dcd4106b5a6662a52959839fb738a280778",""
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-08-10 13:32:48","Fix previous patch. Add test","83e42cfbc856d968734d5754f401e8540d9924e0",""
+"pull_request_commit","1232","nilearn","nilearn","AlexandreAbraham","2016-09-08 07:51:08","Add test for doord_transform","28ec2e53ad0aad0bbd9b2a153fea4f8c9a77eac8",""

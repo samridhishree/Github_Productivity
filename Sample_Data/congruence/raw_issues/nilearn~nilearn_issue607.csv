@@ -1,0 +1,166 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","607","nilearn","nilearn","AlexandreAbraham","2015-06-11 23:37:09","#601 raised the poorness of some error messages. In particular, when trying to use `index_img` on a list of 4D image.
+
+I solved that by creating a custom type error but I don't know if it's the best way to do it.
+
+Test script:
+
+``` python
+from nilearn import image, datasets
+
+
+hb = datasets.fetch_haxby()
+image.index_img(hb.func, 0)
+```
+
+Previous output:
+
+```
+TypeError: Data must be a 3D Niimg-like object but you provided an image of shape (40, 64, 64, 1452). See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg
+```
+
+New output:
+
+```
+nilearn._utils.niimg_conversions.DimensionError: Data must be a 4D Niimg-like object but you provided a list of 4D images. See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+```
+","start issue","Enhances error messages for image manipulation"
+"issue_closed","607","nilearn","nilearn","lesteve","2015-06-23 13:33:32","","closed issue","Enhances error messages for image manipulation"
+"pull_request_title","607","nilearn","nilearn","AlexandreAbraham","2015-06-11 23:37:09","#601 raised the poorness of some error messages. In particular, when trying to use `index_img` on a list of 4D image.
+
+I solved that by creating a custom type error but I don't know if it's the best way to do it.
+
+Test script:
+
+``` python
+from nilearn import image, datasets
+
+
+hb = datasets.fetch_haxby()
+image.index_img(hb.func, 0)
+```
+
+Previous output:
+
+```
+TypeError: Data must be a 3D Niimg-like object but you provided an image of shape (40, 64, 64, 1452). See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg
+```
+
+New output:
+
+```
+nilearn._utils.niimg_conversions.DimensionError: Data must be a 4D Niimg-like object but you provided a list of 4D images. See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+```
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","Enhances error messages for image manipulation"
+"pull_request_merged","607","nilearn","nilearn","lesteve","2015-06-23 13:33:32","Enhances error messages for image manipulation","ace12f645f724df4600265dae353f0b640b821fb","Pull request merge from AlexandreAbraham/nilearn:error_messages to nilearn/nilearn:master"
+"issue_comment","607","nilearn","nilearn","GaelVaroquaux","2015-06-11 23:51:21","> I solved that by creating a custom type error but I don't know if it's
+> the best way to do it.
+
+It's a good one. Congratulations!
+","",""
+"issue_comment","607","nilearn","nilearn","lesteve","2015-06-12 11:19:52","There is nilearn/_utils/exceptions.py, this seems like a good home for DimensionError.
+","",""
+"issue_comment","607","nilearn","nilearn","bthirion","2015-06-12 21:08:28","LGTM otherwise
+","",""
+"issue_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-13 20:57:13","Good point. I moved it.
+
+On Fri, Jun 12, 2015 at 1:19 PM, Loïc Estève notifications@github.com
+wrote:
+
+> There is nilearn/_utils/exceptions.py, this seems like a good home for
+> DimensionError.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/607#issuecomment-111456750.
+","",""
+"issue_comment","607","nilearn","nilearn","lesteve","2015-06-17 09:36:48","I have to admit I find the recursive depth a bit complicated. I'd be a lot less wary if there was a few tests checking the exception messages e.g. the list of list of lists of images thing.
+","",""
+"issue_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-17 10:45:03","@lesteve: the other way to do that is to prepare an error at first call and pass successively pass it in each call. By doing this, we have an overhead on each call but we don't need to catch / reraise the error in the recursive calls. Do you think it's a better alternative?
+","",""
+"issue_comment","607","nilearn","nilearn","lesteve","2015-06-17 11:21:48","> Do you think it's a better alternative?
+
+Feels simpler to leave it as it is. My point about tests was to at the very least to test the exception message in the snippet that was at the origin of this issue and maybe an error message with the list of list thing.
+","",""
+"issue_comment","607","nilearn","nilearn","lesteve","2015-06-17 11:23:06","Another minor thing I just bumped into: if you provide an iterator of 4D images you get a message mentioning a list of 4D images:
+
+``` python
+from nilearn import image, datasets
+
+hb = datasets.fetch_haxby()
+image.index_img(iter(hb.func), 0)
+```
+","",""
+"issue_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-18 08:09:26","@lesteve #HappyMergeDay
+","",""
+"issue_comment","607","nilearn","nilearn","lesteve","2015-06-23 13:33:31","Looks good, merging, thanks!
+","",""
+"pull_request_commit_comment","607","nilearn","nilearn","bthirion","2015-06-12 21:06:02","'increment' instead of 'incr' ?
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/_utils/exceptions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","bthirion","2015-06-12 21:06:58","Could you add a comment here ? It looks a bit like black magic.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(12, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-16 09:34:25","Do you really need the setter, by default properties are read-only (yours is write=noop)? Also you could use:
+
+``` python
+@property
+def message(self):
+...
+```
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/_utils/exceptions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-16 09:35:45","Really needed?
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/_utils/__init__.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-16 11:01:24","You're right. I just do that out of habit.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/_utils/exceptions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-16 11:07:31","I can remove it if you want, it's just for practical reasons.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/_utils/__init__.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-16 11:09:30","It would make more sense to always import DimensionError from nilearn.exceptions rather than from nilearn._utils. You'll need to change the imports in the tests accordingly.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/_utils/__init__.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-16 11:14:05","Fixed.
+
+On Tue, Jun 16, 2015 at 1:09 PM, Loïc Estève notifications@github.com
+wrote:
+
+> In nilearn/_utils/__init__.py
+> https://github.com/nilearn/nilearn/pull/607#discussion_r32510889:
+> 
+> > @@ -9,3 +9,5 @@
+> >  from .cache_mixin import CacheMixin
+> > 
+> >  from .logger import _compose_err_msg
+> > +
+> > +from .exceptions import DimensionError
+> 
+> It would make more sense to always import DimensionError from
+> nilearn.exceptions rather than from nilearn._utils. You'll need to change
+> the imports in the tests accordingly.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/607/files#r32510889.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/_utils/__init__.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-17 09:23:44","You are still importing DimensionError from nilearn._utils rather than nilearn._utils.exceptions
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/input_data/tests/test_nifti_labels_masker.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-17 09:24:03","Same here.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/input_data/tests/test_nifti_maps_masker.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-17 09:24:29","same here
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-17 12:26:51","I don't remove any feature here. I keep ""going down"" even if we are sure that the dimensionality is wrong in order to get a more accurate error message. The real TypeError (ie type of the data is wrong) is then handled in `load_niimg`, which is much more logical.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(30, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-18 09:23:05","Minor comment: looks like the message is slightly misleading for non-homogeneous lists:
+In this case it will say ""you provided a list of 4D images"" although the first image is 3D...
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(59, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","lesteve","2015-06-18 09:24:12","Probably this could be tweaked in a further PR. The message is improved in a lot of cases.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(59, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","607","nilearn","nilearn","AlexandreAbraham","2015-06-23 13:22:55","You can also give a list of list and give valid images in the first list but in the second... There is a limit in the cases we can handle. The best option I can see right now is to add ""Details: imgs[0][1][12] is 3D instead of 4D"" or something like that. But as you said, I think that this PR should go and the message can be detailed afterward.
+","98c62674f4c95a12b5be7a785f6cc4c56d2d1885","(59, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-11 15:38:45","Create custom error","a6fa5848930c40a59652231a47b7f6d4a9edefc5",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-11 23:31:47","Add custom error message","002da44481e91a132206635963d490f73539d8ba",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-12 07:46:04","Fix tests","c3038719bdbc4269929f84a015afd9c174e3ef2d",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-12 08:21:55","Fix failing tests","894d81724ae4fc07643556eba41284c0b099482b",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-12 11:50:59","Move exception in exceptions file","1847e54f37c2ad5f79b4a5383483ea55a1b96498",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-12 11:58:00","Add docstring","72b9fdbd239849377742349bb3cc5bd933a4ff3d",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-13 21:29:38","Make the clode clearer","9767dac6019a424fe8a1ae0deff8bff8e5432e58",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-16 11:06:19","Refactor code","5b908ce8695a7b7e34c25ab05fc878915c6e7205",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-16 11:13:19","Remove import of exception in _utils init","52da44cd6603510f6b2f60f8da1e11e630a96709",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-17 12:24:48","Add tests","f8a3902905a56076564c22be40253bfd57762755",""
+"pull_request_commit","607","nilearn","nilearn","AlexandreAbraham","2015-06-17 14:40:25","Fix imports","98c62674f4c95a12b5be7a785f6cc4c56d2d1885",""

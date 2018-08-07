@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1214","nilearn","nilearn","salma1601","2016-08-06 18:37:11","Many examples rely on covariance/inverse covariance matrices. I would prefer using their normalized versions correlation/partial correlation matrices, in particular because this avoids negating precision matrix connections. What do people think ?
+","start issue","precision/covariance vs partial correlation/correlation"
+"issue_comment","1214","nilearn","nilearn","GaelVaroquaux","2016-08-08 06:15:54","> then I am going to make a PR to replace covariance/precision uses by
+> correlation/partial correlation in all ROI-to-ROI connectivity examples.
+> @GaelVaroquaux is that OK for you ?
+
+Not really, no. It's going to make things more complex.
+
+How exactly are you planning to do it? Maybe add a section at the end of
+these example discussing this?
+
+Can the ConnectivityMatrix estimator take this in account hidding
+complexity from the user?
+","",""
+"issue_comment","1214","nilearn","nilearn","salma1601","2016-08-07 11:35:56","then I am going to make a PR to replace covariance/precision uses by correlation/partial correlation in all ROI-to-ROI connectivity examples.
+@GaelVaroquaux is that OK for you ?
+","",""
+"issue_comment","1214","nilearn","nilearn","salma1601","2016-08-08 08:01:43","> Can the ConnectivityMatrix estimator take this in account hidding complexity from the user?
+
+In fact there is a `ConnectivityMeasure(kind='partial correlation')` and `ConnectivityMeasure(kind='correlation')`. `ConnectivityMeasure` has also a parameter to handle any scikit-learn covariance estimator.
+The only case which will not be handled directly is when `GroupSparseCovariance` is used: it outputs covariance and precision matrices, so in this case we need to use the functions `_corr_to_cov` and `_prec_to_partial` defined in `connectome.connectivity_matrices` module.
+
+> How exactly are you planning to do it? Maybe add a section at the end of these example discussing this?
+
+No, just replacing all uses of precisions and covariances by their normalized versions.
+","",""

@@ -1,0 +1,117 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","98","nilearn","nilearn","amwink","2013-08-19 15:45:43","Dear all,
+
+My attempts to install nilearn have failed so far, I cannot seem to
+find what the problem is.
+
+My system has Ubuntu Linux with python 2.7.3
+![install_log txt gz](https://f.cloud.github.com/assets/5262793/987158/61ead10e-08e6-11e3-9f7e-19dfd61c94bf.jpg)
+
+(python3 and python3.2 also present but not default)
+
+and
+ numpy     v1.6.1
+ scipy       v0.9.0
+ sklearn    v0.14.1
+ matplotlib v1.1.1rc
+
+The steps I have taken are:
+1. git clone https://github.com/nilearn/nilearn.git python/nilearn
+2. git remote add nilearn https://github.com/nilearn/nilearn.git
+3. cd python/nilearn;   make install
+4. cd ../../;                 git pull nilearn master # today
+5. cd python/nilearn;   make install
+
+But the messages I get (see attached) suggests that many library import fail.
+Does this mean that there still are unmet dependencies?
+
+Many thanks for your help!
+
+With best wishes
+Alle Meije Wink
+","start issue","building nilearn failed"
+"issue_closed","98","nilearn","nilearn","AlexandreAbraham","2014-03-28 15:34:57","","closed issue","building nilearn failed"
+"issue_comment","98","nilearn","nilearn","GaelVaroquaux","2013-08-19 15:52:59","Hi Alle,
+
+The error message did not get through. Could you please copy/paste it here?
+","",""
+"issue_comment","98","nilearn","nilearn","GaelVaroquaux","2013-08-19 16:13:07","Hey Alex,
+
+good catch. My bad!
+","",""
+"issue_comment","98","nilearn","nilearn","AlexandreAbraham","2013-08-19 16:05:58","Hi Alle,
+
+In fact, nilearn.io has been renamed to nilearn.input_data recently and it seems that this has not been replaced in the examples. I will fix that this evening. Thanks for spotting the issue !
+
+Best,
+
+Alexandre.
+","",""
+"issue_comment","98","nilearn","nilearn","AlexandreAbraham","2013-08-19 16:15:11","Alle,
+
+This should be fixed right now. However, you should install nilearn by doing ""make install"" in nilearn directory, not in the doc directory.
+
+Best,
+
+Alexandre.
+","",""
+"issue_comment","98","nilearn","nilearn","AlexandreAbraham","2013-08-21 11:29:43","Hi Alle,
+
+Thanks for your feedback ! We try as much as possible to run compilation from scratch but I think my local repository is polluted by temporary files.
+
+To use nilearn, you do not need to 'make' it. Normally, cloning the git repository is enough:
+
+```
+git clone https://github.com/nilearn/nilearn.git
+python plot_rest_clustering.py
+```
+
+... should work (nilearn will be imported locally). If you really want to install it, use:
+
+```
+python setup.py install
+```
+
+I will try to fix the bugs you pointed out as fast as possible but I have other tasks pending. I hope that these installation problems did not dissuade you tu use nilearn !
+
+Do not hesitate to give us a feedback and, if you have an interesting experiment using open data, then maybe we could add it as an example !
+
+Best,
+
+Alexandre.
+","",""
+"issue_comment","98","nilearn","nilearn","amwink","2013-08-21 11:13:04","Hi- thanks for all the help! sorry about the error log - it came up as a url in the middle of the 1st post.
+
+I did run make from the nilearn directory (as described)?
+If I ended up in the doc directory that must have been where the Makefile left me...
+
+After the git pull I still had to manually change 
+ ./doc/_build/html/_downloads/plot_nifti_advanced.py
+ ./doc/_build/html/_downloads/plot_old_canica_resting_state.py
+ ./doc/_build/html/_downloads/plot_ica_resting_state.py
+ ./doc/auto_examples/plot_nifti_advanced.py
+ ./doc/auto_examples/plot_old_canica_resting_state.py
+ ./doc/auto_examples/plot_ica_resting_state.py
+ ./plot_nifti_advanced.py
+ ./plot_old_canica_resting_state.py
+ ./plot_ica_resting_state.py
+to replace io by input_data
+
+Also in 
+ emacs doc/Makefile 
+there is a mention of niearn which should probably be nilearn.
+
+After doing all that the commands <in the nilearn directory>
+make clean && make install
+
+result in the following output: 
+![install log](https://f.cloud.github.com/assets/5262793/1000671/81904a62-0a52-11e3-80e3-4977c30e6433.jpg)
+--another jpg text file--
+
+I've done this a couple of time in a row, and in short
+1. the example scripts only need to run one time, except the plot_old_canica_resting_state.py script, which is called twice in every 'make install', and is not successful
+2. the pdf file is not built (possibly because of a syntax error in \FancyVerb [which I dont know]?)
+3. after the pdf generation, another clone attempt also fails.
+
+Hope this report is of use, very happy that the clustering script works.
+","",""

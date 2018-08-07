@@ -1,0 +1,37 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","329","nilearn","nilearn","bcipolli","2014-12-19 17:21:48","I'm not sure if y'all are famiilar with RSA [link](http://www.mrc-cbu.cam.ac.uk/methods-and-resources/toolboxes/), but I will be using it in my analyses here.  A nice [MATLAB toolbox](http://www.mrc-cbu.cam.ac.uk/methods-and-resources/toolboxes/) already exists (and is under rapid development).  I see that the [PyMVPA](http://www.pymvpa.org) team has done a [basic RSA example](http://www.pymvpa.org/examples/rsa_fmri.html), but I would like a more extensive port of the MATLAB toolbox.
+
+Rather than writing code just for myself, it would be great to come up with a design that could be included here.  I believe the MATLAB RSA Toolbox's [license](http://www.mrc-cbu.cam.ac.uk/methods-and-resources/toolboxes/license/) would allow for such porting some of their functionality (but I would email them to check, if this proposal is acceptable here), and my quick look at the code makes me believe there isn't THAT much to port.
+
+If this sounds interesting, I would go through their toolbox and make a specific proposal about what functions / modules of their code be ported to python and post it here.  At the same time, I would contact them to double-check that this would fit their license (and if we'd actually have to include their MATLAB code, or if just a reference to it would be sufficient).
+","start issue","Implement (port) basic aspects of Representational Similarity Analysis (RSA)"
+"issue_comment","329","nilearn","nilearn","GaelVaroquaux","2014-12-19 17:54:31","Hey Ben,
+
+Great to se your enthousiasm.
+
+We also have a local implementation of RSA in Python (ping @fabianp).
+There is probably some API work to be done on defining what is a good API
+for RSA. Thus, I suggest that the path forward would be for us to put the
+RSA implementation in a separate public repo, for you to review it, and
+confront it to your view of what an RSA API should look like. Then we can
+sprint to prototype in the corresponding repo, and then submit a PR and
+merge this in nilearn!
+","",""
+"issue_comment","329","nilearn","nilearn","bcipolli","2014-12-19 20:21:54","@GaelVaroquaux sounds great, thanks!  @fabianp can you help me get started with the local RSA?  If you push it into a simple repo (or point me to where it is publicly, and I can do that), I would be very interested to work on pushing it forward!
+
+Thanks!
+","",""
+"issue_comment","329","nilearn","nilearn","fabianp","2014-12-20 15:22:02","The code is mostly from Valentina Borghesani (a PhD from my lab). It will be uploaded during the upcoming weeks and I'll post a link here when it's online.
+","",""
+"issue_comment","329","nilearn","nilearn","eickenberg","2014-12-20 15:36:42","Given a region of interest `roi_mask` and a temporal `condition_mask`, the similarity matrix should be more or less
+
+```
+X = nilearn.input_data.NiftiMasker(roi_mask, standardize=True).fit_transform(data_file)
+Xc = X[condition_mask]
+cor = Xc.T.dot(Xc) / (len(Xc))
+```
+
+Without the standardization one can look at covariance. IIRC, there is/will be an option to put `condition_mask` into the masker. This would make it more technically correct, since after masking the mean is probably not 0 anymore and the variance not 1.
+
+As Gaël says, the difficult part will be to make a useful API for this to facilitate the analysis.
+","",""

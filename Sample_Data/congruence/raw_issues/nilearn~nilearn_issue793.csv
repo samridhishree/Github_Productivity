@@ -1,0 +1,71 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","793","nilearn","nilearn","arthurmensch","2015-10-14 08:57:11","This is due to the use of non safe `get_data` in `copy_img`.
+
+Typically this invalidate cache:
+
+``` python
+
+def f(img):
+    print('Not cached')
+
+mem = Memory(cache_dir='nilearn_cache')
+img = NiftiImage(np.ones(10, 10, 10, 10), affine=np.ones(4))
+
+mem.cache(f)(img)
+mem.cache(f)(img)
+img2 = copy_img(img)
+mem.cache(f)(img)
+```
+
+Output:
+
+```
+Not cached
+Not cached
+```
+","start issue","copy_img has a side effect on image"
+"issue_closed","793","nilearn","nilearn","GaelVaroquaux","2015-12-02 19:14:16","","closed issue","copy_img has a side effect on image"
+"issue_comment","793","nilearn","nilearn","GaelVaroquaux","2015-10-14 08:58:21","Good catch!
+
+A PR to fix this would be great.
+","",""
+"issue_comment","793","nilearn","nilearn","arthurmensch","2015-10-14 08:59:49","Fix is straightforward, I just need to write a test and I will push it
+","",""
+"issue_comment","793","nilearn","nilearn","GaelVaroquaux","2015-10-14 09:01:36","> Fix is straight forward,
+
+It is indeed, because you understand the package :)
+","",""
+"issue_comment","793","nilearn","nilearn","GaelVaroquaux","2015-12-02 07:59:27","@arthurmensch : can you either do this today, or help Aina do it
+","",""
+"issue_comment","793","nilearn","nilearn","GaelVaroquaux","2015-12-02 08:12:24","Cc @ainafp : I think that this is something that you could work on.
+
+The idea is to use nilearn._utils.niimg._safe_get_data instead of the get_data method.
+","",""
+"issue_comment","793","nilearn","nilearn","lesteve","2015-12-02 15:21:01","Have you opened a PR? This is the easiest way to comment on your changes.
+","",""
+"issue_comment","793","nilearn","nilearn","ainafp","2015-12-02 13:58:07","@GaelVaroquaux @arthurmensch :
+
+I changed it but it still creates a new image because it uses new_img_like() from nilearn.image.image
+I can substitute the whole line and return just _safe_get_data(img). 
+Is this fine? In this case, instead of 
+`new_img_like(img, img.get_data().copy(), img.get_affine().copy(),  copy_header=True)`
+it just makes a deep copy
+`img = copy.deepcopy(img)`
+if it is not cached inside _safe_get_data. 
+
+If you agree I change it. I wrote the test based on what Arthur did. 
+","",""
+"issue_comment","793","nilearn","nilearn","ainafp","2015-12-02 14:36:00","@GaelVaroquaux 
+In new_img_like() in from nilearn.image.image, when copy_header is set to true, changing  header['scl_slope'], header['scl_inter'],  header['cal_max'] or header['cal_max'] change the value of the hash. 
+
+```
+img = Nifti1Image(np.ones((2, 2, 2, 2)), affine=np.eye(4))
+joblib.hash(img)
+img2 = new_img_like(img, np.ones((2, 2, 2, 2)), img.get_affine().copy(), copy_header=True)
+joblib.hash(img)  
+```
+","",""
+"issue_comment","793","nilearn","nilearn","ainafp","2015-12-02 15:03:55","Nevermind. It was just a copy.copy of the header inside new_img_like(). I changed it to copy.deepcopy()
+","",""
+"issue_comment","793","nilearn","nilearn","ainafp","2015-12-02 15:25:56","Done! 
+","",""

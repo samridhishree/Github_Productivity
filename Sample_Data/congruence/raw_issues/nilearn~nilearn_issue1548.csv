@@ -1,0 +1,48 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1548","nilearn","nilearn","vukovicnikola","2017-11-11 11:36:57","I am fitting a SpaceNet Classifier, passing in a white matter mask (voxels of interest = 1), attached: [mni_152_wm_mask.nii.zip](https://github.com/nilearn/nilearn/files/1463701/mni_152_wm_mask.nii.zip)
+```
+mnimask = './mni152_template/mni_152_wm_mask.nii'
+decoder = SpaceNetClassifier(cv=cv, memory=""nilearn_cache"", penalty='tv-l1', memory_level=2, n_jobs=1, mask=mnimask)
+```
+
+Interestingly, when I later plot the coefficients against said mask, it seems like they lie precisely outside the mask (i.e. ""0"" voxels). 
+![wm](https://user-images.githubusercontent.com/6719774/32688991-6cab26ea-c6db-11e7-8f83-ebb8988343a2.jpg)
+
+Is this normal behaviour? Does nilearn use some non-standard masking convention? Unfortunately, I couldn't find information about this in the User Manual.","start issue","Unexpected mask behaviour"
+"issue_closed","1548","nilearn","nilearn","vukovicnikola","2017-11-20 16:21:40","","closed issue","Unexpected mask behaviour"
+"issue_comment","1548","nilearn","nilearn","bthirion","2017-11-12 19:59:48","Nilearn actually considers the non-zero values as the ROI. So the behavior that you report is very surprising.  Is the masked sampled at the same resolution as the data that you are testing ?  I would suspect some issue occurring due to data resampling.
+Note also that by default,  only 20% of the brain volume are considered by the spacenet estimator.
+ ","",""
+"issue_comment","1548","nilearn","nilearn","bthirion","2017-11-12 22:03:52","Of course, the vooxels should be chosen within the ROI.
+You might want to set the screening_percentile to 100 to double check 
+the behavior without the screening step.
+
+Also, have you tried with a simpler (non-sparse) classifier, e.g. SVM ? 
+If there is an issue in mask definition/corespondence, you should see it.
+
+HTH
+
+On 12/11/2017 22:56, Nikola Vukovic wrote:
+>
+> Thanks for your reply @bthirion <https://github.com/bthirion>! The 
+> data has been normalised to MNI space, and the mask is also MNI152. 
+> Though, the resolution is less in data (79 x 95 x 79 voxels, 2 mm 
+> isotropic) than in MNI template (193 x 229 x 193, 1mm isotropic) from 
+> which masks are created. Would this be a problem?
+> As for the screening_percentile parameter, would it still not choose 
+> 20% of voxels -within- the ROI, not outside? Any suggestions for 
+> troubleshooting this are welcome. Thank you!
+>
+> —
+> You are receiving this because you were mentioned.
+> Reply to this email directly, view it on GitHub 
+> <https://github.com/nilearn/nilearn/issues/1548#issuecomment-343771351>, 
+> or mute the thread 
+> <https://github.com/notifications/unsubscribe-auth/AAOT1mu-twbMaM0AdiTs6SrqzMqzD27Tks5s12megaJpZM4Qadjv>.
+>
+
+","",""
+"issue_comment","1548","nilearn","nilearn","bthirion","2017-11-12 22:17:11","Normally, mask resampling is done whenever necessary by the estimator (the data are resampled at mask resolution). For debugging, pre-resampling the mask to the data resolution might help, but it not a pre-requisite for normal use of the methods. ","",""
+"issue_comment","1548","nilearn","nilearn","KamalakerDadi","2017-11-11 13:17:11","If I understood your analysis properly, what you need to give is a gray matter mask.
+
+If user has given a mask then it implies that analysis is done according to the provided mask. Please refer to this manual which describes about masking and related. http://nilearn.github.io/manipulating_images/masker_objects.html","",""

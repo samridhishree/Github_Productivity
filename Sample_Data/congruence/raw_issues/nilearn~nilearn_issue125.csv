@@ -1,0 +1,125 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","125","nilearn","nilearn","AlexandreAbraham","2013-11-05 13:27:32","The first goal of this PR is to update the ADHD dataset fetching function. It uses the new preprocessing provided by Cameron Craddock's team which is lighter and well organized. It also load phenotypic data.
+
+This PR also provides a new (and simpler) way to fetch datasets. I was not happy with the try/except scheme. I had that by my side for some time, I think this was the occasion to bring it into nilearn. Now making a dataset fetching function is as simple as listing tarballs and the file they contain.
+
+This PR addresses issue #123. Haxby stimuli are fetchable.
+This PR addresses issue #68. Region labels are returned when loading Harvard Oxford atlas (labels are duplicated with a right / left part when symmetry_split is True. I am not sure if I had pick the corresponding side, I'd like somebody to double check it).
+","start issue","Refactor dataset fetching"
+"issue_closed","125","nilearn","nilearn","GaelVaroquaux","2013-11-20 05:46:57","","closed issue","Refactor dataset fetching"
+"pull_request_title","125","nilearn","nilearn","AlexandreAbraham","2013-11-05 13:27:32","The first goal of this PR is to update the ADHD dataset fetching function. It uses the new preprocessing provided by Cameron Craddock's team which is lighter and well organized. It also load phenotypic data.
+
+This PR also provides a new (and simpler) way to fetch datasets. I was not happy with the try/except scheme. I had that by my side for some time, I think this was the occasion to bring it into nilearn. Now making a dataset fetching function is as simple as listing tarballs and the file they contain.
+
+This PR addresses issue #123. Haxby stimuli are fetchable.
+This PR addresses issue #68. Region labels are returned when loading Harvard Oxford atlas (labels are duplicated with a right / left part when symmetry_split is True. I am not sure if I had pick the corresponding side, I'd like somebody to double check it).
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","Refactor dataset fetching"
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-07 15:13:06","> @GaelVaroquaux do we make smoke tests, tests with phony files or no
+> test at all ?
+
+Right now, make smoke tests, and add an issue to make (later) tests with
+phony files.
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 09:36:04","I haven't followed: the new ADHD dataset is now good to go?
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 10:03:50","Despite your worthy efforts to test the dataset module, it's coverage is still the lowest of the whole nilearn codebase:
+
+<pre>
+nilearn.datasets                          412    210    49%   30, 73, 104, 138-143, 196, 200, 229-232, 234-245, 252, 256-258, 298, 308, 312-313, 321-334, 346-357, 361, 363-364, 406, 410-412, 416, 439-460, 464-468, 474-482, 529-549, 598-620, 667-692, 736, 806-807, 812-814, 824, 847-850, 1005-1006, 1014, 1063-1128, 1170-1180, 1218-1280, 1316-1396
+</pre>
+
+And this is actually tricky code. We need it covered :(
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 10:09:37","The function _tree could and should have its own unit test, as well as _filter_columns
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 10:11:07","Actually, _filter_columns seems broken to me: it returns ""filter"", but the variable defined inside the function is ""filter_"".
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 10:14:16","Yes, I just noticed that '_filter_columns' was not used. I am still busy understanding the code. I agree that it should be removed. This functionality is useful, but we will add it later.
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 10:24:46","OK, I have finished reviewing this PR. My main comment is that code coverage needs to go up. If you look systematically at the coverage, they are many low hanging fruits.
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-19 19:57:50","This is absolutely great!
+
+The tests are failing on travis:
+https://travis-ci.org/nilearn/nilearn/jobs/14164854
+but I am sure that it is a minor detail that you will be able to fix
+quickly.
+","",""
+"issue_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-20 05:43:25","Fantastic! Merging.
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 10:13:08","`_tree` should be tested. `filter_columns` is not used, I'll remove it.
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 10:18:18","This is some code I made quickly for fetching ABIDE. This allow to select subjects based on some criteria applied to phenotypic information. This was made to avoid a dependency to pandas. Only simple requests are handled (AGE=18 for exemple).
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 14:37:10","ADHD seems good to go. The examples are running well.
+
+I'll increase test coverage bit by bit as it takes some time. The whole downloading codepath is already tested by `test_fetch_haxby_simple`. I thinks it's ok if others are some tests. For some fetchers however, we won't be able to test everything without copying some files in the repo.
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-18 22:01:47","@GaelVaroquaux: coverage is now 85%.
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-20 00:20:04","@GaelVaroquaux Fixed.
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-07 15:09:16","I had to remove dataset fetcher tests because the new API break them. I can make new smoke tests (that will increase code coverage) but it won't be useful... The only way to test the dataset fetchers in real conditions is to create phony dataset files (ie files that mimic the dataset tree) locally, as it has already been done for haxby simple.
+
+@GaelVaroquaux do we make smoke tests, tests with phony files or no test at all ?
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-07 15:46:41","OK. I have no time for that right now, I'll do it later.
+","",""
+"issue_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 09:11:57","I added back some tests. More has to be done but, apart from that, this PR is ready for merging.
+","",""
+"pull_request_commit_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 09:36:50","We need to strive _not_ to have UTF-8 in our code base.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(2, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 09:41:58","It seems to me that this iteration does not seem to match the function signature as described in the docstring.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 09:45:45","I'd rather not use an 'import from'. Note that you don't need the ""import os.path"", as the submodule ""path"" is imported.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 09:47:06","Yes. pgervais added this one, I don't know why because there are no special characters. I'll remove it.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(2, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 09:49:37","I think that I would prefer:
+
+<pre>
+md5sum = opts.get('md5sum', None)
+</pre>
+
+That way you can also remove the line above putting md5sum to None.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 09:50:35","Indeed. Thanks for noticing. I tried to docstring this one even if it's not public as it may be used by developers wanting to implement a fetcher for their datasets.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 09:52:24","I think that I would prefer to use the 'warnings' module.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 09:55:02","The problem is that exists and join are use intensively, sometimes with long filenames. Using os.path.exists will force me to break some lines. This is feasible though.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 09:56:59","> The problem is that exists and join are use intensively, sometimes with long
+> filenames. Using os.path.exists will force me to break some lines. This is
+> feasible though.
+
+OK. Don't bother. This is minor.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","125","nilearn","nilearn","GaelVaroquaux","2013-11-13 10:17:52","Although this is not part of you PR, there is a horrible camelCase notation, urlOpener, that needs to be changed to url_opener.
+","7f1b47559229c21571c55a5970b92b74ecf2d03f","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-03 21:31:32","Change fetch_adhd to handle the new format","46b0dd6f9a88732f851c53322bfb81832ffd2034",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 10:31:49","Replace Haxby simple fetching by new functions","14c41b189ad6c717934e245be0f68ff89feb77ca",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 10:39:19","BUG: data_dir was not taken into account","ae5e8c7cd0184908a60e170cfc1dd903d573c085",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 10:42:00","Remove ADHD dataset fetching test as it basically test nothing.","04ddfbbb1777d9d86a5886091713e994c2f54cc1",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 10:59:05","Migrate Miyawaki fetching toward new API","7685689b9761674852dd7c29749df4cc3a20daa6",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 11:10:07","Factorize loading code of ADHD","3ba45e23d504992047c932df3bd08bf13f57529c",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 14:30:43","Move craddock atlas fetching to new system","783cbe024e7d7f7f7e3d752456b2d6edc6bb0e7d",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 16:12:35","Move fetch_nyu_rest to new API","ca824debc3bfe09a33231b146a494a32efd1ae12",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-04 23:47:55","Add regressor information for ADHD","7d8a7b2c62e10820ed38523eee90a9e5aaba0122",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-05 09:05:59","Move Haxby dataset fetching function and remove obsolete code","2c9b9899526349701f34d7cbdfdc1b9fbd4ef2d0",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-05 10:11:31","Add labels for Harvard Oxford atlas","4b2b8c4c1bf0afc691df038778812a19fdc9b97d",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-05 12:36:23","Add phenotypic information for adhd","7ba93622e6e4e0cf5c1d8655327e3177b937adca",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-05 13:15:22","Add stimuli fetching to haxby","f797804fd8b09c9af7ff168b3be66b0515cb5672",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-06 09:27:28","Remove obsolete test","e681d98406a0c9860d630880760b886e02bc0c7b",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-07 14:30:04","Remove resampling of ADHD dataset","a5f43d91d8e95830a83e864480c86e9a00029c44",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-07 14:51:19","Remove old test","6ef3e4849ad29a19e9cea9af7adfb8e68f74a3af",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 09:06:28","Add back test functions for datasets","7b198fe609360777cb332966136fbfd50b936913",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 09:49:46","Fix _fetch_files docstring","a6874837392e60720c8e0b4735acf550adce778d",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 10:05:41","Fix import. Fix docstring.","647cbe7df4d3be587d89de10ef77f7b5fea251ac",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 10:25:36","Fix md5sum code. Use warnings module.","5b422178d347824ea66b3e2c03ed40bd8e93a5ae",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-13 14:33:04","Increase test coverage","539be87d21a27575aa90ee65254eaaf23fb039fa",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-14 23:34:54","increase code coverage 3%","5bd26d1756c5c1ff9c0737f8389abf86abe8e485",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-17 21:21:21","Add test for Yeo atlas","b9b54aa1cc7b1715a2dbb1fb7919609fa2b6c8e5",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-18 15:25:04","A dataset is now partly fetchable in tests. 85% coverage.","5fc3a852d88c40e26c37deb9b8b2a64d17c0adf2",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-18 21:58:25","Clean file","e585ef9f6663f8acdf87058f1fb9e8aceb2a5849",""
+"pull_request_commit","125","nilearn","nilearn","AlexandreAbraham","2013-11-20 00:01:07","Missing test file","7f1b47559229c21571c55a5970b92b74ecf2d03f",""

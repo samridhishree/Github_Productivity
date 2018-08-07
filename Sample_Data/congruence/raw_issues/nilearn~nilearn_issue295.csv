@@ -1,0 +1,61 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","295","nilearn","nilearn","lesteve","2014-11-25 09:42:35","``` python
+from nilearn import datasets
+
+data = datasets.fetch_localizer_contrasts(['checkerboard'], n_subjects=1, get_masks=True)
+```
+
+I don't think that's super critical but @AlexandreAbraham you may have a suggestion off the top of your head? I looked at it a bit but I couldn't figure out what was happening. From what I understood, the file was downloaded and unzipped fine but then the target file was not where it was supposed to be somehow.
+
+The full traceback:
+
+```
+Downloading data from http://brainomics.cea.fr/localizer/brainomics_data_27.zip?rql=Any%20X,XT,XL,XI,XF,XD%20WHERE%20X%20is%20Scan,%20X%20type%20XT,%20X%20label%20XL,%20X%20identifier%20XI,%20X%20format%20XF,%20X%20description%20XD,%20X%20type%20IN(%22c%20map%22),%20X%20label%20%22checkerboard%22&vid=data-zip ...
+...done. (3 seconds, 0 min)
+extracting data from /home/lesteve/nilearn_data/brainomics_localizer/4a38c99692981d6a0cf064516435b8d8/brainomics_data_27.zip...
+Downloaded 23552650 of 23552650 bytes (100.00%,    0.0s remaining)  maining)  
+Downloaded 8192 of 774277 bytes (1.06%,    0.0s remaining)  
+Downloading data from http://brainomics.cea.fr/localizer/brainomics_data_masks.zip?rql=Any%20X,XT,XL,XI,XF,XD%20WHERE%20X%20is%20Scan,%20X%20type%20XT,%20X%20label%20XL,%20X%20identifier%20XI,%20X%20format%20XF,%20X%20description%20XD,%20X%20type%20IN(%22boolean%20mask%22),%20X%20label%20%22mask%22&vid=data-zip ...
+...done. (1 seconds, 0 min)
+extracting data from /home/lesteve/nilearn_data/brainomics_localizer/4a38c99692981d6a0cf064516435b8d8/brainomics_data_masks.zip...
+   ...done.
+Downloaded 774277 of 774277 bytes (100.00%,    0.0s remaining)  
+nilearn/datasets.py:603: UserWarning: An error occured while fetching brainomics_data/S01/boolean_mask.nii.gz
+  warnings.warn('An error occured while fetching %s' % file_)
+---------------------------------------------------------------------------
+IOError                                   Traceback (most recent call last)
+<ipython-input-3-034b6aa8fee8> in <module>()
+----> 1 data = datasets.fetch_localizer_contrasts(['checkerboard'], n_subjects=1, get_masks=True)
+
+/home/lesteve/dev/nilearn/nilearn/datasets.pyc in fetch_localizer_contrasts(contrasts, n_subjects, get_tmaps, get_masks, get_anats, data_dir, url, resume, verbose)
+   1962     # Actual data fetching
+   1963     data_dir = _get_dataset_dir('brainomics_localizer', data_dir=data_dir)
+-> 1964     files = _fetch_files(data_dir, filenames)
+   1965     anats = None
+   1966     masks = None
+
+/home/lesteve/dev/nilearn/nilearn/datasets.pyc in _fetch_files(data_dir, files, resume, mock, verbose)
+    610             if os.path.exists(temp_dir):
+    611                 shutil.rmtree(temp_dir)
+--> 612             raise IOError('Fetching aborted: ' + abort)
+    613         files_.append(target_file)
+    614     # If needed, move files from temps directory to final directory.
+
+IOError: Fetching aborted: Target file cannot be found
+```
+","start issue","Error with fetch_localizer_contrasts when setting get_masks=True"
+"issue_closed","295","nilearn","nilearn","lesteve","2014-12-16 17:40:10","","closed issue","Error with fetch_localizer_contrasts when setting get_masks=True"
+"issue_comment","295","nilearn","nilearn","AlexandreAbraham","2014-11-25 13:36:05","The expected name for the file is `boolean_mask.nii.gz` but if you download the file, you can see that the files are actually named `boolean_mask_mask.nii.gz`. We should ask brainomics people if it's a (temporary) error or if this is the new name. This is not the first time that file names change in this fetcher.
+","",""
+"issue_comment","295","nilearn","nilearn","lesteve","2014-12-16 14:19:23","More user-friendly [link](http://brainomics.cea.fr/localizer/brainomics_data_masks.zip?rql=Any%20X,XT,XL,XI,XF,XD%20WHERE%20X%20is%20Scan,%20X%20type%20XT,%20X%20label%20XL,%20X%20identifier%20XI,%20X%20format%20XF,%20X%20description%20XD,%20X%20type%20IN%28%22boolean%20mask%22%29,%20X%20label%20%22mask%22&vid=data-zip) hiding the RQL.
+","",""
+"issue_comment","295","nilearn","nilearn","DimitriPapadopoulos","2014-12-16 15:45:37","What worries me is that we haven't changed anything on the server for more than a year. I don't understand how such an error could be transient.
+
+Concerning the initial Localizer 94 data, the only _mask_ file I am able to find is `mask.nii.gz`.
+
+Concerning the code that generates the ZIP file on the Brainomics server, I recall [version 0.4.5 of module _brainomics_](http://hg.logilab.org/review/cubes/brainomics/rev/1943ec3fcebc) is being used. Specifically have a look at `views/download.py`. Unfortunately bowsing the source code on the above server is currently broken and I don't have the time to fetch the code and have a look at it on my machine.
+
+I don' t have access to the server either. I would have to sit down with one of the sysadmins and examine the issue. It would take to much time to organize.
+
+I suggest you stick to `boolean_mask_mask.nii.gz` - the current behavior. It shouldn't change because the server is fozen. If it ever does, please come back to me and I will investigate.
+","",""

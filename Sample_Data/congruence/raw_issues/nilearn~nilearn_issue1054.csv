@@ -1,0 +1,136 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1054","nilearn","nilearn","aabadie","2016-03-10 12:23:32","Fix #1051 + non regression test
+","start issue","[MRG+1] Use expandpath when memory attribute is a basestring in CacheMixin"
+"issue_closed","1054","nilearn","nilearn","GaelVaroquaux","2016-03-17 15:42:04","","closed issue","[MRG+1] Use expandpath when memory attribute is a basestring in CacheMixin"
+"pull_request_title","1054","nilearn","nilearn","aabadie","2016-03-10 12:23:32","Fix #1051 + non regression test
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","[MRG+1] Use expandpath when memory attribute is a basestring in CacheMixin"
+"pull_request_merged","1054","nilearn","nilearn","GaelVaroquaux","2016-03-17 15:42:04","[MRG+1] Use expandpath when memory attribute is a basestring in CacheMixin","e2da2799f1ab34f522bd4541f31c687370494c25","Pull request merge from aabadie/nilearn:expand_path to nilearn/nilearn:master"
+"issue_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-10 12:32:41","Two things:
+
+First, the mechanism used to turn off globbing should also turn this off.
+
+Second, in terms of avoiding user error, I think that one think that we could do is that if len(os.path.split(dirname)) > 1, we should check if the base directory exists. If it doesn't exist, we should bail out, and give a very explicit error message. That error message should check if the path has been expanded, and if so explain what has happened to the user, and how to avoid this (for instance with '~""). That way, if a user gets path expansion by mistake, he/she understand what is going on.
+","",""
+"issue_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-10 14:22:19","> @GaelVaroquaux, to me there's no real problem with adding os.path.expanduser.
+> In fact, the problem comes from Memory which doesn't user os.path.expanduser.
+> Also note that Memory always creates cache path if it doesn't exists.
+> 
+> My conclusion is:
+> 1. to always use os.path.expanduser
+
+I disagree: what if a user (ie windows user) has a '~' in a directory
+name. That user will be very very surprised, and will not understand
+what's going on.
+
+> 1. to also use os.path.expanduser in joblib.Memory
+
+There is no globbing/expansion logic in joblib. I don't want to add any.
+It's not the feeling of the library.
+","",""
+"issue_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-10 18:06:22","> @AlexandreAbraham, about the expandvars, I agree that it could be great. Maybe another PR ?
+
+I actually didn't get what you mean here.
+","",""
+"issue_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-10 21:24:16","> I was just saying that, on Windows, the canonical way to refer to the home
+> directory is to use the environment variable %UserProfile% and thus, applying
+> expandvars on the path is more important than applying expandpath. This was to
+> underline the fact that expandpath is not mandatory and that, in any case,
+> there is no ""good"" way in python to handle path. But I did not mean to
+> integrate it, I meant that this should be left to the user.
+
+OK. 99.9% of our Windows users will not even understand the discussion,
+so we can safely skip.
+","",""
+"issue_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-15 20:13:47","One small comment on the error message.  But aside from that,  +1 to merge
+","",""
+"issue_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-17 15:42:02","Yup! Merging
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-10 13:38:44","> Two things
+
+Done
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-10 13:39:53","> give a very explicit error message. That error message should check if the path has been expanded, and if so explain what has happened to the user, and how to avoid this (for instance with '~""). That way, if a user gets path expansion by mistake, he/she understand what is going on.
+
+I think I missed the second part of this point. Will update my changes.
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-10 14:19:22","@GaelVaroquaux, to me there's no real problem with adding  `os.path.expanduser`. In fact, the problem comes from Memory which doesn't user `os.path.expanduser`. Also note that Memory [always creates ](https://github.com/joblib/joblib/blob/master/joblib/memory.py#L830) cache path if it doesn't exists.
+
+My conclusion is:
+1. to always use `os.path.expanduser`
+2. to also use `os.path.expanduser` in  joblib.Memory 
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-10 15:32:13","> what if a user (ie windows user) has a '~' in a directory name. That user will be very very surprised, and will not understand what's going on.
+
+Reading the [doc](https://docs.python.org/2/library/os.path.html#os.path.expanduser), only initial `~` is taken in to account. On windows, `~` might be used by the system at the end of long paths. It will be fine.
+If the user created a directory starting with `~`, to me this is because he is looking for troubles, this is a very rare case.
+
+> There is no globbing/expansion logic in joblib. I don't want to add any. It's not the feeling of the library.
+
+Ok
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-10 17:15:28","@GaelVaroquaux, I pushed a couple of commits that should work on CI and implement most of your requirements. Let me know if it's ok.
+
+@AlexandreAbraham, about the  `expandvars`, I agree that it would be great. Maybe another PR ?
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-11 11:53:50","@GaelVaroquaux, @AlexandreAbraham, All tests passed. Can you make a quick review ?
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-15 09:14:10","Ping @AlexandreAbraham, @GaelVaroquaux, for review :)
+","",""
+"issue_comment","1054","nilearn","nilearn","aabadie","2016-03-17 15:41:13","@GaelVaroquaux @AlexandreAbraham , all checks are green. Maybe we can merge this one ?
+","",""
+"issue_comment","1054","nilearn","nilearn","AlexandreAbraham","2016-03-10 15:37:57","> If the user created a directory starting with ~, to me this is because he is looking for troubles, this is a very rare case.
+
+Agreed. However, as a Windows developper, I will never ever try to use `~` to reach home, my first reflex (if I am agnostic to Python path policy) would be to use `%UserProfile%`. In that case, `expandvars` is far more important than `expanduser`.
+
+Given that this cross-platform case is very poorly handled by Python, I agree with Gael to the fact that we should let the user find its own path (how poetic).
+","",""
+"issue_comment","1054","nilearn","nilearn","AlexandreAbraham","2016-03-10 21:23:05","> I actually didn't get what you mean here.
+
+I was just saying that, on Windows, the canonical way to refer to the home directory is to use the environment variable `%UserProfile%` and thus, applying `expandvars` on the path is more important than applying `expandpath`. This was to underline the fact that `expandpath` is not mandatory and that, in any case, there is no ""good"" way in python to handle path. But I did not mean to integrate it, I meant that this should be left to the user.
+","",""
+"issue_comment","1054","nilearn","nilearn","AlexandreAbraham","2016-03-10 21:30:08","Windows users will probably use `right click on the folder > properties > absolute path` so, no worries!
+","",""
+"pull_request_commit_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-10 15:44:36","Naming suggest CacheMixinTest, this is not really a Mock.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/tests/test_cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-15 20:11:14","Here you should probably mention the variable to disable this behavior
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","AlexandreAbraham","2016-03-15 21:50:56","Is this case really necessary? Isn't that handled by joblib?
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-15 21:51:58","> Is this case really necessary? Isn't that handled by joblib?
+
+No: joblib creates it, including if the subdirectories don't exist.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","AlexandreAbraham","2016-03-15 21:56:44","So why raising an error ? If I understand the code well, my usecase the most common, ie `memory='cache/something'` is going to raise an error.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-15 21:58:13","> So why raising an error ? If I understand the code well, my usecase the most
+> common, ie memory='cache' is going to raise an error.
+
+Nope. Because we raise an error only if the directory one step above
+doesn't exist. Ie ""tmp/cache"" would raise an error if tmp does not
+exists.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","AlexandreAbraham","2016-03-15 22:07:51","Precisely, I don't see why we should raise an error in a case that is considered valid by joblib. I don't see the rationale.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-15 22:08:34","> Precisely, I don't see why we should raise an error in a case that is
+> considered valid by joblib. I don't see the rationale.
+
+Typos lead to creation of random paths across the file system.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","aabadie","2016-03-16 08:41:43","I pushed the error message change suggested by @GaelVaroquaux. 
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","AlexandreAbraham","2016-03-16 09:05:55","I always thought of joblib as a random path generator anyway :P.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","1054","nilearn","nilearn","GaelVaroquaux","2016-03-16 09:10:20","> I always thought of joblib as a random path generator anyway :P.
+
+pseudo random, sir! It isn't coupled to a shot-noise sensor.
+","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 12:21:44","add CacheMixin expanduser test","6e244c7105d7b57cc40e1f19200daf9d38db68ec",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 12:22:39","use os.path.expanduser when passing a string memory to CacheMixin class","b55263227798e967d9daa8a7f10c1187e4c307cf",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 13:38:12","adding global boolean to control user expand option behavior, adding checks on input cache path","5ae96d4ae8f37506c5b00398f8a49c6dc22f9ba8",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 13:54:47","fixing failing tests on CI's","10c43817d8e43feaf6dcc651eb8c2a296a924a23",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 16:52:06","should fix failing tests","f0e503f1b6ae333de185deb7a670756e7fe1020f",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 16:53:09","renaming utility test class as suggested in comment","c584c342f6ccdb90523a09a95294a494445f5e86",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 17:13:54","using more explicit error messages","5ca909ebb57b10aeb707677f9e86eca229a4baa5",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-10 17:47:47","fixing documentation generation","37c67678ecb4e349420e884d0da7992b018d9742",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-11 10:15:20","fixing documentation generation","479418c3620aa8d317458e8f2ecbe9b0f7d8c7f8",""
+"pull_request_commit","1054","nilearn","nilearn","aabadie","2016-03-16 08:40:37","improving error messages","d89a2bb7c8e049fe9847fa8bf5160123893fe6ec",""

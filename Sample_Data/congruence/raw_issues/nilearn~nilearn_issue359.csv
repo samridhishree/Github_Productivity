@@ -1,0 +1,115 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","359","nilearn","nilearn","bcipolli","2015-01-20 15:35:50","This partially addresses #357.
+
+There are a few issues preventing the setup script, code, and tests from running in Python 2.6:
+- Trailing whitespace in `version.py` led to a setup syntax error.
+- `""format_str{}"".format(str)` is illegal in Python 2.6; use `""format_str{0}"".format(str)`
+- Dictionary comprehensions are NYI in Python 2.6; use `dict([list_comprehension])`
+- Many `assert_X` functions are unavailable in Python 2.6; convert the few we were using to `assert_true`
+- Context managers for `ZipFile`, `TarFile` don't exist in Python 2.6; wrap with `contextlib`
+- Context manager for `nose.assert_raises` doesn't exist in Python 2.6; use our custom `assert_raises_regexp`, which was more appropriate anyway (since we wanted to check the error message of the error anyway).
+
+I've also changed the `.travis.yml` file to contain a flow like `scikit-learn`.  The following three scenarios are now enabled:
+- Python 2.6 under Anaconda install
+- Python 2.7 using system packages
+- Python 2.7 under neurodebian.
+
+Tests for all three scenarios are working (or were working; seems the PGP key for neurodebian is choking at this moment, out of the blue)...
+","start issue","Enable Python 2.6 support"
+"issue_closed","359","nilearn","nilearn","lesteve","2015-01-21 21:26:56","","closed issue","Enable Python 2.6 support"
+"pull_request_title","359","nilearn","nilearn","bcipolli","2015-01-20 15:35:50","This partially addresses #357.
+
+There are a few issues preventing the setup script, code, and tests from running in Python 2.6:
+- Trailing whitespace in `version.py` led to a setup syntax error.
+- `""format_str{}"".format(str)` is illegal in Python 2.6; use `""format_str{0}"".format(str)`
+- Dictionary comprehensions are NYI in Python 2.6; use `dict([list_comprehension])`
+- Many `assert_X` functions are unavailable in Python 2.6; convert the few we were using to `assert_true`
+- Context managers for `ZipFile`, `TarFile` don't exist in Python 2.6; wrap with `contextlib`
+- Context manager for `nose.assert_raises` doesn't exist in Python 2.6; use our custom `assert_raises_regexp`, which was more appropriate anyway (since we wanted to check the error message of the error anyway).
+
+I've also changed the `.travis.yml` file to contain a flow like `scikit-learn`.  The following three scenarios are now enabled:
+- Python 2.6 under Anaconda install
+- Python 2.7 using system packages
+- Python 2.7 under neurodebian.
+
+Tests for all three scenarios are working (or were working; seems the PGP key for neurodebian is choking at this moment, out of the blue)...
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","Enable Python 2.6 support"
+"pull_request_merged","359","nilearn","nilearn","lesteve","2015-01-21 21:26:56","Enable Python 2.6 support","9a50f96b6e6ead1c6d335d24fc307b011d3b9a4a","Pull request merge from bcipolli/nilearn:python-2.6 to nilearn/nilearn:master"
+"issue_comment","359","nilearn","nilearn","GaelVaroquaux","2015-01-20 17:29:03","Thanks for the PR. This is absolutely great!
+
+> - Many `assert_X` functions are unavailable in Python 2.6; convert the few we were using to `assert_true`
+
+Have you check in sklearn.utils.testing. I believe that we have
+backported everything that was necessary there.
+
+> - Context manager for `nose.assert_raises` doesn't exist in Python 2.6; use our custom `assert_raises_regexp`, which was more appropriate anyway (since we wanted to check the error message of the error anyway).
+
+Same thing, there is a fairly developed framework for testing assertions
+in scikit-learn. We should rely on it, as these things are actually quite
+tricky to get right.
+","",""
+"issue_comment","359","nilearn","nilearn","GaelVaroquaux","2015-01-20 17:39:09","> Also this was added only in scikit-learn 0.15, so we can not rely only
+> on scikit-learn for this functionality since we need to support much
+> older versions.
+
+OK. Good reason.
+","",""
+"issue_comment","359","nilearn","nilearn","lesteve","2015-01-20 17:13:46","Thanks a for for this, this is super useful!
+
+> Tests for all three scenarios are working (or were working; seems the PGP key for neurodebian is choking at this moment, out of the blue)...
+
+Yeah this is quite annoying when that happens, not sure whether there is a way to work around it. I restarted the job on Travis and everything seems fine now.
+","",""
+"issue_comment","359","nilearn","nilearn","lesteve","2015-01-20 17:38:20","> Same thing, there is a fairly developed framework for testing assertions in scikit-learn. We should rely on it, as these things are actually quite tricky to get right.
+
+For nilearn._utils.testing.assert_raises_regexp, I actually copied the code from scikit-learn. The main reason I did that is [there](https://github.com/nilearn/nilearn/commit/a0c7693e0325dea9c7ce04a8512936eede881d32). Also this was added only in scikit-learn 0.15, so we can not rely only on scikit-learn for this functionality since we need to support much older versions.
+","",""
+"issue_comment","359","nilearn","nilearn","bcipolli","2015-01-20 18:21:05","> For nilearn._utils.testing.assert_raises_regexp, I actually copied the code from scikit-learn. The main reason I did that is there. Also this was added only in scikit-learn 0.15, so we can not rely only on scikit-learn for this functionality since we need to support much older versions.
+
+Good point, but supporting scikit-learn < 0.15 for users is different than supporting it for developers.  I think that, to avoid copying code and to use the full scikit-learn test functionality, it would be reasonable to require developers to use scikit-learn >= 0.15 (and show a meaningful error if they are not).
+
+That doesn't seem to challenging to do... I'd be willing to make that happen if others are on-board with it.
+","",""
+"issue_comment","359","nilearn","nilearn","lesteve","2015-01-20 18:48:40","> Good point, but supporting scikit-learn < 0.15 for users is different than supporting it for developers. 
+
+Not sure where you would draw the line and which mechanism you would use. The thing is that Travis need to run the tests with old versions of scikit-learn so I don't really see how we can avoid providing an assert_raises_regexp inside nilearn.
+
+Also as you might have seen from the link in my previous message there is a small but very nasty bug that is only fixed in scikit-learn master: assert_raises_regexp provided by scikit-learn is using match rather than search to check the error message. As far as I was concerned that was the last straw that broke the camel's back of my attempts at reusing scikit-learn assert_raises regexp.
+","",""
+"issue_comment","359","nilearn","nilearn","bcipolli","2015-01-20 18:50:16","> The thing is that Travis need to run the tests with old versions of scikit-learn so I don't really see how we can avoid providing an assert_raises_regexp inside nilearn.
+
+Good point.  OK then! :)
+","",""
+"issue_comment","359","nilearn","nilearn","bcipolli","2015-01-20 20:59:11","Made the few cleanup / reporting tweaks; and made no further changes to the tests.  Let me know if there's anything else to do here; otherwise, I'll focus my time on completing Python 3.x support.
+
+Thanks!
+","",""
+"issue_comment","359","nilearn","nilearn","lesteve","2015-01-21 21:26:39","This looks good to me, merging, Thanks a lot for that!
+","",""
+"pull_request_commit_comment","359","nilearn","nilearn","bcipolli","2015-01-20 15:36:04","This all got moved into the `install.sh` file.
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(13, '', u'.travis.yml')"
+"pull_request_commit_comment","359","nilearn","nilearn","lesteve","2015-01-20 17:19:38","It'd be quite nice to add other dependencies versions here. I am thinking matplotlib and nibabel.
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(None, '', u'continuous_integration/install.sh')"
+"pull_request_commit_comment","359","nilearn","nilearn","lesteve","2015-01-20 17:25:49","Nice catch, it took me a little while to figure out why you were renaming the list comprehension variables ... (answer: shadowing the _get_json_and_transform 'direction' parameter)
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(16, '', u'nilearn/plotting/glass_brain.py')"
+"pull_request_commit_comment","359","nilearn","nilearn","lesteve","2015-01-20 17:30:27","I don't think the COVERAGE environment variable is used anywhere in the scripts or travis.yml. Also coverage is enabled in setup.cfg.
+
+Which reminds me It'd be quite nice to setup coversall one day similarly to what scikit-learn is doing.
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(None, '', u'.travis.yml')"
+"pull_request_commit_comment","359","nilearn","nilearn","lesteve","2015-01-20 17:32:56","bonus points if you fix this PEP8 warning, while you are touching the line above.
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","359","nilearn","nilearn","bcipolli","2015-01-20 19:00:27","Yup!  And nice catch; I should have added a comment to the PR to point out that change...
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(16, '', u'nilearn/plotting/glass_brain.py')"
+"pull_request_commit_comment","359","nilearn","nilearn","bcipolli","2015-01-20 19:01:40","I will remove these and add an issue for setting up `coversall`.  It's along the lines of things I'm able and happy to contribute.
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(None, '', u'.travis.yml')"
+"pull_request_commit_comment","359","nilearn","nilearn","GaelVaroquaux","2015-01-20 19:59:23","> I will remove these and add an issue for setting up coversall. It's along the
+> lines of things I'm able and happy to contribute.
+
+It's really great to have you on board, Ben!
+","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac","(None, '', u'.travis.yml')"
+"pull_request_commit","359","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 15:02:36","Use scikit-learn-style .travis.yml / installation script; enable Python 2.6 testing.","72504e498bec5cb2a97aee683577efe96144b6ec",""
+"pull_request_commit","359","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 00:50:37","Changing `""format_str{}"".format(str)` to `""format_str{0}"".format(str)`","b915fc230f2c13c7fe364747a7c26e406d1d453a",""
+"pull_request_commit","359","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 01:36:42","Change dictionary comprehensions to equivalent list comprehensions.","40cbf7dd5a54e91b6ac5808ddff9df9c79c76f65",""
+"pull_request_commit","359","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 07:29:22","Only a few nose assert_X functions are available in Python 2.6","cc1d7335731212babe75e3585153c3c5d313f083",""
+"pull_request_commit","359","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 14:24:09","Using contextlib to make context managers where none exist in Python 2.6.","afcbb9c0b89c4788c9294366fd0265de8b4ca61e",""
+"pull_request_commit","359","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 20:06:01","Code cleanup (removing unused variable, PEP8)","1ebfe989d5732ea01e4cbdf804123b63c3cc4bac",""

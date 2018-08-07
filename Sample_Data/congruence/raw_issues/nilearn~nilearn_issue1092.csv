@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1092","nilearn","nilearn","MartinPerez","2016-04-24 10:17:54","I find myself constantly segmenting atlases into lists of masks. Recently I had to extract ""again"" from a 3d niimg multiple ROIs given by an atlas (3d niimg with multiple labels) and thought that NiftiLabelsMasker could do the job. But NiftiLabelsMasker gives its own summary statistic and I needed all the features to do my own statistic on them.
+
+Do you think adding this feature to NiftiLabelsMasker would be useful to others, so it could also work like a NiftiAtlasMasker? it would be simple to implement and I can take care of it.
+","start issue","Use of an atlas to extract signals. Add feature to NiftiLabelsMasker to achieve something like a NiftiAtlasMasker?"
+"issue_comment","1092","nilearn","nilearn","GaelVaroquaux","2016-04-25 21:44:14","+1 for that approach.
+","",""
+"issue_comment","1092","nilearn","nilearn","AlexandreAbraham","2016-04-25 14:51:40","What I understand is that, instead of taking the mean of each region, you would like to take the PCA or something else? If so, it has already been suggested, a good interface has already been proposed but there was no consensus to integrate it.
+","",""
+"issue_comment","1092","nilearn","nilearn","AlexandreAbraham","2016-04-25 19:37:33","Returning a list of voxels is against the Transformer interface and it would be non efficient. The evoked option was to add an ""aggregator"" parameter that would be ""mean"" by default but could be replaced by any function. A bit like the ""scorer"" in scikit-learn. You would then be able to replace it with median, pca, or whatever you want.
+","",""
+"issue_comment","1092","nilearn","nilearn","alexsavio","2016-05-02 08:49:47","I mentioned this some months ago in #841, there is an interesting discussion about the work involved. Now the code is in the `img_to_signals_labels` function in `nilearn.regions.signal_extractor`. I didn't have time to do it yet.
+","",""
+"issue_comment","1092","nilearn","nilearn","banilo","2016-04-25 14:46:33","I am not sure what you mean. Do you mean, for instance, a resting-state network, into masks for its compact network nodes? If yes, this is also something that I am missing in the nilearn API right now. Even if it can easily be done with scipy, it might be a feature worthy of consideration.
+","",""
+"issue_comment","1092","nilearn","nilearn","banilo","2016-05-02 11:12:47","> least to return one list of voxels per ROI, so you can do what you want with it afterwards.
+
+This can be done by the `NiftiMasker` already.
+","",""
+"issue_comment","1092","nilearn","nilearn","banilo","2016-05-02 11:27:52","> you mean I can pass an atlas to niftimasker as the mask and provide the label ids when masking some other image? I did not get that from the docs.
+
+Year, if you go region-by-region with one pass over your data using NiftiMasker, it will exactly give the regin-wise set of voxel-values. And then you can apply a custom pooling function on these selected features.
+","",""
+"issue_comment","1092","nilearn","nilearn","MartinPerez","2016-04-25 16:12:23","Yes @AlexandreAbraham , I mean exactly that. Or at least to return one list of voxels per ROI, so you can do what you want with it afterwards.
+","",""
+"issue_comment","1092","nilearn","nilearn","MartinPerez","2016-04-25 21:05:02","well that would be great
+","",""
+"issue_comment","1092","nilearn","nilearn","MartinPerez","2016-05-02 11:24:25","@banilo you mean I can pass an atlas to niftimasker as the mask and provide the label ids when masking some other image? I did not get that from the docs.
+","",""

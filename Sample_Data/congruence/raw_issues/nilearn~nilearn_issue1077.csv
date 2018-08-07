@@ -1,0 +1,167 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1077","nilearn","nilearn","kingjr","2016-04-12 13:02:29","Hi all,
+
+I am contributor of the [MNE-Python](http://github.com/mne-tools/mne-python) to analyze MEG and EEG data. We're thinking about developing a `pipeline` object ala scikit-learn top pipe multiple preprocessing steps before fitting a final estimator. There's a high chance that you've already tackle a similar problem, so I was hoping to get some API/design advice and recommendations before we get our hands dirty.
+
+The issue we're facing is that the dimensionality of `X` typically varies across preprocessing steps: e.g. X shape can vary from `n_sample, n_time, n_space` to `n_sample, n_time, n_frequency, n_space`.
+
+We thus need to keep track of this dimensionality (and units*) to meaningfully pipe the preprocessing steps (*e.g. to apply time frequency transform, we need to keep track of the sampling frequency).
+
+I was thus wondering whether you had faced and resolved a similar issue if you for instance want to do: e.g. 
+- step 0: whitening data (`X.shape = n_sample, n_space`)
+- step 1: preprocessing inter-voxel correlations (`X.shape = n_sample, n_space, n_space`)
+- step 2: apply ICA fitting model (`X.shape = n_sample, n_component`)
+- step 3: svm
+
+[The need for such pipeline object stems from the increasing need to apply search light (and [generalization of search light](http://martinos.org/mne/dev/auto_examples/decoding/plot_decoding_time_generalization_conditions.html#example-decoding-plot-decoding-time-generalization-conditions-py)) algorithms to mine the data.]
+
+cc @dengemann @kaichogami @agramfort
+","start issue","Q: how to design pipeline when X shape varies?"
+"issue_closed","1077","nilearn","nilearn","kingjr","2016-04-13 13:38:36","","closed issue","Q: how to design pipeline when X shape varies?"
+"issue_comment","1077","nilearn","nilearn","GaelVaroquaux","2016-04-12 13:03:53","> I was thus wondering whether you had faced and resolved a similar issue
+
+We haven't.
+
+> [The need for such pipeline object stems from the increasing need to apply
+> search light (and generalization of search light) algorithms to mine the data.]
+
+I don't like searchlight.
+","",""
+"issue_comment","1077","nilearn","nilearn","GaelVaroquaux","2016-04-12 14:41:42","> Well one could imagine putting the NiftiMasker in a pipeline (I will also
+> explicitly state that I don't suggest to do this at all). Then the problem
+> arises.
+> 
+> Couldn't this simply be solved by avoiding being too strict about shape and
+> only relying on the first axis containing `n_samples` always?
+
+I might agree with this, but it's probably a discussion to be had at the
+scikit-learn level.
+
+That said, doesn't what you suggest currently works?
+","",""
+"issue_comment","1077","nilearn","nilearn","GaelVaroquaux","2016-04-12 15:07:06","> ```
+> and only relying on the first axis containing n_samples always?
+> ```
+> 
+> Do you mean using the sklearn pipeline and forcing all X do be n_samples *
+> n_features? But then you can't easily pipe transformers specific to MRI / MEG
+> data, where the dimensionality needs to be tracked.
+
+The first axis is n_samples. That's the contract at the scikit-learn
+level.
+
+> ```
+> I might agree with this, but it's probably a discussion to be had at the
+> scikit-learn level.
+> ```
+> 
+> I hesitated, but sklearn needs to keep a very simple and generic API, so I
+> thought this was more relevant to the neuroimaging communities.
+
+I don't want to be implementing our own version of pipeline. I just think
+that this is too dangerous.
+","",""
+"issue_comment","1077","nilearn","nilearn","eickenberg","2016-04-12 13:29:43","> We haven't.
+
+Well one could imagine putting the NiftiMasker in a pipeline (I will also
+explicitly state that I don't suggest to do this at all). Then the problem
+arises.
+
+Couldn't this simply be solved by avoiding being too strict about shape and
+only relying on the first axis containing `n_samples` always?
+
+Or by having some non-compulsory shape verifications as static methods
+inside the classes which do non-standard stuff?
+
+On Tue, Apr 12, 2016 at 3:13 PM, Jean-Rémi KING notifications@github.com
+wrote:
+
+> We haven't.
+> 
+> Ok. I'll wait for ~ day to close the issue in case anyone else has any
+> advice.
+> 
+> I don't like searchlight.I don't like searchlight.
+> 
+> I know you don't :)
+> 
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/1077#issuecomment-208898240
+","",""
+"issue_comment","1077","nilearn","nilearn","eickenberg","2016-04-12 14:56:40","I was thinking more along the lines of verifying that
+
+X.shape[0] == n_samples
+
+and that the rest can be whatever it needs to be.
+
+Or, [optionally | if it gets even more general than that], have shape
+verification information bound to the transformers.
+
+On Tue, Apr 12, 2016 at 4:53 PM, Jean-Rémi KING notifications@github.com
+wrote:
+
+> Couldn't this simply be solved by avoiding being too strict about shape
+> and only relying on the first axis containing n_samples always?
+> 
+> Do you mean using the sklearn pipeline and forcing all X do be n_samples *
+> n_features? But then you can't easily pipe transformers specific to MRI /
+> MEG data, where the dimensionality needs to be tracked.
+> 
+> I might agree with this, but it's probably a discussion to be had at the
+> scikit-learn level.
+> 
+> I hesitated, but sklearn needs to keep a very simple and generic API, so I
+> thought this was more relevant to the neuroimaging communities.
+> 
+> —
+> You are receiving this because you commented.
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/1077#issuecomment-208946999
+","",""
+"issue_comment","1077","nilearn","nilearn","AlexandreAbraham","2016-04-12 15:17:02","I think that I don't get your problem. You want a pipeline structure able to process a wide range of data types. In scikit learn, the data format is fixed. In nilearn, it is also the case but we have several data types (the sklearn representation and the niimgs).
+
+So, in your case:
+- either you can explore the whole space of possible datatypes and you create special objects / processing for them
+- or you want something generic. In that case you problably want to label the dimensions of your numpy array and put some glue between the different steps of the pipeline to transform the outputed data into a format compatible with the input of the next step.
+
+So if you just want to keep track of the meaning of the dimensions it should be possible to extend the numpy array to associate a name to each dimension.
+","",""
+"issue_comment","1077","nilearn","nilearn","kingjr","2016-04-12 13:12:59","> We haven't.
+
+Ok. I'll wait for ~ day to close the issue in case anyone else has any advice.
+
+> I don't like searchlight.I don't like searchlight.
+
+I know you don't :)
+","",""
+"issue_comment","1077","nilearn","nilearn","kingjr","2016-04-12 14:53:28","> Couldn't this simply be solved by avoiding being too strict about shape and only relying on the first axis containing `n_samples` always?
+
+Do you mean using the sklearn pipeline and forcing all X do be n_samples \* n_features? But then you can't easily pipe transformers specific to MRI / MEG data, where the dimensionality needs to be tracked.
+
+> I might agree with this, but it's probably a discussion to be had at the scikit-learn level. 
+
+I hesitated, but sklearn needs to keep a very simple and generic API, so I thought this was more relevant to the neuroimaging communities.
+","",""
+"issue_comment","1077","nilearn","nilearn","kingjr","2016-04-13 13:38:36","ok, thank you all for your feedback. I think you're right and the safest approach is probably to keep the sklearn pipeline, and just initializing our neuroimaging transformers with all metadata, e.g.
+
+```
+pipeline = make_pipeline(
+    StandardScaler(),
+    IntervoxelCorrelation(info=niifti.info),
+    SVC())
+```
+
+This won't allow some usecases where the metadata changes across steps e.g.
+
+```
+pipeline = make_pipeline(
+    StandardScaler(),
+    Subsampler(info=nifti.info),
+    IntervoxelCorrelation(info=nifti.info),  # XXX this info is not up to date after subsampling
+    SVC())
+```
+
+But it's probably a more robust approach than building our own pipeline to handle metadata.
+","",""

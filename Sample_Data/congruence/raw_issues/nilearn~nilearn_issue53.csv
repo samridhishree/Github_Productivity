@@ -1,0 +1,32 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","53","nilearn","nilearn","mekman","2013-05-09 13:35:23","Just to confirm, do I read the code correctly, that the radius parameter is based on _voxel_ and not on _mm_, as it is based on the mask_indices and `sklearn.neighbors.NearestNeighbors`? In that case I don't understand why the the radius parameter is expected to be float?
+
+https://github.com/nisl/tutorial/blob/master/nisl/searchlight.py#L183
+
+I would like to file a PR to clarify the docstring, but first wanted to check with you guys.
+","start issue","clarification radius of SearchLight in mm or voxel?"
+"issue_closed","53","nilearn","nilearn","pgervais","2013-05-31 10:48:01","","closed issue","clarification radius of SearchLight in mm or voxel?"
+"issue_comment","53","nilearn","nilearn","mekman","2013-06-05 15:13:06","looks good. Thanks!
+","",""
+"issue_comment","53","nilearn","nilearn","GaelVaroquaux","2013-05-16 15:13:32",">   • Another one would be to pass mask and process_mask as niimg.
+> 
+> I think the second solution is a better one, because the transformer is very
+> specific to fMRI, and as such, should process fMRI images, not arrays.
+
+Agreed!
+","",""
+"issue_comment","53","nilearn","nilearn","pgervais","2013-05-16 14:58:08","I had a look at the source code. Taking into account the aspect ratio is technically not difficult. 
+However, we need to have access to pixel sizes inside `SearchLight.fit()`, which is not the case right now. The fix will thus include an API change.
+
+Two possibilities:
+- The simplest way is to add an ""affine"" parameter to `SearchLight.__init__()`, and keep `mask` and `process_mask` as numpy.ndarray
+- Another one would be to pass `mask` and `process_mask` as niimg.
+
+I think the second solution is a better one, because the transformer is very specific to fMRI, and as such, should process fMRI images, not arrays.
+
+@GaelVaroquaux, if you have some time, can you give your opinion?
+","",""
+"issue_comment","53","nilearn","nilearn","pgervais","2013-05-29 09:17:04","@mekman: if you're still interested in searchlight, the issue you raised should be fixed by the aforementioned PR #65. Any comment is appreciated. 
+
+I also updated the plot_haxby_searchlight.py example, so that you can figure out quickly what the changes were.
+","",""

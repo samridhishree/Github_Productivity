@@ -1,0 +1,126 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","952","nilearn","nilearn","dohmatob","2016-01-18 09:40:37","We should infer whether the brain is templtate-aligned (by looking at the affine), and if not, we should not plot the template background. An image plotted with mis-aligned default background leaves an end-user frightened.
+","start issue","Default template bg in plot_* doesn't seem to be always a good idea"
+"issue_comment","952","nilearn","nilearn","eickenberg","2016-01-18 09:52:15","concrete example:
+
+plot_roi used for plotting a mask or plot_stat_map for mean image for
+haxby2001 subjects.
+Since these are not normalized to MNI, the effect of plotting the MNI
+template behind is jarring.
+
+I agree with the fact that a user who knows what the are doing will
+investigate. But last week's experience showed that many don't and instead
+of using the provided anat as background just continue working with the mni
+template and comment on the fact that this is wrongly aligned ...
+
+No clear opinion unfortunately.
+
+On Mon, Jan 18, 2016 at 10:45 AM, DOHMATOB Elvis notifications@github.com
+wrote:
+
+> If a user doesn't provide a background image, it's better not plotting a
+> background image than plotting a mis-aligned background image, which they
+> never asked for.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/952#issuecomment-172480290.
+","",""
+"issue_comment","952","nilearn","nilearn","eickenberg","2016-01-18 09:59:50","maybe a very simple solution would be to rename `bg_img` to
+`background_img` or `background_image`. That way it would be clear by
+reading the argument names.
+
+On Mon, Jan 18, 2016 at 10:55 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > If a user doesn't provide a background image, it's better not plotting
+> > a background image than plotting a mis-aligned background image, which
+> > they never asked for.
+> 
+> No. They can say 'bg_img=False'. But I'd rather have thing explicite.
+> 
+> Beside, users should be aware of whether there images are in template
+> space or not. And the default of nilearn is to work in template space.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/952#issuecomment-172482353.
+","",""
+"issue_comment","952","nilearn","nilearn","GaelVaroquaux","2016-01-18 09:42:40","> We should infer where the brain is templtate-aligned (by looking at the
+> affine), and if not, we should not plot the template background. An image plotted
+> with mis-aligned default background leaves an end-user frightened.
+
+And that user should be frightened, unless he or she knows what they are
+doing.
+","",""
+"issue_comment","952","nilearn","nilearn","dohmatob","2016-01-18 09:45:33","If a user doesn't provide a background image, it's better not plotting a background image than plotting a mis-aligned background image, which they never asked for.
+","",""
+"issue_comment","952","nilearn","nilearn","bthirion","2016-01-18 09:52:55","Yes, but then what do they expect from plotting ? Could elaborate the sue case a bit more ? 
+","",""
+"issue_comment","952","nilearn","nilearn","GaelVaroquaux","2016-01-18 09:55:25","> If a user doesn't provide a background image, it's better not plotting
+> a background image than plotting a mis-aligned background image, which
+> they never asked for.
+
+No. They can say 'bg_img=False'. But I'd rather have thing explicite.
+
+Beside, users should be aware of whether there images are in template
+space or not. And the default of nilearn is to work in template space.
+","",""
+"issue_comment","952","nilearn","nilearn","dohmatob","2016-01-18 10:07:17","These comments are all fine. But, the bottom line is that a user plots and image without specifying a background image and it all looks ugly, because of a mis-aligned bg which was forced into the fig by [us] developers. It's not good for user experience, irrespective of whether the users know what they're doing or not.
+
+I don't see the point having a default value, if it makes the figure look uglier --by default.
+","",""
+"issue_comment","952","nilearn","nilearn","GaelVaroquaux","2016-01-18 15:55:27","@eickenberg says:
+
+> maybe a very simple solution would be to rename `bg_img` to
+> `background_img` or `background_image`. That way it would be clear by
+> reading the argument names.
+
+Do you really think that simply renaming that argument would solve the
+problem? ""bg_img"" is really not clear to people?
+
+Also, it's the second argument in the list of arguments. I really makes
+me think that the users just didn't look at the docstring.
+
+Having people read and understand the docs is challenging, but that's
+what we need to be doing. When I teach, I keep coming back to the
+documentation and showing people how to read it.
+
+There are many options in the function, and it can be hard to read the
+docstring. In addition, the docstrings didn't mention turning off the
+background. I've pushed a couple of improvements. Minor, improvement, but
+experience shows that even minor improvements help.
+
+@eickenberg says:
+
+> But last week's experience showed that many don't and instead of using
+> the provided anat as background just continue working with the mni
+> template and comment on the fact that this is wrongly aligned ...
+
+Right, and that's exactly where we should be taking this as an
+opportunity to comment on the fact that it is not in template space, and
+that this can be very dangerous. Indeed, all the atlases are in template
+space. The coordinates that they pick up in papers are in template space.
+At Neurospin, a significant fraction of the signal quality problems that
+I have to deal with are about people who haven't done their registration
+well.
+
+@dohmatob says:
+
+> don't see the point having a default value, if it makes the figure look
+> uglier --by default.
+
+It's unglier only when users are work on non group-normalized data, which
+is actually a rare case. There is only one dataset in nilearn that
+display this behavior, and it's the Habxy one. It's a bit unlucky that we
+are using this example as an introduction for everything, not only
+because of the fact that it is in subject space, but also because
+decoding is typically done on beta maps, and not on raw time series.
+
+Finally, making a ""magic"" option to try to solve that problem is a very
+bad idea. In addition to hidding something that users should be aware of,
+that magic is going to fail sometimes, when the heuristics fail, and
+users are going to be even more surprised. Magic options give to a
+library a feeling that it is surprising and cannot be trusted. They need
+to be avoided.
+","",""

@@ -1,0 +1,85 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1173","nilearn","nilearn","salma1601","2016-07-08 09:03:10","Sorry if I am misunderstanding, but it seems to me that the images are resampled silently by the images plotters. How can the `add_edges` function be used to check coregistration as said in the doc ?
+","start issue","are display.add_contours suitable for coregistration checking ?"
+"issue_comment","1173","nilearn","nilearn","AlexandreAbraham","2016-07-09 14:23:28","To make it clear: absolutely no operation to match anything is done in nilearn. When displaying data, the only transformation applied is the one given in the affine in order to display things in the ""real"" world, not in the ""numpy array"" world.
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-08 09:04:51","Sorry `add_edges`
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-08 09:06:01","Isn't resampling done systematically when needed ? how can I check my coregistration is correct ?
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-08 09:25:12","``` Python
+from nilearn import datasets, plotting
+icbm152 = datasets.fetch_icbm152_2009()
+aal = datasets.fetch_atlas_aal('SPM12')
+display = plotting.plot_img(aal.maps)
+display.add_edges(icbm152.t1)
+plotting.show()
+```
+
+produces
+![icbm152_on_top_of_aal](https://cloud.githubusercontent.com/assets/7080143/16683155/9d2cebec-44fe-11e6-99dc-e7395c526b6d.png)
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-08 09:38:15","Is resampling done systemetically when needed ?
+If so, I don't understand how plotting the edges of one image on top of another would help me to check coregistration ?
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-08 16:59:42","Ok thanks !
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-08 18:52:39","Sorry I am pushing, but I don't get it and I am relying on that for my pipelines.
+Are we talking about SPM-like coregistration ? because I see no difference between ADHD mean functional before (red) and after SPM coregistration to ICBM template (in blue).
+
+``` Python
+cut_coords = (13, 15, 18,)
+display = plotting.plot_anat(mean_func, display_mode='z',
+                             cut_coords=cut_coords,
+                             title='ICBM152 edges on top of mean func')
+display.add_edges(icbm152.t1)
+display = plotting.plot_anat(out_coregister.outputs.coregistered_source,
+                             display_mode='z', cut_coords=cut_coords,
+                             title='ICBM152 edges on top of coregistered mean func')
+display.add_edges(icbm152.t1, color='b')
+plotting.show()
+```
+
+![non_coregistered](https://cloud.githubusercontent.com/assets/7080143/16698275/cc0dee58-454d-11e6-87ed-e84dbbc82284.png)
+![coregistered](https://cloud.githubusercontent.com/assets/7080143/16698280/d1296160-454d-11e6-8358-120b36c16623.png)
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-09 12:28:58","Ok, thank you for your reply.
+I will reformulate what I understand for possible other users facing the same problem and may be you can correct me if I am wrong.
+
+> It's not resampled, but it's aligned.
+
+When plotting the edges, a rigid body transformation may be applied to the image. So if the images are different only through this 6 parameters transformation, edges will **perfectly** match.
+
+I was overlaying a native functional by the edges of  a native anatomical for the same subject, expecting to see huge mismatch and it was not the case. I guess this 'realignment' made the edges seem acceptable to me. But when I compared after SPM coregistration I began to see **small** differences.
+I guess the mismatch will be more pronounced when assessing normalization to the standard space.  
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-09 18:17:36","Ok now I got it, thanks !
+","",""
+"issue_comment","1173","nilearn","nilearn","salma1601","2016-07-10 18:06:09","Does it make sense to add a sentence about this on the `add_edges` demo ?
+","",""
+"issue_comment","1173","nilearn","nilearn","KamalakerDadi","2016-07-08 09:04:30","You can use add_edges not add_contours.
+
+> How can the add_contours function be used to check coregistration as said in the doc ?
+
+where can I see ?
+","",""
+"issue_comment","1173","nilearn","nilearn","KamalakerDadi","2016-07-08 09:13:25","> Isn't resampling done systematically when needed ?
+
+Currently, there is no resampling done. AFAIK
+
+> how can I check my coregistration is correct ?
+
+If both images are aligned in same space. http://nilearn.github.io/plotting/index.html#adding-overlays-edges-contours-contour-fillings-and-markers
+","",""
+"issue_comment","1173","nilearn","nilearn","KamalakerDadi","2016-07-08 09:16:47","> Isn't resampling done systematically when needed ?
+> Currently, there is no resampling done. AFAIK
+
+May be I am wrong. I need to look into code base.
+","",""
+"issue_comment","1173","nilearn","nilearn","KamalakerDadi","2016-07-08 09:33:19","Sorry, I lost your question. What is your question again ?
+","",""
+"issue_comment","1173","nilearn","nilearn","KamalakerDadi","2016-07-08 11:29:16","I am not the correct one to answer. Sorry. Somebody can help you give precise answer to your question. 
+
+But you could benefit something from closed issues where there are discussions about resampling in add_edges.
+https://github.com/nilearn/nilearn/issues/616
+","",""

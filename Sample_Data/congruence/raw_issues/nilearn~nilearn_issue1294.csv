@@ -1,0 +1,70 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1294","nilearn","nilearn","alexsavio","2016-09-27 12:54:35","Hi,
+
+I can't make the new colormaps (plt.cm.magma, viridis...) plot the colorbar.
+The brain plot is done, but I get an exception when plotting the colorbar.
+Has anyone had this problem before?
+Thanks.
+
+Cheers,
+Alex
+","start issue","I can't make the new colormaps (magma, viridis...) plot the colorbar."
+"issue_closed","1294","nilearn","nilearn","GaelVaroquaux","2017-02-23 14:41:49","","closed issue","I can't make the new colormaps (magma, viridis...) plot the colorbar."
+"issue_comment","1294","nilearn","nilearn","GaelVaroquaux","2016-09-27 14:26:23","> I can't make the new colormaps (plt.cm.magma, viridis...) plot the colorbar.
+> The brain plot is done, but I get an exception when plotting the colorbar.
+> Has anyone had this problem before?
+
+No, but I am not sure that anybody runs bleeding edge matplotlib.
+
+Could you post the traceback here, please.
+","",""
+"issue_comment","1294","nilearn","nilearn","alexsavio","2016-09-27 15:06:52","I am using matplotlib 1.5.2.
+Today I am in a rush, but I can look into this another day. Here it goes:
+
+```
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-321-747b3bb54538> in <module>()
+     37 
+     38     p1 = plot_spatial_map( pet_blobs, bg_img=bg_img, title=""FDG-PET IC {}"".format(pet_bold_ics[idx][0]),
+---> 39                           cut_coords=cutcoords[idx], cmap=plt.cm.viridis, alpha=1, figure=fig, axes=plt.subplot(gs[0]))
+     40     p2 = plot_spatial_map(bold_blobs, bg_img=bg_img, title=""fMRI IC {}"".format(pet_bold_ics[idx][1]),
+     41                           cut_coords=cutcoords[idx], cmap=plt.cm.hot, alpha=1, figure=fig, axes=plt.subplot(gs[1]))
+
+<ipython-input-252-cd0b08153002> in plot_spatial_map(spatial_map, cut_coords, bg_img, title, **kwargs)
+     29                                  title=title,
+     30                                  draw_cross=False,
+---> 31                                  **kwargs,
+     32                                  )
+
+/home/alexandre/Software/nilearn/nilearn/plotting/img_plotting.py in plot_roi(roi_img, bg_img, cut_coords, output_file, display_mode, figure, axes, title, annotate, draw_cross, black_bg, alpha, cmap, dim, vmin, vmax, **kwargs)
+    657                                 resampling_interpolation='nearest',
+    658                                 alpha=alpha, cmap=cmap,
+--> 659                                 vmin=vmin, vmax=vmax, **kwargs)
+    660     return display
+    661 
+
+/home/alexandre/Software/nilearn/nilearn/plotting/img_plotting.py in _plot_img_with_bg(img, bg_img, cut_coords, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, draw_cross, black_bg, vmin, vmax, bg_vmin, bg_vmax, interpolation, display_factory, cbar_vmin, cbar_vmax, **kwargs)
+    182                             threshold=threshold, interpolation=interpolation,
+    183                             colorbar=colorbar, vmin=vmin, vmax=vmax,
+--> 184                             **kwargs)
+    185 
+    186     if annotate:
+
+/home/alexandre/Software/nilearn/nilearn/plotting/displays.py in add_overlay(self, img, threshold, colorbar, **kwargs)
+    593         # `ims` can be empty in some corner cases, look at test_img_plotting.test_outlier_cut_coords.
+    594         if colorbar and ims:
+--> 595             self._show_colorbar(ims[0].cmap, ims[0].norm, threshold)
+    596 
+    597         plt.draw_if_interactive()
+
+/home/alexandre/Software/nilearn/nilearn/plotting/displays.py in _show_colorbar(self, cmap, norm, threshold)
+    732             return
+    733         else:
+--> 734             our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+    735 
+    736         self._cbar = ColorbarBase(
+
+AttributeError: 'ListedColormap' object has no attribute 'from_list'
+```
+","",""

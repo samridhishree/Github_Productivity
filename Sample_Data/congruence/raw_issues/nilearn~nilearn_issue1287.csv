@@ -1,0 +1,93 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1287","nilearn","nilearn","TheChymera","2016-09-24 21:47:07","I am getting the following fatal error when running the test suite:
+
+```
+======================================================================
+ERROR: Failure: TypeError (constructor returned NULL)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib64/python2.7/site-packages/nose/loader.py"", line 418, in loadTestsFromName
+    addr.filename, addr.module)
+  File ""/usr/lib64/python2.7/site-packages/nose/importer.py"", line 47, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File ""/usr/lib64/python2.7/site-packages/nose/importer.py"", line 94, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File ""/var/tmp/portage/sci-biology/nilearn-0.2.6/work/nilearn-0.2.6/nilearn/plotting/__init__.py"", line 39, in <module>
+    from .img_plotting import plot_img, plot_anat, plot_epi, \
+  File ""/var/tmp/portage/sci-biology/nilearn-0.2.6/work/nilearn-0.2.6/nilearn/plotting/img_plotting.py"", line 29, in <module>
+    import matplotlib.pyplot as plt
+  File ""/usr/lib64/python2.7/site-packages/matplotlib/pyplot.py"", line 114, in <module>
+    _backend_mod, new_figure_manager, draw_if_interactive, _show = pylab_setup()
+  File ""/usr/lib64/python2.7/site-packages/matplotlib/backends/__init__.py"", line 32, in pylab_setup
+    globals(),locals(),[backend_name],0)
+  File ""/usr/lib64/python2.7/site-packages/matplotlib/backends/backend_gtk3agg.py"", line 11, in <module>
+    from . import backend_gtk3
+  File ""/usr/lib64/python2.7/site-packages/matplotlib/backends/backend_gtk3.py"", line 58, in <module>
+    cursors.MOVE          : Gdk.Cursor.new(Gdk.CursorType.FLEUR),
+TypeError: constructor returned NULL
+```
+
+I assume this is because nilearn does not explicitly set the matplotlib backend as `agg`. Can you confirm that this is indeed what is causing the error? Since nilearn does not depend on gtk (and I believe rightfully so) I think the test phase should not fail if there happens to be no gtk support in matplotlib. 
+","start issue","Test nilearn without depending on GUI"
+"issue_closed","1287","nilearn","nilearn","TheChymera","2016-10-02 10:41:20","","closed issue","Test nilearn without depending on GUI"
+"issue_comment","1287","nilearn","nilearn","jlec","2016-09-26 10:59:44","@TheChymera try to use the `virtualx.eclass`
+","",""
+"issue_comment","1287","nilearn","nilearn","AlexandreAbraham","2016-09-24 22:03:07","Hey Christian,
+
+If you look at the file `nilearn/plotting/__init__.py`, you'll see that we have some code to use the `agg` backend if no sidplay is available. I guess that somehow this code is not working properly on your machine. Could you:
+- tell us how you launch the test suite so that we can reproduce
+- try to copy/paste the code in the beginning of init and then check that the backend has been switched to `agg` (using `matplotlib.get_backend()`)
+- check that you don't have a maplotlib.rc file in your current dir on anything at python loading (maybe an `ipython_config.py`) that pre-set a different matplotlb backend (because in that case, nilearn cannot reset it).
+
+As a reminder, the code to be run:
+
+``` python
+def _set_mpl_backend():
+    try:
+        # We are doing local imports here to avoid poluting our namespace
+        import matplotlib
+        import os
+        import sys
+        # Set the backend to a non-interactive one for unices without X
+        if (os.name == 'posix' and 'DISPLAY' not in os.environ
+            and not (sys.platform == 'darwin'
+                     and matplotlib.get_backend() == 'MacOSX'
+                     )):
+            matplotlib.use('Agg')
+            print('Switching backend to agg')
+    except ImportError:
+        from .._utils.testing import skip_if_running_nose
+        # No need to fail when running tests
+        skip_if_running_nose('matplotlib not installed')
+        raise
+    else:
+        from ..version import (_import_module_with_version_check,
+                               OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        # When matplotlib was successfully imported we need to check
+        # that the version is greater that the minimum required one
+        _import_module_with_version_check('matplotlib',
+                                          OPTIONAL_MATPLOTLIB_MIN_VERSION)
+
+_set_mpl_backend()
+print('The backend is', matplotlib.get_backend())
+
+```
+","",""
+"issue_comment","1287","nilearn","nilearn","TheChymera","2016-09-24 22:59:59","I am launching the tests via `nosetests -v`. Still, it might be an issue with my testing environement. @SoapGentoo @jlec the error above appears when I emerge [this ebuild](https://github.com/TheChymera/neurogentoo/blob/c6907fb9f1426461ca314ac3880f3ca358a52721/sci-biology/nilearn/nilearn-0.2.6.ebuild). However, when I cd to the workdir and run `nosetests -v` I do not get this particular error. 
+
+This is a problem because I can't reproduce the error outside portage. Can you maybe help out?
+","",""
+"issue_comment","1287","nilearn","nilearn","AlexandreAbraham","2016-09-25 07:44:28","Can you print debug line when running your ebuild so that we can diagnose it? In a first time, could you try to unset DISPLAY before running the tests ?
+","",""
+"issue_comment","1287","nilearn","nilearn","TheChymera","2016-09-25 11:48:46","@AlexandreAbraham as I said, if I run the tests outside Portage, I do not get this particular error. Or did you mean unsetting DISPLAY for the emerge call? Like:
+
+```
+DISPLAY="""" FEATURES=""test"" emerge -v =nilearn-0.2.6 
+```
+
+?
+
+In any case, [here](https://bpaste.net/show/9046d0d7d38a) is the full portage log. And [here](https://bpaste.net/show/a99c2c03e2e4) is what I get when I run the tests manually.
+
+I see that the failure is caused by something entirely different, if you have any advice on that that would also be nice.
+","",""

@@ -1,0 +1,233 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","378","nilearn","nilearn","bcipolli","2015-01-31 18:44:21","This PR depends on two unmerged PRs (#369, #371), but I am opening this PR now for three reasons:
+1. Supporting Python 2 and 3 takes creating and following compatibility conventions.  I wanted to list what I've discovered from the code so far, and open discussion to agreeing on such conventions.
+2. To get any help (none needed, but appreciated) to solve remaining issues
+3. To open early review to anybody who wishes to do so (see https://github.com/bcipolli/nilearn/compare/bcipolli:fix_warnings...python-3.x to view a set of commits specific to Python 2/3 support).
+   .
+
+Open issues to solve (see https://travis-ci.org/bcipolli/nilearn/builds for latest branch builds / test errors):
+- File-based string operations with numpy are really challenging in Python 3.x, because of changes in defaults (all strings are unicode).
+
+Here's the current list of conventions I'm using so far:
+
+**Python 2 conventions that are now Python 3 requirements**
+- All `nilearn` imports should be relative (except, perhaps, in tests)
+- Write `except Exception, e` as `except Exception as e`
+- Write `isinstance(x, types.ListType)` as `isinstance(x, list)`
+- Write `callable(x)` as `isinstance(x, collections.Callable)`
+- Write `operator.isSequenceType(x)` as `isinstance(x, collections.Sequence)`
+- Write `operator.isNumberType(x)` as `isinstance(x, collections.Number)`
+- Write `nose.tools.assert_equals` as `nose.tools.assert_equal`
+- Write `nilearn._utils.testing.assert_raises_regexp` as `nilearn._utils.testing.assert_raises_regex` (mirrors nose clarification)
+- Write `<Iterable>.next()` as `next(<Iterable>)`
+- Write `filename = os.tempnam()` as `(_, filename) = tempfile.mkstemp()`
+- Write `not key in dict` as `key not in dict` (this actually warns in Python 3.x!)
+- Make sure to use `with open('file') as f' syntax; any file pointers that are not used in a context manager nor explicitly closed throw warnings.
+
+**Python 3 changes that require care to be backwards compatible**
+- Non-unicode strings must be prefixed with `b`: `b'string'`(mostly an issue interacting with numpy, but also some low-level operations like gzip code)
+- Write `print ""%s"" % (message,)` as `print(""%s"" % (message,))`
+- Write integer division `3 / 2 == 1` as `3 // 2 == 1`
+- Write `<dict>.iteritems()` as `<dict>.items()` (there is no iteritems in Python 3)
+- Write `<dict>.itervalues()` as `<dict>.values()` (there is no itervalues in Python 3)
+- Write `itertools.izip()` as `zip()` (there is no `izip` in Python 3)
+- Write octal string `0100` `0o100`
+- Write `round` as `np.round` (avoids a numpy issue in Python 3)
+
+**Importing things from `six` instead of places you're used to**
+- Write `basestring` as `six.string_types` (requires `import six`)
+- Use the new urllib object structure instead of ulrllib/urllib2
+  - import from `six.moves.urllib`.
+  - there are no base-level functions/objects, all are present in subpackages
+- Import  `StringIO` and `cPickle from`six.moves`
+
+**Changes in how you design / write code**
+- Think carefully about any use of `xrange`.  If you _require_ an iterator, then you must import `past.builtins.xrange`.  Otherwise, just use `range` (which is a list in Python 2, and an interator in Python 3).
+- Most things that used to generate lists now generate iterators; any time you need a list, make sure to wrap it in `list()`
+  - **THIS WILL GET YOU!**
+  - Includes:
+    - `dict.keys()`, `dict.values()`
+    - `zip`
+    - `range`
+    - `map`
+","start issue","[WIP] Adding Python 3.x support"
+"issue_closed","378","nilearn","nilearn","bcipolli","2015-03-01 22:13:07","","closed issue","[WIP] Adding Python 3.x support"
+"pull_request_title","378","nilearn","nilearn","bcipolli","2015-01-31 18:44:21","This PR depends on two unmerged PRs (#369, #371), but I am opening this PR now for three reasons:
+1. Supporting Python 2 and 3 takes creating and following compatibility conventions.  I wanted to list what I've discovered from the code so far, and open discussion to agreeing on such conventions.
+2. To get any help (none needed, but appreciated) to solve remaining issues
+3. To open early review to anybody who wishes to do so (see https://github.com/bcipolli/nilearn/compare/bcipolli:fix_warnings...python-3.x to view a set of commits specific to Python 2/3 support).
+   .
+
+Open issues to solve (see https://travis-ci.org/bcipolli/nilearn/builds for latest branch builds / test errors):
+- File-based string operations with numpy are really challenging in Python 3.x, because of changes in defaults (all strings are unicode).
+
+Here's the current list of conventions I'm using so far:
+
+**Python 2 conventions that are now Python 3 requirements**
+- All `nilearn` imports should be relative (except, perhaps, in tests)
+- Write `except Exception, e` as `except Exception as e`
+- Write `isinstance(x, types.ListType)` as `isinstance(x, list)`
+- Write `callable(x)` as `isinstance(x, collections.Callable)`
+- Write `operator.isSequenceType(x)` as `isinstance(x, collections.Sequence)`
+- Write `operator.isNumberType(x)` as `isinstance(x, collections.Number)`
+- Write `nose.tools.assert_equals` as `nose.tools.assert_equal`
+- Write `nilearn._utils.testing.assert_raises_regexp` as `nilearn._utils.testing.assert_raises_regex` (mirrors nose clarification)
+- Write `<Iterable>.next()` as `next(<Iterable>)`
+- Write `filename = os.tempnam()` as `(_, filename) = tempfile.mkstemp()`
+- Write `not key in dict` as `key not in dict` (this actually warns in Python 3.x!)
+- Make sure to use `with open('file') as f' syntax; any file pointers that are not used in a context manager nor explicitly closed throw warnings.
+
+**Python 3 changes that require care to be backwards compatible**
+- Non-unicode strings must be prefixed with `b`: `b'string'`(mostly an issue interacting with numpy, but also some low-level operations like gzip code)
+- Write `print ""%s"" % (message,)` as `print(""%s"" % (message,))`
+- Write integer division `3 / 2 == 1` as `3 // 2 == 1`
+- Write `<dict>.iteritems()` as `<dict>.items()` (there is no iteritems in Python 3)
+- Write `<dict>.itervalues()` as `<dict>.values()` (there is no itervalues in Python 3)
+- Write `itertools.izip()` as `zip()` (there is no `izip` in Python 3)
+- Write octal string `0100` `0o100`
+- Write `round` as `np.round` (avoids a numpy issue in Python 3)
+
+**Importing things from `six` instead of places you're used to**
+- Write `basestring` as `six.string_types` (requires `import six`)
+- Use the new urllib object structure instead of ulrllib/urllib2
+  - import from `six.moves.urllib`.
+  - there are no base-level functions/objects, all are present in subpackages
+- Import  `StringIO` and `cPickle from`six.moves`
+
+**Changes in how you design / write code**
+- Think carefully about any use of `xrange`.  If you _require_ an iterator, then you must import `past.builtins.xrange`.  Otherwise, just use `range` (which is a list in Python 2, and an interator in Python 3).
+- Most things that used to generate lists now generate iterators; any time you need a list, make sure to wrap it in `list()`
+  - **THIS WILL GET YOU!**
+  - Includes:
+    - `dict.keys()`, `dict.values()`
+    - `zip`
+    - `range`
+    - `map`
+","55ccc61f3350fe817400e69aa793761626c67355","[WIP] Adding Python 3.x support"
+"issue_comment","378","nilearn","nilearn","GaelVaroquaux","2015-02-01 19:40:38","If it's only on the examples, let's punt: the examples won't work out of
+the box in Python 3. That's too bad. But given that a very large fraction
+of our target users are not in Python 3, it will not affect them. On the
+other hand, making the examples harder to read would affect them.
+","",""
+"issue_comment","378","nilearn","nilearn","GaelVaroquaux","2015-02-01 19:45:21","> I assume with the tests, I can solve that either way (literals or
+> through a conversion function).
+
+I'd solve it via the simplest way, which probably does not entail writing
+a wrapper function.
+","",""
+"issue_comment","378","nilearn","nilearn","GaelVaroquaux","2015-02-01 21:06:53","> If punting, I suggest adding information somewhere (could be at the top of
+> relevant examples, could be somewhere on the website) about this issue.
+
+Sounds right. If there aren't too many examples where this is the case, I
+would add it there.
+","",""
+"issue_comment","378","nilearn","nilearn","lesteve","2015-02-01 21:25:14","It looks like using conditions == b'face' will work for both Python 2 and 3, i.e.:
+
+``` python
+condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
+```
+
+and another thing about:
+
+> All nilearn imports should be relative (except, perhaps, in tests)
+
+I seem to remember the scikit-learn policy was to use absolute import in tests. I guess this way you can easily run the test file independently from the package it is coming from, say run a test from your scikit-learn git checkout with an older version of scikit-learn for example.
+","",""
+"issue_comment","378","nilearn","nilearn","bcipolli","2015-02-01 19:38:22","I read up on most of the rest of the test failures--they are due to string handling differences between Python 2 and 3 and relatively heavy usage (compared to `sklearn`) in `nilearn` of numpy's `loadtxt` and `recfromtxt` functions without specifying column dtypes, and `nilearn`.
+
+`numpy` has chosen to always return `loadtxt` and `recfromtxt` strings without types as bytes.  However, string literal defaults in Python are version dependent: Python 2 defaults strings to bytes, and Python 3 defaults to unicode.
+
+This fails when in `nilearn` we explicitly filter based on condition masks using string literals, e.g. 
+
+``` python
+haxby_dataset = datasets.fetch_haxby_simple()
+conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
+```
+
+This will succeed in Python 2, but fail in Python 3.  In Python 2, the `'f0'` column is bytes (default), the condition mask `'face'` is bytes, so the comparison succeeds.  In Python 3, the `'f0'` column is bytes (default), the condition mask `'face'` is unicode, so the comparison fails.
+
+One solution could be to specify all string literals as bytes, e.g. `b'face'`.  This is what `sklearn` does, but they don't use `loadtxt` nor `recfromtxt` in user-facing examples.  I think it'd be weird to use these byte literals in examples, especially when most users won't need to know about it (only those using Python 3.x).
+
+Another solution could be to write our own `loadtxt` and `recfromtxt` functions that call `numpy`'s version, then convert any string fields to unicode by calling `decode()` on the strings.  I dislike wrapper functions like this because those familiar with `numpy` may no longer read the examples as clearly (similar, but different function is called....)
+
+A final solution is to repackage the dataset code (where most of this info lies) more carefully, such that the column definitions and datatypes are part of the package.  I think this is the best option--we have that information (we spent the time to curate these datasets), and it would allow better column names (we could use `'condition'` instead of defaults like `'f0'`), but it would take some thinking about how to package that information well.
+
+My suggestion: implement our own wrappers for `loadtxt` and `recfromtxt` and use them in our examples.  If there's interest in the third one, I can open an issue for it.
+
+If no objections, I'll start on solution #2 on Tuesday.  Thanks!
+","",""
+"issue_comment","378","nilearn","nilearn","bcipolli","2015-02-01 19:43:26","The issue also exists in `test_datasets.py`, but I don't think it's needed for any core code.  I assume with the tests, I can solve that either way (literals or through a conversion function).
+","",""
+"issue_comment","378","nilearn","nilearn","bcipolli","2015-02-01 19:46:32","If punting, I suggest adding information somewhere (could be at the top of relevant examples, could be somewhere on the website) about this issue.  The examples are a core part of getting people on `nilearn`, and if claiming `python 3` support I think it's important to let users know that the examples won't work for them.
+","",""
+"pull_request_commit_comment","378","nilearn","nilearn","lesteve","2015-02-02 15:37:56","I was thinking we could use the 'six' version that is shipped in sklearn.externals.
+","55ccc61f3350fe817400e69aa793761626c67355","(4, '', u'README.rst')"
+"pull_request_commit_comment","378","nilearn","nilearn","lesteve","2015-02-02 15:40:38","I don't think you should bother about this file too much. We are supposed to switch to [sphinx-gallery](http://github.com/sphinx-gallery/sphinx-gallery) at one point and I think it is already compatible with Python3.
+","55ccc61f3350fe817400e69aa793761626c67355","(1, '', u'doc/sphinxext/gen_rst.py')"
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-25 06:46:22","Make sure all print/stderr output checks verbosity level; add docstring comments re: verbose.","02a938b7d68d576f46c20059fdce33157eaf2007",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 04:51:20","Multi_pca should not assume that the masker was created without an explicit mask.","09884c1af5ad1d24c808e0528431aa301578ef06",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 05:01:41","Treat warnings as errors.","02f962dc16bac2bedca291f6e500747e5800591a",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 05:17:58","Ignore warnings due to numpy/scipy interactions.","20da87a30858bf8c75ecf4dd193f5c549d98af0a",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:12:07","Take care of warning due to incorrect comparison of memory objects.","3d633714134ddd21f7104275445988b0b091a1d5",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:12:35","Get rid of warning due to (implicitly) computing mask on garbage data.","73056f8b625b5ad1409685dcddfd12f65c1bf24e",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:39:18","Ignore expected warning re: bad coefficients.","e0cdb39ebe3c6b7e658edd8d56ecabae0545dca8",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:47:54","Ignore a warning about divide-by-zero for our dummy data; it's not important.","c8914846b756a726fd9ee1dacaa7ca606c6ff194",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 07:01:44","Fix warning re: negation of a boolean","54d44b81aebb25cbe195312ec6383ca2947d11d8",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:11:27","Implement good version of assert_warns, use it in","185054838f2e9ae331bc3dfdd9676ab5660f2cf8",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:30:13","Expect an 'empty mask' warning.","82169800fde9e6110a530e16044f8ecd5359298a",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:43:29","Expect transform warnings.","54b61fca918be7c110d5e550fc010709e123bea4",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:46:34","Ignore non-fatal warnings from old versions of scikit-learn.","9e5925229733fc2227dda27277856aa23bfe74ce",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:53:07","Use assert_equal to get better error messages on failures.","cffe825b3ee63636d13b333ea086a372fef4de2a",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:00:03","Slicing cannot be done with floats.","58d62545e374623931745b592b145393525da821",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:13:23","Check expected ""Incompatible Cache"" warnings.","650c84af44513d9c3ed350cc7f75b32f293172d3",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:24:19","Expect the download warning.","4f4326f38a5be60187c12f5b907f383e29996952",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:38:51","Ignore import and deprecation warnings while importing Bunch (known numpy/scipy issue)","13d7ac72395ca3918fb630eb739c1bcf6753b18f",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 18:06:46","Removing redunant code, adding docstring.","b7b7ef3dc4821f5d9da8d9cf95afce4b1e116316",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 20:44:42","Fix and clean code for Memory special case.","8047dc07557db54da8e30b40e341b578b0e11f5a",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-31 17:25:07","Implementing a skip_if decorator, to skip tests conditionally.
+
+Conflicts:
+	nilearn/_utils/testing.py","000ed7b1583bd5d10b875915e62a8d2c3c08d46c",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-31 17:25:47","TEMPORARILY disable the CanICA test on neurodebian (see #376)","28e862a43fe0ff5e2bf3fc28c4cc6e4efc8ddfb2",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-05 07:37:15","Ignore sklearn deprecation warning, as it seems to be out of our control (bad warning design?)","3a03957bb97514d82c34821d94c0b4edb7135c41",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-05 07:51:11","be more specific about expected error.","a524379cf6069c6d7d2be9ba92e61815d594c85c",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:47:54","Ignore a warning about divide-by-zero for our dummy data; it's not important.","6e072820dc31febe0e7d550717690b47f5208def",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:11:27","Implement good version of assert_warns, use it in","a64313ed04be1147be9f38ce0f75b179d1777119",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 01:07:52","Changing ""except Exception, e"" to ""except Exception as e""","36f841320e3c0a56101f2bace32af190170fa4a7",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 01:37:09","Changing from `print ""str""` to `print (""str"")`
+
+Conflicts:
+	nilearn/_utils/niimg_conversions.py","4cda00124294e9b8152dc504fe10e6deb39da2f4",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:06:14","Hack to avoid scipy indexing issue","e7674c903b81b73d281669c58e485e4c9b951961",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:13:23","Check expected ""Incompatible Cache"" warnings.","fc9d9238ca3ce11802e417a12e0634b23deef3bb",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 05:30:13","Changing basestring to six.string_types","f109ca87633e8f24be33178b5367c68691a6aa92",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 05:30:25","Changing to proper relative imports.","e1a7ff6604b0d1f1c24abf5b39c99d2a1a6044a1",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 05:33:45","Adding dependency on 'six' package.","46e0e4823e985f98b4a6790ee0c3c2899eed80a5",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 06:13:13","Import xrange from past, for python2/3 support.","2bcedd1365ec3b7f7fa8d1fbcd8aef5a16c790ec",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-20 06:31:27","Converting old-style octal literal to Python 2.6+ literal syntax.","f2fcc141d99f5aa654d9d0092bbb7d2d993f7f7a",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:49:02","Shift cPickle, c/StringIO to six.moves","1cecd8f9859d7b046ba9ef08e547fadde3d0fbe7",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:53:27","urllib/urllib2 migration.","f58a4f47a462383439ed6640d271de9afa06aaf7",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:56:02","CAREFULLY migrate away from old iterators (iteritems, itervalues, izip)","37ac8a6d7c91b9011b8143e68a10ba27f9689977",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 21:57:21","Migrate away from deprecated type checking.","5b0fbfd67304ff6bc434192257c9269e3bb459f3",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-21 22:22:57","Use np.round (instead of round) to avoid a bug in np that is exposed in Python 3 (see http://numpy-discussion.10968.n7.nabble.com/should-ndarray-implement-round-for-py3k-td29232.html)","6b324aa6f5d29d8e1d205532968980ce0363e24e",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-22 05:33:37","Enable Python 3.4 tests.","efaa9bdcef1199a8e0121da75a059fc6674ec445",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-26 07:40:14","Closing unclosed file pointers; migrating to use 'with open...' syntax.
+
+Conflicts:
+	nilearn/datasets.py","1095c65fb695c42309ddb38d9e61b54fd23651db",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-26 07:49:30","Use // for integer division, be explicit when we expect floating point division.","9b8dfa1070fef4e958d4559d1224439d05c1ab55",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:48:42","assert_equals => assert_equal","f5712a2d3d080d536411f21d73430352dcb23c45",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:52:14","assert_raises_regexp => assert_raises_regex","22140f01ab1c7168134aa268e901540c2207bd5c",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:54:45","convert 3.4 iterators into lists where lists are required / expected.","45b0d3fd90e503fb8acd39a728d552fa42453a4a",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:56:01","Non-unicode strings must be prefixed with b''","74c688c1c969b59a9894ee6a5641acef6dc87cd4",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 03:57:56","Linting and taking care of python idiom warnings.","59a088194b11ce772bfaf2d36be46ba1590037b4",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 13:37:33","using contextlib again:","ca036e316b7836f5bc5e62b4c7ba879672922172",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 13:45:06","Stop subscripting the Warning object.","878f5f9bccf794e04164f238318539dafb50930b",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 13:55:40","Trying to fix buffer problem","7c8ade8c29ae892e250f613bd78c0bbe9b40307b",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 13:58:31","stab in the dark to deal with iterator issue.","6d0a4678c9dd32a9d1bd2682eed1682005c2a5da",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 07:32:10","Byte / Unicode straigtening out, for Python 2/3 compatibility.","6032aac49c86e3f8f53e6605e8d8e979d0bffeed",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 07:40:53","Fixing confusing zip issue.","fb4ed4a5f3bac4f6cf5c94a3cfdfa3018dd290a0",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 10:03:39","Convert dataset filtering / string comparison to bytes.","ef0f9ce27845770ff2bfdae53158794f361813f0",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 10:13:10","Use list(zip()) to convert iterator to list on assignment.","c4ed72d5c1d622de40280bc30dbe0cca8f1e43ca",""
+"pull_request_commit","378","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-18 00:22:24","more byte/string conversions.","55ccc61f3350fe817400e69aa793761626c67355",""

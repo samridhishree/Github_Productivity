@@ -1,0 +1,307 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","399","nilearn","nilearn","Titan-C","2015-02-05 14:13:09","This pull request uses the today published sphinx-gallery-0.0.5 in pypi to generate the gallery.
+It also updates some examples to a python3 compatible syntax, so they can be executed within sphinx-gallery. As sphinx-gallery already imports from future print and division
+
+I'm listening to comments and bugs.
+the old gen_rst.py shall be deleted before merge.
+","start issue","Sphinx-gallery into nilearn "
+"issue_closed","399","nilearn","nilearn","lesteve","2015-04-14 07:50:31","","closed issue","Sphinx-gallery into nilearn "
+"pull_request_title","399","nilearn","nilearn","Titan-C","2015-02-05 14:13:09","This pull request uses the today published sphinx-gallery-0.0.5 in pypi to generate the gallery.
+It also updates some examples to a python3 compatible syntax, so they can be executed within sphinx-gallery. As sphinx-gallery already imports from future print and division
+
+I'm listening to comments and bugs.
+the old gen_rst.py shall be deleted before merge.
+","f733ad2b1521f4474d050a00c89004509f775441","Sphinx-gallery into nilearn "
+"pull_request_merged","399","nilearn","nilearn","lesteve","2015-04-14 07:50:31","Sphinx-gallery into nilearn ","ad0d4672dd8f4972b22421d047b293d0f84c0f33","Pull request merge from Titan-C/nilearn:sphinxgallery to nilearn/nilearn:master"
+"issue_comment","399","nilearn","nilearn","GaelVaroquaux","2015-02-12 14:04:16","> Also I think what @GaelVaroquaux had in mind was shipping a version of
+> sphinx-gallery in nilearn/doc/sphinxext rather than requiring to do pip
+> install sphinx-gallery.
+
+Yes.
+","",""
+"issue_comment","399","nilearn","nilearn","GaelVaroquaux","2015-02-13 08:38:20","> If one keeps a local version of the sphinx-gallery extension, and
+> probably every project will keep its own local copy. What was the aim
+> of keeping the centralized extension? wont all versions end up
+> branching again?
+
+Keeping a local version doesn't mean that we will branch. The idea is to
+have a synchronization script that copies exactly the sphinx-gallery code
+in the projects that use it. In these projects it should never be
+modified. One example of this pattern is how joblib is integrated in
+scikit-learn, in sklearn/externals.
+
+> Isn't it better to use the git version installed in develop mode more
+> practical?
+
+More practical for you. It raises two problems. One is of technicality.
+It's one more thing to learn and master for a contributor. These things
+pile up and make it harder and harder to contribute to a project. The
+second problem is that it means that any backword incompatible change or
+bug introduce in sphinx-gallery will break the projects using it.
+Decoupling is a good thing.
+","",""
+"issue_comment","399","nilearn","nilearn","GaelVaroquaux","2015-02-16 12:23:17","> Tiny comment: I am wondering whether the joblib import in doc_resolv.py should
+> not try to import it from sklearn.externals as a fall-back if joblib is not
+> installed.
+
+:+1:. We cannot have a joblib dependency.
+
+I would actually favor not using joblib but a simple shelve, and a test
+to see if the URL is already in the shelve.
+
+Here is some pseudo code to implement what I have in mind:
+
+<pre>
+import shelve
+mem = shelve.open('foo')
+if not url in mem:
+    data = get_url(url)
+    mem[url] = data
+    mem.sync()
+else:
+    data = mem[url]
+</pre>
+","",""
+"issue_comment","399","nilearn","nilearn","GaelVaroquaux","2015-02-16 16:41:46","> I would be inclined to say let's just use the joblib +
+> sklearn.externals.joblib fall-back for now so that we can merge this
+> PR.
+
+I'd rather not. Creeping dependencies are a problem, and we must tackle
+them. The pseudo code that I have given demonstrates how easy it is to
+use shelve.
+
+> As far as I know, the two projects that are closer to start using
+> sphinx-gallery are nilearn and scikit-learn anyway.
+
+Well, as Oscar is mentionning, it's already posing problems for CI.
+
+But anyhow, let us foster adoption by having little dependencies.
+","",""
+"issue_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 05:59:36","> There are examples missing, because documentation calls them.
+
+Good catch. Could you add an issue listing all the problems that you have
+found in the documentation. We can address it separately.
+","",""
+"issue_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 06:50:24","Almost there: only a few cosmetic comments. After these are addressed, we are ready to merge.
+
+Congratulations, this is great!
+","",""
+"issue_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 07:36:49","I agree. Oscar, could you please either address these comments inside sphinx gallery,  or copy them as an issue,  so that they don't get lost. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Apr 14, 2015, 08:58, at 08:58, ""Loïc Estève"" notifications@github.com wrote:
+
+> > Almost there: only a few cosmetic comments. After these are
+> > addressed, we are ready to merge.
+> > 
+> > Congratulations, this is great!
+> 
+> I think your comments are related to sphinx-gallery and not nilearn. I
+> reckon we should merge this PR. The alternative is for your comments to
+> be addressed in sphinx-gallery and a new sphinx-gallery release to be
+> made before we can merge this PR. This seems a little bit too much
+> overhead for what it is worth IMHO.
+> 
+> Just for clarity we'll try to keep the sphinx-gallery copy inside
+> nilearn in sync with the latest sphinx-gallery release going forward,
+> which means that if your comments get addressed in sphinx-gallery they
+> will eventually reach the nilearn sphinx-gallery copy.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/399#issuecomment-92657390
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-12 10:08:57","@Titan-C you have a tiny merge conflict in one of the examples. Would you mind rebasing on master and fixing it?
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-12 10:26:36","Also there is a new example examples/manipulating/visualizing/plot_atlas.py that needs parentheses around its print statement.
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-02-12 13:01:54","Done
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-12 14:01:27","Thanks I think you should remove the old gallery generating code, for example gen_rst.py and related css.
+
+Also I think what @GaelVaroquaux had in mind was shipping a version of sphinx-gallery in nilearn/doc/sphinxext rather than requiring to do `pip install sphinx-gallery`.
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-02-12 22:34:26","I was also wondering about that. If one keeps a local version of the sphinx-gallery extension, and probably every project will keep its own local copy. What was the aim of keeping the centralized extension? wont all versions end up branching again? Isn't it better to use the git version installed in `develop` mode more practical?
+I was having a look at the scikit-learn externals. It is a static set of code that gets updated manually, why? and why the extra install scripts within that module?
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-13 08:24:05","> I was also wondering about that. If one keeps a local version of the sphinx-gallery extension, and probably every project will keep its own local copy. What was the aim of keeping the centralized extension? wont all versions end up branching again? Isn't it better to use the git version installed in develop mode more practical?
+
+I guess it's up to each project to make a choice whether they want to ship sphinx-gallery or not. The main point of doing so is pure convenience for people generating the doc.
+
+About sphinx-gallery evolving separately in different projects, there is an implicit agreement that only released versions of sphinx-gallery should be used and that potential changes should be propagated upstream.
+
+> I was having a look at the scikit-learn externals. It is a static set of code that gets updated manually, why? and why the extra install scripts within that module?
+
+I guess convenience again is the main reason. Users are spared having to install a few packages in order to use scikit-learn. I think the technical term is vendorizing, you may want to see what the internet has to say about it. I didn't know about the extra install scripts in external so I can't help on this one.
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-03-17 23:38:34","This includes the shelve and is rebased to the current master. There are more examples than in the current nilearn website. In my computer there seems to be 2 examples that don't get executed. I can't figure out why? On the rest it does work.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-03-18 07:31:24","Thanks a lot for rebasing on master! The nilearn website hasn't been updated since the latest release so that would explain why it doesn't feature examples that have been added recently.
+
+Ideally what we want is to make a sphinx-gallery release and use it in nilearn. Do you think this is feasible?
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-03-18 08:24:54","> Ideally what we want is to make a sphinx-gallery release and use it in nilearn. Do you think this is feasible?
+
+Publishing sphinx-gallery as 0.0.7 with the shelve is straight forward, can upload to pypi now. But I wouldn't launch it yet as a stable release. As some to do from @GaelVaroquaux are still missing. https://github.com/sphinx-gallery/sphinx-gallery/issues/20
+Moreover I want to test a bit longer on the configuration dictionary key naming, test the nametuple as well. Since after a stable release one shall not change the user interphase.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-03-18 09:10:21","> As some to do from @GaelVaroquaux are still missing. sphinx-gallery/sphinx-gallery#20
+
+They could be tackled in a further release.
+
+> Moreover I want to test a bit longer on the configuration dictionary key naming, test the nametuple as well. Since after a stable release one shall not change the user interphase.
+
+Fair enough, how long do you need roughly to be reasonably confident there is no major issues?
+
+Because sphinx-gallery is not used massively at the moment backward-incompatible changes are not such a big deal I would say.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-04-13 09:09:57","@Titan-C any news on this front? We may do a release of nilearn soonish, it'd be great to start using sphinx-gallery!
+
+I think the main things we need is:
+- a sphinx-gallery release with the shelve functionality (maybe it has already happened I haven't checked)
+- a script to update the nilearn sphinx-gallery copy similary to what is done for joblib in scikit-learn. TBH, it would be fine to have a simple copy as a first step and work on this script in a separate PR.
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-04-13 09:25:50","Yes, few days ago I updated to version 0.0.7 which includes the shelve and the dictionary configuration. Then the quick release of 0.0.8 is because I get a bug with CSS as it conflicts with some of the Sphinx themes. The update script is already there and it worked for the last 2 updates.
+- You can run this branch. There are some examples that in my computer don't work, as I claimed before. 
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-04-13 10:04:07","> ~~You can run this branch. There are some examples that in my computer don't work, as I claimed before.~~
+- I merged locally master into this to test. All examples work!
+- But now one has to rename all images in the documentation, as now they are numbered with 3 digits (001). So the carousel it the star page can't find the image as neither other places in the documentation
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-04-13 10:46:03","> Yes, few days ago I updated to version 0.0.7 which includes the shelve and the dictionary configuration. Then the quick release of 0.0.8 is because I get a bug with CSS as it conflicts with some of the Sphinx themes. The update script is already there and it worked for the last 2 updates.
+
+Great stuff, I'll take a closer look this afternoon!
+
+ Don't hesitate to add a comment when you push commits into your PR branch and you think things are in a good shape. This way we get notifications and it's easier to get a feeling what is going on with the project.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-04-13 12:29:59","@Titan-C, I did some quick and dirty renaming of the pngs in https://github.com/lesteve/nilearn/commit/e00ca5006febccd9928b22b4ea04af862b73e1f9. You should be able to cherry-pick it easily into your PR branch.
+
+I did a few sanity checks and it seems fine but it'd be great if you could double-check too. A good comparison would be the documentation that Gaël generated for one of his course: http://gaelvaroquaux.github.io since nilearn.github.io is trailing a lot behind master atm.
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-04-13 20:12:48","It doesn't work in my home computer. Certainly this needs a new issue. But I can't get 2 examples to work at home. 
+- plot_probabilistic_atlas_extraction.py
+- plot_inverse_covariance_connectome.py
+  https://gist.github.com/Titan-C/7eab460917461adc61a4
+  there seems like the data has changes, but has not been updated. How to do it?
+
+Apart from this, and everything that links to this images, I don't see much any difference.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-04-13 20:39:27","Hmmm works for me, try `rm ~/nilearn_data/msdl_atlas/ -rf` and rerunning the examples which are failing.
+","",""
+"issue_comment","399","nilearn","nilearn","Titan-C","2015-04-13 22:20:30","OK it works ! all examples execute!
+
+There are examples missing, because documentation calls them.
+- connectivity/plot_connect_comparison.py removed in 25bce1f1d9a0a722faa099d95dcce8c478f21b39
+  called from connectivity/connectome_extraction.rst
+  I fixed one reference in this file, the other I'm not completely sure which is re replacement file.
+
+This I don't if is related to this PR
+- I don't get the user guide for Image manipulation and visualization and Advanced usage: manual pipelines and scaling up. So 2 complete chapters are missing.
+- And also I have some missing links appear in manipulating_visualizing/plotting.rst. They are missing in Gael's version too.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-04-14 06:58:29","> Almost there: only a few cosmetic comments. After these are addressed, we are ready to merge.
+> 
+> Congratulations, this is great!
+
+I think your comments are related to sphinx-gallery and not nilearn. I reckon we should merge this PR. The alternative is for your comments to be addressed in sphinx-gallery and a new sphinx-gallery release to be made before we can merge this PR. This seems a little bit too much overhead for what it is worth IMHO.
+
+Just for clarity we'll try to keep the sphinx-gallery copy inside nilearn in sync with the latest sphinx-gallery release going forward, which means that if your comments get addressed in sphinx-gallery they will eventually reach the nilearn sphinx-gallery copy.
+","",""
+"issue_comment","399","nilearn","nilearn","AlexandreAbraham","2015-04-14 07:37:10",":+1: for merging as-is and address comments in sphinx-gallery repo.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-04-14 07:50:36","OK merging then, thanks a lot for this and hurray for nilearn officially starting to use sphinx-gallery !
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-13 12:39:58","Something I didn't spot right away. We added some additional text at the top of the examples gallery and this was added directly in gen_rst.py
+
+![nilearn_examples_header](https://cloud.githubusercontent.com/assets/1680079/6187300/344c09de-b385-11e4-8809-23f5a6321177.png)
+
+For now a work-around would be to move this text to examples/README.rst.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-16 10:29:51","Great job, this looks pretty close to me! I am regenerating the doc and I'll have a closer look later this afternoon.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-16 12:17:17","Tiny comment: I am wondering whether the joblib import in doc_resolv.py should not try to import it from sklearn.externals as a fall-back if joblib is not installed.
+
+The good: no extra package to install to generate the doc for nilearn, scikit-learn, and other packages users that have scikit-learn installed.
+
+The not that great: a tiny bit of scikit-learn specific code for projects that are potentially unrelated. 
+
+I was thinking something along those lines (but with a better error message):
+
+``` python
+try:
+    import joblib
+except ImportError as exc_joblib:
+    try:
+        from sklearn.externals import joblib
+    except ImportError as exc_sklearn_joblib:
+        exc_sklearn_joblib.args += ('joblib or scikit-learn needs to be installed',)
+        raise
+```
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-16 13:30:30","I don't know the code very well so it's hard for me to estimate how easy the shelve solution is and whether it would take some time to get right.
+
+I would be inclined to say let's just use the joblib + sklearn.externals.joblib fall-back for now so that we can merge this PR.
+
+As far as I know, the two projects that are closer to start using sphinx-gallery are nilearn and scikit-learn anyway.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-16 16:57:06","> Well, as Oscar is mentionning, it's already posing problems for CI. 
+
+Fair point, let's go for the shelve way then.
+","",""
+"issue_comment","399","nilearn","nilearn","lesteve","2015-02-16 17:02:04","> > Well, as Oscar is mentionning, it's already posing problems for CI. 
+> 
+> Fair point, let's go for the shelve way then.
+
+Actually not such a fair point, since the import joblib would work for the sphinx-gallery CI but I agree the shelve solution doesn't seem so hard and is the right way to do it.
+","",""
+"pull_request_commit_comment","399","nilearn","nilearn","lesteve","2015-03-18 07:34:02","I think this file should be kept unchanged because this changes are not really related to this PR or are they?
+","f733ad2b1521f4474d050a00c89004509f775441","(1, '', u'examples/decoding/plot_simulated_data.py')"
+"pull_request_commit_comment","399","nilearn","nilearn","Titan-C","2015-03-18 08:16:49","This is the only remaining part of the py2 py3 compatibility, as all print functions disapeared on rebase. This is needed because sphinx-gallery imports from future division, so it really requires integers as keys it crashes otherwise.
+","f733ad2b1521f4474d050a00c89004509f775441","(1, '', u'examples/decoding/plot_simulated_data.py')"
+"pull_request_commit_comment","399","nilearn","nilearn","lesteve","2015-03-18 10:31:43","I can run this example in master with python 3 so I don't think this change is absolutely needed.
+
+Using float as numpy array indices is deprecated indeed as the following snippet shows so feel free to open a separate PR with this change
+
+``` python
+import warnings
+import numpy as np
+warnings.simplefilter('always', DeprecationWarning)
+
+arr = np.arange(10)
+print(arr[2.3:5.9])
+```
+","f733ad2b1521f4474d050a00c89004509f775441","(1, '', u'examples/decoding/plot_simulated_data.py')"
+"pull_request_commit_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 06:46:19","PEP8: you should have spaces before and after the ""+"" operator. 
+
+In addition, it would be better if you used os.path.join, rather than string concatenation (it avoid hard coding the ""/"", which varies across OS).
+","f733ad2b1521f4474d050a00c89004509f775441","(8, '', u'doc/sphinxext/sphinxgallery/__init__.py')"
+"pull_request_commit_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 06:46:55","Maybe some white space: ""}"" on new lines and empty lines between blocks.
+","f733ad2b1521f4474d050a00c89004509f775441","(12, '', u'doc/sphinxext/sphinxgallery/_static/gallery.css')"
+"pull_request_commit_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 06:47:13","It seems to me that these blocks are not indented correctly.
+","f733ad2b1521f4474d050a00c89004509f775441","(23, '', u'doc/sphinxext/sphinxgallery/_static/gallery.css')"
+"pull_request_commit_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 06:48:24","PEP8: isn't this line too long (more than 79 characters)?
+","f733ad2b1521f4474d050a00c89004509f775441","(51, '', u'doc/sphinxext/sphinxgallery/gen_gallery.py')"
+"pull_request_commit_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 06:48:49","PEP8: two empty lines should separate top-level definitions.
+","f733ad2b1521f4474d050a00c89004509f775441","(92, '', u'doc/sphinxext/sphinxgallery/gen_gallery.py')"
+"pull_request_commit_comment","399","nilearn","nilearn","GaelVaroquaux","2015-04-14 06:49:20","PEP8: too many empty lines: there should be only 2.
+","f733ad2b1521f4474d050a00c89004509f775441","(174, '', u'doc/sphinxext/sphinxgallery/gen_rst.py')"
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-02-05 10:07:52","Config on sphinxgallery","59e23f84e374b5f812fdf5a4999bd6282ecf664d",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-02-05 10:08:25","Remove gallery specific css","6c2e004c8877193b623397e25f067d5ea04c61a0",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-02-05 12:47:07","Modify examples to be compatible with sphinx-gallery python3 syntax","3e22845630545cd47ee581925b460364c4b07c3b",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-02-05 16:43:09","Nilearn configuration for sphinx gallery out of default","b4f8f293625c1c99d9f0ab290e5e7c61ae3c311c",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-02-15 12:06:16","Local sources of sphinxgallery 0.0.6","aca637208dc967a433598d7080458d3e327d38a7",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-02-15 13:39:34","Print function for new example","a1ebff9cac20549ca0d8cbf11aafec21c4ff27e5",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-03-17 22:34:39","Update of sphinxgallery, use shelve drop joblib","c5fde838c8ef4ae7b37352057c1f8cbd55e4b30d",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-03-17 23:34:37","In future updates of sphinx gallery there is an update script
+to download from the pypi published version. This update that
+includes shelve is already beyond the current pypi version","19ef39ebdad608a1a849bd7c2b931ba4940728dc",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-04-10 09:31:41","Update through automatic script into sphinx-gallery 0.0.7","b3a5bafaf3f1a103b432a15b602c4063bfc48d2e",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-04-10 09:31:52","Sphinx-gallery 0.0.7 configuration","56225d4e09320985e5ef38dfae760cb4e468204e",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-04-11 11:36:31","Sphinx-gallery 0.0.8 update for css div selector enforcement","601991ce1f92a927a56c3eda3beef190de4f3c23",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-04-11 13:46:25","Merge branch 'master' into sphinxgallery","e74da384843865e5b6c8f382761cf1ef4f1d09c5",""
+"pull_request_commit","399","nilearn","nilearn","lesteve","2015-04-13 12:26:12","DOC: rename png targets
+
+since sphinx-gallery automatic figure naming now has fixed width of 3.","7dd40db0cb6979c573edeef782ecf99cbc7d83a8",""
+"pull_request_commit","399","nilearn","nilearn","Titan-C","2015-04-13 22:14:17","fix a link","f733ad2b1521f4474d050a00c89004509f775441",""

@@ -1,0 +1,113 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1364","nilearn","nilearn","lrq3000","2017-01-25 13:19:41","I have an issue while loading one sample dataset: I always get a MemoryError, even when I only try to draw a few slices for only one subject.
+
+I reproduced this error on 3 different computers: 2 laptops with Windows 7 x64 and 4GB of RAM, and 1 research workstation with 16 GB.
+
+I just installed nilearn on all these computers using `pip install nilearn`.
+
+Here is the code used:
+
+```
+import nilearn
+print(nilearn.__version__)
+
+from nilearn import datasets
+
+# By default 2nd subject will be fetched
+haxby_dataset = datasets.fetch_haxby('datasets')
+
+# print basic information on the dataset
+print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
+print('Functional nifti image (4D) is located at: %s' %
+      haxby_dataset.func[0])
+
+func_filename = 'datasets\\haxby2001\\subj1\\bold.nii.gz'
+
+from nilearn.image import index_img
+func_filename = index_img(haxby_dataset.func[0], slice(0,1))
+func_filename
+```
+
+And here is the output:
+```
+0.2.6
+Mask nifti image (3D) is located at: datasets\haxby2001\mask.nii.gz
+Functional nifti image (4D) is located at: datasets\haxby2001\subj2\bold.nii.gz
+---------------------------------------------------------------------------
+MemoryError                               Traceback (most recent call last)
+<ipython-input-1-92d8185ad49b> in <module>()
+     15 
+     16 from nilearn.image import index_img
+---> 17 func_filename = index_img(haxby_dataset.func[0], slice(0,1))
+     18 func_filename
+
+C:\Anaconda2\lib\site-packages\nilearn\image\image.pyc in index_img(imgs, index)
+    554     """"""
+    555     imgs = check_niimg_4d(imgs)
+--> 556     return _index_img(imgs, index)
+    557 
+    558 
+
+C:\Anaconda2\lib\site-packages\nilearn\_utils\niimg_conversions.pyc in _index_img(img, index)
+     72     """"""Helper function for check_niimg_4d.""""""
+     73     return new_img_like(
+---> 74         img, img.get_data()[:, :, :, index], get_affine(img),
+     75         copy_header=True)
+     76 
+
+C:\Anaconda2\lib\site-packages\nibabel\spatialimages.pyc in get_data(self, caching)
+    580         if self._data_cache is not None:
+    581             return self._data_cache
+--> 582         data = np.asanyarray(self._dataobj)
+    583         if caching == 'fill':
+    584             self._data_cache = data
+
+C:\Anaconda2\lib\site-packages\numpy\core\numeric.pyc in asanyarray(a, dtype, order)
+    523 
+    524     """"""
+--> 525     return array(a, dtype, copy=False, order=order, subok=True)
+    526 
+    527 def ascontiguousarray(a, dtype=None):
+
+C:\Anaconda2\lib\site-packages\nibabel\arrayproxy.pyc in __array__(self)
+    142     def __array__(self):
+    143         # Read array and scale
+--> 144         raw_data = self.get_unscaled()
+    145         return apply_read_scaling(raw_data, self._slope, self._inter)
+    146 
+
+C:\Anaconda2\lib\site-packages\nibabel\arrayproxy.pyc in get_unscaled(self)
+    137                                        offset=self._offset,
+    138                                        order=self.order,
+--> 139                                        mmap=self._mmap)
+    140         return raw_data
+    141 
+
+C:\Anaconda2\lib\site-packages\nibabel\volumeutils.pyc in array_from_file(shape, in_dtype, infile, offset, order, mmap)
+    515     if hasattr(infile, 'readinto'):
+    516         data_bytes = bytearray(n_bytes)
+--> 517         n_read = infile.readinto(data_bytes)
+    518         needs_copy = False
+    519     else:
+
+C:\Anaconda2\lib\gzip.pyc in read(self, size)
+    266             try:
+    267                 while size > self.extrasize:
+--> 268                     self._read(readsize)
+    269                     readsize = min(self.max_read_chunk, readsize * 2)
+    270             except EOFError:
+
+C:\Anaconda2\lib\gzip.pyc in _read(self, size)
+    317             raise EOFError, 'Reached EOF'
+    318 
+--> 319         uncompress = self.decompress.decompress(buf)
+    320         self._add_read_data( uncompress )
+    321 
+
+MemoryError:
+```
+
+Any idea what is causing this and how to fix it? Thanks a lot for any suggestion!","start issue","Absurd MemoryError"
+"issue_closed","1364","nilearn","nilearn","GaelVaroquaux","2017-01-25 14:52:31","","closed issue","Absurd MemoryError"
+"issue_comment","1364","nilearn","nilearn","lrq3000","2017-02-09 11:53:10","Haha, good to know!  ;)
+","",""

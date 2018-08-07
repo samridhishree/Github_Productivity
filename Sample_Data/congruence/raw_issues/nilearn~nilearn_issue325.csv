@@ -1,0 +1,87 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","325","nilearn","nilearn","GaelVaroquaux","2014-12-18 13:53:51","I saw that by doing twice a display.add_contour with different thresholds:
+
+<pre>
+            thr = 1e-1 * vmax
+            import copy
+            slicer.add_contours(copy.deepcopy(this_img),
+                               colors=[colors_light[color],
+                                       colors_light[color], ],
+                               levels=[-thr, thr],
+                               #linestyles='dotted',
+                               linewidths=1,
+                               label=condition)
+
+            thr = 5e-1 * vmax
+            slicer.add_contours(this_img,
+                               colors=[colors_light[color],
+                                       colors_light[color], ],
+                               levels=[-thr, thr],
+                               linewidths=2,
+                               label=condition)
+</pre>
+
+
+Without the 'deepcopy', the above doesn't seem to work.
+","start issue","display.add_contour seems to modify the input data"
+"issue_closed","325","nilearn","nilearn","lesteve","2014-12-19 11:22:20","","closed issue","display.add_contour seems to modify the input data"
+"issue_comment","325","nilearn","nilearn","lesteve","2014-12-18 17:59:02","I can reproduce the issue, I haven't looked into why this is happening, but it seems like the affine get translated:
+
+``` python
+from nilearn import datasets, plotting
+
+dataset = datasets.fetch_localizer_contrasts(['checkerboard'], n_subjects=1, get_anats=True)
+
+import nibabel
+cmap_filename = dataset.cmaps[0]
+img = nibabel.load(cmap_filename)
+print 'original affine:\n', img.get_affine()
+
+display = plotting.plot_anat(dataset.anats[0])
+display.add_contours(img, levels=[-10, 10], colors=['y', 'g'])
+print 'affine after first add_contour:\n', img.get_affine()
+display.add_contours(img, levels=[-1, 1], colors=['r', 'c'])
+print 'affine after second add_contour:\n', img.get_affine()
+
+display = plotting.plot_anat(dataset.anats[0])
+display.add_contours(cmap_filename, levels=[-10, 10], colors=['y', 'g'])
+display.add_contours(cmap_filename, levels=[-1, 1], colors=['r', 'c'])
+```
+
+output:
+
+```
+original affine:
+[[  -3.    0.    0.   78.]
+ [   0.    3.    0. -111.]
+ [   0.    0.    3.  -51.]
+ [   0.    0.    0.    1.]]
+affine after first add_contour:
+[[  -3.    0.    0.  -78.]
+ [   0.    3.    0. -111.]
+ [   0.    0.    3.  -51.]
+ [   0.    0.    0.    1.]]
+affine after second add_contour:
+[[  -3.    0.    0. -234.]
+ [   0.    3.    0. -111.]
+ [   0.    0.    3.  -51.]
+ [   0.    0.    0.    1.]]
+```
+
+plots:
+![broken](https://cloud.githubusercontent.com/assets/1680079/5493118/1a2c4bd2-86e8-11e4-822a-7be5d7111326.png)
+![working](https://cloud.githubusercontent.com/assets/1680079/5493119/1a65ad28-86e8-11e4-8f9c-d941915ed8e5.png)
+","",""
+"issue_comment","325","nilearn","nilearn","GaelVaroquaux","2014-12-18 18:03:08","Thanks! You are really our life insurance!
+","",""
+"issue_comment","325","nilearn","nilearn","lesteve","2014-12-19 11:23:38","This is fixed in master. The culprit was reorder_img which was modifying the input img affine.
+","",""
+"issue_comment","325","nilearn","nilearn","GaelVaroquaux","2014-12-19 11:31:18","Thanks! !!
+
+<div>-------- Original message --------</div><div>From: Loïc Estève notifications@github.com </div><div>Date:19/12/2014  12:23  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Cc: Gael Varoquaux gael.varoquaux@normalesup.org </div><div>Subject: Re: [nilearn] display.add_contour seems to modify the input data
+  (#325) </div><div>
+</div>This is fixed in master. The culprit was reorder_img which was modifying the input img affine.
+
+—
+Reply to this email directly or view it on GitHub.
+","",""

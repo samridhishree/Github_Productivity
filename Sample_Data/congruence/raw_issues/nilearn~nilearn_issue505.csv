@@ -1,0 +1,287 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","505","nilearn","nilearn","AlexandreAbraham","2015-03-18 15:19:31","This PR restore the original behavior of check_niimg and check_niimgs:
+- check_niimg loads 3D niimages
+- check_niimgs loads 4D niimages
+
+This is a first step toward cleaner file loading in nilearn.
+","start issue","Refactor check niimg "
+"issue_closed","505","nilearn","nilearn","lesteve","2015-03-27 08:47:35","","closed issue","Refactor check niimg "
+"pull_request_title","505","nilearn","nilearn","AlexandreAbraham","2015-03-18 15:19:31","This PR restore the original behavior of check_niimg and check_niimgs:
+- check_niimg loads 3D niimages
+- check_niimgs loads 4D niimages
+
+This is a first step toward cleaner file loading in nilearn.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","Refactor check niimg "
+"pull_request_merged","505","nilearn","nilearn","lesteve","2015-03-27 08:47:35","Refactor check niimg ","ae96660a476c2c987d556f43f803bfd1bf031fc3","Pull request merge from AlexandreAbraham/nilearn:refactor_check_niimg_ to nilearn/nilearn:master"
+"issue_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-19 17:31:19",">   • 5D images or 4D masks are NOT accepted anymore (they were valid in a few
+>     functions)
+
+That may be a problem: these things do lie around.
+
+>   • concat_niimgs is a weird thing that accepts mix of 3D and 4D images. It
+>     shouldn't do that.
+
+Why?
+","",""
+"issue_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-19 17:36:24","> ```
+> That may be a problem: these things do lie around.
+> ```
+> 
+> I see no reason to support them in only two functions (reorder_img and
+> unmask). we should support them completely, or not at all.
+
+Just saying. Users of AFNI will be in big trouble.
+
+> ```
+> Why?
+> ```
+> 
+> For me, trying to concatenate a 4D image with a 3D image is most likely an
+> error than a wanted behavior.
+
+Agreed. So we should rather test for consistency in the number of
+dimensions.
+","",""
+"issue_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-19 17:45:15","> ```
+> Just saying. Users of AFNI will be in big trouble.
+> ```
+> 
+> They already are.
+
+OK, let's postpone saving them, then.
+","",""
+"issue_comment","505","nilearn","nilearn","lesteve","2015-03-19 07:32:26","Plenty of failing tests in case you missed it somehow.
+","",""
+"issue_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 08:24:31","It's WIP at the moment. It's far from being usable.
+","",""
+"issue_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 12:10:28","So, I fixed the failing tests during lunch.
+
+About the changes:
+- 5D images or 4D masks are NOT accepted anymore (they were valid in a few functions)
+- loading of 3D or 4D niimg is now explicit. A generic `check_niimg` exists (for 3D or 4D) is however present for explicit polymorphic functions (eg smooth_img)
+- A lot of tests were totally wrong in their logic. We have to be more careful about what we test
+
+I suggest that we merge the PR as-is.
+
+Future work:
+- `concat_niimgs` is a weird thing that accepts mix of 3D and 4D images. It shouldn't do that.
+- Functions to load / iterate on list of niimg would be nice. For example `check_niimgs_3d` and `check_niimgs_4d` with optional parameters to check affines and stuff.
+- This PR is only about clarifying difference between 3D and 4D as it was at the beginning (with niimg and niimgs). It does not fix #463 but it should fix #501.
+
+I wanted to throw out this code that was in a branch for a very long time but i have no time to work on the other issues.
+","",""
+"issue_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 17:35:15","> That may be a problem: these things do lie around.
+
+I see no reason to support them in only two functions (reorder_img and unmask). we should support them completely, or not at all.
+
+> Why?
+
+For me, trying to concatenate a 4D image with a 3D image is most likely an error than a wanted behavior.
+","",""
+"issue_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 17:44:26","> Just saying. Users of AFNI will be in big trouble.
+
+They already are. As said before, I don't really fix bugs nor add any functionality. I just fixed the fact that check_niimg (now check_niimg_3d) only loads 3D images and check_niimgs (now check_niimg_4d) only loads 4D images. It is true that, in the meantime, I removed the ability of some functions to handle 5d data, but NiftiMasker never did for example.
+
+If we want to support 5D images, it is easy to do that in a lot of functions (smooth_img, reorder_img...). It can be done by modifying check_niimg to accept 5d data. Oh, and it may be possible to handle in MultiNiftiMasker rather easily.
+
+Actually, we should grab some AFNI data to test it.
+","",""
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-18 15:33:36",":question: 
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-18 16:05:50",":swimmer: WIP
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-18 16:29:11","i postponed this change.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-18 16:31:54","> i postponed this change.
+
+Then you should remove the corresponding 'stub' function.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 12:11:02","Renamed it because the input is a niimg but the output is an img.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 12:11:34","This function is here to be explicitely used in polymorphic functions.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(39, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 12:13:33","If somebody asks for an iterator on 4d, this iterator will check for everything during the process. Before that, the code could return niimages with different fov. I like this logic and I think that this could be propagated in other parts of the code.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 12:15:23","For example, this test was passing but it was bogus because it called `filter_and_mask` with regular numpy arrays instead of niimg. This shouldn't even work.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(9, '', u'nilearn/input_data/tests/test_base_masker.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 12:15:59","5D data is not accepted. I think that if we want to accept it, we should do all the proper verifications that comes with it.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(4, '', u'nilearn/tests/test_masking.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 13:20:57","What if niimgs is an iterator (which seems to be a possibility if you trust the docstring)?
+
+IMHO the current code in master is badly broken with iterators and I would suggest that we only support lists until we have proper tests for iterators.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 13:32:22","This may be a regression so I fixed (it was easy). As said in my comment, I don't make the code iterator friendly. This is a lot of work and I have no time to do it. Plus I prefer to segment things in smaller PRs.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 13:44:06","but then I guess the argument should be called `niimg` too ...
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 13:50:06","This kind of thing will lose information about the provenance of the error which is very annoying if you are dropping into a debugger. Look at `git grep exc.args +=` for example in our code of how to decorate an existing exception.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 13:52:33","I am so glad to see this slightly baroque code go away ;-)
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(294, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 14:03:59","Slightly weird sentence, maybe:
+
+``` python
+"""""" Return whether `img` has the same field of view as the one given by `shape` and `affine`
+""""""
+```
+
+At the very least img1 -> img.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 14:07:20","maybe ValueError rather than TypeError, since an empty list still has the right type ?
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(161, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 14:30:41","This is not really consistent with the docstring that says that niimgs can be an iterable ...
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(283, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-19 14:58:05","Should we use 4D Niimg-like object as previously?
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 15:00:27","I kept the original behavior (this was checked higher in the stack before) but I agree with you. Maybe we can change that in another PR as I want this one to have the lowest impact possible on the logic of the code.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(161, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 15:03:02","I didn't put it here but iterator should work if you do `return_iterator=True` (not the other case as `concat_niimgs` is not iterator friendly). But, again, the goal of this PR is not to change the behavior of the code when using iterators. It is exactly as broken as before ;)
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(283, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-19 17:32:04","> Renamed it because the input is a niimg but the output is an img.
+
+I am not sure that this is consistent with our naming conventions, and
+'smooth_img'.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-19 17:32:54","> For example, this test was passing but it was bogus because it called
+> filter_and_mask with regular numpy arrays instead of niimg. This
+> shouldn't even work.
+
+Agreed
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(9, '', u'nilearn/input_data/tests/test_base_masker.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-19 17:33:24","> IMHO the current code in master is badly broken with iterators and I would
+> suggest that we only support lists until we have proper tests for iterators.
+
+Agreed.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 19:49:59","I am not sure that ""atleast_4d"" is intuitively understood by many users.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(39, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","GaelVaroquaux","2015-03-19 19:54:17","> I am not sure that ""atleast_4d"" is intuitively understood by many users.
+
+But that's internal. And it corresponds to a numpy convention.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(39, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 19:55:55","Shouldn't we say ""iterable"" instead? A list also exposes the **iter** attribute for example.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(65, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 19:56:59","Tautological definitions are by definition not a definition.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 19:58:30","Given the internationality of user pool, perhaps exchange idempotentn by something simpler - ""identical""
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(128, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 20:00:50","You start out by explaining the default behavior - I would inverse that.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","eickenberg","2015-03-19 20:01:36","how is `idempotent` not international??
+
+it doesn't mean ""identical"". It means that if you apply it n times, where n
+
+> = 1, it is like applying it once.
+
+On Thu, Mar 19, 2015 at 8:58 PM, Danilo Bzdok notifications@github.com
+wrote:
+
+> In nilearn/_utils/niimg_conversions.py
+> https://github.com/nilearn/nilearn/pull/505#discussion_r26791583:
+> 
+> > -        and get_affine() methods are present, raise TypeError otherwise.
+> >   +
+> > -    Returns
+> > -    -------
+> > -    result: 3D Niimg-like object
+> > -        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+> > -        that the returned object has get_data() and get_affine() methods.
+> >   +
+> > -    Notes
+> > -    -----
+> > -    In nilearn, special care has been taken to make image manipulation easy.
+> > -    This method is a kind of pre-requisite for any data processing method in
+> > -    nilearn because it checks if data have a correct format and loads them if
+> > -    necessary.
+> >   +
+> > -    Its application is idempotent.
+> 
+> Given the internationality of user pool, perhaps exchange idempotentn by
+> something simpler - ""identical""
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/505/files#r26791583.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(128, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 20:02:18","Why a tuple?
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 20:03:00","also tautological -> therefore devoid of sense
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(341, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","banilo","2015-03-19 20:06:09","You tought me a new thing in coding lingo, thanks.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(16, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 21:01:29","Fixed.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 21:02:35","Not the slightest idea ;). I copy pasted another error message but tuples for single string replacement are all around the code.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 21:03:19","why?
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(341, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 21:03:44","You're welcome.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(16, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:05:35","Fixed
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:05:49","Fixed
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(65, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:06:20","A fix has been applied to fix what should be fixed.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:07:13","We could write ""Project a niimg in the space of imgs"".
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(128, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:11:35","Fixed.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:14:08",":rage2: I will be back
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(294, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:17:06","Fixed.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-26 10:23:44","Should you not check `!= 4` rather than `== 3` ?
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-26 10:24:54","Is this check_niimg needed given that `niimgs` has already been loaded ?
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-26 10:29:59","You probably forgot a raise after this line to reraise the original exception ...
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-26 10:31:14","and you don't need exc.message because it is already part of the stack trace.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 11:49:35","Fixed
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 11:49:57","Fixed
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 11:52:04","Fixed
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-26 12:07:25","I guess this should be `niimg` and the type description should be Niimg-like object + URL
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(17, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-26 12:12:06","I am a bit wary that this wasn't caught by our tests. Could you add a test where the check_niimg_3d raises a TypeError ? Bonus point if you add one where the field of view is different.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 12:38:56","For me, Niimg-like object includes filename.
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(17, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-26 12:43:42","Sorry I misread the diff completely but then a few lines above ""or filepath"" is not needed, right ?
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(17, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-03 13:46:25","Refactor check_niimg to load 3D images only.
+
+Conflicts:
+	nilearn/_utils/niimg_conversions.py","1ce01a886c99a8643438ebf9f09df7ae631bd1dc",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-03 15:48:30","First step: simplification of check_niimgs code
+
+Conflicts:
+	nilearn/_utils/niimg_conversions.py","4faddb350734f0e96c1fb490badea4f1bd1bb248",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-03 23:18:09","Refactor check_niimg and propagate
+
+Conflicts:
+	nilearn/_utils/niimg_conversions.py
+	nilearn/image/tests/test_image.py
+	nilearn/input_data/nifti_masker.py
+	nilearn/input_data/tests/test_base_masker.py
+	nilearn/region.py
+	nilearn/tests/test_niimg_conversions.py","edf35044941c8e23f534c9804134c69cb73edb17",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-18 16:28:40","Postpone refactoring of concat_niimgs","e66bd0c61de62235ba00931d4c6fa75219294c42",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 11:56:59","Fix tests","1856cc44bca2c8f1b583950d0ee7c63c69033c66",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 12:35:28","Fix Python3 compatibility","59b6287e2997b6dda47d6dd5fde4a5f7c5fe5f7c",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 13:30:03","Fix iterator error","12646d87b80ffcc96f584b0d956e4d93a7620c2d",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 13:48:42","Loic prefers niimg and lesteve is absolute","405ae836a33ffef8b4fcd5d6274099e4ca4a62d0",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-19 22:23:45","Address comments","b1109eb87862ac8dc45e1b2ee12e5b59afe2195a",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 09:57:12","Fix small rebase conflict","6258cb79c79e472020250c00f435eec76b571225",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 11:53:32","Address Loic's comments.","6730096341ad854d3c7a6c15a0213487383ca5ce",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 12:39:30","Docfix","88f61251c70416ea3cfbb7a445820907a7762411",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 12:44:42","Revert docfix","3b4816ddde3f6f015e662f177f0777aee7c51c87",""
+"pull_request_commit","505","nilearn","nilearn","AlexandreAbraham","2015-03-26 21:28:11","Add tests","7dcc860538d6ff20ca74c00e5b24eeebab032cd4",""
+"pull_request_commit_comment","505","nilearn","nilearn","lesteve","2015-03-27 08:35:49","Good to see that adding a test caught an actual mistake ;-) !
+
+BTW prepending the user-friendly error is probably a good idea, maybe we should change that in other parts of the code ...
+","7dcc860538d6ff20ca74c00e5b24eeebab032cd4","(4, 260, u'nilearn/_utils/niimg_conversions.py')"

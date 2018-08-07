@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1507","nilearn","nilearn","surchs","2017-09-09 02:22:33","Just noticed on a fresh install that sklearn does not get installed through `pip install nilearn` but is a dependency:
+
+Not sure if this is related to #1169
+
+```
+----> 4 import nilearn as nil
+
+~/Venv/py35/lib/python3.5/site-packages/nilearn/__init__.py in <module>()
+     37 from .version import _check_module_dependencies, __version__
+     38 
+---> 39 _check_module_dependencies()
+     40 
+     41 # Monkey-patch gzip to have faster reads on large gzip files
+
+~/Venv/py35/lib/python3.5/site-packages/nilearn/version.py in _check_module_dependencies(is_nilearn_installing)
+    108                 module_name=module_name,
+    109                 minimum_version=module_metadata['min_version'],
+--> 110                 install_info=module_metadata.get('install_info'))
+
+~/Venv/py35/lib/python3.5/site-packages/nilearn/version.py in _import_module_with_version_check(module_name, minimum_version, install_info)
+     58 
+     59     try:
+---> 60         module = __import__(module_name)
+     61     except ImportError as exc:
+     62         user_friendly_info = ('Module ""{0}"" could not be found. {1}').format(
+
+ImportError: No module named 'sklearn'
+```","start issue","pip doesn't install sklearn as dependency"
+"issue_closed","1507","nilearn","nilearn","lesteve","2017-09-28 06:44:02","","closed issue","pip doesn't install sklearn as dependency"
+"issue_comment","1507","nilearn","nilearn","bthirion","2017-09-24 20:34:03","I don't understand: this should also trigger failures on Travis.
+Have you tried through NeuroDebian ?
+","",""
+"issue_comment","1507","nilearn","nilearn","surchs","2017-09-25 00:47:56","@KamalakerDadi right, I should have followed the instructions.
+@bthirion: no, I made a new virtenv and installed with pip. Haven't tried anything else yet","",""
+"issue_comment","1507","nilearn","nilearn","lesteve","2017-09-28 06:44:02","I think this is partly for historical reasons, that installing numpy, scipy, scikit-learn would download the source and compile (with potentially very user unfriendly compilation errors, think Windows for example, or non optimal linear algebra) which is rarely what you wanted, hence the intructions mentioning first install dependencies then `pip install nilearn`.
+
+With wheels you could argue that the situation changed somewhat but for example scikit-learn does not require numpy or scipy at the time of writing so you would be back to a similar problem.
+
+As far as I know, I don't think we are planning to move away from this model in the near future. I am going to close this one.","",""
+"issue_comment","1507","nilearn","nilearn","KamalakerDadi","2017-09-16 09:43:44","I have minimal knowledge on packaging and installation. How would you see that fixed ?
+
+As per installation instructions in [here](http://nilearn.github.io/introduction.html#installing-nilearn), it says to first install dependencies.","",""

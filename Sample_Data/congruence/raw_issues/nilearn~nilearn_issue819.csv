@@ -1,0 +1,79 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","819","nilearn","nilearn","aabadie","2015-11-03 10:58:28","This is a small change that appeared to fix the Overflow error on windows. I can't really explain as np.iinfo(np.int32).max returns the same value on Windows 64bit and Linux 64.
+
+This is related to #809 
+","start issue","[MRG] fixing overflow error on Windows (and potentially on i686)"
+"issue_closed","819","nilearn","nilearn","GaelVaroquaux","2015-11-03 17:33:22","","closed issue","[MRG] fixing overflow error on Windows (and potentially on i686)"
+"pull_request_title","819","nilearn","nilearn","aabadie","2015-11-03 10:58:28","This is a small change that appeared to fix the Overflow error on windows. I can't really explain as np.iinfo(np.int32).max returns the same value on Windows 64bit and Linux 64.
+
+This is related to #809 
+","87d288775430a607d9d1d338c470a2bb915a1ece","[MRG] fixing overflow error on Windows (and potentially on i686)"
+"pull_request_merged","819","nilearn","nilearn","GaelVaroquaux","2015-11-03 17:33:22","[MRG] fixing overflow error on Windows (and potentially on i686)","073e7b1714ca7767f862fddb5a352be0e893c160","Pull request merge from aabadie/nilearn:fix_overflow_error to nilearn/nilearn:master"
+"issue_comment","819","nilearn","nilearn","aabadie","2015-11-03 12:32:52","> I would be in favor of a single PR with the appveyor addition and the Windows-related fixes so that we can be confident that everything is now fine on Windows.
+
+The problem with this is that the failing tests come from a lot of places in the code and we'll end up with  a branch containing a rather big change.
+","",""
+"issue_comment","819","nilearn","nilearn","aabadie","2015-11-03 12:33:38","Why not merge #804 first and then process the other PRs ?
+","",""
+"issue_comment","819","nilearn","nilearn","aabadie","2015-11-03 13:07:55","> Obviously with both fixes, this may change the permuted_ols seeds and results slightly. Probably a tiny effect though but maybe it would be worth running the examples using permuted_ols to double-check.
+
+Indeed: 
+
+```
+random_state=rng.randint(np.iinfo(np.int32).max))
+```
+
+make checks fail but
+
+```
+random_state=rng.randint(1, high=np.iinfo(np.int32).max))
+```
+
+works and is basically the same as
+
+```
+random_state=rng.rand_integers(np.iinfo(np.int32).max - 1))
+```
+","",""
+"issue_comment","819","nilearn","nilearn","aabadie","2015-11-03 16:53:42","> No need to use np.intp as currently in this PR I reckon.
+
+Yes, I forgot to remove it initially. I guess it should be fine now.
+","",""
+"issue_comment","819","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:40:44","> Why not merge #804 first and then process the other PRs ?
+
++1, being in an ubiquitous state for awhile is normal since we just discovered several flaws in Windows.
+","",""
+"issue_comment","819","nilearn","nilearn","lesteve","2015-11-03 12:53:24","> +1, being in an ubiquitous state for awhile is normal since we just discovered several flaws in Windows.
+
+Not really convinced. I don't see the rush of merging PRs partially fixing the issue where these Windows problems have been there forever.
+","",""
+"issue_comment","819","nilearn","nilearn","lesteve","2015-11-03 12:57:41","About the fix, sligthly less horrible, but almost as magical:
+
+``` python
+random_state=rng.randint(np.iinfo(np.int32).max))
+```
+
+There are two things in this bug:
+- `np.dtype(int)` is `int32` under Windows and `int64` under Linux
+- `np.random.random_integers` is inclusive for the upper bound (between 1 and upper_bound) and for some reason can not take np.iinfo(int).max as the upper bound (not sure why to be honest). np.random.randint is not inclusive for the upper bound (between 0 and upper_bound - 1) and can take np.iinfo(int).max as the upper bound.
+","",""
+"issue_comment","819","nilearn","nilearn","AlexandreAbraham","2015-11-03 12:58:42","> Not really convinced. I don't see the rush of merging PRs partially fixing the issue where these Windows problems have been there forever.
+
+Since multiple people will work on fixing these problems, merging them in one big PR seems like unnecessary work to me when we can merge them incrementally. I just try to save as much time as possible.
+","",""
+"issue_comment","819","nilearn","nilearn","lesteve","2015-11-03 13:01:20","Obviously with both fixes, this may change the permuted_ols seeds and results slightly. Probably a tiny effect though but maybe it would be worth running the examples using permuted_ols to double-check.
+","",""
+"issue_comment","819","nilearn","nilearn","GaelVaroquaux","2015-11-03 13:28:52","> Since multiple people will work on fixing these problems, merging them in one
+> big PR seems like unnecessary work to me when we can merge them incrementally.
+
++1
+","",""
+"issue_comment","819","nilearn","nilearn","lesteve","2015-11-03 15:43:21","> random_state=rng.rand_integers(np.iinfo(np.int32).max - 1))
+
+Go for this one then. No need to use np.intp as currently in this PR I reckon.
+","",""
+"issue_comment","819","nilearn","nilearn","GaelVaroquaux","2015-11-03 17:33:19","LGTM. Merging for now, to by able to enable appveyor sooner.
+","",""
+"issue_comment","819","nilearn","nilearn","lesteve","2015-11-03 11:50:48","I would be in favor of a single PR with the appveyor addition and the Windows-related fixes so that we can be confident that everything is now fine on Windows.
+","",""
+"pull_request_commit","819","nilearn","nilearn","aabadie","2015-11-03 10:55:09","fixing overflow error on Windows (and potentially on i686)","87d288775430a607d9d1d338c470a2bb915a1ece",""

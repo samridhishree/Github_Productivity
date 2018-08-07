@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 14:25:38","All is in title
+","start issue","Deals with 'get_affine' function to be compatible with recent nibabel release"
+"issue_closed","1255","nilearn","nilearn","GaelVaroquaux","2016-09-01 11:03:16","","closed issue","Deals with 'get_affine' function to be compatible with recent nibabel release"
+"pull_request_title","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 14:25:38","All is in title
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","Deals with 'get_affine' function to be compatible with recent nibabel release"
+"pull_request_merged","1255","nilearn","nilearn","GaelVaroquaux","2016-09-01 11:03:16","Deals with 'get_affine' function to be compatible with recent nibabel release","b4ec94039a78faa4dc534c20c50b6d08519f4e38","Pull request merge from KamalakerDadi/nilearn:nibabel_update to nilearn/nilearn:master"
+"issue_comment","1255","nilearn","nilearn","GaelVaroquaux","2016-09-01 09:50:24","Aside from my nitpick, this looks good to me. Thanks!
+","",""
+"issue_comment","1255","nilearn","nilearn","GaelVaroquaux","2016-09-01 11:03:11","LGTM. Merging. Thanks!
+","",""
+"issue_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 15:39:45","Any comments about the hack in the file `nilearn/plotting/displays.py` adjusting for MNI template and normal Nifti image ? 
+","",""
+"pull_request_commit_comment","1255","nilearn","nilearn","AlexandreAbraham","2016-08-26 14:44:58","`affine` is not a method, it's an attribute.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'doc/manipulating_images/input_output.rst')"
+"pull_request_commit_comment","1255","nilearn","nilearn","AlexandreAbraham","2016-08-26 15:04:05","We should not need this.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","AlexandreAbraham","2016-08-26 15:05:34","checking the version at each call is not the best practice. You should put a condition on the declaration of the function at module level:
+
+``` python
+if LooseVersion(nibabel.__version__) > LooseVersion('2.0.0'):
+    def get_affine(img):
+        return img.affine
+else:
+    def get_affine(img):
+        return img.get_affine()
+```
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 15:13:08","Meaning it shouldn't be in _utils/compat.py ?
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 15:16:32","Should I address in every function wherever necessary ?
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 15:40:25","Ok, then I am going to address this in every module.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","AlexandreAbraham","2016-08-26 15:56:03","This should stay in this module. Look at how python 2 / python 3 versions are handled:
+
+``` python
+if sys.version_info[0] == 3:
+    # Python 3 declarations
+else:
+   # Python 2 declarations
+```
+
+You should do the same here:
+
+``` python
+if LooseVersion(nibabel.__version__) > LooseVersion('2.0.0'):
+    # Code compatible with newest versions
+else:
+    # Code compatible with older versions
+```
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","AlexandreAbraham","2016-08-26 16:00:51","You don't need this: both `img.get_affine()` and `img.affine` will work with _MNI152Template.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 16:32:55","Ok. I will change it.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 16:35:51","I don't think so. _MNI152Template has a function `get_affine` in plotting module. It returns empty when I tried to call with this PR function. Hence tests are failing completely.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","bthirion","2016-08-29 21:52:09","check if the get_data() method and affine attribute are present 
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-30 18:58:09","I might be wrong also. Let's wait for any other opinion.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","GaelVaroquaux","2016-08-30 19:58:51","The code that you have above is a bit hacky. A better way to solve this issue would be to fix the ""affine"" attribute of the _MNI152Template. The way you can do this is using Python ""properties"", they are functions that are called upon access of an attribute. It is actually done in the _MNI152Template for the 'shape' attribute, so you have to mimic the strategy used for ""shape"".
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","KamalakerDadi","2016-08-30 20:22:07","Sure. I will look into it.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","1255","nilearn","nilearn","GaelVaroquaux","2016-09-01 09:48:40","Complete nitpick (sorry, I miss it earlier): could you please join the 2 if/else blocks above into one, that defines the 2 functions at once.
+","d6c754a83f8f3e1d052e3e356636d19651e23ca3","(None, '', u'nilearn/_utils/compat.py')"
+"pull_request_commit","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 14:18:48","Deals with 'get_affine' function to be compatible with recent nibabel release.","750f814aa6648f15c36fb7eea71dbbcbe9e6f560",""
+"pull_request_commit","1255","nilearn","nilearn","KamalakerDadi","2016-08-26 17:29:57","Addressed:placing function module level, affine methods to attributes","28e7294d2530a214416776fad1792e418c516d6b",""
+"pull_request_commit","1255","nilearn","nilearn","KamalakerDadi","2016-08-30 17:30:19","Addressed:doc glitch get_data() method","9a6cd487ad68b5023bb2db9546f159d2ec86f6fc",""
+"pull_request_commit","1255","nilearn","nilearn","KamalakerDadi","2016-09-01 08:08:38","Fixing affine attribute in _MNI152Template","d59c7fc5f925c799d770d1cf6f8363ed7a8ee152",""
+"pull_request_commit","1255","nilearn","nilearn","KamalakerDadi","2016-09-01 10:48:48","Joining to functions to one","d6c754a83f8f3e1d052e3e356636d19651e23ca3",""

@@ -1,0 +1,256 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","647","nilearn","nilearn","banilo","2015-07-13 13:55:51","Datasets.py has grown into tremendous proportions. This is an attempt to restructure this part of the code base.
+
+The biggest share of the work is done.
+
+There is however still a bug in the tests that makes nosetests fail. I suspect that the mock filefetcher might be the culprit....
+","start issue","[MRG] Migrated dataset code"
+"issue_closed","647","nilearn","nilearn","AlexandreAbraham","2015-07-17 08:29:23","","closed issue","[MRG] Migrated dataset code"
+"pull_request_title","647","nilearn","nilearn","banilo","2015-07-13 13:55:51","Datasets.py has grown into tremendous proportions. This is an attempt to restructure this part of the code base.
+
+The biggest share of the work is done.
+
+There is however still a bug in the tests that makes nosetests fail. I suspect that the mock filefetcher might be the culprit....
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","[MRG] Migrated dataset code"
+"issue_comment","647","nilearn","nilearn","AlexandreAbraham","2015-07-13 14:48:46","In `nilearn/_utils/testing.py:179`:
+`_mock_fetch_files = functools.partial(datasets.utils._fetch_files, mock=True)`
+","",""
+"issue_comment","647","nilearn","nilearn","banilo","2015-07-13 14:50:24","> In nilearn/_utils/testing.py:179:
+> _mock_fetch_files = functools.partial(datasets.utils._fetch_files, mock=True)
+
+What about it?
+","",""
+"issue_comment","647","nilearn","nilearn","AlexandreAbraham","2015-07-13 14:53:00","So, your problem is here: `nilearn/datasets/tests/test_datasets:49`.
+The line is: `datasets.utils._fetch_files = file_mock  # overwrite the actual function`
+
+The problem is that, in `func.py` for example, `_fetch_files` is already loaded. It should therefore be:
+`datasets.func._fetch_files = file_mock  # overwrite the actual function`
+
+My advice:
+- split `test_datasets` in several files (`test_func.py`...)
+- adapt the line for each module.
+
+This is a very vicious bug ;)
+","",""
+"issue_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-13 14:53:56",">   • split test_datasets in several files (test_func.py...)
+>   • adapt the line for each module.
+
++1. This is good practice in general
+","",""
+"issue_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-13 21:19:06","It seems that tests are failing: you probably forgot the update the description of the package data in the setup.py
+","",""
+"issue_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 18:26:30","# 
+
+## ERROR: test_func.test_fetch_haxby_simple
+
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/dist-packages/nose/case.py"", line 197, in runTest
+    self.test(*self.arg)
+  File ""/home/varoquau/dev/nilearn/nilearn/datasets/tests/test_func.py"", line 57, in test_fetch_haxby_simple
+    verbose=0)
+  File ""/home/varoquau/dev/nilearn/nilearn/datasets/func.py"", line 71, in fetch_haxby_simple
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+  File ""/home/varoquau/dev/nilearn/nilearn/datasets/utils.py"", line 719, in _fetch_files
+    raise IOError('Fetching aborted: ' + abort)
+IOError: Fetching aborted: [Uncompress] unknown archive file format: /tmp/tmpqtKrmU/haxby2001_simple/aa575d1f6900a88de2047fca5c2f99bd/pymvpa-exampledata.tar.bz2
+
+---
+","",""
+"issue_comment","647","nilearn","nilearn","banilo","2015-07-15 12:29:13","Ok, this PR passes at least on my machine now
+:cake: 
+
+:neckbeard: Year, please merge this PR!
+","",""
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 17:28:54","I don't think that we want _fetch_files in __init__. It's a private stuff for our own use.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/__init__.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 17:29:17","Why the UTF-8. I would rather avoid it.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 17:34:05","There should be an extra empty line here.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(352, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 17:34:15","Here also.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(360, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 17:36:06","Why can't we have a relative import here? It would be nicer.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(8, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 17:53:18","Relative import please.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(7, '', u'nilearn/datasets/struct.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 17:53:59","""from .utils"" please. This will not work in python 3: there are no implicit absolute imports.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/struct.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","banilo","2015-07-15 11:40:46","there are special characters in the file that is why python complained without this line
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-15 12:00:22","> there are special characters in the file that is why python complained
+> without this line
+
+OK.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","AlexandreAbraham","2015-07-15 12:08:46","Are they useful?
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","AlexandreAbraham","2015-07-15 14:38:00","The point of this test is to run the non-mocked code. This annotation makes the test pointless and reduce code coverage.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/tests/test_func.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","banilo","2015-07-15 14:41:22","Ok, but could you make a suggestion on how to fix it?
+
+2015-07-15 16:38 GMT+02:00 Alexandre Abraham notifications@github.com:
+
+> In nilearn/datasets/tests/test_func.py
+> https://github.com/nilearn/nilearn/pull/647#discussion_r34684579:
+> 
+> > -    url_request = mock_request()
+> > -    datasets.utils._urllib.request = url_request
+> > -    datasets.utils._chunk_read_ = wrap_chunk_read_(datasets.utils._chunk_read_)
+> > -    global file_mock
+> > -    file_mock = FetchFilesMock()
+> > -    datasets.func._fetch_files = file_mock  # overwrite the actual function
+> >   +
+> >   +
+> >   +def teardown_tmpdata():
+> > -    # remove temporary dir
+> > -    global tmpdir
+> > -    if tmpdir is not None:
+> > -        shutil.rmtree(tmpdir)
+> >   +
+> >   +
+> >   +@with_setup(setup_mock)
+> 
+> The point of this test is to run the non-mocked code. This annotation
+> makes the test pointless and reduce code coverage.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/647/files#r34684579.
+
+## 
+
+Viele Grüße,
+Danilo
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/tests/test_func.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","GaelVaroquaux","2015-07-15 16:25:44","Can you not simply remove the decorator: what Alex is saying is that this mocking should not happen here.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/tests/test_func.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","banilo","2015-07-16 13:00:36","I got that. I was asking for a suggestion on how to continue with the decorators in their inital form?
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/tests/test_func.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","banilo","2015-07-16 13:18:30","Python complained without them. Now solved by replacing all the special characters.
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","AlexandreAbraham","2015-07-16 13:27:49","The solution is to have a closing functions for the test that put the original modules back instead of the mock. This is cleaner and safer.
+
+Could be:
+
+``` python
+original_fetch_files = None
+original_url_request = None
+original_chunk_read = None
+mock_fetch_files = None
+mock_url_request = None
+mock_chunk_read = None
+
+def setup_mock():
+    global original_url_request
+    global mock_url_request
+    mock_url_request = mock_request()
+    original_url_request = datasets.utils._urllib.request
+    datasets.utils._urllib.request = mock_url_request
+
+    global original_chunk_read
+    global mock_chunk_read
+    mock_chunk_read = wrap_chunk_read_(datasets.utils._chunk_read_)
+    original_chunk_read = datasets.utils._chunk_read_
+    datasets.utils._chunk_read_ = mock_chunk_read
+
+    global original_fetch_files
+    global mock_fetch_files
+    mock_fetch_files = FetchFilesMock()
+    original_fetch_files = datasets.func._fetch_files
+    datasets.func._fetch_files = mock_fetch_files
+
+def teardown_mock():
+    global original_url_request
+    datasets.utils._urllib.request = original_url_request
+
+    global original_chunk_read
+    datasets.utils._chunk_read_ = original_chunk_read
+
+    global original_fetch_files
+    datasets.func._fetch_files = original_fetch_files
+```
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(None, '', u'nilearn/datasets/tests/test_func.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","banilo","2015-07-16 13:29:51","solved (but does not show here)
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(352, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","647","nilearn","nilearn","banilo","2015-07-16 13:29:54","solved (but does not show here)
+","c0b14df710edcb8f87d0a1e83737d11ef1765d13","(360, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit","647","nilearn","nilearn","lesteve","2015-06-29 14:16:49","Add test for threshold plotting bug with uint8 data","5d192cf14063f4e4ffb05b6e45f2130801dbeee6",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:03:59","Change dtytpe of the data when loading them for plotting","784e4d92ea4b3c1157878a90a8f32baa96bd5d8d",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-13 12:39:25","Use dtype.kind instead of dtype.type","9b65b510ffa647ad326d0b7d4abcb6f793e8fe86",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-13 12:59:47","Add docstring for dtype","e2d8b721d02d0f67a468e61c0e08c5d49e703fad",""
+"pull_request_commit","647","nilearn","nilearn","lesteve","2015-05-13 21:08:10","Put the sign back into glass brain plotting","053a3b89fc70c16d35b5430f8343ddb8cf635f3e",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-13 10:09:59","Added option to represent negative values in glass brain. Closes #455.","c8482db64bb21d781a59c808249a51f1e5b56eab",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-13 15:05:39","Fix dtype type","64fb1f2154f58501de772f9b2686523fd53de2ae",""
+"pull_request_commit","647","nilearn","nilearn","GaelVaroquaux","2015-07-13 21:27:36","REL: 0.1.4.1post1 Post-relase tag:
+
+forgotten a couple of bug fixes","0f472f231d1c4fd12d87578abb8e0817452cfbfd",""
+"pull_request_commit","647","nilearn","nilearn","GaelVaroquaux","2015-07-14 09:48:12","MISC: remove unused variable
+
+Use pyflakes, people :)","1f80239714e1f9942a67bdd52c573bf5657707aa",""
+"pull_request_commit","647","nilearn","nilearn","MartinPerez","2015-07-14 10:30:29","updated reference.rst with all fetch dataset methods that were deprecated","32472c59360de4e56b4eff82c969eb4804d2be62",""
+"pull_request_commit","647","nilearn","nilearn","mih","2015-07-14 12:00:02","Mention Debian package as installation option (fixes gh-660)","d45e0723a0a2b2f8e94142c8d9b75e538acab675",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-14 12:03:21","Add missing atlases in the reference","230d9be20e5103ab667fc992716667aeba06d402",""
+"pull_request_commit","647","nilearn","nilearn","dohmatob","2015-07-14 12:59:27","BF: ""<i8"" ==> ""int"" in test_fetch_adhd (fixes issue #658","5610ec4566317832fb8e5780729529038716142c",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-15 08:45:29","Reorganize ids in ADHD test","a4af7b39d3652219bd91056d0187e1f108b01f8b",""
+"pull_request_commit","647","nilearn","nilearn","GaelVaroquaux","2015-07-15 10:17:51","BUG: fix doc tests
+
+Fix #668","6cb1f3cec263fae738b6f489021b9e540a222e97",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-13 13:51:21","Fixed color maps.","e5e40d8d5231496349f5eb98aaba8eb377519197",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-13 14:20:26","Fixed the plot_connectome inheritance bug.","fd276eeb5b1e20ef4690bc486236f1bd2de4ebe5",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 12:11:04","rename plot_negative to plot_abs","e94081d4e678bc1b31c75aaf9e188067de317c23",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 12:27:15","added test","f2b538e74814d425a62fa2f142422f3f8df83274",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 13:32:07","added comments simplified code","3c7083084e69e7ff247d9f43fd422f956b91e491",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 13:32:17","fixed the demo","166abcf20d7341cb6833f5b014d215786d94a0db",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 15:15:49","fixed sign","9de218a807ad6efe164bf5c853b40c1cd6701572",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 15:16:02","refactor demos","b6275fc38686780da7c8185440284fe506b024f4",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 15:24:55","reference the example in docstring","ea28b96c0faa220a0703ede4cb9e217eccb12083",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 16:59:49","Revert zero threshold.","55104a8ea6aff53a43ac882cd153f33a33f623ef",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 17:01:59","sync with upstream","7879fa0451381da967f398e7df0de0b89a4c20e8",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-05-22 19:31:03","simple exposure of new_img_like","0b00f716843b317104d634fbf7a32088e9d553cf",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-06-11 13:15:09","new_img_like: make affine optional","cb7d88d8bb87cf9dae8b661227fbf29955cca132",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-06-27 08:56:00","new_img_like: niimg compat","89db123e4f9214778f32f54e8b73e63fdeddf6b0",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 17:20:09","Added a mention of of the new glass brain functionality.","c0ed3dff2ba1017ab901680addb117004e1973d7",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-14 17:25:06","fixed identation","f20c9f732395571071cdab6d98e20b3d07325167",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-15 09:42:08","PEP8","3874560f7294e16387cfdc096af960745dda21fd",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-15 09:48:12","extracted common function","0b110d9f243a4c0ed80d77111e25c427183293e4",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-15 11:44:36","Refactoring examples and docs.","1dde005779ea8d0054232c153a2ccbfd5ecdc3e1",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-15 11:48:09","revert t map import","3ff2999e9fb9e1a86600b78fa4200f6e7cd309ca",""
+"pull_request_commit","647","nilearn","nilearn","chrisfilo","2015-07-15 12:36:15","pep and small refactoring","bb7768e97cad68b1928b557f787c382c44b3ef08",""
+"pull_request_commit","647","nilearn","nilearn","lesteve","2015-07-15 13:50:45","Slight improvement of the 32-bit python fix
+
+Using i8 dtype to be more explicit","48905c8c2b5cc32d0152cd02df83ec36a983096a",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-06-29 19:08:01","added wrapper","549ff02e659d2dca89b77dd762568fc8faf13863",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-14 11:51:12","restore circular import","777db0356ce9db8b58cd27d9a4101dde6407af4d",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-15 11:31:32","iterm","c85016dadaf05befcd86ecc523ee0810bf2e2dd6",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-15 14:46:10","fix im/exports","ddfa4337211f410c35e27f0dc5e8df524d9eec7d",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-15 16:43:43","update setup.py","b9c4e32390f793a0c6798df87d1ca79eb7c223ea",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-15 17:02:20","add missing init file","506593d4b634bf13868e64a494e7eb7428fe57c5",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-16 06:17:10","cosmit","f6213772955f516913b3998ef0c020d9bb613372",""
+"pull_request_commit","647","nilearn","nilearn","GaelVaroquaux","2015-07-16 08:06:10","MAINT: have 'make doc' not build example
+
+This is a change of defaults in the Makefile","7319d624bdb5ac2663a9c7aeebf177fa13b97a62",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-16 08:11:06","Use new_img_like everywhere.","6ad45285b590431c24717d3716124433ea1b75b7",""
+"pull_request_commit","647","nilearn","nilearn","GaelVaroquaux","2015-07-16 08:35:11","MAINT: now minimum requirement for sklearn is 0.13","62ed062e8a49bf8bf8fce95022c419153bea3726",""
+"pull_request_commit","647","nilearn","nilearn","GaelVaroquaux","2015-07-16 09:26:53","MAINT: examples are not run by default for docs
+
+Make it really sure that examples are not run by default when building
+docs
+
+Related to sphinx-gallery-#46","47a80628c7622f664fbf5785b1d2694c9f3e72af",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-06-22 17:40:57","doccheck 2: preparation","e3ad3165be8102a942a618c7962b0fb999a9b0b4",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-06-24 14:03:20","doccheck 2: fixes","59c59d271efb0cfca3d3e932a38cc49e70daf4f1",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-06-27 03:33:29","double-checked manipulation docs","e5b9c8cd7d97675a61686f556dd45fcf2da6b4da",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-13 14:05:40","migrated dataset code","ad3e81422e35f319cd292882d8244d79f6e4b511",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-13 14:13:08","del old dataset files","41d4a6f26a0e1770e80362ca3b61e146ff7ab5a4",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-13 16:05:03","handle namespace problem","2848f1bfcc1cacd9458c9c43421bbdd4b7ee5d95",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-16 08:34:00","cosmit","9cde8761e3ffdd68899ccd84755bab668ca78208",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-16 08:58:33","integrated Loics comment","73ccc26b56f9e051138d87122cd57092cda12fd6",""
+"pull_request_commit","647","nilearn","nilearn","GaelVaroquaux","2015-07-16 10:48:12","MAINT: actually make doc not run examples
+
+Fix the error in 84d2ca7","f056c37770afa247ba4b43ed6c98841c2ce58a70",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-16 12:53:53","integrate Loics comments","54c1c8ddd9385c1f55d2deb3332dfc15a2755902",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-13 16:30:58","Add test files","93c297b7d44aaace11a24efc74354052e95d8f2c",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-15 12:24:39","improve style","00f2c669d47adb6bf8f63b2072ee037b56c61f8a",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-15 12:42:23","update setup.py","a8c4a2a37be9fe539fd3b3fc3ea9061eb571a48a",""
+"pull_request_commit","647","nilearn","nilearn","banilo","2015-07-16 13:24:32","solve encoding issues","de9b52bc6704731b54a4c89033feceee36c35058",""
+"pull_request_commit","647","nilearn","nilearn","AlexandreAbraham","2015-07-16 16:39:04","Fix tests","c0b14df710edcb8f87d0a1e83737d11ef1765d13",""

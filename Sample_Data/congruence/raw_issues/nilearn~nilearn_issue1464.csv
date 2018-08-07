@@ -1,0 +1,40 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1464","nilearn","nilearn","TheChymera","2017-06-13 03:07:34","I am performing brain stimulation in a region which has ample inhibitory projections. As such, I commonly need to show statistical maps centered both on the site of stimulation and on the projection areas (commonly the larger cluster). An example can be seen in this seed-based connectivity plot:
+![dr_fc](https://user-images.githubusercontent.com/950524/27064023-4c3ff10e-4ff5-11e7-8634-a59039f01ae3.png)
+
+Since it is one and the same map, and it makes no sense to change the color mapping between the two views, I would like to make the plots share the colorbar. Is there any way of doing so?
+
+I have tried to dig through [the code](https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/img_plotting.py) but it seems none of the kwargs make their way to matplotlib.
+ ","start issue","Make statistic map plots share colorbar"
+"issue_closed","1464","nilearn","nilearn","TheChymera","2017-10-13 11:35:36","","closed issue","Make statistic map plots share colorbar"
+"issue_comment","1464","nilearn","nilearn","bthirion","2017-06-13 07:49:41","This is typically advances usage and I don't see how to find a solution to cover all the possible cases. You probably want to use colorbar=None and create a separate figure for the colorbar, by re-using the code in Nilearn plotting (that's what I do in this kind of case).","",""
+"issue_comment","1464","nilearn","nilearn","bthirion","2017-06-13 21:08:10","Here is an example that creates a colorbar in a given axis (inspired from nilearn, but purely matplotlib).
+HTH
+
+```
+def _draw_colorbar(colorbar_ax, vmax=8, offset=4.):
+    from matplotlib.colorbar import ColorbarBase
+    from matplotlib import colors
+    our_cmap = plotting.cm.cold_hot
+    nb_ticks = 5
+    ticks = np.linspace(-vmax, vmax, nb_ticks)
+    bounds = np.linspace(-vmax, vmax, our_cmap.N)
+    norm = colors.Normalize(vmin=-vmax, vmax=vmax)
+    # some colormap hacking
+    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+    istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
+    istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
+    for i in range(istart, istop):
+        cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
+    our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+
+    ColorbarBase(
+        colorbar_ax, ticks=ticks, norm=norm,
+        orientation='vertical', cmap=our_cmap, boundaries=bounds,
+        spacing='proportional', format='%.2g')
+    colorbar_ax.yaxis.tick_left()
+    tick_color = 'w'
+    for tick in colorbar_ax.yaxis.get_ticklabels():
+        tick.set_color(tick_color)
+    colorbar_ax.yaxis.set_tick_params(width=0)
+```","",""

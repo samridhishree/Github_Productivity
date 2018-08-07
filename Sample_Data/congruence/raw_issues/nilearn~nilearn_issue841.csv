@@ -1,0 +1,86 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","841","nilearn","nilearn","alexsavio","2015-11-11 10:23:08","I am not sure if you have already implemented it, it is also nice to get different measures out of the set of timeseries in a ROI, other than the `mean`.
+In region.py, you calculate the `mean`:
+https://github.com/nilearn/nilearn/blob/master/nilearn/region.py#L103
+
+For example, have you thought of extracting the `first Principal Component` instead?
+If you want me to, how would you recommend me implementing this feature?
+","start issue","Calculate something else than average signal for each region?"
+"issue_comment","841","nilearn","nilearn","bthirion","2015-11-11 21:41:58","AFAIK, this is sometimes done in the literature, probably under the premise that (for large ROIs ?) the average signal may not be a good summary. I have to say that I am not fully convinced by this use-case [my reasoning is: if the mean is not a good summary of the ROI signal, how can one be sure that the first principal component is a better summary ?].
+Are you aware of any piece of evidence  / publication that justifies this strategy ?
+
+For the moment, let's say am +0 on this idea...
+
+Thanks for putting the point forward.
+","",""
+"issue_comment","841","nilearn","nilearn","AlexandreAbraham","2015-11-11 21:47:04","@banilo already asked for that. A way to do it would be to have an `aggregator` parameter that could be a string or a function (similar to the `scorer` in sklearn). I thought about that but making it clean in the code (ie for regions, maps, spheres maskers) require some work.
+","",""
+"issue_comment","841","nilearn","nilearn","GaelVaroquaux","2015-11-11 21:48:35","Also, inverse_transform will be quite hard to make work.
+
+As @bthirion, I would like to see evidence that this is more than an
+academic question, and that it is actually useful.
+","",""
+"issue_comment","841","nilearn","nilearn","alexsavio","2015-11-12 08:30:22","Thanks for your replies!
+
+Without searching, I know these scientists who do and suggest doing it differently:
+- http://www.ru.nl/people/donders/beckmann-c/
+- http://jesuscortes.info/index.php?option=com_content&view=category&id=5:jcr&Itemid=13&layout=default
+
+I'm not defending one or another method, it was just a question to see if you were interested in this line of development as well.
+
+How would you generate evidence that this is useful or useless?
+","",""
+"issue_comment","841","nilearn","nilearn","KamalakerDadi","2015-11-12 08:47:48","I could not access full paper Smith et al. ""Methods for network modelling from high quality rfMRI data"" but piece of information grabbing from his poster tells this.
+
+""Subject-specific node timeseries are then estimated, given the
+group-ICA parcellation, using a variant of the first stage of
+dual-regression [6], termed eigenregression: For each group-
+ICA component S, all other components are first regressed
+(spatially) out of S (giving S’) and out of the timeseries data
+(giving D’), in the manner of multiple (as opposed to single)
+regression. D’ are variance normalised, weighted by S’, and
+fed into SVD. The first eigentimeseries estimates the node’s
+primary temporal dynamics, improving robustness (relative to
+simple averaging/regression) against partial artefactual pro-
+cesses and small misalignments between the group-level node
+map S and the subject’s equivalent functional area (Fig 3). ""
+
+Figure:
+![eigenevidencefigure](https://cloud.githubusercontent.com/assets/11410385/11114005/7e1f2a56-8921-11e5-8a41-915e266c5331.png)
+
+I am not supporting any method here but providing little information just in case if you are searching something like this.
+","",""
+"issue_comment","841","nilearn","nilearn","bthirion","2015-11-12 22:25:58","Thanks for looking at this.
+
+My opinion is:
+- Given the popularity of the method, it makes sense to consider it
+- However, I am convinced neither by Steve's arguments, that are not formal enough, nor by the simulation (you can always show anything you wish whenever you know how to use a random number generator). 
+","",""
+"issue_comment","841","nilearn","nilearn","GaelVaroquaux","2015-11-12 22:29:09",">   • Given the popularity of the method, it makes sense to consider it
+>   • However, I am convinced neither by Steve's arguments, that are not formal
+>     enough, nor by the simulation (you can always show anything you wish
+>     whenever you know how to use a random number generator).
+
+It remains: how do we do inverse transform?
+","",""
+"issue_comment","841","nilearn","nilearn","bthirion","2015-11-12 22:33:37","You can always consider the extraction of the first eigen-signal as a projection, and use  the pseudo inverse to do the inverse transform.
+","",""
+"issue_comment","841","nilearn","nilearn","GaelVaroquaux","2015-11-13 05:54:22","> You can always consider the extraction of the first eigen-signal as a
+> projection, and use the pseudo inverse to do the inverse transform.
+
+So:
+- at fit time: eigen vector is computed
+- at transform time, eigen vector is applied as a projection
+- at inverse-transform time, transform is inverted?
+
+Is that what you have in mind? I suspect that the separation between
+computation of the eigen vector at fit time and application at transform
+time might surprise people.
+","",""
+"issue_comment","841","nilearn","nilearn","bthirion","2015-11-13 08:37:54","Agreed. You will most typically use fit_transform.
+
+Note also that this idea does not make sense for discrete features...
+","",""
+"issue_comment","841","nilearn","nilearn","alexsavio","2015-11-17 13:18:32","As far as I see the functions that must be ""heavily"" modified are the ones in `regions.py`, and the Maskers would need an 'aggregator' argument in their constructor functions to pass to these functions later and to save the 'projection' during `fit`.
+Am I missing anything?
+","",""

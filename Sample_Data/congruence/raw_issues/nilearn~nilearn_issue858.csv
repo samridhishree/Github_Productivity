@@ -1,0 +1,218 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","858","nilearn","nilearn","banilo","2015-11-25 15:29:32","Just doing a simple a masker.transform() on this resting-state image (high values in the xE7 area) actually crushed most image values down to zero in the output (transformed) matrix. Appears to be a type-casting issue, perhaps in the NiftiMasker class? Any ideas?
+
+``` python
+ masker.inverse_transform(masker.transform('rsfix_img732.nii')).to_filename('rsfix_img732_test.nii')
+```
+
+Here are the input files:
+https://dl.dropboxusercontent.com/u/4403154/MNI152GM.nii
+https://dl.dropboxusercontent.com/u/4403154/rsfix_img732_test.nii
+https://dl.dropboxusercontent.com/u/4403154/rsfix_img732.nii
+
+<img width=""827"" alt=""masker_pacman"" src=""https://cloud.githubusercontent.com/assets/3907396/11400972/a3131f4c-9390-11e5-8467-3cf2755830b1.png"">
+","start issue","NiftiMasker.transform() ""eats"" big part of the target image data"
+"issue_closed","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 06:34:48","","closed issue","NiftiMasker.transform() ""eats"" big part of the target image data"
+"issue_comment","858","nilearn","nilearn","eickenberg","2015-11-27 07:18:21","hmm what is the point of equipping images with affines if they are then not
+used?
+
+maybe in this concrete case we can actually issue a warning: if the mask
+shape and signal shape are exactly equal but affines differ, then warn
+saying that nilearn considers these images different but that the user may
+think they are the same. (Or if the mask is passed as just an array, go
+voxelwise ..... I know, scary)
+
+Alternatively, using the identity matrix as affine is improbable in real
+life. When it happens, one could also directly warn (although note that I
+would get quite angry at nilearn incessantly commenting on my choice of
+affine, if it was deliberate)
+
+On Friday, November 27, 2015, Gael Varoquaux notifications@github.com
+wrote:
+
+> On Thu, Nov 26, 2015 at 11:07:43PM -0800, Danilo Bzdok wrote:
+> 
+> > Sure. Where would you put this?
+> > 
+> > Somewhere at the very beginning of the docs.
+> 
+> I am OK with a sidebar on this specific aspect in the getting started,
+> linking the page in ""manipulating images"" that explains what we mean by a
+> niimg.
+> Not anything more: it would be cluttering.
+> 
+> > Or even more drastically think about ~5 core design principles of
+> > nilearn usage (such the onces mentioned above) that are printed to the
+> > console by default after import nilearn...
+> 
+> I'd rather not.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/858#issuecomment-160056932.
+","",""
+"issue_comment","858","nilearn","nilearn","banilo","2015-11-25 15:58:33","Addendum: If I apply the mask by hand, all values remain in the output nifti. So there is some quirky thresholding/type-casting going on in the NiftMasker class.
+
+``` python
+data = nib.load(rs_files[ind]).get_data()[masker_bool]
+masker.inverse_transform(data).to_filename('rsfix_img732_test_bool.nii')
+```
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-26 21:50:12","Could you post the full set of lines that enables reproducing? I need the
+lines with which you instanciate the masker (to know the options that you
+are using), and how you fit it.
+","",""
+"issue_comment","858","nilearn","nilearn","bthirion","2015-11-26 21:50:26","The problems comes from the fact that the affine of the RS image is wrong:
+In [36]: nib.load('rsfix_img732.nii').get_affine()
+Out[36]: 
+array([[ 1.,  0.,  0.,  1.],
+       [ 0.,  1.,  0.,  1.],
+       [ 0.,  0.,  1.,  1.],
+       [ 0.,  0.,  0.,  1.]])
+
+In [37]: masker.mask_img_.get_affine()
+Out[37]: 
+array([[  -2.,    0.,    0.,   90.],
+       [   0.,    2.,    0., -126.],
+       [   0.,    0.,    2.,  -72.],
+       [   0.,    0.,    0.,    1.]])
+","",""
+"issue_comment","858","nilearn","nilearn","banilo","2015-11-26 23:03:18","@GaelVaroquaux: The NiftiMasker instantiation is completely standard - just the mask image is specified in the constructor, then fit().
+","",""
+"issue_comment","858","nilearn","nilearn","banilo","2015-11-26 23:05:11","Good to know that the affine is probably the culprit. Some users might expect the masking/transforming to take place in voxel space (and assume affine does not play a role), rather than brain space (and assume affine is relevant).
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 05:53:18","> @GaelVaroquaux: The NiftiMasker instantiation is completely standard -
+> just the mask image is specified in the constructor, then fit().
+
+Please do give me the lines. My hunch is that you are making a user error
+here. So I do need the lines to actually check.
+","",""
+"issue_comment","858","nilearn","nilearn","banilo","2015-11-27 06:05:45","Here we go with the code:
+
+``` python
+masker = NiftiMasker(mask_img='MNI152GM.nii')
+masker.fit()
+masker.inverse_transform(masker.transform('rsfix_img732.nii')).to_filename('rsfix_img732_test.nii')
+```
+","",""
+"issue_comment","858","nilearn","nilearn","AlexandreAbraham","2015-11-27 06:27:54","@GaelVaroquaux the culprit is the affine, no need to investigate further.
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 06:34:41","> masker = NiftiMasker(mask_img='MNI152GM.nii')
+> masker.fit()
+
+OK. Then I don't understand why you are complaining: your mask image and
+your data only partly overlap. The NiftiMasker is doing what it is
+supposed to do.
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 06:38:49","I closed the issue, but I worry a bit about user support.
+
+We are always going to have users who feed in erroneous masks, and then complain that it does work.
+
+If even @banilo, who is an advanced user (a developer even), opens an issue on the tracker when he does this, I fear that many more will.
+
+A very simply plotting ""plotting.plot_stat_map('rsfix_img732.nii', 'MNI152GM.nii')"" can diagnose the problem immediately, but people don't do it. That goes back to the idea that we need reporting or diagnosing utilities, with such plots.
+","",""
+"issue_comment","858","nilearn","nilearn","banilo","2015-11-27 06:53:29","Well, as proposed above, you might simply state explicitly in
+docs/docstring that the masking (the ""overlap"") is examined in brain/world space
+and that the affines need to be healthy for that.
+
+Up to now, I though it is a simple ""binary"" operation in voxel space -
+matrix matching. That is by the way what probably most people in matlab do,
+who do not have a dedicated API such as nilearn does.
+
+2015-11-27 7:38 GMT+01:00 Gael Varoquaux notifications@github.com:
+
+> I closed the issue, but I worry a bit about user support.
+> 
+> We are always going to have users who feed in erroneous masks, and then
+> complain that it does work.
+> 
+> If even @banilo https://github.com/banilo, who is an advanced user (a
+> developer even), opens an issue on the tracker when he does this, I fear
+> that many more will.
+> 
+> A very simply plotting ""plotting.plot_stat_map('rsfix_img732.nii',
+> 'MNI152GM.nii')"" can diagnose the problem immediately, but people don't do
+> it. That goes back to the idea that we need reporting or diagnosing
+> utilities, with such plots.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/858#issuecomment-160053310.
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 06:56:04","> Well, as proposed above, you might simply state explicitly in
+> docs/docstring that the masking (the ""overlap"") is examined in brain space
+> and that the affines need to be healthy for that.
+
+Sure. PR welcomed.
+
+> Up to now, I though it is a simple ""binary"" operation in voxel space -
+> matrix matching.
+
+Every single operation in nilearn is implemented in brain space.
+","",""
+"issue_comment","858","nilearn","nilearn","banilo","2015-11-27 07:01:26","> Every single operation in nilearn is implemented in brain space.
+
+This appears to be an overarching design principle that is worth mentioning somewhere at the very beginning at nilearn. How a about a short list à la ""Overarching design principles"":
+- nifti image is the primary working unit, not 3D/4D matrices
+- any comparisons/manipulation is done in world space, not voxel space
+- transform() performs a manipulation, inverse_transform() reverses that manipulation
+- access to standard datasets (e.g. region/network atlases) is pipelined by fetchers
+- ...
+- ...
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 07:03:24","> This appears to be an overarching design principle that is worth mentioning
+> somewhere at the very beginning at nilearn.
+
+Sure. Where would you put this?
+","",""
+"issue_comment","858","nilearn","nilearn","banilo","2015-11-27 07:07:40","> Sure. Where would you put this?
+
+Somewhere at the very beginning of the docs.
+
+Or even more drastically think about ~5 core design principles of nilearn usage (such the onces mentioned above) that are printed to the console by default after `import nilearn`...
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 07:11:24","On Thu, Nov 26, 2015 at 11:07:43PM -0800, Danilo Bzdok wrote:
+
+> ```
+> Sure. Where would you put this?
+> ```
+> 
+> Somewhere at the very beginning of the docs.
+
+I am OK with a sidebar on this specific aspect in the getting started,
+linking the page in ""manipulating images"" that explains what we mean by a
+niimg.
+Not anything more: it would be cluttering.
+
+> Or even more drastically think about ~5 core design principles of
+> nilearn usage (such the onces mentioned above) that are printed to the
+> console by default after import nilearn...
+
+I'd rather not.
+","",""
+"issue_comment","858","nilearn","nilearn","AlexandreAbraham","2015-11-27 07:19:33","A dedicated page ""from matlab to nilearn"" would be the perfect place for that kind of information.
+
+Also, I guess that `_check_same_fov` is called in the transform. We could raise a specific warning when the shape is the same but the affine is different, especially if the shape is dummy.
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 07:20:51","> maybe in this concrete case we can actually issue a warning: if the mask
+> shape and signal shape are exactly equal but affines differ, 
+> 
+> Alternatively, using the identity matrix as affine is improbable in real
+> life. 
+
+I think that doing an 'and' on these two conditions, and a warning would
+be a good thing. +1 for a PR on that.
+","",""
+"issue_comment","858","nilearn","nilearn","GaelVaroquaux","2015-11-27 07:21:46","> A dedicated page ""from matlab to nilearn"" would be the perfect place
+> for that kind of information.
+
+I think here it would be a 'from FSL to nilearn' rather. But indeed, such
+a page would be great.
+
+> Also, I guess that _check_same_fov is called in the transform. We could
+> raise a specific warning when the shape is the same but the affine is
+> different, especially if the shape is dummy.
+
+That's the right place to implement the warning of @eickenberg
+","",""

@@ -1,0 +1,19 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1011","nilearn","nilearn","GaelVaroquaux","2016-02-25 13:01:49","According to @pbellec, this has two benefits compared to our butterworth filter:
+- Not having ugly side effects at the beginning and of the acquisition (need to check this)
+- Enabling missing data, as eg in a later possible implementation of scrubbing
+","start issue","signals.clean: Consider filtering based on a cosine base"
+"issue_comment","1011","nilearn","nilearn","danlurie","2017-05-01 22:55:49","Just encountered the Butterworth border effects in some of my own analysis. Nasty surprise until I realized what was causing the issue. I'm happy to add a note to the docs warning users about this. Where would be the right place to put this? With signal.clean only, or also with the Masker functions?","",""
+"issue_comment","1011","nilearn","nilearn","danlurie","2017-05-16 00:14:45","I haven't to dug into the issues comprehensively, but one thing I have been able to replicate on multiple datasets (my own data and HCP) is that the filtering with `signal.clean` results in artificially low signal standard deviation at the beginning and end of a time series.
+
+![Butterworth weirdness](https://cloud.githubusercontent.com/assets/1873103/26084332/2d39f2ee-3990-11e7-8bfa-b1bddca16c04.jpg)
+
+Here's the code I used to filter and regress out nuisance signals:
+```
+masker = input_data.NiftiLabelsMasker(labels_img=bna_img, background_label=0,
+                mask_img=bold_T1w_brainmask, standardize=False, detrend=True, 
+                low_pass=0.2, high_pass=0.01, t_r=2, resampling_target=""data"")
+```","",""
+"issue_comment","1011","nilearn","nilearn","bthirion","2017-05-14 21:06:58","This would be in signal.clean.
+Can you show an exmaple of poor outcome of the Butterworth filter ?
+Thanks,","",""

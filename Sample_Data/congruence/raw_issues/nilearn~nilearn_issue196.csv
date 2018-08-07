@@ -1,0 +1,545 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","196","nilearn","nilearn","VirgileFritsch","2014-05-22 12:10:59","Tadaaaaam... Implementation of Randomized Parcellation Based Inference [1].
+
+Main accomplished tasks:
+- Refactoring: move some functions that were common to permuted OLS and RPBI into a utils.py file.
+  orthonormalize_design/matrix, f_score computation, ...
+  Tests have been changed accordingly.
+- Re-introduce GrowableSparseArrays (and corresponding tests).
+  They have already been reviewed in a former PR about permuted OLS before they were finally removed.
+  Now, we needed to re-introduce them because we need to address the data efficiently, in different 
+  manners and for different purposes.
+- Introduce some functions to generate/deal with randomized parcellations.
+  They could be moved to a more generic module that serves this purpose (creating multiple
+  random parcellations, transforming a dataset with all of the built parcellations)
+- Examples: the three examples on massively univariate analysis have been duplicated and RPBI is now
+  applied. This is a lot of examples, but they will be structured at some point (see issue #195).
+  Issue: examples can take up to 30 minutes on a laptop, using one single CPU (see discussion below).
+
+The code for RPBI is optimized but a run of the algorithm remains costly. This is because RPBI requires the computation of many parcellations (97% of the total execution time). Only 3% of the computation time is spent on the permutations, when 10,000 are performed (which is already kind of a lot, but recommended).
+Fortunately, both the computation of the parcellation and the statistical inference part can be parallelized.
+Therefore, on a 10-core station, the computation time boils down to less than three minutes, which is acceptable. Still, the examples policy requires that n_jobs=1 by default.
+
+[1] Benoit Da Mota et al. Randomized parcellation based inference, NeuroImage, Volume 89, 1 April 2014.
+","start issue","NF: Randomized Parcellation Based Inference"
+"issue_closed","196","nilearn","nilearn","lesteve","2015-02-02 08:16:40","","closed issue","NF: Randomized Parcellation Based Inference"
+"pull_request_title","196","nilearn","nilearn","VirgileFritsch","2014-05-22 12:10:59","Tadaaaaam... Implementation of Randomized Parcellation Based Inference [1].
+
+Main accomplished tasks:
+- Refactoring: move some functions that were common to permuted OLS and RPBI into a utils.py file.
+  orthonormalize_design/matrix, f_score computation, ...
+  Tests have been changed accordingly.
+- Re-introduce GrowableSparseArrays (and corresponding tests).
+  They have already been reviewed in a former PR about permuted OLS before they were finally removed.
+  Now, we needed to re-introduce them because we need to address the data efficiently, in different 
+  manners and for different purposes.
+- Introduce some functions to generate/deal with randomized parcellations.
+  They could be moved to a more generic module that serves this purpose (creating multiple
+  random parcellations, transforming a dataset with all of the built parcellations)
+- Examples: the three examples on massively univariate analysis have been duplicated and RPBI is now
+  applied. This is a lot of examples, but they will be structured at some point (see issue #195).
+  Issue: examples can take up to 30 minutes on a laptop, using one single CPU (see discussion below).
+
+The code for RPBI is optimized but a run of the algorithm remains costly. This is because RPBI requires the computation of many parcellations (97% of the total execution time). Only 3% of the computation time is spent on the permutations, when 10,000 are performed (which is already kind of a lot, but recommended).
+Fortunately, both the computation of the parcellation and the statistical inference part can be parallelized.
+Therefore, on a 10-core station, the computation time boils down to less than three minutes, which is acceptable. Still, the examples policy requires that n_jobs=1 by default.
+
+[1] Benoit Da Mota et al. Randomized parcellation based inference, NeuroImage, Volume 89, 1 April 2014.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","NF: Randomized Parcellation Based Inference"
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-05-22 12:21:13","Awesome!!!
+
+Could you put here the images from the examples, please, so that we don't have to run them.
+","",""
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-05-22 12:37:36","Isn't it a problem if it's too long to regenerate on your laptop? I am afraid that people won't run this example. Can it be made faster, for instance being less ambitious on the number of permutations.
+","",""
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-05-22 12:52:09","The haxby example is very nice!
+","",""
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-05-22 13:26:50","Yeah, the last one is pretty mind blowing.
+
+But the good news is that it works well not only in terms of number of detections, but also in terms of how plausible the results look.
+","",""
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-17 09:16:15","Could you indicate in the narrative documentation an estimate of the run-time (with n_jobs=1, on a 'typical fMRI data', specifying the CPU and using the default number of permutations). People have been asking me this. Please do this in a 'topic' container, and point out that 'n_jobs=-1' can speed things up.
+","",""
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-19 16:06:17","You have failing tests (that's just side remark, I'll take a look at the code anyhow).
+","",""
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-19 19:45:47","> Thanks for the simplifcations, this is really great. Please take care of the
+> failing tests, then OK for merging.
+
+We are actually discussing with Virgile to see if standard CSR matrices can
+replace the GrowableSparseArray. I think it is the case, and we are going
+to see if it is possible to implement them.
+","",""
+"issue_comment","196","nilearn","nilearn","GaelVaroquaux","2014-07-03 12:34:36","> If you merge it before Monday I will be able to show a demo at our
+> journal club :)
+
+I'll try to merge on Saturday then.
+","",""
+"issue_comment","196","nilearn","nilearn","chrisfilo","2014-07-03 12:30:26","If you merge it before Monday I will be able to show a demo at our journal club :)
+","",""
+"issue_comment","196","nilearn","nilearn","bthirion","2014-09-15 18:28:11","Besides the tiny comments I did recently, I have one question on the use of GrowableSparseArrays: they ultimately yield (i, j, data) where i is a permutation index, j is a position index, and data a statistical value. The alternative  would be ton construct lists of i, j, data arrays (one list per permutation) and then to concatenate the lists to get the result as a COO matrix.
+Why wasn't this done ? because it is too slow ? or to simplify the API ?
+This question is mostly  to know whether we can avoid the use of this structure in the future.
+Thanks for the work. 
+","",""
+"issue_comment","196","nilearn","nilearn","AlexandreAbraham","2014-10-31 08:20:35","@bthirion, if I remember well my discussions with Benoît about this data structure, it is faster to preallocate the memory. I'm sure that he should have some bench results somewhere if you want to convince yourself.
+","",""
+"issue_comment","196","nilearn","nilearn","lesteve","2015-02-02 08:16:40","Closing this one in favor of #375.
+","",""
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 20:34:51","I don't see what you mean in the last sentence. Apparently, this corresponds more to a description of your implementation that to a constraint on the input ?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 20:46:43","summed across all parcellations
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 20:48:25","Yields the maximum count across all voxels
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 20:52:41","Could you clarify this ?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 20:53:47","I belive that you expect it in p-value scale. Please clarify, especially to give the allowed range for this variable.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 21:02:00","parcellations
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 21:10:56","What happens if the sum is 0 ?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 21:11:34","Missing doctring
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 21:16:23","tested_vars_resid_covars
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 21:16:43","target_vars_resid_covars
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 21:19:09","replace 'behaves differently' by 'shows a different mean value'
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'plot_haxby_rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-26 21:21:27","should be  -1 ;-)
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(68, '', u'plot_oasis_vbm_rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-05-27 07:29:49","If it's an image-like, I would prefer if it could be named mask_img to respect the nilearn conventions. Also I think that we call that a ""niimg"".
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-05-27 07:50:57","There is a loophole here: you are completely ignoring the step of the slice. Either you should take it in account or you should not use a slice object, but simply start and stop markets. 
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 08:51:07","> I don't see what you mean in the last sentence.
+
+Changed.
+
+> [...] this corresponds more to a description of your implementation that to a constraint on the input?
+
+I do not understand why it would be a problem, especially because the function is private and should only be looked at by developers.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 09:13:16","Please check that the modification I made is correct.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 09:15:53","Please check that the change is OK.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 09:24:39","It crashes :-D
+
+However, that would mean that the user is trying to normalize a matrix with at least one column of zeroes. Note that it is close to happening in the Oasis example, where we actually need some workaround to exclude to voxels with a zero between-subject variance from the analysis.
+
+The correction I propose is the following:
+- We catch the design problem (i.e. column(s) of zeros) early
+- We raise a warning
+- We use a inner mask in order to perform the analysis on the remaining, correct columns
+- We return the results with zeros where there were some initially (using the inner mask again).
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 09:27:53","I rather like using the underscores to separate relevant groups of words. In this case, the words ""tested"" and ""vars"" are closer than are ""resid"" and ""covars"". I do not know if there is a suitable convention for that.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 09:32:18","`-np.log10(0.1)` = 1 actually ;p
+
+Giving the explicit ""formula"" allows the user to modify the threshold more rapidly (I am not sure everyone knows that ""1"" should be turned to ""1.301"" when a 5% threshold is desired). And I am not sure everyone understand immediately how the ""1"" is obtained.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(68, '', u'plot_oasis_vbm_rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 11:56:44","My bad: in the context of RPBI, it is very difficult to prevent such a design problem appears.
+Indeed, a null feature only occurs when we the mean signal within one parcel is zero for every subject. It is impossible to check in advance.
+
+I can correct the code of the permuted OLS to be robust to null features, but not that of RPBI.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-27 12:55:50","To me, readability is more important than subtle semantic aspects. I think it is better if you correct these names.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 13:08:14","I came up to the conclusion than trying to avoid null columns in the design was only a subcase of trying to avoid degenerated designs. I added a `ValueError` raising in the normalization function but did not try to prevent it from happening at an earliest stage.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-27 13:21:39","Please document your choices
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-05-27 13:57:09","Sorry but what do you mean?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-05-27 15:03:05","Add a comment in the code to say that this line can create Nans/Infs, 
+but that this is supposed to have been handled at a higher level.
+
+B
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 08:24:30","that no effect is present
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'doc/building_blocks/massively_univariate_analysis.rst')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 08:34:12"," Therefore, a small _p-value_ indicates that there is a small chance of getting this data if no real difference existed; in that sense, the effect is considered as _significant_.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'doc/building_blocks/massively_univariate_analysis.rst')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 08:52:33","Shouldn't we forbid that thing having different thresholds ? I would like this object to be unaware of thresholds, as it is only meant to store sparse maps, not to make decisions on those. 
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 08:55:13","Actually, what you call a score is somewhat unclear: the higher the better ? or rather p-value like ?
+This is one of the reason why I don't like threshold to be explicit. The array should only know about data and indices.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 08:58:16","This kind of boilerplate code should end up in a check_n_job function somewhere in utils
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 09:05:39","depends on
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 09:07:34","I dont see where the np.sqrt comes from
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 09:09:51","> what you call a score is somewhat unclear: the higher the better ? or rather p-value like ?
+
+It is ""the higher the better"".
+
+> The array should only know about data and indices.
+
+The convenient thing with GrowableSparseArrays is that you provide data to them, and they decide what they should store or not, depending on the threshold with which they have been initialized. The user does not have to worry about thresholding the data himself.
+Besides, if the object ""knows"" what values it contains, it becomes self-content.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 09:13:37","To be more clear: if no `threshold` attribute is present, GSArrays with various thresholds can live in the same world, without any possibility to tell which threshold has been used to create them (i.e. how selective they are with respect to the data they actually store). How to merge such object then? The developer always has to find back where and how the objects were created in order to know if they can be merged and how they could be.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 09:35:34","But if I understand it correctly, I exactly want the opposite behavior: a dummy object that does not DO anything and simply stores maps. I especially do not want it to be generic in any sense: its is meant to be used locally in the rpbi code and that's all.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 09:46:43","It is an heuristic formula. The square-root is convenient because it maps `max_elts` between 0 and 1 according to the `sparsity_threshold`. In the case above, we store F-values, which we do not expect to have a uniform distribution, so we expect the number of stored values to decrease as the sparsity_threshold value decrease. The important thing is that the relationship between both is not linear at all so there is a huge gain in using the sqrt.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 09:53:15","Please comment on this.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 12:30:46","Formulated in a slightly less abstract way, the test variate corresponds to the voxel index while the target variate corresponds to the effects that you are looking at.
+Am I right if I say that there is always only one target_variable in the rpbi use of the class ? I yes, please remove that dimension that adds some complexity and confusion in the code.  
+Once again, the idea is to make this class as trivial as possible.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 12:33:48","> I exactly want the opposite behavior: a dummy object that does not DO anything and simply stores maps
+
+Here I do not agree. I think it is up to the object to select the data that it stores. that way it can be ""fed"" transparently.
+Once the threshold has been set up --depending on the type of values we want the GSArray to contain-- there is nothing to do but appending data and merging GSArrays together. That behavior makes the GSArrays usable as black boxes, which is an important feature for a data structure. Would the threshold be the responsibility of the developer, it would separate the theoretical properties of the object (i.e. ""it is suppose to contain data above a given threshold"") and what happen in practice (i.e. ""is it really the case?"").
+
+> I especially do not want it to be generic in any sense
+
+Yet I have been asked to name its entries with generic names (""x"", ""y"", ""iter"") ;-)
+(see https://github.com/nilearn/nilearn/pull/157#discussion_r9372040, and one other former comment of yours: _""I think that the ides is that the structure is fed by some iterations of a given estimator, that might be a permuted estimator.""_)
+For me it is not a matter of genericity, but a matter of modularity.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 12:39:22","> Am I right if I say that there is always only one target_variable in the rpbi use of the class ?
+
+No, there can be more than one tested variate (RPBI returns a n_tested_vars by n_voxels array). But you raise a good point since I think it is not tested.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 12:56:39","> ```
+> I exactly want the opposite behavior: a dummy object that does not DO
+> anything and simply stores maps
+> ```
+> 
+> Here I do not agree. I think it is up to the object to select the data that it
+> stores. that way it can be ""fed"" transparently.
+> 
+> Once the threshold has been set up --depending on the type of values we want
+> the GSArray to contain-- there is nothing to do but appending data and merging
+> GSArrays together. That behavior makes the GSArrays usable as black boxes,
+> which is an important feature for a data structure. Would the threshold be the
+> responsibility of the developer, it would separate the theoretical properties
+> of the object (i.e. ""it is suppose to contain data above a given threshold"")
+> and what happen in practice (i.e. ""is it really the case?"").
+
+I think that I made the same remark a while ago: the object should be a
+data structure that is agnostic of its usage. The thresholding thing is
+something that is related to the RPBI, it should not be in the
+GrowableSparseArray. The logic behind this is that the code needs to be
+understandable bits by bits, and not only after reading and processing
+the whole code. Thus the GrowableSparseArray should do nothing more than
+be a growable sparse array.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 12:58:32","First, I agree that my opinion has changed across time. Note that  when I first looked at the code in February, I was trying to figure out how it worked: I was not commenting on the philospophy. I am increasingly worried about the maintenance burden. In particular, I am now really in favor of removing any complex logic that  may be hidden in GrowableSparseArrays. Specifically, 
+- if none of our example uses a given dimension of the array, it has to be removed.
+- If there is no scenario in which the threshold is changing, we should not even consider this possibility (actually, no user should be in position of using these structures)
+- the thresholding operation has to be kept outside of the object.
+  Please consider that it should be nothing but the simplest way to store and append sparse informations generated by a black box. In short, I want to it to be the minimal code that can be used to run the current examples of the library. We're not too far from that point.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 13:10:44","Ok so now I think I understood what was unclear: it is the fact that the same value serves as the parameter in the RPBI method and as an heuristic bound that saves memory.
+
+You are right and we were aware of the problem with Benoit. I think that now the code is much cleaner so that we may be able to do something to alleviate the problem. I will have a look at it right now.
+Thanks for taking the time to explain things in details!
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-18 13:24:36","Thx. look forward to it.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 13:28:40","> if none of our example uses a given dimension of the array, it has to be removed.
+
+Should I add an example where we perform variable screening with RPBI?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 14:36:48","I'd rather not, because I don't think that it is a good use of RPBI.
+
+However, can you explicit your thoughts: why would such an example explore more codepath of RPBI? I suspect that I am missing something here.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 14:44:25","Rather than protecting the ', you should simply use "" for your string, as in ""'others' is not a list/tuple of ..."".
+
+Also, I would rather have an error message like this: ""The 'other' parameter should be a list or tuple of GrowableSparseArray, you gave %s"" % type(other)"".
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 15:00:15","That usecase is when you are have several external variables that you are testing for, right?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 15:02:31","Please import simply this a 'sparse'. No need for renaming.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 15:02:53","Please use local imports: from '..utils import ...'
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 16:35:59","I think that I had already mentioned that earlier: I'd would prefer it if no application-specific names were used in the GrowableSparseArray. For instance, that 'n_iter' doesn't seem to me to fit to a concept of the GrowableSparseArray, but to a larger context.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 21:40:39","What you said contradicts the discussion we had today with @bthirion: If I am not mistaken, GrowableSparseArray should not be generic at all since they are only used in the scope of RPBI.
+Following this discussion, I therefore changed back all ""iter""/""iteration"" for ""perm""/""permutations"" because it helps the developer maintaining the GSArray code (because its link to RPBI is clearer).
+
+So, I am not sure I understand your comment.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-18 21:43:16","> What you said contradicts the discussion we had today with @bthirion: If I am
+> not mistaken, GrowableSparseArray should not be generic at all since they are
+> only used in the scope of RPBI.
+
+Agreed: it shouldn't attempt to catter for all the usecases. It should
+not be a swiss army knife.
+
+> Following this discussion, I therefore changed back all ""iter""/""iteration"" for
+> ""perm""/""permutations"" because it helps the developer maintaining the GSArray
+> code (because its link to RPBI is clearer).
+
+No. People need to be able to build a mental picture of what it does
+without reader the whole code. Elsewhere it is hopeless to try to
+understand the code.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 22:02:26","So what you suggest is to use for instance 'z' instead of 'iter'/'perm', just like the two other dimensions are refered to as 'x' and 'y'?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 22:22:29","Yes, these are tested independently. It is as if one would iterate on the tested variates and perform a RPBI each time. The targets and the confounds are always the same.
+Instead of using a for loop, it is better to provide the tested variates to RPBI stacked in an array. Thus, a lot of computations are shared and done only once. 
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-18 22:24:57","The 'x' dimension of GSArrays is only useful when several tested variates are considered.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-19 06:41:11","My suggestion is to make clear that these dimensions are indexes, not data, which remains completely unclear if you use 'x', 'y'.
+So I would use 'x' or 'data' for the data part, and 'i', 'j', 'k' or 'idx1', 'idx2', 'idx3' for indices.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-19 06:43:50","I guess we've mostly sold RPBI as a means to perform inference on scalar maps. I would rather run RPBI several times if had to test several variates. @VirgileFritsch , do you agree ?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-19 07:03:35","Because I don't have the whole code in my head, I hesitate to make strong suggestions with regards to naming. However my gut feeling is that idx1... as suggested by Bertrand would be good. 
+
+<div>-------- Original message --------</div><div>From: bthirion notifications@github.com </div><div>Date:19/06/2014  08:41  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Cc: Gael Varoquaux gael.varoquaux@normalesup.org </div><div>Subject: Re: [nilearn] NF: Randomized Parcellation Based Inference (#196) </div><div>
+</div>In nilearn/mass_univariate/rpbi.py:
+
+> -    (iii) a target variate.
+> -    Memory is pre-allocated to store a large number of scores. The structure
+> -    can be indexed efficiently according to three dimensions to add new
+> -    scores at the right position fast.
+> -    The allocated space can be extended if needed, but we want to avoid this
+> -    because it is costly. User should carefully initialize the structure.
+> -    Only scores above a predetermined threshold are actually stored, others
+> -    are ignored.
+>   +
+> -    Attributes
+> -    ----------
+> -    n_elts: int
+> -      The total number of scores actually stored into the data structure
+>   +
+> -    n_iter: int
+> -      Number of trials (using as many iterators)
+>   My suggestion is to make clear that these dimensions are indexes, not data, which remains completely unclear if you use 'x', 'y'.
+>   So I would use 'x' or 'data' for the data part, and 'i', 'j', 'k' or 'idx1', 'idx2', 'idx3' for indices.
+
+—
+Reply to this email directly or view it on GitHub.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-19 07:04:58","Well there are only three ""named"" axes/dimensions, no indices properly
+speaking. One dimension is used to index the permutation number and is
+called ""iter"" (or ""perm""). The second and third dimensions are used to
+index a target variate ('y') and a tested variate ('x').
+
+I will do a commit with 'iter' --> 'z' and see if it suits.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-19 07:04:58","Same gut feeling: let's make the code simple and touch the 95% use cases. 
+
+<div>-------- Original message --------</div><div>From: bthirion notifications@github.com </div><div>Date:19/06/2014  08:43  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Cc: Gael Varoquaux gael.varoquaux@normalesup.org </div><div>Subject: Re: [nilearn] NF: Randomized Parcellation Based Inference (#196) </div><div>
+</div>In nilearn/mass_univariate/rpbi.py:
+
+> -            raise TypeError(
+> -                '\'others\' is not a list/tuple of GrowableSparseArray '
+> -                'or a GrowableSparseArray.')
+> -        for gs_array in others:
+> -            if not isinstance(gs_array, GrowableSparseArray):
+> -                raise TypeError('List element is not a GrowableSparseArray.')
+> -            if gs_array.n_iter != self.n_iter:
+> -                raise ValueError('Cannot merge a structure with %d iterations '
+> -                                'into a structure with %d iterations.'
+> -                                % (gs_array.n_iter, self.n_iter))
+>   +
+> -        acc_sizes = [self.sizes]
+> -        acc_data = [self.get_data()]
+> -        for gs_array in others:
+> -            # threshold the data to respect self.threshold
+> -            if gs_array.threshold < self.threshold:
+>   I guess we've mostly sold RPBI as a means to perform inference on scalar maps. I would rather run RPBI several times if had to test several variates. @VirgileFritsch , do you agree ?
+
+—
+Reply to this email directly or view it on GitHub.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-19 07:08:21","I do not because re-running RPBI implies re-running the permutations (and
+the parcellations building if not cached).
+
+I agree that testing several variates is not the main use case, but
+actually in the paper we show an example were 27 SNP from a gene are tested
+in the same manner. Would not it be possible to use multiple tested
+variates with RPBI, the computation time may be up to 27 time bigger.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-19 07:09:50","I think that this discussion is really highlighting a difficulty of the code: I can never fit in my head what this structure corresponds to. We need to find good names and good comments. 
+
+<div>-------- Original message --------</div><div>From: Virgile Fritsch notifications@github.com </div><div>Date:19/06/2014  09:04  (GMT+01:00) </div><div>To: nilearn/nilearn nilearn@noreply.github.com </div><div>Cc: Gael Varoquaux gael.varoquaux@normalesup.org </div><div>Subject: Re: [nilearn] NF: Randomized Parcellation Based Inference (#196) </div><div>
+</div>In nilearn/mass_univariate/rpbi.py:
+
+> -    (iii) a target variate.
+> -    Memory is pre-allocated to store a large number of scores. The structure
+> -    can be indexed efficiently according to three dimensions to add new
+> -    scores at the right position fast.
+> -    The allocated space can be extended if needed, but we want to avoid this
+> -    because it is costly. User should carefully initialize the structure.
+> -    Only scores above a predetermined threshold are actually stored, others
+> -    are ignored.
+>   +
+> -    Attributes
+> -    ----------
+> -    n_elts: int
+> -      The total number of scores actually stored into the data structure
+>   +
+> -    n_iter: int
+> -      Number of trials (using as many iterators)
+>   Well there are only three ""named"" axes/dimensions, no indices properly speaking. One dimension is used to index the permutation number and is called ""iter"" (or ""perm""). The second and third dimensions are used to index a target variate ('y') and a tested variate ('x').
+>   …
+>   —
+>   Reply to this email directly or view it on GitHub.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-19 07:10:01","Sorry, what I said is wrong. Please ignore it. I re-read your previous
+comment and understood.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-19 07:10:57","So let's go with 'data', 'x', 'y' and 'z'.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-06-19 07:22:27","I will drop the 'x' dimension, but before I do that I would like to address
+the others comments and keep the ""multi-tested_vars"" version in a branch on
+my nilearn fork (so as to regenerate small examples of, say, gene
+screening).
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-06-19 07:26:13","Sorry, but as a matter of taste, I prefer 'i', 'j', 'k' if it is clear that these are indices. 'x', 'y' 'z' correspond in my mind to continuous quantities. 
+
+----- Mail original -----
+
+> De: ""Virgile Fritsch"" notifications@github.com
+> À: ""nilearn/nilearn"" nilearn@noreply.github.com
+> Cc: ""bthirion"" bertrand.thirion@inria.fr
+> Envoyé: Jeudi 19 Juin 2014 09:10:57
+> Objet: Re: [nilearn] NF: Randomized Parcellation Based Inference (#196)
+> 
+> In nilearn/mass_univariate/rpbi.py:
+> 
+> > -    (iii) a target variate.
+> > -    Memory is pre-allocated to store a large number of scores. The
+> >   structure
+> > -    can be indexed efficiently according to three dimensions to add new
+> > -    scores at the right position fast.
+> > -    The allocated space can be extended if needed, but we want to avoid
+> >   this
+> > -    because it is costly. User should carefully initialize the structure.
+> > -    Only scores above a predetermined threshold are actually stored,
+> >   others
+> > -    are ignored.
+> >   +
+> > -    Attributes
+> > -    ----------
+> > -    n_elts: int
+> > -      The total number of scores actually stored into the data structure
+> >   +
+> > -    n_iter: int
+> > -      Number of trials (using as many iterators)
+> >   So let's go with 'data', 'x', 'y' and 'z'.
+> 
+> —
+> Reply to this email directly or view it on GitHub .
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-19 16:09:14","Actually, at some point, I think that it would be great to contribute this to joblib. No hurry, though
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(10, '', u'nilearn/_utils/common_checks.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-06-19 16:15:59","Also, it would be good to have a unit-test for this function, that triggers raising the exceptions and does atomic checks that we are getting what we think we should be getting.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(10, '', u'nilearn/_utils/common_checks.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","chrisfilo","2014-07-07 19:30:23","Please add description of the 'auto' option.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(776, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-07-10 17:42:52","There's a bug here: if the provided mask_img is a NitfiImage,  np.asarray(mask_img) will make something inconsistent. @VirgileFritsch could you correct this ?
+Otherwise, rpbi is really impressive in terms of computation speed : great job !
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-07-10 19:23:21","Hmmm... From the code that I see above your comment, a NiftiImage will
+correspond to the case where chek_niimg is called? Am I wrong?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-07-10 19:25:17","> > -    ### Build parcellations
+> > -    if not isinstance(mask_img, np.ndarray):
+> > -        mask_img = check_niimg(mask_img)
+> 
+> Hmmm... From the code that I see above your comment, a NiftiImage will
+> correspond to the case where chek_niimg is called? Am I wrong?
+
+To me, the lines above do not make sens: mask_img should either be a
+niimg-like, or an ndarray, but it should not have both options possible.
+We want to separate clearly the world of niimgs and of ndarrays.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","AlexandreAbraham","2014-07-11 12:16:44","A good practice is to drop the `_img` suffix after calling `check_niimg`.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-07-11 15:35:01","In any case, an error is returned when you provide a Nifti1Image.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","GaelVaroquaux","2014-07-11 16:31:22","> A good practice is to drop the _img suffix after calling check_niimg.
+
+Wait, why? It stays a niimg, and the naming convention is that all niimgs
+should end with _img.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","AlexandreAbraham","2014-07-11 17:40:31","Of course, I wanted to say after calling `get_data`, because in my head, the line above should be `mask = check_niimg(mask_img).get_data()`.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(None, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","VirgileFritsch","2014-08-01 20:18:24","Done.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(776, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-12 13:06:52","This raises an error: replace with
+p_ma = np.ma.masked_less(neg_log_pvals_rpbi_unmasked, vmin)
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(116, '', u'plot_haxby_rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-12 13:51:56","consists in ('consists of' refers to the composition of...)
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(47, '', u'doc/building_blocks/massively_univariate_analysis.rst')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-12 13:54:04","the same probability as
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(70, '', u'doc/building_blocks/massively_univariate_analysis.rst')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-12 13:55:07","the smaller its associated p-value.
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(79, '', u'doc/building_blocks/massively_univariate_analysis.rst')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-12 15:02:52","conveys
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(134, '', u'doc/building_blocks/massively_univariate_analysis.rst')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-12 15:03:32","obtains
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(146, '', u'doc/building_blocks/massively_univariate_analysis.rst')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-15 01:33:49","optional (ans also the next arguments)
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(242, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-15 01:37:13","n_wards -> n_parcellations
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(274, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-15 01:41:07","maybe this could be made private is it is not use outside  of the module ?
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(315, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-15 01:48:44",", optional
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(471, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-15 01:50:33",", optional
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(580, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-15 01:57:31",", optional
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(759, '', u'nilearn/mass_univariate/rpbi.py')"
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-15 13:51:38","optional
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(115, '', u'nilearn/mass_univariate/utils.py')"
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-03-03 10:22:58","Structure for RPBI with permuted_ols_alt_chunk.
+
+GrowableSparseArrays' return.","0430b98921a01969cabf24b79945048ab877c4e7",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-03-04 12:28:20","WIP: RPBI with parietal-python wards construction.","e93410b14fc6809232f601c804531c8005b2f484",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-03-11 11:41:22","WIP: RPBI computation ends but h0 has a weird shape (lots of 0 and 'max').","eb1af59e85f422cfef79bd303c4d323f52a74eb5",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-03-12 13:10:46","Investigate parcellations mutual info.","612ae4899ce70038d3ecb25374bed6333c84ed33",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-03-13 09:53:12","Test RPBI with random parcels (Wards on noise).","91d0599a8bfc86a26312ed9807445ec56a4de91c",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-03-26 09:39:53","Group by sessions in example.","694bff736f9f0f6a288533a677603f7bdd57a6c7",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-04-30 13:41:26","RPBI: No dependance on parietal-python repository + improve DOC.","dc29de02043146537a7335914d0344bdb03272c8",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-04-30 16:44:49","RPBI: More examples.","335fcea1bfc8c45f2a5286de0261022e3e4c0825",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-15 15:25:29","RPBI: Tests + Examples.","32dbf844e6ccd1a55889268caf206e503ceda2c5",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-19 11:23:00","RPBI: complete tests.","7de228dcedf9aa97591efad61533732bfd3891b7",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-22 11:53:44","RPBI: parameters in examples.","71d1eb534920d0df57832ce79f678c6abb75fdaf",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-22 12:18:43","RPBI: Correct doctest for Travis.","5fcfe5fe9ccff0353c5b0406f13ca1393fe5e78b",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-22 13:23:30","RPBI: cosmit on examples.","dafc984c91b65d6ad7c248b61bd7ad4a63e00226",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-22 13:35:48","RPBI: Change tests (even if seeded, order is hard to predict).","9f1b533a1e85f367f28d5404f7632a1950c49a85",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-22 14:19:47","RPBI: cosmit in tests.","743241a054b6d2d08e240235482751224731270b",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-27 09:34:32","RPBI: Address bthirion's comments.","23cbd5b8b35d3377483022bb1a328234551fef8f",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-27 09:48:22","RPBI: address GaelVaroquaux's comments.","9c99573451ddf80a1e49988e75f8266c33b553d1",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-27 13:33:57","RPBI: more tests for normalize function + catch degenerated design.","ff4cd75c753a4a6c1b234f89bff31b862d1d15d5",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-27 13:46:08","RPBI: more refactoring + variable names.","0a12710c47e3ae53e7d3b04b52e623500098e22a",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-27 14:55:15","RPBI: DOC (refactoring + description of RPBI).","1bd0e922bc5313a2de5b785e720e7242f6b06aa8",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-27 15:46:56","RPBI: cosmit.","ec08d7931cdc25fe9093b91e818e4432a9c9d327",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-05-28 12:25:11","RPBI: cosmit.","739bb1f445d18e46b2f3fdb6b2d656e18cb5fb91",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-04 15:15:45","RPBI: small bug fix introduced in previous commits.","a5dd79213aceb3b624d11edfbd6d558ba14a54f0",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-17 15:36:36","RPBI: update RPBI doc with run-time info.","41b948788a7b8c3e66e8194595adb9dec295ae6d",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-18 09:37:37","RPBI: Doc cosmit + check_n_jobs.","f5abed560f558f1039d782c72a4552e8d828e409",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-18 12:03:41","RPBI: explain max_elts estimation formula.","4c75f86d575635373864fad811ab41cc392124ee",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-18 12:44:45","RPBI: Add a test (several tested vars).","34bb3760afd2d1c3cbb620180dcf321876feef8c",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-19 13:08:33","RPBI: Remove threshold from GrowableSparseArray + generic names.","73966e59956fbdb176e5fb7577caf02e89ffa931",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-19 13:15:48","RPBI: Forgotten __ini__ file in _utils.","4d9818e4787bb6b2301db3ab8950a53a059b6037",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-19 15:00:45","RPBI: remove one dimension in GSArrays => Multiple tested vars disabled.","2a5015d32ce934fae007be7c2f9ae10a4175aad5",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-19 15:03:04","RPBI: put back n_jobs=1 in localizer example.","d196400db56a1205ce324195443e3d8d8e49a003",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-20 08:33:13","RPBI: change n_perm in Oasis example to speed it up.","1a2e2ce50802d03245c165771f2368aa524b3208",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-20 08:47:48","RPBI: Fix tests.","17af561f9b6e23aa03fa525179670bd629fcbb38",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-20 12:42:47","RPBI: go back to bugged master not to step on PR #218 after rebase.","1a21e20a4fd527e3dc474c781e693d932e1a20eb",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-20 12:46:49","RPBI: rename GSArrays indices again to be closer to COO matrices.","bdf639a95080bb0345c3eb7640fc55d39b75bd95",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-06-20 13:36:32","Unit test for the check_n_jobs function.","6e19ec23b072b066d8c7b1c0c88191519a53f22a",""
+"pull_request_commit","196","nilearn","nilearn","VirgileFritsch","2014-08-01 20:16:56","RPBI: Address Github reviewers comments.","f9b9853cca225285e81a6f0a5d586225b632a3c1",""
+"pull_request_commit_comment","196","nilearn","nilearn","bthirion","2014-09-12 13:46:53","corresponds
+","f9b9853cca225285e81a6f0a5d586225b632a3c1","(13, 592, u'nilearn/mass_univariate/rpbi.py')"

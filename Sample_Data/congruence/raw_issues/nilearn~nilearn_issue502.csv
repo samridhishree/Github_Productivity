@@ -1,0 +1,131 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","502","nilearn","nilearn","lesteve","2015-03-18 13:41:04","Supersedes #397.
+
+The main rationale was for the versions to be roughly 2 years old and
+to support neurodebian on Ubuntu 12.04.
+
+As part of this change, implemented a minimum required version check for
+matplotlib in `nilearn/plotting/__init__.py`.
+
+The ubuntu and ubuntu-no-matplotlib travis distribs have been replaced by conda based ones using the same package versions available as in Ubuntu 14.04.
+","start issue","Bump up nilearn required dependencies versions"
+"issue_closed","502","nilearn","nilearn","lesteve","2015-03-19 11:47:58","","closed issue","Bump up nilearn required dependencies versions"
+"pull_request_title","502","nilearn","nilearn","lesteve","2015-03-18 13:41:04","Supersedes #397.
+
+The main rationale was for the versions to be roughly 2 years old and
+to support neurodebian on Ubuntu 12.04.
+
+As part of this change, implemented a minimum required version check for
+matplotlib in `nilearn/plotting/__init__.py`.
+
+The ubuntu and ubuntu-no-matplotlib travis distribs have been replaced by conda based ones using the same package versions available as in Ubuntu 14.04.
+","62c86d407f84117f5ae0965f204ed798bf013541","Bump up nilearn required dependencies versions"
+"pull_request_merged","502","nilearn","nilearn","lesteve","2015-03-19 11:47:58","Bump up nilearn required dependencies versions","0482fb5517a432ea7d35c50fa2bddfe1a9487537","Pull request merge from lesteve/nilearn:bump-up-required-versions to nilearn/nilearn:master"
+"pull_request_commit_comment","502","nilearn","nilearn","lesteve","2015-03-18 13:53:28","I had to shuffle things around a little bit here. Basically I both wanted
+- the matplotlib minimum version should be always checked 
+- Agg backend should only be used for posix platforms when the DISPLAY environment variable is not defined (e.g. on Travis)
+","62c86d407f84117f5ae0965f204ed798bf013541","(39, '', u'nilearn/plotting/__init__.py')"
+"pull_request_commit_comment","502","nilearn","nilearn","GaelVaroquaux","2015-03-18 15:02:03","Why?
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","GaelVaroquaux","2015-03-18 15:04:00","Did you check that the version on Ubuntu 12.04 passes the test? It seems to be an 1.1.1rc1 from what I can see here:
+http://packages.ubuntu.com/search?suite=precise&searchon=names&keywords=matplotlib
+","62c86d407f84117f5ae0965f204ed798bf013541","(39, '', u'nilearn/plotting/__init__.py')"
+"pull_request_commit_comment","502","nilearn","nilearn","lesteve","2015-03-18 15:17:01","1.3.0 is quite old according to piprot:
+
+```
+~/dev/nilearn $ piprot <(echo nibabel==1.3.0)
+nibabel (1.3.0) is 819 days out of date. Latest is 2.0.0
+Your requirements are 819 days out of date
+```
+
+Also this is the version that neurodebian on Ubuntu 12.04 comes with.
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","AlexandreAbraham","2015-03-18 15:18:13","Note: we don't support 12.04 anymore (because of numpy / scipy). We only support 12.04 neurodebian. This way, we can upgrade most of packages.
+From 1.1.0 to 1.3.0, a lot of significant bugs were fixed. Also, some code to handle affine transformations was added. We can rely on it and thus simplify nilearn's code.
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","lesteve","2015-03-18 15:20:43","Yeah LooseVersion doesn't seem to be very knowledgeable about rc, alpha, et al. versions ...
+
+```
+In [1]: from distutils.version import LooseVersion
+
+In [2]: LooseVersion('1.1.1rc') > LooseVersion('1.1.1')
+Out[2]: True
+
+In [3]: LooseVersion('1.1.1a1') > LooseVersion('1.1.1')
+Out[3]: True
+```
+
+Also we decided to drop support for bog-standard Ubuntu 12.04 versions long ago in #397 by requiring sklearn >= 0.12.1.
+","62c86d407f84117f5ae0965f204ed798bf013541","(39, '', u'nilearn/plotting/__init__.py')"
+"pull_request_commit_comment","502","nilearn","nilearn","GaelVaroquaux","2015-03-18 15:22:12","> From 1.1.0 to 1.3.0, a lot of significant bugs were fixed. Also, some code to
+> handle affine transformations was added. We can rely on it and thus simplify
+> nilearn's code.
+
+OK, these are good arguments.
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","AlexandreAbraham","2015-03-18 17:39:55","However, I think we should do that in a separate PR where we actually use these new features. In the meantime, if the code works with 1.1.0, I see no (good enough) reason to ask for a more recnt one.
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","lesteve","2015-03-18 18:34:40","> In the meantime, if the code works with 1.1.0, I see no (good enough) reason to ask for a more recnt one.
+
+What about finding some middle ground and going for 1.2.2, which is the version the version of [python-nibabel](http://packages.ubuntu.com/trusty/python-nibabel) in Ubuntu 14.04?
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","GaelVaroquaux","2015-03-18 18:45:11","> What about finding some middle ground and going for 1.2.2, which is the
+> version the version of python-nibabel in Ubuntu 14.04?
+
+We certainly should not go above that.
+
+But what is the argument in favor of bumping the version? What is the
+logic? What does it gain us and the user?
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","lesteve","2015-03-18 19:21:32","Citing from the original PR #397.
+
+> > In particular does scikit-learn 0.12.1 have a special meaning?
+> 
+> No. It's a configuration that's 2 years old, and we felt that 2 years old was a good time.
+
+I guess I assumed that updating all dependencies in a reasonably uniform manner was the sensible thing to do.
+
+Side comment, it seems that with our installation instructions (pip install nilearn -U --user) nibabel will always been updated to the latest version anyway (I tried both with nibabel is install via apt-get and in a conda environment).
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","GaelVaroquaux","2015-03-18 21:33:57","> Citing from the original PR #397.
+> 
+> ```
+>     In particular does scikit-learn 0.12.1 have a special meaning?
+>     No. It's a configuration that's 2 years old, and we felt that 2 years
+>     old was a good time.
+> ```
+> 
+> I guess I assumed that updating all dependencies in a reasonably
+> uniform manner was the sensible thing to do.
+
+That means that you are forcing all your users to upgrade their system
+every two year, when you decide that it's time (like now). These people
+want to use nilearn to solve their problem as fast as possible, and
+probably don't fancy having an update to do. We need to bump dependencies
+only if there is an argument for it. The old scikit-learn was a big
+problem, with accumulating backports. I don't see a strong argument for
+the nilearn dependency bump, but maybe there is one.
+
+> Side comment, it seems that with our installation instructions (pip install
+> nilearn -U --user) nibabel will always been updated to the latest version
+> anyway (I tried both with nibabel is install via apt-get and in a conda
+> environment).
+
+Don't get me started on how the semantics of pip are broken. It's the
+only thing that we have unfortunately.
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit_comment","502","nilearn","nilearn","lesteve","2015-03-18 21:49:56","OK I reverted nibabel required version to 1.1.0.
+","62c86d407f84117f5ae0965f204ed798bf013541","(None, '', u'README.rst')"
+"pull_request_commit","502","nilearn","nilearn","lesteve","2015-03-18 12:06:22","Bump up nilearn required dependencies versions
+
+The main rationale was for the versions to be roughly 2 years old and
+to support neurodebian on Ubuntu 12.04.
+
+As part of this change, implemented a minimum required version check for
+matplotlib in nilearn/plotting/__init__.py.","1cb7d7c9e2978ee19d0e782945d57420a2055840",""
+"pull_request_commit","502","nilearn","nilearn","lesteve","2015-03-18 13:55:06","Fix required versions in README.rst
+
+to match the ones required in nilearn/version.py","083b7284a3e4f64a19127f4a71fe0ecf762e2b5f",""
+"pull_request_commit","502","nilearn","nilearn","lesteve","2015-03-18 21:48:43","Revert change to nibabel version
+
+No strong reason to require a more recent version","62c86d407f84117f5ae0965f204ed798bf013541",""

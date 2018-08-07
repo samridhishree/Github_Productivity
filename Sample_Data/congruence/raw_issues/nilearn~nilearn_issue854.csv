@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","854","nilearn","nilearn","banilo","2015-11-22 16:18:09","It happened to me that `screening_percentile=100`was set in the `SpaceNetClassifier` constructor. Yet, `coef_` indicated that only a subset of the voxels was used, although `clf.screening_percentile` and `clf.screening_percentile_` showed the right value (100). There appears to be simple bug somewhere in the current master that ignores the user input.
+","start issue","SpaceNet ignores voxel subset parameter"
+"issue_comment","854","nilearn","nilearn","banilo","2015-11-22 16:37:28","No, clf.coef hat only ~2900 variables, not the ~80.000 gray-matter voxels
+that were in the input.
+
+2015-11-22 17:25 GMT+01:00 Gael Varoquaux notifications@github.com:
+
+> Right, but you are using a sparse learning, so even without any feature
+> screening, it might be sparse, depending on the alpha chosen by
+> cross-validation.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/854#issuecomment-158775615.
+","",""
+"issue_comment","854","nilearn","nilearn","GaelVaroquaux","2015-11-22 16:47:16","> No, clf.coef hat only ~2900 variables, not the ~80.000 gray-matter voxels
+> that were in the input.
+
+That doesn't make sense. clf.coef_ should always have the same number of
+features. The screening is inverted.
+
+I am afraid that you'll have to share an example that enables us to
+reproduce the problem, because right now it is guess work.
+","",""
+"issue_comment","854","nilearn","nilearn","dohmatob","2015-11-22 16:57:13","+1 for minimal working example to reproduce behavior.
+","",""
+"issue_comment","854","nilearn","nilearn","dohmatob","2015-11-22 17:03:12","BTW, what's the output of  `print my_fitted_estimator.mask_.sum()` ?
+","",""
+"issue_comment","854","nilearn","nilearn","banilo","2015-11-22 17:09:08","@drago:/storage/workspace/danilo/srne/struct_estimator_space.py
+
+2015-11-22 18:03 GMT+01:00 DOHMATOB Elvis notifications@github.com:
+
+> BTW, what's the output of print my_fitted_estimator.mask_.sum() ?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/854#issuecomment-158778447.
+","",""
+"issue_comment","854","nilearn","nilearn","GaelVaroquaux","2015-11-22 17:10:34","> @drago:/storage/workspace/danilo/srne/struct_estimator_space.py
+
+Let's keep this on publicly-available space, to avoid nilearn
+development being restricted to parietal and close collaborators.
+","",""
+"issue_comment","854","nilearn","nilearn","banilo","2015-11-22 18:20:55","Let's do it on the plot_haxby_space_net.py example. Just changed into `decoder = SpaceNetClassifier(memory=""cache"", penalty=penalty, screening_percentile=100)`. Then I get the following values:
+
+``` python
+In [2]: decoder.coef_.shape
+Out[2]: (1, 24006)
+
+In [3]: decoder.mask_.shape
+Out[3]: (40, 64, 64)
+
+In [5]: np.prod(decoder.mask_.shape)
+Out[5]: 163840
+
+In [6]: decoder.mask_.sum()
+Out[6]: 24006
+```
+
+=> It's probably the automatic mask computation that fails in my above case.
+","",""
+"issue_comment","854","nilearn","nilearn","banilo","2015-11-22 16:24:25","Creation of the class instance was like this:
+
+``` python
+clf = SpaceNetClassifier(
+    penalty='tv-l1', loss='logistic',
+    max_iter=100, n_jobs=N_JOBS, cv=3,
+    standardize=False, screening_percentile=100,  # keep ALL voxels
+    verbose=True, l1_ratios=0.5
+)
+```
+","",""

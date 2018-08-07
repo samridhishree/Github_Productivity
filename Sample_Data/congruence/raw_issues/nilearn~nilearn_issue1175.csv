@@ -1,0 +1,85 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1175","nilearn","nilearn","banilo","2016-07-09 12:17:45","It appears tricky to download the full ABIDE datasets as it stands today. There may be 3 different problems:
+1) the download freezed several times with different Wifi connections
+2) already downloaded parts of previously failed fetch attemps are not resumed
+3) Operation timed out error occurs every once in a while
+
+``` python
+
+<ipython-input-4-565d7d34308f> in <module>()
+----> 1 ds.fetch_abide_pcp()
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/datasets/func.pyc in fetch_abide_pcp(data_dir, n_subjects, pipeline, band_pass_filtering, global_signal_regression, derivatives, quality_checked, url, verbose, **kwargs)
+   1248                   '/'.join([url, derivative, file_id + '_' + derivative + ext]),
+   1249                   {}) for file_id in file_ids]
+-> 1250         files = _fetch_files(data_dir, files, verbose=verbose)
+   1251         # Load derivatives if needed
+   1252         if ext == '.1D':
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/datasets/utils.pyc in _fetch_files(data_dir, files, resume, mock, verbose)
+    730                                   password=opts.get('password', None),
+    731                                   handlers=opts.get('handlers', []),
+--> 732                                   overwrite=overwrite)
+    733             if 'move' in opts:
+    734                 # XXX: here, move is supposed to be a dir, it can be a name
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/datasets/utils.pyc in _fetch_file(url, data_dir, resume, overwrite, md5sum, username, password, handlers, verbose)
+    560             local_file = open(temp_full_name, ""wb"")
+    561         _chunk_read_(data, local_file, report_hook=(verbose > 0),
+--> 562                      initial_size=initial_size, verbose=verbose)
+    563         # temp file must be closed prior to the move
+    564         if not local_file.closed:
+
+/Users/admin/anaconda/lib/python2.7/site-packages/nilearn/datasets/utils.pyc in _chunk_read_(response, local_file, chunk_size, report_hook, initial_size, total_size, verbose)
+    153     t0 = time_last_display = time.time()
+    154     while True:
+--> 155         chunk = response.read(chunk_size)
+    156         bytes_so_far += len(chunk)
+    157         time_last_read = time.time()
+
+/Users/admin/anaconda/lib/python2.7/socket.pyc in read(self, size)
+    382                 # fragmentation issues on many platforms.
+    383                 try:
+--> 384                     data = self._sock.recv(left)
+    385                 except error, e:
+    386                     if e.args[0] == EINTR:
+
+/Users/admin/anaconda/lib/python2.7/httplib.pyc in read(self, amt)
+    610         # connection, and the user is reading more bytes than will be provided
+    611         # (for example, reading in 1k chunks)
+--> 612         s = self.fp.read(amt)
+    613         if not s and amt:
+    614             # Ideally, we would raise IncompleteRead if the content-length
+
+/Users/admin/anaconda/lib/python2.7/socket.pyc in read(self, size)
+    382                 # fragmentation issues on many platforms.
+    383                 try:
+--> 384                     data = self._sock.recv(left)
+    385                 except error, e:
+    386                     if e.args[0] == EINTR:
+
+/Users/admin/anaconda/lib/python2.7/ssl.pyc in recv(self, buflen, flags)
+    732                     ""non-zero flags not allowed in calls to recv() on %s"" %
+    733                     self.__class__)
+--> 734             return self.read(buflen)
+    735         else:
+    736             return self._sock.recv(buflen, flags)
+
+/Users/admin/anaconda/lib/python2.7/ssl.pyc in read(self, len, buffer)
+    619                 v = self._sslobj.read(len, buffer)
+    620             else:
+--> 621                 v = self._sslobj.read(len or 1024)
+    622             return v
+    623         except SSLError as x:
+
+error: [Errno 60] Operation timed out
+
+```
+","start issue","""Operation timed out"" during fetch_abide_pcp()"
+"issue_closed","1175","nilearn","nilearn","AlexandreAbraham","2016-07-11 07:39:05","","closed issue","""Operation timed out"" during fetch_abide_pcp()"
+"issue_comment","1175","nilearn","nilearn","AlexandreAbraham","2016-07-09 14:07:48","True, I noticed this problem recently. Gimme 5 minutes tu prepare a fix.
+","",""
+"issue_comment","1175","nilearn","nilearn","AlexandreAbraham","2016-07-09 14:16:24","PR on the way ;). You can take my branch directly, the modification should be safe. I have a beta fetcher for anatomical data of ABIDE (cortical thickness...) if you want to test.
+","",""
+"issue_comment","1175","nilearn","nilearn","banilo","2016-07-09 17:12:31","The speed of the response is impressive! :-D
+","",""

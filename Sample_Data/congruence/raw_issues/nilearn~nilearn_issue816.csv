@@ -1,0 +1,76 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","816","nilearn","nilearn","ignatenkobrain","2015-11-03 06:21:01","``` python
+======================================================================
+FAIL: nilearn.image.tests.test_image.test_mean_img
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/nose/case.py"", line 197, in runTest
+    self.test(*self.arg)
+  File ""/builddir/build/BUILD/nilearn-78f1cb0cf6c929a540cc5f90e5ea052caa47383a/nilearn/image/tests/test_image.py"", line 244, in test_mean_img
+    assert_array_equal(mean_img.get_data(), truth)
+  File ""/usr/lib/python2.7/site-packages/numpy/testing/utils.py"", line 782, in assert_array_equal
+    verbose=verbose, header='Arrays are not equal')
+  File ""/usr/lib/python2.7/site-packages/numpy/testing/utils.py"", line 708, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Arrays are not equal
+
+(mismatch 4.28571428571%)
+ x: memmap([[[ 0.335135,  0.447316,  0.435278,  0.430124,  0.132739,  0.230898,
+          0.276916],
+        [ 0.463399,  0.333535,  0.330124,  0.319001,  0.469296,  0.539532,...
+ y: array([[[ 0.335135,  0.447316,  0.435278,  0.430124,  0.132739,  0.230898,
+          0.276916],
+        [ 0.463399,  0.333535,  0.330124,  0.319001,  0.469296,  0.539532,...
+>>  raise AssertionError('\nArrays are not equal\n\n(mismatch 4.28571428571%)\n x: memmap([[[ 0.335135,  0.447316,  0.435278,  0.430124,  0.132739,  0.230898,\n          0.276916],\n        [ 0.463399,  0.333535,  0.330124,  0.319001,  0.469296,  0.539532,...\n y: array([[[ 0.335135,  0.447316,  0.435278,  0.430124,  0.132739,  0.230898,\n          0.276916],\n        [ 0.463399,  0.333535,  0.330124,  0.319001,  0.469296,  0.539532,...')
+
+
+----------------------------------------------------------------------
+```
+","start issue","[32bit] nilearn.image.tests.test_image.test_mean_img: Arrays are not equal"
+"issue_closed","816","nilearn","nilearn","lesteve","2015-11-12 14:50:57","","closed issue","[32bit] nilearn.image.tests.test_image.test_mean_img: Arrays are not equal"
+"issue_comment","816","nilearn","nilearn","aabadie","2015-11-03 07:32:45","@GaelVaroquaux, the overflow is the same. I don't think I have the other one. 
+","",""
+"issue_comment","816","nilearn","nilearn","aabadie","2015-11-03 08:00:44","@GaelVaroquaux, still about the overflow, be aware that my architecture is not i686 but x84_64 with windows.
+","",""
+"issue_comment","816","nilearn","nilearn","aabadie","2015-11-05 16:51:54"," @ignatenkobrain we recently merged fixes for the same kind of issues you have with i686 architecture. Can you try to run the tests again with latest master and check if your problems are still there ?
+
+Thanks !
+","",""
+"issue_comment","816","nilearn","nilearn","aabadie","2015-11-06 08:30:28","Thanks @ignatenkobrain. 
+What is your setup exactly ? So I can try to reproduce.
+","",""
+"issue_comment","816","nilearn","nilearn","aabadie","2015-11-06 08:38:52","Thanks, that should be enough. I'll try with a 32 bit VM of fedora locally.
+","",""
+"issue_comment","816","nilearn","nilearn","aabadie","2015-11-06 10:28:41","I could reproduce the issue.
+pinging @lesteve just to have his opinion.
+
+To me, there's a precision issue here between 32 bit and 64 bit. The arrays are almost equal. Replacing assert_equal with assert_allcose and using a tolerance of float64 resolution does the job. 
+
+I created #828 but it might not be a fully satisfactory fix.
+","",""
+"issue_comment","816","nilearn","nilearn","ignatenkobrain","2015-11-05 19:42:13","hi @aabadie ! One issue still persist on 32bit. I updated started topic with only remaining problem.
+","",""
+"issue_comment","816","nilearn","nilearn","ignatenkobrain","2015-11-06 08:35:05","Packages installation log (all packages installs from repository): https://copr-be.cloud.fedoraproject.org/results/ignatenkobrain/neurofedora/fedora-rawhide-i386/00134863-python-nilearn/root.log.gz
+There is all versions and packages I have in buildroot.
+
+Build log: https://copr-be.cloud.fedoraproject.org/results/ignatenkobrain/neurofedora/fedora-rawhide-i386/00134863-python-nilearn/build.log.gz
+
+I hope this is enough info, @aabadie. Let me know if I can provide some more info or help.
+","",""
+"issue_comment","816","nilearn","nilearn","ignatenkobrain","2015-11-06 08:46:32","On centos you can download src.RPM and do:
+`mock -r fedora-rawhide-i386 --verbose --no-cleanup-after /path/to/src.rpm` and once it will fail do: `mock -r fedora-rawhide-i386 --shell` and all stuff will be available under /buildroot/BUILD/.
+
+SRPM: https://ignatenkobrain.fedorapeople.org/neurofedora/python-nilearn-0.1.5-0.dev.2git78f1cb0.fc24.src.rpm
+
+If nilearn uses nibabel or other nipy stuff - modify /etc/mock/fedora-......cfg and add
+
+```
+[ignatenkobrain-neurofedora]
+name=Copr repo for neurofedora owned by ignatenkobrain
+baseurl=https://copr-be.cloud.fedoraproject.org/results/ignatenkobrain/neurofedora/fedora-$releasever-$basearch/
+enabled=1
+```
+
+In the bottom.
+","",""

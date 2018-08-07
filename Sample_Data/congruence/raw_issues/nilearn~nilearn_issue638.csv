@@ -1,0 +1,298 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","638","nilearn","nilearn","arthurmensch","2015-07-08 11:32:50","This PR contains the basic code for l1 dictionary learning. This could constitute a base for next week sprint
+@GaelVaroquaux @agramfort @bthirion  
+### Integration within nilearn
+
+I made a few design choices that should be discussed:
+- I use a composition pattern over CanICA : this allows the code to be quite concise but leads to a loss of flexibility regarding initialization of the dictionary learning algorithm
+- I use a flag `keep_data_mem` in MultiPCA to prevent us from loading several time (from files or from cache) the filtered and masked data. This make the code a bit more complicated, but I think this is the price to pay if we want to keep the NiftiMasker embedded within `decomposition` classes (which in itself may be discussed).
+- [ ] Tests are needed
+### Efficiency
+
+This code is based on scikit-learn 0.16.1, though it should work on every scikit-learn release since dictionary learning has been introduced. With this version, coordinate descent for DL does not work (on read-only data), see https://github.com/scikit-learn/scikit-learn/pull/4775. However, `cd` is faster once this issue is fixed (see attached file, so it should be used instead of `lars` whenever it becomes possible. Discussion with @ogrisel also leads to think that `cd` method could be made way faster.
+
+Maps are held in the code matrix of the DL formulation. We therefore need to compute back the code after learning the dictionary online. Presently, most of the computation time is spent computing back the code after the dictionary learning part. A simple way to speed up results consist in reducing the dictionary with a RandomizedPCA after the dictionary learning part (RandomizedPCA reduce `lasso_cd` computation time, and has a lower computation cost - linear in data dimension, but with a smaller coefficient).
+
+Two benchmarks can illustrate these points : version with RandomizedPCA is in blue, without in red. Output maps are almost not distinguishable. Reduction is quite experimental, but we can be sure that `cd` is better than `lars` in our context.
+
+Coordinate descent
+<img src=""https://cloud.githubusercontent.com/assets/4078691/8569732/c13ce6d0-257a-11e5-89a1-2b6708b5cbbd.png"" width=""300px"" />
+
+LARS
+<img src=""https://cloud.githubusercontent.com/assets/4078691/8569733/c4b2fd0e-257a-11e5-8978-afcaba3bec64.png"" width=""300px"" />
+### Examples
+
+I adapted the code from the CanICA example. I guess a more pertinent example would be to demonstrate DL effectiveness over ICA (which is the method that the community knows about). For this, we could rely on a scoring function embedded in MultiPCA, which should show better results for DL (explained variance ratio or reproducibility may be a good measure). I can provide the code for explained variance (should it be in another PR, or maybe in PR #630 ?)
+#### Visualization
+
+@KamalakerDadi It would be great if we could make use of PR #588 to demonstrate DL ability along with plotting power of nilearn.
+### Cross validation
+
+For the moment, we do not provide cross validation facilities for alpha. However, it should stay within the same range as the one provided in the example, as :
+- Resolution in the direction of features does not vary a lot (from 1 to 10 I would say) from one dataset to another), which makes choice of alpha non critical
+- Dictionary learning algorithm from scikit-learn is suppose to scale its regularization parameters so as to obtain similar sparsity for same input parameter. However, I think that regularization scaling is not made properly in scikit-learn (see https://github.com/scikit-learn/scikit-learn/pull/4873 in function `_sparse_encode`, comments to come), so we cannot rely on this
+### Online setting
+
+This implementation is based on an online algorithm for dictionary leaning. However, that way we do this today is actually online in the direction of features (i.e. voxels in our case), due to the fact that we call `dict_learning_online` on the transposed dataset (we use MiniBatchDictionaryLearning but it is more logical to use MiniBatchSparsePCA).
+
+This does not allow the use of `partial_fit` on batches of samples from a dataset (Nifti file after Nifti file for instance).
+
+For large datasets (e.g. HCP), this is a big problem, as we have to load the whole dataset (1,5TB) in memory before starting the algorithm. @lesteve PR #613 has begun adressing the issue of large data analysis within nilearn, and it would therefore be logical to find a solution to this design issue.
+
+One solution would therefore consists in changing the current paradigm in `scikit-learn`, so as to be able to learn the dictionary in an online setting. This is what is proposed in https://github.com/scikit-learn/scikit-learn/pull/4873. I wrote nilearn code based on this PR, which could be introduced in the future.
+#### Initialization
+
+Initialization for such large data setting would then need to be studied (especially the sensitivy of the algorithm to this initialization). For example, we could try on doing an ICA on only a subset of the input data.
+### Further development
+- Group-level Dictionary learning
+
+@AlexandreAbraham provided code for MSDL in PR #88, which could be considered for further development. This would be more involved, would yield better results but would be slower. Another direction to consider would be cohort-level brain mapping https://hal.inria.fr/hal-00841502, which may integrate more smoothly with scikit-learn API.
+- Regularization methods
+
+We use a l1 regularization on the code to enforce sparsity. New https://github.com/scikit-learn/scikit-learn/pull/4873 sparse PCA used elastic-net ball constraint for this purpose. We could also consider ways to integrate better regularizations, such as TV @dohmatob.
+","start issue","Simple L1 dictionary learning"
+"issue_closed","638","nilearn","nilearn","GaelVaroquaux","2015-07-16 16:38:07","","closed issue","Simple L1 dictionary learning"
+"pull_request_title","638","nilearn","nilearn","arthurmensch","2015-07-08 11:32:50","This PR contains the basic code for l1 dictionary learning. This could constitute a base for next week sprint
+@GaelVaroquaux @agramfort @bthirion  
+### Integration within nilearn
+
+I made a few design choices that should be discussed:
+- I use a composition pattern over CanICA : this allows the code to be quite concise but leads to a loss of flexibility regarding initialization of the dictionary learning algorithm
+- I use a flag `keep_data_mem` in MultiPCA to prevent us from loading several time (from files or from cache) the filtered and masked data. This make the code a bit more complicated, but I think this is the price to pay if we want to keep the NiftiMasker embedded within `decomposition` classes (which in itself may be discussed).
+- [ ] Tests are needed
+### Efficiency
+
+This code is based on scikit-learn 0.16.1, though it should work on every scikit-learn release since dictionary learning has been introduced. With this version, coordinate descent for DL does not work (on read-only data), see https://github.com/scikit-learn/scikit-learn/pull/4775. However, `cd` is faster once this issue is fixed (see attached file, so it should be used instead of `lars` whenever it becomes possible. Discussion with @ogrisel also leads to think that `cd` method could be made way faster.
+
+Maps are held in the code matrix of the DL formulation. We therefore need to compute back the code after learning the dictionary online. Presently, most of the computation time is spent computing back the code after the dictionary learning part. A simple way to speed up results consist in reducing the dictionary with a RandomizedPCA after the dictionary learning part (RandomizedPCA reduce `lasso_cd` computation time, and has a lower computation cost - linear in data dimension, but with a smaller coefficient).
+
+Two benchmarks can illustrate these points : version with RandomizedPCA is in blue, without in red. Output maps are almost not distinguishable. Reduction is quite experimental, but we can be sure that `cd` is better than `lars` in our context.
+
+Coordinate descent
+<img src=""https://cloud.githubusercontent.com/assets/4078691/8569732/c13ce6d0-257a-11e5-89a1-2b6708b5cbbd.png"" width=""300px"" />
+
+LARS
+<img src=""https://cloud.githubusercontent.com/assets/4078691/8569733/c4b2fd0e-257a-11e5-8978-afcaba3bec64.png"" width=""300px"" />
+### Examples
+
+I adapted the code from the CanICA example. I guess a more pertinent example would be to demonstrate DL effectiveness over ICA (which is the method that the community knows about). For this, we could rely on a scoring function embedded in MultiPCA, which should show better results for DL (explained variance ratio or reproducibility may be a good measure). I can provide the code for explained variance (should it be in another PR, or maybe in PR #630 ?)
+#### Visualization
+
+@KamalakerDadi It would be great if we could make use of PR #588 to demonstrate DL ability along with plotting power of nilearn.
+### Cross validation
+
+For the moment, we do not provide cross validation facilities for alpha. However, it should stay within the same range as the one provided in the example, as :
+- Resolution in the direction of features does not vary a lot (from 1 to 10 I would say) from one dataset to another), which makes choice of alpha non critical
+- Dictionary learning algorithm from scikit-learn is suppose to scale its regularization parameters so as to obtain similar sparsity for same input parameter. However, I think that regularization scaling is not made properly in scikit-learn (see https://github.com/scikit-learn/scikit-learn/pull/4873 in function `_sparse_encode`, comments to come), so we cannot rely on this
+### Online setting
+
+This implementation is based on an online algorithm for dictionary leaning. However, that way we do this today is actually online in the direction of features (i.e. voxels in our case), due to the fact that we call `dict_learning_online` on the transposed dataset (we use MiniBatchDictionaryLearning but it is more logical to use MiniBatchSparsePCA).
+
+This does not allow the use of `partial_fit` on batches of samples from a dataset (Nifti file after Nifti file for instance).
+
+For large datasets (e.g. HCP), this is a big problem, as we have to load the whole dataset (1,5TB) in memory before starting the algorithm. @lesteve PR #613 has begun adressing the issue of large data analysis within nilearn, and it would therefore be logical to find a solution to this design issue.
+
+One solution would therefore consists in changing the current paradigm in `scikit-learn`, so as to be able to learn the dictionary in an online setting. This is what is proposed in https://github.com/scikit-learn/scikit-learn/pull/4873. I wrote nilearn code based on this PR, which could be introduced in the future.
+#### Initialization
+
+Initialization for such large data setting would then need to be studied (especially the sensitivy of the algorithm to this initialization). For example, we could try on doing an ICA on only a subset of the input data.
+### Further development
+- Group-level Dictionary learning
+
+@AlexandreAbraham provided code for MSDL in PR #88, which could be considered for further development. This would be more involved, would yield better results but would be slower. Another direction to consider would be cohort-level brain mapping https://hal.inria.fr/hal-00841502, which may integrate more smoothly with scikit-learn API.
+- Regularization methods
+
+We use a l1 regularization on the code to enforce sparsity. New https://github.com/scikit-learn/scikit-learn/pull/4873 sparse PCA used elastic-net ball constraint for this purpose. We could also consider ways to integrate better regularizations, such as TV @dohmatob.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","Simple L1 dictionary learning"
+"issue_comment","638","nilearn","nilearn","AlexandreAbraham","2015-07-09 14:09:09","Concretely, is it interesting to merge this if the scikit-learn PR is not merged ? Or should we wait ?
+","",""
+"issue_comment","638","nilearn","nilearn","arthurmensch","2015-07-09 19:48:12","It is already interesting as it allows to run online in the direction of features. For ADHD this allows better maps which are more reproducible than CanICA. We could provide an example comparing the different algorithms.
+","",""
+"issue_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 12:12:59","In my opinion, this PR would benefit from PR #630, which provides a scoring function. This way we would be able to compare in the dictionary learning example the output of canica and dictionary learning, sorted by relevance (computed as explained variance ratio on training set)
+","",""
+"issue_comment","638","nilearn","nilearn","AlexandreAbraham","2015-07-14 14:58:01","@GaelVaroquaux the struggle of `keep_data_mem` is real and is due to the fact that we integrated the masker directly into MultiPCA. If we use a composition pattern rather than inheritance with the masker, we could consider CanICA / DictLearning as a pipeline and then solve this problem. This is one of the solution I had in mind to solve the spaghetti code issue.
+","",""
+"issue_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 15:30:49","ping @KamalakerDadi 
+
+Results using 4D plotting
+![figure](https://cloud.githubusercontent.com/assets/4078691/8677200/06422b64-2a4e-11e5-807a-331a463c02af.png)
+
+~3 minutes run
+","",""
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:11:58","perhaps add a short sentences how it related to CanICA and MultiPCA conceptually...
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:16:40","In my little timeit-experiment, np.ravel() was faster.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:23:59","""Data are"", not ""data is"" -> therefore datas might be a bad name for a variable?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","eickenberg","2015-07-08 22:26:57","not sure of the context, but if data_flat is a list, you need to
+concatenate. If it is an array of unknown ordering, you should ravel. The
+fact that ravel was fast points to the fact that it was C ordered, in which
+case the most explicit thing to do is self.data_flat.shape = -1,
+
+On Thursday, July 9, 2015, Danilo Bzdok notifications@github.com wrote:
+
+> In nilearn/decomposition/dict_learning.py
+> https://github.com/nilearn/nilearn/pull/638#discussion_r34205287:
+> 
+> > -                        standardize=standardize)
+> > -        self.reduction = reduction
+> > -        # Setting n_jobs = 1 as it is slower otherwise
+> > -        MiniBatchDictionaryLearning.**init**(self, n_components=n_components, alpha=alpha,
+> > -                                             n_iter=n_iter, batch_size=batch_size,
+> > -                                             fit_algorithm='lars',
+> > -                                             transform_algorithm='lasso_lars',
+> > -                                             transform_alpha=alpha,
+> > -                                             verbose=max(0, verbose - 1),
+> > -                                             random_state=random_state,
+> > -                                             shuffle=True,
+> > -                                             n_jobs=1)
+> >   +
+> > -    def _init_dict(self, imgs, y=None, confounds=None):
+> > -        CanICA.fit(self, imgs, y=y, confounds=confounds)
+> > -        self.data_flat_ = np.concatenate(self.data_flat_, axis=0)
+> 
+> In my little timeit-experiment, np.ravel() was faster.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/638/files#r34205287.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:28:56","These lines are found in both MultiPCA.fit() and .transform(). Chance both the same way for consistency? Also we could loose the itertools-import then.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:29:26",":)
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:30:27","appears to be hardcoded path
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:32:01","Maybe not be very specific. Perhaps more comments on the why and the motivation, rather than verbalizing the code.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-08 22:34:01","Some people might wonder here, why the components are ""independent"".
+
+As a random thought: perhaps extend the example into a comparison of ICA, PCA and dictionary learning?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-09 06:57:10","This is a glitch coming from the adaptation of canica example. 
+I think that a comparison would be the right example to propose.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-09 07:00:17","I don't know if this is the right solution, but I encountered what appeared to be a bug in itertools.repeat. confounds ended up being repeat(None, 0) after being initialized at repeat(None, len(imgs)), and I could not identify why
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-09 07:00:51","data_flat is in this case a tuple, so we need to concatenate
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-11 20:59:40","The example is great, thx !
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-11 21:01:52","... based on a CanICA ...
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-11 21:02:42","???
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-11 23:35:28","I know I am always saying this, but ""DictLearning: performs dictionary learning."" does not appear to be a crisp, high-yield explanation to me. Could we not add at least one sentence, in particular with regard to difference to PCA and ICA, perhaps?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-12 07:34:22","+ve ?
+If I undestand correctly, you compare the l1 norm of positive and negative parts, which feels right.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-12 07:34:57","Can you clarify  /explain a bit more ?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-12 07:36:42","- add a test for novel keep_mem=True behavior ? (not sure what to test though)
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(3, '', u'nilearn/decomposition/tests/test_canica.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-12 21:49:40","Done
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(3, '', u'nilearn/decomposition/tests/test_canica.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-12 21:53:11","I made it more explicit
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-13 08:16:07","Seems to contradict the 'l1 norm' heuristic you chose ?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/tests/test_dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","bthirion","2015-07-13 08:18:34","Actually, this seems to trigger a travis failure
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/tests/test_dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-13 12:40:44","Fixed
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/tests/test_dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","AlexandreAbraham","2015-07-14 08:42:38","I am not very happy about this `keep_data_mem`... If it something only used in DictLearning, we should hide it from the user.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","AlexandreAbraham","2015-07-14 08:43:55","As discussed, I'd like to be able to bootstrap the dictionary learning with KMeans. Not a big deal, I think you should just add a `init_maps` parameter and call CanICA only if it is not provided.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","AlexandreAbraham","2015-07-14 08:45:17","Should we propose some post-normalization of the components?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(196, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","AlexandreAbraham","2015-07-14 08:55:27","I see what you are doing with `keep_data_mem`. However, is the speed up really worth the code overhead?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 09:16:56","It is, given that otherwise we have to reload all data (filter_and_mask takes a considerable time)
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:22:39","Alternative: ""Perform Dictionary Learning: divide brain maps by linear combinations of basis functions with sparse coefficients""
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(2, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 09:23:41","Plus it avoids code spaguetti, as we do not embed any masker logic within dict_learning
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 09:32:08","output of MiniBatchDictionaryLearning.fit is already normalized
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(196, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 09:47:08","Actually it may make more sense to call it SparsePCA
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(2, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:51:01","rather than indepedence [ICA] or orthogonality [PCA]
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:51:26","new sentence before yield
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:52:04","n_components = number of basis functions to learn from the data?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(41, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:52:52","after the PCA to .... .
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:53:43","You can say that faster: times-series are mean-centered and unit-variance scaled in the time dimension.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:55:03","The part in brackets: I think I know what you mean, but it is rather unclear the way it is said here
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 09:56:14","Defaults to 1.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 10:03:54","As a random thought: what to do in the case of extreme collinearity?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 10:06:02","perhaps mention that it is some kind of ""regression test"", as this caused us problems at some earlier point
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/tests/test_dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","banilo","2015-07-14 10:06:22","vanitas
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/tests/test_dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 11:48:45","If we have components with variance 0. ? We could raise a warning
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 11:52:49","It's a copy of MultiNiftiMasker docstring
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","GaelVaroquaux","2015-07-14 13:35:43","You cannot change the data_dir in an example. This crashes on people's computer.
+
+My advice: just make a symlink on your computer from ~/nilearn_data to whereever is convenient.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","GaelVaroquaux","2015-07-14 13:36:52","Same remark here about referring to /media
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","GaelVaroquaux","2015-07-14 13:37:14","We should import directly from nilearn.decomposition both objects.
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","GaelVaroquaux","2015-07-14 13:40:35","Avoid having 3 for loops: just do one for loop, and each time, fit the estimator, save the results and plot them
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 13:55:19","I am merging the two first loops but merging the last one would involve keeping a list of figures, I think it would make the example less readable
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","GaelVaroquaux","2015-07-14 13:56:06","All the attributes that are estimated from data should end with an underscore: self.dict_init_ (scikit-learn convention).
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","GaelVaroquaux","2015-07-14 13:57:19","I would think that here you can use the function 'online_dict_learning' from scikit-learn, rather than the object. Is there a reason that you are using the object?
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 13:59:10","I found it more elegant to use inheritance, and I had in mind that we could use a partial fit in the future
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","638","nilearn","nilearn","arthurmensch","2015-07-14 14:29:36","OK I changed this
+","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-08 09:35:00","Base code for l1 dictionary learning","50f5d957034154a5788d5f31a72601a7fd3c1e95",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-08 11:55:48","Base code for l1 dictionary learning","95cba24e587d81b680fcf96f199395c67cf972f1",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-08 15:40:57","Base code for l1 dictionary learning","5952515ce9cce2978570a4ba0dc12f1390b670b0",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-09 07:07:12","Working on PR","2d35b9ab6d5a44f22090560da0cc184deac78ed5",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-09 08:09:39","Added tests","a13ec1e8f959257f9602d86381f94c3b6f916790",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-09 08:09:53","Added tests","bdd6057e1bd23e8c0c6097e86fca2a87cc828631",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-09 08:11:09","PEP8","0592a6ff236f5f1a2a9f6eb02f5323a3306f8235",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-12 10:23:06","Moved experimental code into seperate branch + adressed comments","d0d335eea2dbac180086caff6b731fe9a2f7d05a",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-12 21:46:23","Added","b11a756374c989085046ed7f8fb332287059e6de",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-12 21:48:07","Comments","d7c243b170b579136900802d28ab28c3fd5bb325",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-12 21:51:18","Comments","b336e7e53be9fbbc27b8f0193f4e1efcbf0ef40d",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-13 10:16:19","Improved example","c523250ec2ec0533a682af1fc866c68050c22cda",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-13 12:35:22","Changed tests","02352eb8c65ba269600e5112b23797077764f217",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-13 15:45:08","Changed parameters","06ec21b702d1b3b272a42dd14be081ca39dc4084",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-13 16:13:42","Changed example","3850be069aff646e4f0bf14782ded9a0bd70d1a8",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-13 16:21:00","Fix","591dbb00177104c750c7e377d07022e4d1aced3c",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 09:36:16","Removed keep_data_mem from API","61728a7e011e6eaa206d267ba0d31634a009b0b3",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 11:46:27","Travis","9b37cea5533a4a346c9225620d54bb8e4aaa35da",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 11:52:07","Addressed banilo comments","daabb9296bd1a18ee96374d1ca24cdd13beefa55",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 11:56:42","Cleaned dict learning api","4c361969a826c920252b190aec1e77bdcdc08731",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 13:57:50","WIP","27d2724e28113ba5951302cf875bd4327d3180dd",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 14:28:27","Suing dict_learning_online","e4e0e9f1c419880f66f2bb6ab21b0bc9a0d2a831",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 14:30:29","__init__.py","5c2ea462677e108a33df4107aac6306bda462b2d",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 15:16:27","Travis","35806e28d80cca6feecc330f5adc7b88254ae5b9",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 15:38:24","Travis","643ce4b2019d214f8dd601ad541f86a6e05e5a0e",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 15:50:25","Travis","89e4d41c622f7531a1b351444e5e775812e074a4",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-14 16:39:57","Travis","46709296a0111a18ac46a49ca7f5d6e46bafb645",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-15 08:23:21","Travis","3f13ed8999aed607cca26719f0d1735450b1a146",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-15 08:33:55","Travis","0644a5c3b3f14ae5955655e89ad154a061b2fa19",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-15 09:04:06","Travis","51d239238e36b143061d2aceff3e787ba463b9c8",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-15 09:13:54","Travis","c207177317fd3fe1d9b22f8711f397140345522e",""
+"pull_request_commit","638","nilearn","nilearn","arthurmensch","2015-07-15 12:18:44","Fixed example","75e8fe3c4f84b0b3e331f1e8e51987e92b736cb0",""

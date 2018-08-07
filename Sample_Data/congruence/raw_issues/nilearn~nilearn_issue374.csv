@@ -1,0 +1,140 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","374","nilearn","nilearn","mrahim","2015-01-30 14:24:46","When I try `signal.butterworth()` function to high-pass filter fMRIs, it gives strange result. This filter is used when masking data. 
+Here is an example :
+
+``` python
+import matplotlib.pyplot as plt
+from nilearn.datasets import fetch_adhd
+from nilearn.input_data import NiftiMasker
+from nilearn.signal import butterworth
+
+dataset = fetch_adhd(n_subjects=1)
+fmri = dataset['func'][0]
+
+masker = NiftiMasker()
+X = masker.fit_transform(fmri)
+
+t_r = 2.5 # KKI site
+X_filtered = butterworth(signals=X, sampling_rate=1./t_r, high_pass=.001, copy=True)
+fmri_filtered = masker.inverse_transform(X_filtered)
+fmri_filtered.to_filename('fmri_filtered.nii.gz')
+
+# Timeseries of the 10th voxel
+plt.plot(X[:,10])
+plt.plot(X_filtered[:,10], 'g')
+```
+
+![filtering](https://cloud.githubusercontent.com/assets/8612476/5977118/35cf306a-a895-11e4-88af-ebb15417a050.png)
+","start issue","High pass filtering removes constant part of the signal (was signal.butterworth() filtering produces weird values)"
+"issue_comment","374","nilearn","nilearn","agramfort","2015-03-05 07:35:09","You should always use filtfilt unless you want to keep the filter causal. It's better for phases too
+
+> On 5 mars 2015, at 06:57, Gael Varoquaux notifications@github.com wrote:
+> 
+> > If we use filtfilt which applies the filter forward and backward, we
+> > get the following detrended result:
+> 
+> That looks much better. Is there a reason not to use it?
+> —
+> Reply to this email directly or view it on GitHub.
+","",""
+"issue_comment","374","nilearn","nilearn","GaelVaroquaux","2015-02-02 13:45:03","> @GaelVaroquaux @lesteve any thought on this one? I think that it's an urgent matter.
+
+I agree it's urgent and should be solved. @mrahim: what would be your
+expected behavior?
+","",""
+"issue_comment","374","nilearn","nilearn","GaelVaroquaux","2015-02-02 14:05:45","> From a chat with both of them, @mrahim has chosen the parameters so that the
+> green and blue curves should be almost identical. In other words, the filter
+> should not filter anything out because high_pass is very low.
+
+It seems to me that high pass filtering will always filter out the
+constant part of the signal. It's low pass filtering that might keep the
+data almost invariant.
+","",""
+"issue_comment","374","nilearn","nilearn","GaelVaroquaux","2015-02-02 18:29:31","> It should be possible to add the trend back the data.
+
+Then lets do this, but not with a value for high_pass: high-passed
+filtered data has no DC + trend.
+","",""
+"issue_comment","374","nilearn","nilearn","GaelVaroquaux","2015-03-05 05:57:12","> If we use filtfilt which applies the filter forward and backward, we
+> get the following detrended result:
+
+That looks much better. Is there a reason not to use it?
+","",""
+"issue_comment","374","nilearn","nilearn","GaelVaroquaux","2015-03-05 08:40:50","> I don't understand: for me,
+> high-pass filtering (almost)= removing low-order polynomial (e.g. linear)
+> trends.
+> Sometimes, there is still information in the mean signal (e.g. if you want to
+> express fluctuation as percent of the baseline in first-level analysis), hence
+> my suggestion to keep the mean signal.
+
+But that contradicts the definition of a high-pass filter. Thus I think
+that we should not do it.
+","",""
+"issue_comment","374","nilearn","nilearn","GaelVaroquaux","2015-03-05 08:42:42","> For the current uses cases, I agree, but I'm sure that we will have to revisit
+> this at some point in the future.
+
+But then we shouldn't call it ""high-pass filtering"".
+","",""
+"issue_comment","374","nilearn","nilearn","GaelVaroquaux","2015-03-05 16:24:38","I am puzzled. Anybody from signal processing will tell you that high-pass
+filtering removes the constant value.
+
+It seems that some software in the neuroimaging community have choosen to
+implement under the name ""high-pass filtering"", something that is
+actually not high-pass filtering. Should we do the same? I am worried
+that we shouldn't reproduce what is wrong is other softwares.
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-02-10 10:13:11","So, I don't know for SPM but FSL seems to fit a linear trend on the data and use it as steady state.
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-03-05 00:58:34","Note: the artefact is due to the fact that we use lfilter on the signal that filter the signal in one way only. If we use filtfilt which applies the filter forward and backward, we get the following detrended result:
+
+![filtfilt](https://cloud.githubusercontent.com/assets/1647301/6497068/1f8c6efc-c2db-11e4-86d4-0a01e9fe7944.png)
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-03-05 08:32:03","Fixed in 25c05eb0e3e4c3e0f94ab963dc04ccdf56aaa69f. Now we have to decide: is there any case where we want to apply high-pass filtering and still keep the linear trend? @bthirion 
+","",""
+"issue_comment","374","nilearn","nilearn","bthirion","2015-03-05 08:38:54","I don't understand: for me,
+high-pass filtering (almost)= removing low-order polynomial (e.g. linear) trends.
+Sometimes, there is still information in the mean signal (e.g. if you want to express fluctuation as percent of the baseline in first-level analysis), hence my suggestion to keep the mean signal.
+","",""
+"issue_comment","374","nilearn","nilearn","bthirion","2015-03-05 08:41:56","For the current uses cases, I agree, but I'm sure that we will have to revisit this at some point in the future.
+","",""
+"issue_comment","374","nilearn","nilearn","bthirion","2015-03-05 08:45:24","Fair enough, but in terms of signal analysis, I would make a difference between the mean signal, which essentially reveals anatomical features, and the slow fluctuations (removed by high-pass filtering), which can be related to physiological or hardware effects. 
+To me, removing the mean pertains to standardization, not hp filtering, but I agree that this is not a canonical wording.
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-03-05 08:53:17","> But then we shouldn't call it ""high-pass filtering"".
+
+This is still high-pass filtering but applied by considering the mean of the signal as the steady state. Scipy allows it (through the use of `lfilter_zi`) and this is what FSL does (I don't know for SPM).
+Since I detrend the signal, I am not really concerned by this issue but I'm worried about people going from FSL to nilearn and having bad surprises.
+
+If we keep the trend of the signal by default, we can achieve both behaviors:
+- `detrend=True, high_pass=0.01` achieves what Gael wants
+- `detrend=False, high_pass=0.01` achieves what Bertrand wants
+
+We can also consider adding a `steady_state=['zero', 'mean', 'linear']`.
+","",""
+"issue_comment","374","nilearn","nilearn","bthirion","2015-03-05 18:35:18","I agree with you point. I just wanted to warn that in some future settings (first-level glm) it will become an issue, as it is standard to express betas (task effects) as percent of the baseline signal.
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-04-15 12:34:08","I cleared the milestone since we are not going to adree on something in a near future.
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-02-02 13:25:13","OK, so here is the explanation of the phenomenon: scipy.signal.lfilter assumes that the steady state for the signal is constant 0. Given that it's not the case here, we can see the transient signal at the beginning. We have 2 options:
+- Impose `detrend=True` when filtering
+- Estimate the trend from the signal, detrend, filter, and apply the trend again (if we want to handle `detrend=False` properly).
+
+A third option would be to use `lfilter_zi` and multiply it by the mean of the signal but it is equivalent to removing the mean to the signal.
+
+@GaelVaroquaux @lesteve any thought on this one? I think that it's an urgent matter.
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-02-02 14:21:43","> It seems to me that high pass filtering will always filter out the constant part of the signal. It's low pass filtering that might keep the data almost invariant.
+
+As a general matter, yes. This is why the `butterworth` function is not intrinsically wrong. But the fact is that we don't want to let anybody do what Mehdi did, meaning using `clean` with a `high_pass` filter but `detrend=False`, at least with fMRI. So we should either output a warning, or offer the possibility of take the linear trend into account for filtering.
+","",""
+"issue_comment","374","nilearn","nilearn","AlexandreAbraham","2015-02-02 18:58:11","I didn't get your remark.
+","",""
+"issue_comment","374","nilearn","nilearn","lesteve","2015-02-02 14:03:03","From a chat with both of them, @mrahim has chosen the parameters so that the green and blue curves should be almost identical. In other words, the filter should not filter anything out because high_pass is very low.
+","",""
+"issue_comment","374","nilearn","nilearn","banilo","2015-01-30 14:28:08","Could you please paste the plot output here for convenience?
+","",""
+"issue_comment","374","nilearn","nilearn","mrahim","2015-02-02 14:03:28","I think that detrending should be done by default.
+In case of no detrending, and after discussing with @AlexandreAbraham and @lesteve , we could set the initial state (`zi`) with the trend.
+","",""
+"issue_comment","374","nilearn","nilearn","mrahim","2015-02-02 14:16:46","Sure, the filtered signal will be standardized, and we should still have a well correlated signal with a small high_pass threshold. The problem seems to be on the intitial state.
+","",""

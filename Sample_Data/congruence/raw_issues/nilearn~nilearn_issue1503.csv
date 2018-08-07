@@ -1,0 +1,109 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1503","nilearn","nilearn","nilearn-user","2017-08-28 10:48:54","Hello,
+How can I get the AAL atlas coords?","start issue","AAL coords"
+"issue_closed","1503","nilearn","nilearn","nilearn-user","2017-08-30 13:33:38","","closed issue","AAL coords"
+"issue_comment","1503","nilearn","nilearn","bthirion","2017-08-28 21:38:22","Sorry, but do you mean that you don't know how to install the code of #664, or that you've been able to install it, but it didn't work for your input, or didn't give the kind of result that you expected ?
+Best,","",""
+"issue_comment","1503","nilearn","nilearn","mrahim","2017-08-30 11:34:54","Hi @nilearn-user ,
+You can try this :
+
+```python
+import numpy as np
+from nilearn.datasets import fetch_atlas_aal
+from nilearn.plotting import find_xyz_cut_coords
+import nibabel as nib
+
+# fetch atlas and get image data
+aal = fetch_atlas_aal()
+aal_img = nib.load(aal['maps'])
+aal_data = aal_img.get_data()
+
+aal_coords = []
+# iterate over all rois
+for index in aal['indices']:
+    # set the current roi to 1
+    roi_data = np.array(aal_data)
+    roi_data[roi_data != int(index)] = 0
+    roi_data[roi_data == int(index)] = 1
+    # create an image for the current roi
+    roi_img = nib.Nifti1Image(dataobj=roi_data, affine=aal_img.affine)
+    # extract roi center of mass
+    aal_coords.append(find_xyz_cut_coords(roi_img))
+```","",""
+"issue_comment","1503","nilearn","nilearn","KamalakerDadi","2017-08-28 10:54:01","The issue is very similar to what you have asked before in this issue #1455 . You could find script there
+how to do it. Or You can use this code from PR #664 at the moment.
+
+But, soon we would like to merge that PR in Nilearn.","",""
+"issue_comment","1503","nilearn","nilearn","nilearn-user","2017-08-28 16:58:26","I tried the same script as for harvard atlas but it didn't work. And I looked at #664 too but didn't work for me. Isn't there a way to extract the coords simply as for harvard and msdl?","",""
+"issue_comment","1503","nilearn","nilearn","nilearn-user","2017-08-29 07:48:44","through #664 I've gone to #646 as mentionned in the first comment in #664,
+I copied the code in my worksheet in python but when I tried using it it
+didn't work
+
+the code I copied is this:
+
+%matplotlib inlinefrom nilearn import datasets, plottingfrom
+nilearn._utils import  check_niimgimport numpy as np from
+nilearn._utils.ndimage import largest_connected_component from scipy
+import ndimagefrom nilearn.image import resampling
+
+destrieux = datasets.fetch_atlas_destrieux_2009()
+def get_parcellation_coordinates(label_img):
+    # grab data and affine
+    label_img = check_niimg(label_img)
+    label_data = label_img.get_data()
+    label_affine = label_img.get_affine()
+
+    # grab number of unique values in 3d image
+    label_unique = np.unique(label_data)[1:]
+
+    # grab center of mass from parcellations and dump into coords list
+    coord_list = []
+    for i, cur_label in enumerate(label_unique):
+        cur_img = label_data == cur_label
+
+        #take the largest connected component
+        volume = np.asarray(cur_img)
+        labels, label_nb = ndimage.label(volume)
+        if not label_nb:
+            raise ValueError('No non-zero values: no connected components')
+        if label_nb == 1:
+            volume = volume.astype(np.bool)
+
+        # get parcellation center of mass
+        center_of_mass = ndimage.center_of_mass(volume)
+        world_coords = resampling.coord_transform(center_of_mass[0],
+                                                  center_of_mass[1],
+                                                  center_of_mass[2],
+                                                  label_affine)
+
+        coord_list.append((world_coords[0],
+                           world_coords[1],
+                           world_coords[2]))
+
+    return coord_list
+
+
+
+2017-08-28 22:38 GMT+01:00 bthirion <notifications@github.com>:
+
+> Sorry, but do you mean that you don't know how to install the code of #664
+> <https://github.com/nilearn/nilearn/pull/664>, or that you've been able
+> to install it, but it didn't work for your input, or didn't give the kind
+> of result that you expected ?
+> Best,
+>
+> —
+> You are receiving this because you authored the thread.
+> Reply to this email directly, view it on GitHub
+> <https://github.com/nilearn/nilearn/issues/1503#issuecomment-325490295>,
+> or mute the thread
+> <https://github.com/notifications/unsubscribe-auth/AbaNPoFtSchDrZ7R1XtLtekQnrD-iRU3ks5sczNRgaJpZM4PEXTa>
+> .
+>
+","",""
+"issue_comment","1503","nilearn","nilearn","nilearn-user","2017-08-30 08:40:10","Isn't there anything at all that I can do to get the AAL atlas coords? I'm still a begginer in python so I don't know much about it.
+I'll be gratefull if you tell me exactely what to do to get those coords.","",""
+"issue_comment","1503","nilearn","nilearn","KamalakerDadi","2017-08-30 08:48:20","I suggest to have a look at the function ```def find_parcellation_cut_coords(``` in PR #664 but not in #646 
+There is an example called as ```plot_atlas_comparison.py``` in the same PR #664 which tells you how to use the function ```find_parcellation_cut_coords```. Can you please try that ?","",""
+"issue_comment","1503","nilearn","nilearn","nilearn-user","2017-08-30 13:32:03","Thank you all for your help.
+Thank you so much @mrahim the code works perfectely.","",""

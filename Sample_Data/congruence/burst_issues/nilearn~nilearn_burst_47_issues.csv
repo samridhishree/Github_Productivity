@@ -1,0 +1,1715 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,239,nilearn,nilearn,AlexandreAbraham,2014-09-15 02:36:39,"This PR introduces a function to fetch the ABIDE dataset preprocessed by the preprocessed connectome project (PCP). This function proposes several options, such as restriction to the subjects for which the quality check is OK, along with the selection of the preprocessing pipeline.
+
+Note: I haven't tested the downloading function for all available preprocessing pipeline because of the size of the datasets. There is no example using this dataset in the PR.
+
+@ccraddock @GaelVaroquaux 
+",start issue,Preprocessed ABIDE fetching function
+2,issue_closed,239,nilearn,nilearn,AlexandreAbraham,2014-10-07 18:30:41,,closed issue,Preprocessed ABIDE fetching function
+3,pull_request_title,239,nilearn,nilearn,AlexandreAbraham,2014-09-15 02:36:39,"This PR introduces a function to fetch the ABIDE dataset preprocessed by the preprocessed connectome project (PCP). This function proposes several options, such as restriction to the subjects for which the quality check is OK, along with the selection of the preprocessing pipeline.
+
+Note: I haven't tested the downloading function for all available preprocessing pipeline because of the size of the datasets. There is no example using this dataset in the PR.
+
+@ccraddock @GaelVaroquaux 
+",79a4acc41d8aac16d4f6e6aa5c3f51bffc51cece,Preprocessed ABIDE fetching function
+4,pull_request_merged,239,nilearn,nilearn,AlexandreAbraham,2014-10-07 18:30:41,Preprocessed ABIDE fetching function,30a9395b1514cfab5d5172342d691b9a063ed271,Pull request merge from AlexandreAbraham/nilearn:abide_fetcher to nilearn/nilearn:master
+5,pull_request_commit_comment,239,nilearn,nilearn,GaelVaroquaux,2014-09-22 09:41:58,"Is there a good reason to use this function, or can we use np.recfromcsv, which would avoid importing from matplotlib?
+",79a4acc41d8aac16d4f6e6aa5c3f51bffc51cece,"(196, '', u'nilearn/datasets.py')"
+6,pull_request_commit_comment,239,nilearn,nilearn,AlexandreAbraham,2014-09-22 15:04:18,"Yes, unfortunately. The CSV file contains a ""comment"" column with strings (quoted text) and these strings contain commas. Unfortunately, AFAIK, numpy is not able to read CSV with strings containing commas.
+",79a4acc41d8aac16d4f6e6aa5c3f51bffc51cece,"(196, '', u'nilearn/datasets.py')"
+7,pull_request_commit,239,nilearn,nilearn,AlexandreAbraham,2014-09-14 15:26:31,Add the column filter functions.,52da3f7d0182cc07da506da3d7afddac4cfbb327,
+8,pull_request_commit,239,nilearn,nilearn,AlexandreAbraham,2014-09-14 18:35:57,Add ABIDE fetching function,800ab68273832946422c593eb208daac7d1e8df0,
+9,pull_request_commit,239,nilearn,nilearn,AlexandreAbraham,2014-09-15 02:23:55,Add tests for fetch_abide and column filtering,79a4acc41d8aac16d4f6e6aa5c3f51bffc51cece,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,262,nilearn,nilearn,Titan-C,2014-10-14 09:25:29,"Create the nilearn_data folder if none existant to keep the default behavior.
+Simple test added.
+",start issue,Dataset download fails in a fresh install
+2,issue_closed,262,nilearn,nilearn,lesteve,2014-10-31 12:50:38,,closed issue,Dataset download fails in a fresh install
+3,pull_request_title,262,nilearn,nilearn,Titan-C,2014-10-14 09:25:29,"Create the nilearn_data folder if none existant to keep the default behavior.
+Simple test added.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,Dataset download fails in a fresh install
+4,pull_request_merged,262,nilearn,nilearn,lesteve,2014-10-31 12:50:38,Dataset download fails in a fresh install,e53c20c19579ce725e84627aa2b099160915392a,Pull request merge from Titan-C/nilearn:fetch_haxby to nilearn/nilearn:master
+5,issue_comment,262,nilearn,nilearn,lesteve,2014-10-14 09:49:24,"Actually this is a duplicate of #257.
+",,
+6,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-14 13:26:40,"Yes, I agree is a better place to change the code in that place.
+The try except statement will raise the problem as soon as it cannot make the directory in the first path, whereas I think it shall raise the exception if none of the given paths is writable.
+",,
+7,issue_comment,262,nilearn,nilearn,lesteve,2014-10-14 13:31:17,"I haven't tested it as I said earlier, but I think if the directory can not be created, then `exc.errno == errno.EACCESS` and the exception is not reraised.
+",,
+8,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-14 14:54:58,"This is a serious matter so I pushed a temporary fix on master.
+
+I think that your ideas are good: I did not consider that one could want to store data in a path that doesn't exist. I suggest something like:
+
+``` python
+exc = None
+for path in paths:
+    path = os.path.join(path, dataset_name)
+    try:
+        if not os.path.exists(path):
+            os.path.makedirs(path)
+    except Exception as e:
+        if exc is None:
+            exc = e
+    else:
+        print 'Dataset created in', path
+        return path
+raise exc
+```
+",,
+9,issue_comment,262,nilearn,nilearn,GaelVaroquaux,2014-10-14 14:57:23,"> I think that your ideas are good: I did not consider that one could want to
+> store data in a path that doesn't exist. I suggest something like:
+
+Yes! Great job from everybody involved
+",,
+10,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-14 16:05:58,"I liked @lesteve idea better. I include the updated pull request with test.
+",,
+11,issue_comment,262,nilearn,nilearn,lesteve,2014-10-14 16:33:12,"FWIW, I managed to retrieve one IPython thread about the race condition when doing:
+
+``` python
+if not os.path.exists(mydir):
+    os.makedirs(mydir)
+```
+
+http://thread.gmane.org/gmane.comp.python.ipython.devel/12683
+
+Their solution to this problem is quite interesting:
+https://github.com/ipython/ipython/pull/5739/files#diff-e9abe1130c725e4d7a576d28fa2072b4R568
+",,
+12,issue_comment,262,nilearn,nilearn,GaelVaroquaux,2014-10-14 16:48:51,"> FWIW, I managed to retrieve one IPython thread about the race condition when
+> trying to do:
+
+Yes, usually the ""correct way"" of doing things is to trying creating, and
+then test if it exists in case of failure. Sounds weird, but that's
+robust :).
+",,
+13,issue_comment,262,nilearn,nilearn,lesteve,2014-10-14 16:55:09,"I am going to close this issue since the main problem has been fixed in master. @Titan-C, tests would be very useful indeed to prevent similar problems from happening again. Could you please open a new PR for these?
+",,
+14,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-14 17:18:03,"I've only put a quickfix on master so that we were not in a hurry to decide what was the right way to do it. I think we should merge a PR with a clean solution (and for the sake of authorship since Titan-C raised this issue).
+
+@Titan-C : Can you make a clean PR? (rebase on master, remove unnecessary commits). If you don't have time, I'll merge your proposition directly into master.
+",,
+15,issue_comment,262,nilearn,nilearn,lesteve,2014-10-14 17:22:35,"OK, fair enough reopening then.
+",,
+16,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-14 17:24:54,"I included the ideas of the IPython solution. I also merged this with the previous loop that searches for the existing directory.
+",,
+17,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-14 17:45:18,"Since there are now several possible errors, I think we should make the error message more informative.
+Something like:
+
+```
+Nilearn tried to store the dataset in the following directories, but errors occured:
+- /path/number/1/dataset (no write permission)
+- /path/number/2/dataset (exists and is a file)
+...
+```
+
+The goal here is to output an error message that a user can copy/paste to his administrator. It should contain enought information to know what's happening.
+",,
+18,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-14 20:08:11,"Yes there are many possible errors, but the aim of this function is to output a working directory path to load the data set in.
+The clauses `if exc.errno != os.errno.EACCES` and `if exc.errno != os.errno.EEXIST:` are to continue iterating over the available paths.
+Limited by my python knowledge: How do you present a report on the multiple exceptions that happened? and is it relevant to present them if one path was able to store the dataset.
+",,
+19,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-14 20:46:52,"We should not stop in case of `os.errno.EACCES` exception. This is normal and it is going to happen often. For the EEXIST exception, we should stop if path exists and is a directory (because this is a race condition) but, if this is a file, then we should move on.
+In any case, the dataset fetcher is not robust if called several calls to the same function occur at the same time, so handling race condition is not our n°1 priority.
+
+You can catch all the exceptions and generate your error message afterward (see the snipper of code I submitted above).
+",,
+20,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-17 23:01:18,"Apart from minor details regarding error messages, LGTM.
+",,
+21,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-24 11:38:41,"In this case the test will check for a directory getting created. In a clean environment it will be the ./nilearn_data/test000 and if environment variables where set the returned string is also checked. 
+
+On the first change I came to fail the test, by working inside the temporary folder. With the instruction `os.chdir(tmpdir)`. This causes 5 tests to fail. But I couldn't understand why?
+https://travis-ci.org/nilearn/nilearn/jobs/38905299
+
+workaround is to return to the test directory after the test.
+",,
+22,issue_comment,262,nilearn,nilearn,lesteve,2014-10-24 11:48:22,"It seems like `os.getcwd()` raises an Exception if the current directory does not exist any more:
+
+``` python
+import os
+
+tmp_dir = '/tmp/asdf'
+os.makedirs(tmp_dir)
+os.chdir(tmp_dir)
+os.rmdir(tmp_dir)
+os.getcwd()
+```
+
+That is what was happening in your case since you cd'ed into a directory that was removed by teardown_tmpdata once the test was run.
+",,
+23,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-27 23:25:34,"extended get_dataset_dir test
+- Included error raising control under regular expressions.
+- Testing under different environment variables(it took me a very long while to notice that the proposed code mixed `NILEARN_SHARED_DATA` and `SHARED_NILEARN_DATA`)
+",,
+24,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-28 12:41:02,"suggestions included in testing code.
+",,
+25,issue_comment,262,nilearn,nilearn,lesteve,2014-10-28 13:16:24,"Generic comment, I see that you have done this twice in this PR but in general, meaning as long as github tells you that the PR can be automatically merged, there is no strong reason to merge master into your branch.
+",,
+26,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-28 13:20:09,"Also, it is not recommended to merge master into your branch. If your PR cannot be automatically merged, it is better to rebase on master to keep a clean git history.
+",,
+27,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-28 18:35:01,"I learned to do the rebase on master. Is it also possible to merge/join/delete some commits?
+",,
+28,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-28 18:38:14,"You can manage your commits the way you want! The best is to try avoiding ""work in progress"" commits. For example when you change a bit of code somewhere and then revert your change with another commit.
+",,
+29,issue_comment,262,nilearn,nilearn,Titan-C,2014-10-31 10:35:44,"Error message string is fixed.
+PR is newly rebased to master and commits have been squashed together for a clearer commit history
+",,
+30,issue_comment,262,nilearn,nilearn,lesteve,2014-10-31 12:50:41,"Great stuff, merging!
+",,
+31,issue_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-31 16:50:15,"Great work @Titan-C, sorry for the nitpicking ;).
+",,
+32,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-14 11:46:30,"I don't think this is quite the right approach, the reason being that the dataset download folder can be different from ./nilearn_data (look at the docstring a few lines above for more details).
+
+What I would rather do is change the code [here](https://github.com/Titan-C/nilearn/blob/c87564faf524358b77f8452d13eadecc9d30d265/nilearn/datasets.py#L223) to use EAFP, something like (not tested and improvements welcome):
+
+``` python
+for path in paths:
+    path = os.path.join(path, dataset_name)
+    try:
+        os.path.makedirs(path)
+        print 'Dataset created in', path
+        return path
+    except IOError as exc:
+        if exc.errno != errno.EACCESS:
+            raise
+```
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+33,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-15 10:11:13,"You shouldn't merge the two `for path in paths` loop. Let me try to summarise the logic as I understand it @AlexandreAbraham feel free to jump in if I missed something.
+
+We are trying to return the dataset asked by the user:
+1. We are checking whether the dataset has already been downloaded in one of the dataset download folders. The possible download folders are listed [here](https://nilearn.github.io/developers/dataset_download.html#dataset-directory) in order of priority.
+2. If the dataset hasn't been downloaded yet, we are going to download it in the first download folder we can write to.
+3. If we weren't able to create a subdirectory in any of the possible download folders, we want to raise an error with a summary of why it failed in each of the folder we tried.
+
+For more details about the motivations behind all this, see this [issue](https://github.com/nilearn/nilearn/issues/160) and the issues referenced in it.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+34,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-15 10:16:04,"For completeness, what your current code may do is download the dataset again even if the dataset had already been downloaded in one of the folder down the priority list.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+35,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-17 22:57:34,"You should put the path before the error message. A good result would be:
+
+```
+Nilearn bla bla:
+- /I/tried/this/path (no write permission)
+```
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+36,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-17 22:58:02,"Should the string be concatenated?
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+37,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-17 22:58:43,"'\n -' may be better? (no strong feeling)
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+38,pull_request_commit_comment,262,nilearn,nilearn,Titan-C,2014-10-18 08:37:13,"Actually the exceptions default error string is:
+
+```
+[Error #] the particular error message: /the/tried/path
+```
+
+So I did not include the path in the error message. All the possible errors are treated equally(included in the log) and one does not need to worry about specific clauses for each error. Then at the end of the loop of tested directories, if none is usable to download the dataset the exception is raised with the summary of the error raised by each directory.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+39,pull_request_commit_comment,262,nilearn,nilearn,Titan-C,2014-10-18 08:38:38,"yes I forgot to fix this line. it's concatenated
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+40,pull_request_commit_comment,262,nilearn,nilearn,Titan-C,2014-10-18 09:24:19,"I'm going to delete this clause. It was imported from the IPython solution. But it is aimed at building a directory only. Since our `path` variable already includes the `nilearn_data` directory and the expected data set directory. This clause is already trapped in the previous try clause.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+41,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-18 15:34:45,"I think that it would be better to do something like: `""%s (%s)"" % (path, e.strerror)`
+It would be more significant for non technician people that may be scared by the standard error message. Also, you don't know if the path will be included in the message. In particular, on Windows, the error messages are totally non informative sometimes.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+42,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-18 15:35:27,"I agree since this message should never pop up.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+43,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-20 09:25:35,"This is not necessarily true, for example if NILEARN_DATA is set and the user has write access to it, which is a reasonable scenario.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+44,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-20 09:36:05,"You should spend some time setting up your environment to get warnings in your editor when you are not following PEP8. For example, [here](http://scipy-lectures.github.io/advanced/debugging/index.html#a-type-as-go-spell-checker-like-integration) are some instructions.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+45,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-20 09:40:13,"Not the greatest of ideas. When you want to run the examples, you need to download ~5GB of datasets which takes time. You definitely don't want to remove this folder each time you are running the tests.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+46,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-20 09:45:44,"Very minor niggle, not sure whether you chose `fil` to prevent shadowing the `file` builtin but I would rather have `afile`, `my_file`, `this_file`, or any other variation that tickles your fancy.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+47,pull_request_commit_comment,262,nilearn,nilearn,Titan-C,2014-10-23 17:49:41,"I'm unsure then how to test for this case. I considered the fresh install and no global variables. Shall it be a test on the output string?
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+48,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-23 18:21:23,"If the environment is not clean, we just have to clean it. And test all possible cases. Something like that:
+
+``` Python
+import os
+
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_get_dataset_dir():
+    os.chdir(tmpdir)
+    os.environ.pop['NILEARN_DATA']
+    os.environ.pop['NILEARN_SHARED_DATA']
+    data_dir = datasets._get_dataset_dir('test')
+    #Verify the directory gets created
+    assert(os.path.exists(data_dir))
+    os.environ['NILEARN_DATA'] = './test_nilearn_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+    os.environ['SHARED_NILEARN_DATA'] = './shared_nilearn_data'
+    data_dir.datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+```
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+49,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-23 18:29:27,"I think that as you mentionned earlier, you should test both the string returned by _get_dataset_dir and that the folder has been created. I believe the folder you should check for existence is in the simplest case (no environment variables set) is 'nilearn_data/test' rather than 'nilearn_data' and that you should remove this folder after the assert to clean up and make sure that the test is always run in the same conditions.
+
+In an ideal world you would set `os.environ['NILEARN_DATA']` and `del os.environ['NILEARN_DATA']` to make sure in the test knows where the dataset folder will be created independently of the environment the test is run in.
+
+The ""fresh install + no environment variable set"" case you were referring above will actually be tested by Travis since each time we get a fresh new worker I am guessing.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+50,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-24 12:08:08,"`strerror` is not an attribute for all Exception instances. Maybe you can use exc.args which is guaranteed to exist.
+
+TBH I am wondering whether we should catch only EnvironmentError here, in which case `strerror` is fine.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+51,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-24 12:12:14,"I think the docstring is slightly misleading and should be removed. nilearn_data doesn't have to be created, for example if NILEARN_DATA is set.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+52,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-24 12:14:17,"I would use assert_raises_regexp to check that the error message is the one you are expecting.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+53,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-24 12:14:43,"Same as above.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+54,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-24 12:25:09,"Ideally you should test the full path under different environment variables setups.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+55,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-24 17:01:04,"Well, that's exactly what I put in another note. I put it again here:
+
+``` Python
+import os
+
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_get_dataset_dir():
+    os.chdir(tmpdir)
+    os.environ.pop['NILEARN_DATA']
+    os.environ.pop['NILEARN_SHARED_DATA']
+    data_dir = datasets._get_dataset_dir('test')
+    #Verify the directory gets created
+    assert(os.path.exists(data_dir))
+    os.environ['NILEARN_DATA'] = './test_nilearn_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+    os.environ['SHARED_NILEARN_DATA'] = './shared_nilearn_data'
+    data_dir.datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('shared_nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+```
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+56,pull_request_commit_comment,262,nilearn,nilearn,Titan-C,2014-10-24 23:02:08,"my previous attempt was using `str(exc)`, but I was corrected into using `strerror` to enforce the formatting of the error message. Indeed here what is in general expected is an `OSError`
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+57,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-25 01:17:47,"It's true that we may encounter different error than EnvironmentalError. Maybe we should put a special case. The goal is to have the best error message possible for the user.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+58,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-28 08:04:17,"> It's true that we may encounter different error than EnvironmentalError
+
+@AlexandreAbraham out of curiosity do you have an example where os.makedirs raise an exception which is not an EnvironmentError?
+
+> my previous attempt was using str(exc), but I was corrected into using strerror to enforce the formatting of the error message
+
+@Titan-C Do you have an example where `str(exc)` is not good enough? In the couple of cases I could think of, it looks ok to me:
+- `""[Errno 13] Permission denied: '/asdfa'""`
+- `""[Errno 17] File exists: '/tmp/file'""`
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+59,pull_request_commit_comment,262,nilearn,nilearn,Titan-C,2014-10-28 08:37:06,"as @AlexandreAbraham wrote before
+
+> I think that it would be better to do something like: ""%s (%s)"" % (path, e.strerror)
+> It would be more significant for non technician people that may be scared by the standard error message. Also, you don't know if the path will be included in the message. In particular, on Windows, the error messages are totally non informative sometimes.
+
+I guess beyond formatting is the windows error messages.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+60,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-28 08:42:04,"Why not call it 'nilearn_data'?
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+61,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-28 08:42:08,"Why not call the variable `data_dir` and the folder name 'test' like the other tests below?
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+62,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-28 08:55:38,"OK, putting the path explicitly in the error message sounds fine. If we stick to catching `Exception` rather than `EnvironmentError` we will need something like:
+
+``` python
+short_error_message = getattr(exc, 'strerror', str(exc))
+errors.append('\n -{} ({})'.format(path, short_error_message))
+```
+
+to make sure this works with all kinds of exceptions. 
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+63,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-28 08:58:14,"The next two lines can be simplified with:
+
+``` python
+os.environ.pop('NILEARN_DATA', None)
+```
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+64,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-28 08:58:51,"Same remark as above
+
+``` python
+os.environ.pop('NILEARN_SHARED_DATA', None)
+```
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+65,pull_request_commit_comment,262,nilearn,nilearn,Titan-C,2014-10-28 09:02:05,"because `nilearn_data` is already defined in `datasets._get_data_dir`, need to make sure other folder is used.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+66,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-28 09:17:21,"Good point!
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/tests/test_datasets.py')"
+67,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-31 08:05:26,"I believe this hasn't been fixed yet. This seems to me as the last thing to do before this PR can be merged.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+68,pull_request_commit_comment,262,nilearn,nilearn,AlexandreAbraham,2014-10-31 08:15:27,"I think so. Maybe we can merge it and apply your small patch afterward?
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+69,pull_request_commit_comment,262,nilearn,nilearn,lesteve,2014-10-31 08:34:16,"OK I'll wait a bit for @Titan-C and do that if I don't hear from him in the next few days.
+",705474f4d10567e6c7bd9c9e3ec99814ee2a000e,"(None, '', u'nilearn/datasets.py')"
+70,pull_request_commit,262,nilearn,nilearn,Titan-C,2014-10-14 09:11:38,Create nilearn_data as a working dir for _get_dataset_dir,9f2b9788ae17033c7863f9646d6728ee03616161,
+71,pull_request_commit,262,nilearn,nilearn,Titan-C,2014-10-14 17:23:28,"Change logic for searching dataset dir
+Catching all exceptions and reporting at the end",e0d1046fe6c0572c4eb158fce2ad7b07510107e0,
+72,pull_request_commit,262,nilearn,nilearn,Titan-C,2014-10-18 17:11:35,Test clause on non-directories,b0b03a3199e735f896d0be019e29c8903508155a,
+73,pull_request_commit,262,nilearn,nilearn,Titan-C,2014-10-24 08:53:26,change work inside temporary directory in get dataset dir test,91fd981e7a24b79920b039d1bd290ff9f0b9d22e,
+74,pull_request_commit,262,nilearn,nilearn,Titan-C,2014-10-24 23:22:30,Regexp control on raised errors,d1ef510bf6625030bc3a45b479582b8eb7f83d6f,
+75,pull_request_commit,262,nilearn,nilearn,Titan-C,2014-10-27 23:20:49,Different environment setup testing,a3096df06b8fac7a3617619c493d1a408c3de270,
+76,pull_request_commit,262,nilearn,nilearn,Titan-C,2014-10-31 10:00:13,_get_dataset_dir error message string,705474f4d10567e6c7bd9c9e3ec99814ee2a000e,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,181,nilearn,nilearn,rphlypo,2014-04-04 13:21:29,"Integration of the `n_hv_confounds` parameter into the transform functions of the different `Nifti[*]Masker` classes. This makes the high variance confounds more accessible, now being an integral part of the maskers.
+
+For `MultiNiftiMasker` only a single `n_hv_confounds` parameter is given, since it seems to make no sense to have different parameters for different datasets. This might need revision if anyone thinks this should be a list.
+",start issue,Integrate hv confounds
+2,issue_closed,181,nilearn,nilearn,AlexandreAbraham,2014-10-31 08:23:03,,closed issue,Integrate hv confounds
+3,pull_request_title,181,nilearn,nilearn,rphlypo,2014-04-04 13:21:29,"Integration of the `n_hv_confounds` parameter into the transform functions of the different `Nifti[*]Masker` classes. This makes the high variance confounds more accessible, now being an integral part of the maskers.
+
+For `MultiNiftiMasker` only a single `n_hv_confounds` parameter is given, since it seems to make no sense to have different parameters for different datasets. This might need revision if anyone thinks this should be a list.
+",480402e0b03ed3512f1c85f8de05ade157ea181d,Integrate hv confounds
+4,issue_comment,181,nilearn,nilearn,GaelVaroquaux,2014-04-04 13:44:04,"I'd rather the high variance confound not be integrated in the
+NiftiMasker, as ideally they should be computed on the non preprocessed
+files and applied to the preprocessed files.
+
+Computing non-specific confounds on preprocessed image is dangerous, for
+instance, as pointed out by Basile on Tuesday, the global signal mean
+will contain strong traces of the resampling done in the realign step.
+
+In terms of software design, when we integrate the HV confounds, I would
+like to do this in terms of a transform, but that means that we need to
+change the design of nilearn to take dictionaries for X, and that's a
+much larger design work that we will undertake later.
+
+If you need it for your own codebase, for instance because you don't have
+access to the raw data, I suggest that you sublass the NiftiMasker that
+you are using to add the functionality in your codebase. It should not be
+hard to do the subclassing.
+",,
+5,issue_comment,181,nilearn,nilearn,GaelVaroquaux,2014-04-04 13:49:37,"> I think we should not overly simplify the work of the user.
+
+We should, but only in high-level application-specific objects, that we
+haven't started working on.
+",,
+6,issue_comment,181,nilearn,nilearn,GaelVaroquaux,2014-04-04 15:18:52,"> I frankly do not know, but my intuition is similar to @rphlypo : high
+> variance confound estimation makes even more sense after preprocessing
+> than before. This is a topic for a future empirical study.
+
+OK, based on my experience it works better when using the raw data.
+
+Anyhow, as long as we haven't a clear idea on these choices, I am not
+very enthousiastic at the idea of making high-level objects. I would like
+to get empirical validation of the pipeline before implementing it in
+nilearn before I am worried about the combinatorial explosion of options.
+
+> Whether the PR should be integrated into nilearn is another question, on which
+> I have no strong feeling. Mabye @GaelVaroquaux is worried about make the
+> interface too complex too early ?
+
+I think that we have more to do before. I also think that we need to
+change the way we pass information in and out of objects before we
+tackle this problem.
+",,
+7,issue_comment,181,nilearn,nilearn,rphlypo,2014-04-04 14:22:48,"I am not sure whether 
+
+> ideally they should be computed on the non preprocessed
+> files and applied to the preprocessed files.
+
+hold.
+
+In contrast, on postprocessed images they might also take into account variance introduced during the alignment process. Physiologically induced confounds should be available both before and after preprocessing the data, so not sure whether that should make a big difference.
+",,
+8,pull_request_commit,181,nilearn,nilearn,GaelVaroquaux,2014-03-27 10:28:40,"MISC: Add covariance embedding files
+
+This is completely temporary and just a copy of our own internal files",bb2b337c2ecbf58676138889bbd66a46071946c0,
+9,pull_request_commit,181,nilearn,nilearn,ronald.phlypo@inria.fr,2014-04-02 16:49:11,Merge branch 'master' of https://github.com/nilearn/nilearn,f19ca04cfd7c7a8def36293f5ae5b5277d574dfe,
+10,pull_request_commit,181,nilearn,nilearn,ronald.phlypo@inria.fr,2014-04-02 19:42:57,minor aesthetical changes in covariance.py,41a36ff3f90a8b0f5baee04ffd0b5fdd125bc778,
+11,pull_request_commit,181,nilearn,nilearn,ronald.phlypo@inria.fr,2014-04-04 13:16:33,integration of the n_hv_confounds parameter into the transform functions,7fd384d33b8fe7f7dd16a91c022173c7af78de3a,
+12,pull_request_commit,181,nilearn,nilearn,ronald.phlypo@inria.fr,2014-04-04 13:57:34,reshifted doc,16b6a962b0fde65ede653b76c50a710761cce62f,
+13,pull_request_commit,181,nilearn,nilearn,ronald.phlypo@inria.fr,2014-04-04 14:09:42,removed connectivity files not in line with commit,480402e0b03ed3512f1c85f8de05ade157ea181d,
+14,pull_request_commit_comment,181,nilearn,nilearn,AlexandreAbraham,2014-04-04 13:42:33,"Why is the doc shifted?
+",7fd384d33b8fe7f7dd16a91c022173c7af78de3a,"(74, 270, u'nilearn/input_data/nifti_region.py')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,246,nilearn,nilearn,banilo,2014-09-26 17:39:27,"It would be great to have an analog to fslswapdim from FSL in NILEARN that can
+
+a) swaps images according to x, y, z axes
+
+b) inverts these axes also
+
+cf. https://rcbi.rochester.edu/kjlee/BOLD%20fMRI%20Analysis/Documents/Conversion%20of%20DICOM%20to%20NII%20to%20use%20with%20FSL%20analyses.pdf
+
+This can be helpful in many ways in everyday neuroimaging practice. For example, if you need
+to extract seed regions (for whatever the neuroimaging analysis) but you only have a topographical template in one hemisphere, then you might want to swap that one into the other hemisphere. The same approach can also help to homogenize (seed) structures across hemispheres.
+",start issue,Add basic image manipulation feature according to fslswapdim
+2,issue_closed,246,nilearn,nilearn,lesteve,2014-10-08 06:47:21,,closed issue,Add basic image manipulation feature according to fslswapdim
+3,issue_comment,246,nilearn,nilearn,lesteve,2014-10-01 07:46:18,"Probably not the best placed to answer this one, but it seems like nilearn/image/image.py is as good as any.
+",,
+4,issue_comment,246,nilearn,nilearn,banilo,2014-09-29 19:32:12,"I will try to come up with a small suggestion for this :)
+
+2014-09-29 21:30 GMT+02:00 Alexandre Abraham notifications@github.com:
+
+> Any feedback on this one? From a technical POV, this is very easy to code
+> as it boils down to play with the affine matrix. We just to determine if we
+> really want this in nilearn or not.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/246#issuecomment-57215139.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+5,issue_comment,246,nilearn,nilearn,banilo,2014-09-30 09:53:44,"How about adding it to nilearn.image? Alternatively, nilearn._utils.image? What do you suggest?
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,265,nilearn,nilearn,dohmatob,2014-10-21 08:37:50,"Because users will fall in this trap, we need to express the percentile of voxels kept as a volumetric percentile with regards to a full brain. For this:
+
+""I would like you to compute the volume in a standard brain (/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz)
+    When you are given a mask, in space_net, you should compute it's volume, and use the ratio of the two to adjust the screening percentile.
+""
+",start issue,Volume-corrected screening percentile in SpaceNet
+2,issue_closed,265,nilearn,nilearn,dohmatob,2015-12-02 13:15:30,,closed issue,Volume-corrected screening percentile in SpaceNet
+3,issue_comment,265,nilearn,nilearn,dohmatob,2014-10-21 08:38:51,"a126ce347db3721ba7f45f2418a795c85a138d3c is a first implementation of this feature. The discussion is open.
+",,
+4,issue_comment,265,nilearn,nilearn,dohmatob,2014-10-21 08:42:38,"Update  dae019e69a24a1c75559be331ce9786dd2963550
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,272,nilearn,nilearn,banilo,2014-10-30 08:36:31,"Can be useful for less-memory-intense on-the-fly nifti preprocessing settings
+",start issue,[ENH] Generator utility for nifti sequences
+2,issue_closed,272,nilearn,nilearn,lesteve,2014-11-01 11:25:41,,closed issue,[ENH] Generator utility for nifti sequences
+3,pull_request_title,272,nilearn,nilearn,banilo,2014-10-30 08:36:31,"Can be useful for less-memory-intense on-the-fly nifti preprocessing settings
+",1fdbfb765b65dce902c049752bb885e7555f29f4,[ENH] Generator utility for nifti sequences
+4,issue_comment,272,nilearn,nilearn,banilo,2014-10-30 10:59:48,"Fixed: dataset fetcher in unit test worked fine on local machine but failed for Github/Travis. Now solved by writing random niftis in mktemp()-folder
+",,
+5,issue_comment,272,nilearn,nilearn,AlexandreAbraham,2014-10-30 13:28:20,"I don't see why a generator would save memory compared to a for loop. Your generator can basically be replaced by:
+
+```
+for img in list_img:
+    img = _utils.check_niimg(img)
+    data = img.get_data()
+    affine = img.get_affine()
+```
+",,
+6,issue_comment,272,nilearn,nilearn,banilo,2014-10-31 07:26:44,"Thanks for your point.
+
+Regarding the for-loop, the idea is not to _shorten_ code for iteration though series of niftis but to _unify_ it. This can have at least two advantages:
+a) Increase readability: using a generator (at least internally) allows for identical for loop bodies regardless of whether one is dealing with a list of paths, a list of Nifti1Image instances in 3D or a 4D NiftImage - perhaps the most recurrent forms of series of niftis.
+b) Centralize and further standardize nifti access: several aspects need/can/should be checked in a majority of situations: verify nifti properties by check_niimg(), does file exist, _get_shape instead of get_shape(), _safe_get_data instead of get_data(). These and other routine calls could be built into the generator object. This could help enforce good-practice usage and boil the for loops down to the essential operation.
+
+Regarding memory, the possibility of processing niftis one-by-one can also be realized in an easier fashion, of course, is only present for lists of paths, and is a mere side effect.
+",,
+7,issue_comment,272,nilearn,nilearn,AlexandreAbraham,2014-10-31 07:57:36,"My problem here is that you try to solve a non-existent problem. `check_niimg` already handles all the cases you describe here:
+a) `check_niimg` load any kind of image, whether it is a path, or a list of 3D nifti or a 4D nifti.
+b) Nifti1Image has been chosen as the image type in nilearn. If you have an object that exposes another interface, then you have to write a decorator of handle this particular case in `check_niimg`.
+
+I'm not saying that your code is not useful, but that it is the exact equivalent of `for img in (check_niimg(i) for i in list_img):`
+",,
+8,issue_comment,272,nilearn,nilearn,lesteve,2014-10-31 08:02:08,"> I'm not saying that your code is not useful, but that it is the exact equivalent of for img in (check_niimg(i) for i in list_img):
+
+My feeling is the same. @banilo do you have some toy code example that would clearly show the benefits of your NiftiGenerator?
+",,
+9,issue_comment,272,nilearn,nilearn,banilo,2014-11-01 09:04:24,"You guys are right! There is now difference in speed or memory usage:
+
+```
+Line     Mem usage    Increment   Line Contents
+   159     80.7 MiB      0.0 MiB   @profile
+   160                             def mean_1800niis_checkniimg(list_img):
+   161     80.8 MiB      0.1 MiB       first_nii_shape = nibabel.load(list_img[0]).shape
+   162     80.8 MiB      0.0 MiB       rolling_mean = np.zeros((first_nii_shape))
+   163                             
+   164     82.6 MiB      1.8 MiB       for img in (check_niimg(i) for i in list_img):
+   165     82.6 MiB      0.0 MiB           rolling_mean += img.get_data()
+   166                             
+   167     83.8 MiB      1.2 MiB       return rolling_mean / len(list_img)
+```
+
+```
+%timeit -r1 -n1 mean_1800niis_checkniimg(stat_img)
+1 loops, best of 1: 1min 19s per loop
+```
+
+```
+Line     Mem usage    Increment   Line Contents
+   168     80.9 MiB      0.0 MiB   @profile
+   169                             def mean_1800niis_NiftiGenerator(list_img):
+   170     81.0 MiB      0.1 MiB       first_nii_shape = nibabel.load(list_img[0]).shape
+   171     81.0 MiB      0.0 MiB       rolling_mean = np.zeros((first_nii_shape))
+   172                             
+   173     82.7 MiB      1.8 MiB       for img, data, aff in NiftiGenerator(list_img):
+   174     82.7 MiB      0.0 MiB           rolling_mean += data
+   175                             
+   176     83.9 MiB      1.2 MiB       return rolling_mean / len(list_img)
+```
+
+```
+%timeit -r1 -n1 mean_1800niis_NiftiGenerator(stat_img)
+1 loops, best of 1: 1min 19s per loop
+```
+",,
+10,issue_comment,272,nilearn,nilearn,lesteve,2014-11-01 11:25:41,"ok, closing this one then
+",,
+11,pull_request_commit,272,nilearn,nilearn,banilo,2014-10-30 08:33:52,Added generator for niftis,f36d8a4cf689164c0242a9bcc7792e691b83b6fb,
+12,pull_request_commit,272,nilearn,nilearn,banilo,2014-10-30 10:57:50,"test using datasets failed on Travis, now replaced by temp files",1fdbfb765b65dce902c049752bb885e7555f29f4,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,255,nilearn,nilearn,dohmatob,2014-10-06 12:25:56,,start issue,Say nibabel in readme (closes issue #253)
+2,issue_closed,255,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:11:54,,closed issue,Say nibabel in readme (closes issue #253)
+3,pull_request_title,255,nilearn,nilearn,dohmatob,2014-10-06 12:25:56,,b82e3715b0453d52576d6d17d7dc82c0501d87f9,Say nibabel in readme (closes issue #253)
+4,pull_request_merged,255,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:11:54,Say nibabel in readme (closes issue #253),f459057a968b1971e241157230b6abb503fdfe3a,Pull request merge from dohmatob/nilearn:say-nibabel-in-readme to nilearn/nilearn:master
+5,pull_request_commit,255,nilearn,nilearn,dohmatob,2014-10-06 13:04:44,BF:  reset dirty master,b82e3715b0453d52576d6d17d7dc82c0501d87f9,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,248,nilearn,nilearn,banilo,2014-10-01 10:58:38,"Implements #246
+",start issue,[WIP] New feature: python-version of fslswapdim
+2,issue_closed,248,nilearn,nilearn,GaelVaroquaux,2014-10-06 15:34:30,,closed issue,[WIP] New feature: python-version of fslswapdim
+3,pull_request_title,248,nilearn,nilearn,banilo,2014-10-01 10:58:38,"Implements #246
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,[WIP] New feature: python-version of fslswapdim
+4,pull_request_merged,248,nilearn,nilearn,GaelVaroquaux,2014-10-06 15:34:30,[WIP] New feature: python-version of fslswapdim,8dd127493a3b85e577d99ac43c4e3bc726f9d6fa,Pull request merge from banilo/nilearn:addswap to nilearn/nilearn:master
+5,issue_comment,248,nilearn,nilearn,banilo,2014-10-06 14:37:54,"""fslswapdim in.nii -x y z out.nii"" doesn't change the affine!
+
+2014-10-06 16:36 GMT+02:00 Gael Varoquaux notifications@github.com:
+
+> > Also, if the axis are not ordered properly, ie the affine looks like
+> 
+> Yes, we need to use reorder_img.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/248#issuecomment-58026004.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+6,issue_comment,248,nilearn,nilearn,banilo,2014-10-06 15:22:06,"How about now?
+",,
+7,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-01 11:41:44,"Could you please call the input argument 'niimg'.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+8,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-01 11:42:47,"Let's not define our software by what other softwares do. I would here mention that it swaps the hemispheres.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+9,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-01 11:43:35,"I think that these remarks should be made in the 'Notes' section of the docstring. The guideline is to keep the initial description very short.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+10,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-01 11:45:16,"Any time that I see such warnings in the doc, I have the feeling that we are misdesigning something. Maybe we should use the nilearn.image.reorder_img to relax a bit the assumptions.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+11,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-01 11:46:07,"Here you should use utils.check_niimg. That way you would also accept strings as input (and the docstring should be updated to reflect that).
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+12,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-01 11:47:11,"In variable names, we tend to use underscores between words. This would be 'out_nii'. I would prefer 'out_img', as we have the convention that everything that is a niimg should be named with a trailing '_img'.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+13,pull_request_commit_comment,248,nilearn,nilearn,dengemann,2014-10-01 16:53:54,"@banilo you have too many dashes here ;-) remove one.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+14,pull_request_commit_comment,248,nilearn,nilearn,dengemann,2014-10-01 16:53:59,"and here.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+15,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:48:14,"PEP8 requires 2 empty lines between first-level functions.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/image.py')"
+16,pull_request_commit_comment,248,nilearn,nilearn,lesteve,2014-10-06 14:16:51,"You don't need the backslash at the end of the line
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/tests/test_image.py')"
+17,pull_request_commit_comment,248,nilearn,nilearn,lesteve,2014-10-06 14:17:36,"Same comment about the terminal backslash as above
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/tests/test_image.py')"
+18,pull_request_commit_comment,248,nilearn,nilearn,AlexandreAbraham,2014-10-06 14:33:03,"You are testing check_niimg here, not your function.
+",cb61ae67a6951bfdf7c230daba1a30bc85930b58,"(None, '', u'nilearn/image/tests/test_image.py')"
+19,pull_request_commit,248,nilearn,nilearn,banilo,2014-10-01 09:52:42,addswap,71671901f760382c36e6de153eb480bc2782888a,
+20,pull_request_commit,248,nilearn,nilearn,banilo,2014-10-02 08:06:04,addswap,80cb0cb82ed0902d3821f9cf1c768b8aed3a76a5,
+21,pull_request_commit,248,nilearn,nilearn,banilo,2014-10-02 08:13:21,addswap,2267b2c069ece2ff56c603a83991ade51ad1de83,
+22,pull_request_commit,248,nilearn,nilearn,banilo,2014-10-06 14:27:02,addswap,6193daecd6410fe95b6425864dd3295a50a3aca7,
+23,pull_request_commit,248,nilearn,nilearn,banilo,2014-10-06 15:20:34,addswap,a5bd3578cc830785fc9c307eab25539d0b3a75a2,
+24,pull_request_commit,248,nilearn,nilearn,banilo,2014-10-06 15:29:35,Minor change in Doc,cb61ae67a6951bfdf7c230daba1a30bc85930b58,
+25,pull_request_commit_comment,248,nilearn,nilearn,GaelVaroquaux,2014-10-06 15:25:22,"I think that I would formulate this as 'swaping', rather than shifting.
+",6193daecd6410fe95b6425864dd3295a50a3aca7,"(4, 259, u'doc/building_blocks/manipulating_mr_images.rst')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,253,nilearn,nilearn,dohmatob,2014-10-06 09:06:31,"In readme / doc, explicitly state that nibabel is a dependency. This is a very important dependency of nilearn, but it seems no way stated that way.
+",start issue,"In readme / doc, explicitly state that nibabel is a dependency"
+2,issue_closed,253,nilearn,nilearn,dohmatob,2014-10-06 13:28:35,,closed issue,"In readme / doc, explicitly state that nibabel is a dependency"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,263,nilearn,nilearn,Titan-C,2014-10-17 22:45:39,"Since I did not receive any more feedback in the last day I continued to rebase on the branch master to eliminate unnecessary commits and present the final proposal to issue #262 
+",start issue,Bug fix to Dataset download failing on fresh installs
+2,issue_closed,263,nilearn,nilearn,Titan-C,2014-10-20 11:50:00,,closed issue,Bug fix to Dataset download failing on fresh installs
+3,pull_request_title,263,nilearn,nilearn,Titan-C,2014-10-17 22:45:39,"Since I did not receive any more feedback in the last day I continued to rebase on the branch master to eliminate unnecessary commits and present the final proposal to issue #262 
+",b6d2095114ce9292df898b2a7041b0483c67fd56,Bug fix to Dataset download failing on fresh installs
+4,issue_comment,263,nilearn,nilearn,lesteve,2014-10-20 09:16:27,"I think  you could have used the same issue (i.e. #262) to push your changes. You probably needed to use the `-f` option to force the push.
+",,
+5,pull_request_commit,263,nilearn,nilearn,Titan-C,2014-10-17 22:40:07,Bug fix to Dataset download failing on fresh installs,b6d2095114ce9292df898b2a7041b0483c67fd56,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,274,nilearn,nilearn,dohmatob,2014-11-04 09:47:25,"De facto, I don't care about python3. Are there plans to support python3 ? In which case there are a few non-python3 things to fix here and there.
+",start issue,Provide support for python3 ?
+2,issue_closed,274,nilearn,nilearn,lesteve,2014-11-12 11:59:19,,closed issue,Provide support for python3 ?
+3,issue_comment,274,nilearn,nilearn,lesteve,2014-11-12 10:32:34,"Given the interest so far I would guess that's not a priority at the moment...
+",,
+4,issue_comment,274,nilearn,nilearn,GaelVaroquaux,2014-11-12 11:02:23,"+1
+
+-------- Original message --------
+From: Loïc Estève notifications@github.com 
+Date:12/11/2014  11:32  (GMT+01:00) 
+To: nilearn/nilearn nilearn@noreply.github.com 
+Subject: Re: [nilearn] Provide support for python3 ? (#274) 
+
+Given the interest, so far I would guess that's not a priority at the moment...
+
+—
+Reply to this email directly or view it on GitHub.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,261,nilearn,nilearn,lesteve,2014-10-13 17:21:21,"closes #260.
+",start issue,[MRG] Move is_psd outside of _utils.testing
+2,issue_closed,261,nilearn,nilearn,lesteve,2014-10-15 10:16:52,,closed issue,[MRG] Move is_psd outside of _utils.testing
+3,pull_request_title,261,nilearn,nilearn,lesteve,2014-10-13 17:21:21,"closes #260.
+",b0ba57e9f5045757a30b7211639b70bcb03a6b3b,[MRG] Move is_psd outside of _utils.testing
+4,pull_request_merged,261,nilearn,nilearn,lesteve,2014-10-15 10:16:52,[MRG] Move is_psd outside of _utils.testing,6dd6f8fee07738fc5b56709fe83f3bb45e4adb45,Pull request merge from lesteve/nilearn:move-is-psd-out-of-utils-testing to nilearn/nilearn:master
+5,issue_comment,261,nilearn,nilearn,GaelVaroquaux,2014-10-13 18:13:29,"I think that it would be good to have a small unit test.
+
+Aside from this, LGTM.
+",,
+6,issue_comment,261,nilearn,nilearn,bthirion,2014-10-14 06:42:08,"Aboslute difference is good enough and simpler I think.
+
+LGTM
+",,
+7,pull_request_commit,261,nilearn,nilearn,lesteve,2014-10-13 16:32:13,Rename _utils.fast_maths to _utils.extmath,26d556b9d3356ff14e384acf3c794b9fefe4d533,
+8,pull_request_commit,261,nilearn,nilearn,lesteve,2014-10-13 17:17:38,Move is_spd from _utils.testing to _utils.extmath,1fb2ce42ad48ff08c01f11e2855eafdd1b863972,
+9,pull_request_commit,261,nilearn,nilearn,lesteve,2014-10-13 21:29:38,"Add tests for is_spd.
+* test_fast_maths.py has been renamed to test_extmath.py
+* Only use relative tolerance in is_spd to check that the matrix is symmetric",b0ba57e9f5045757a30b7211639b70bcb03a6b3b,
+10,pull_request_commit_comment,261,nilearn,nilearn,lesteve,2014-10-13 21:35:55,"Not 100% sure about that, but it makes more sense to me to check the closeness in terms of relative rather than absolute difference. Given the default of 1e-15 tolerance I assumed that was what the original code was meant to do.
+",b0ba57e9f5045757a30b7211639b70bcb03a6b3b,"(5, 66, u'nilearn/_utils/extmath.py')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,258,nilearn,nilearn,GaelVaroquaux,2014-10-08 14:15:44,"Minor modification to enable not specifying an affine
+
+@lesteve : please review. This is useful for PR #219 
+",start issue,Affine can be None for fvwm='fast'
+2,issue_closed,258,nilearn,nilearn,lesteve,2014-10-08 15:52:49,,closed issue,Affine can be None for fvwm='fast'
+3,pull_request_title,258,nilearn,nilearn,GaelVaroquaux,2014-10-08 14:15:44,"Minor modification to enable not specifying an affine
+
+@lesteve : please review. This is useful for PR #219 
+",2d1a80d6434d9229c9bef9291beb8fda284a9400,Affine can be None for fvwm='fast'
+4,pull_request_merged,258,nilearn,nilearn,lesteve,2014-10-08 15:52:49,Affine can be None for fvwm='fast',6f1cbff7ad8b7981557bb02fb9f0fd8262338ec9,Pull request merge from GaelVaroquaux/nilearn:misc_fast_smooth_array to nilearn/nilearn:master
+5,pull_request_commit,258,nilearn,nilearn,GaelVaroquaux,2014-10-08 14:14:05,"affine can be None for fvwm='fast'
+
+Minor modification to enable not specifying an affine",12fba0f89f7a3dd6a97d09ba1564202851845889,
+6,pull_request_commit,258,nilearn,nilearn,GaelVaroquaux,2014-10-08 15:30:38,DOC: document that we are not using affine for fwhm='fast',2d1a80d6434d9229c9bef9291beb8fda284a9400,
+7,pull_request_commit_comment,258,nilearn,nilearn,lesteve,2014-10-08 14:30:35,"LGTM. Do we want to add a note in the doc that affine is not used when fwhm=='fast' and that in this case affine=None can be passed in?
+",12fba0f89f7a3dd6a97d09ba1564202851845889,"(None, None, None)"
+8,pull_request_commit_comment,258,nilearn,nilearn,AlexandreAbraham,2014-10-08 14:38:46,"Why not adapting the weight if the image is anistotropic? I guess it wouldn't make a big difference...
+",12fba0f89f7a3dd6a97d09ba1564202851845889,"(None, None, None)"
+9,pull_request_commit_comment,258,nilearn,nilearn,GaelVaroquaux,2014-10-08 15:29:14,"> Why not adapting the weight if the image is anistotropic? I guess it wouldn't
+> make a big difference...
+
+I'd say that this would be a TODO.
+",12fba0f89f7a3dd6a97d09ba1564202851845889,"(None, None, None)"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,267,nilearn,nilearn,banilo,2014-10-25 06:57:03,"Contrary to NiftiMasker, NiftiLabelsMasker.transform() does not currently check whether fit() of the current instance has already been called. Added exception for this case.
+",start issue,[ENH] Fit-Check added to NiftiLabelsMasker
+2,issue_closed,267,nilearn,nilearn,lesteve,2014-10-29 15:35:23,,closed issue,[ENH] Fit-Check added to NiftiLabelsMasker
+3,pull_request_title,267,nilearn,nilearn,banilo,2014-10-25 06:57:03,"Contrary to NiftiMasker, NiftiLabelsMasker.transform() does not currently check whether fit() of the current instance has already been called. Added exception for this case.
+",ba34bdd48f0c2da4e2d37511ce4a60057ebacdee,[ENH] Fit-Check added to NiftiLabelsMasker
+4,pull_request_merged,267,nilearn,nilearn,lesteve,2014-10-29 15:35:23,[ENH] Fit-Check added to NiftiLabelsMasker,d93b1935ce3d7abe56fdc433cdbf272e24f3e4a5,Pull request merge from banilo/nilearn:masktransf to nilearn/nilearn:master
+5,issue_comment,267,nilearn,nilearn,lesteve,2014-10-27 08:54:20,"The tests are failing in case you have missed it. 
+
+Also I think it would be better to raise a ValueError rather than an AttributeError to be consistent with what the NiftiMasker is doing. I would even use the same error message:
+
+``` python
+raise ValueError('It seems that %s has not been fit. '
+                             'You must call fit() before calling transform().'
+                             % self.__class__.__name__)
+```
+",,
+6,issue_comment,267,nilearn,nilearn,banilo,2014-10-27 20:49:15,"Ok, thanks for the advice!
+",,
+7,issue_comment,267,nilearn,nilearn,bthirion,2014-10-28 11:31:06,"LGTM
+",,
+8,issue_comment,267,nilearn,nilearn,banilo,2014-10-29 15:26:51,"All comments should have been addressed now.
+",,
+9,issue_comment,267,nilearn,nilearn,lesteve,2014-10-29 15:35:33,"Merged, thanks a lot.
+",,
+10,pull_request_commit_comment,267,nilearn,nilearn,lesteve,2014-10-28 07:41:38,"Could you:
+- use assert_raises_regexp to check that the error message is the one you are expecting
+- add the same test for inverse_transform for completeness
+",ba34bdd48f0c2da4e2d37511ce4a60057ebacdee,"(None, '', u'nilearn/input_data/tests/test_nifti_region.py')"
+11,pull_request_commit_comment,267,nilearn,nilearn,lesteve,2014-10-28 07:41:42,"It should probably be fitt_ed_ rather than fit. Could you fix it here and I'll fix the error message in BaseMasker?
+",ba34bdd48f0c2da4e2d37511ce4a60057ebacdee,"(None, '', u'nilearn/input_data/nifti_region.py')"
+12,pull_request_commit_comment,267,nilearn,nilearn,banilo,2014-10-28 11:42:36,"Ok, in progress.
+
+2014-10-28 8:41 GMT+01:00 Loïc Estève notifications@github.com:
+
+> In nilearn/input_data/nifti_region.py:
+> 
+> > @@ -196,6 +196,12 @@ def fit(self, X=None, y=None):
+> >      def fit_transform(self, niimgs, confounds=None):
+> >          return self.fit().transform(niimgs, confounds=confounds)
+> > -    def _check_fitted(self):
+> > -        if not hasattr(self, ""labels_img_""):
+> > -            raise ValueError('It seems that %s has not been fit. '
+> 
+> It should probably be fitt_ed_ rather than fit. Could you fix it here and
+> I'll fix the error message in BaseMasker.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/267/files#r19456271.
+
+## 
+
+Viele Grüße,
+Danilo
+",ba34bdd48f0c2da4e2d37511ce4a60057ebacdee,"(None, '', u'nilearn/input_data/nifti_region.py')"
+13,pull_request_commit_comment,267,nilearn,nilearn,lesteve,2014-10-29 15:18:12,"Slight niggle: you separated this comment from the line it is talking about, namely 
+
+``` python
+fmri11_img_r = masker11.inverse_transform(signals11)
+```
+",ba34bdd48f0c2da4e2d37511ce4a60057ebacdee,"(None, '', u'nilearn/input_data/tests/test_nifti_region.py')"
+14,pull_request_commit,267,nilearn,nilearn,banilo,2014-10-25 06:55:11,Fit-Check added to NiftiLabelsMasker,79b636e9618119288333469c5a40f4eb4f89726e,
+15,pull_request_commit,267,nilearn,nilearn,banilo,2014-10-27 20:48:41,changed exception type + unit tests pass now,c20e283bed1c495f6e6abba420f29eb32df878ab,
+16,pull_request_commit,267,nilearn,nilearn,banilo,2014-10-29 14:39:35,"fit-check for Nifti([Labels, Maps])Masker + type in BaseMasker corrected",9dca9a6249cf6b329e5ff2545afeaf03792359fb,
+17,pull_request_commit,267,nilearn,nilearn,banilo,2014-10-29 15:27:58,de-sniggle-ized,ba34bdd48f0c2da4e2d37511ce4a60057ebacdee,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,269,nilearn,nilearn,dohmatob,2014-10-28 09:36:50,"The ""Giving credit"" column of the nilearn documentation page http://nilearn.github.io/modules/reference.html says 
+
+**Please consider citing the scikit-learn if you use it.**
+
+I guess this should be _nilearn_. No ?
+",start issue,"Error in ""Giving credit"" column of doc page: ""nilearn"" mispelled as ""scikit-learn"""
+2,issue_closed,269,nilearn,nilearn,lesteve,2014-10-29 10:27:40,,closed issue,"Error in ""Giving credit"" column of doc page: ""nilearn"" mispelled as ""scikit-learn"""
+3,issue_comment,269,nilearn,nilearn,lesteve,2014-10-28 09:42:09,"I saw that when fixing bits and pieces of the documentation and I assumed this was on purpose given that nilearn has not been officially released yet.
+
+@GaelVaroquaux @AlexandreAbraham any opinions on this?
+",,
+4,issue_comment,269,nilearn,nilearn,dohmatob,2014-10-28 10:07:59,"I don't think this is appropriate to cite a dependency, in the place of the software itself, simply because the software is not yet released. Citing scikit-learn in place of nilearn (for what ever reason) is really hard to understand. Can someone throw light on this ?
+",,
+5,issue_comment,269,nilearn,nilearn,AlexandreAbraham,2014-10-28 11:34:15,"I think that's on purpose. scikit-learn is not only a dependency: most of nilearn scripts are just examples using nilearn to load the data, sklearn to do some machine learning and nilearn again to show the results.
+",,
+6,issue_comment,269,nilearn,nilearn,bthirion,2014-10-28 20:49:20,"This has to be fixed: Please consider citing the nilearn if you use it.
+",,
+7,issue_comment,269,nilearn,nilearn,GaelVaroquaux,2014-10-28 23:59:03,"> This has to be fixed: Please consider citing the nilearn if you use it.
+
+There is no citation for nilearn. This is why we left the message pushing
+people to cite scikit-learn. I would leave it like this, until we have a
+citation for nilearn. Right now, it is not even a released software.
+",,
+8,issue_comment,269,nilearn,nilearn,lesteve,2014-10-29 10:27:40,"OK closing for now.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,264,nilearn,nilearn,dohmatob,2014-10-21 06:50:48,"We need a backport of sklearn.utils.extmath.squared_norm, and we need to use it in many places.
+",start issue,ENH+NEWFEATURE: backport of sklearn.utils.extmath.squared_norm
+2,issue_closed,264,nilearn,nilearn,AlexandreAbraham,2016-06-07 22:05:26,,closed issue,ENH+NEWFEATURE: backport of sklearn.utils.extmath.squared_norm
+3,issue_comment,264,nilearn,nilearn,AlexandreAbraham,2015-06-01 08:54:16,"There are not so much details. I think that we raised the min version of scikit_learn so is this issue still holding?
+",,
+4,issue_comment,264,nilearn,nilearn,AlexandreAbraham,2016-06-07 22:05:26,"No further details, closing. Please reopen if needed.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,199,nilearn,nilearn,GaelVaroquaux,2014-05-29 17:49:12,"My branch better_pca fixes a bunch of stuff in the MultiPCA.
+",start issue,Merge in the better_pca branch
+2,issue_closed,199,nilearn,nilearn,lesteve,2014-10-08 06:51:13,,closed issue,Merge in the better_pca branch
+3,issue_comment,199,nilearn,nilearn,GaelVaroquaux,2014-05-29 18:13:59,"See comments by @AlexandreAbraham : https://github.com/GaelVaroquaux/nilearn/commit/8448c7a3e3851395d91eff10c493c1a3
+6d581119#commitcomment-6492427
+",,
+4,issue_comment,199,nilearn,nilearn,lesteve,2014-10-08 06:48:58,"duplicate of #251 
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,271,nilearn,nilearn,lesteve,2014-10-29 08:48:01,"I just bumped into it while playing with CanICA:
+
+![canica_plot_outside_anatomy](https://cloud.githubusercontent.com/assets/1680079/4822837/83d74d70-5f47-11e4-8e07-75af211bdff7.png)
+
+The other slices look ok AFAICT:
+![canica_plot_0](https://cloud.githubusercontent.com/assets/1680079/4822848/aeeda69e-5f47-11e4-9a7e-84fe630ad6a0.png)
+
+To reproduce it:
+
+```
+$ ipython --matplotlib -i plot_canica_resting_state.py 
+```
+
+and then inside ipython:
+
+``` python
+plot_stat_map(nibabel.Nifti1Image(components_img.get_data()[..., 0],
+                                  components_img.get_affine()),
+              display_mode='z', cut_coords=[75])
+```
+
+Is that a known issue? Maybe the adhd dataset is not in the MNI space?
+",start issue,CanICA map outside of anatomy
+2,issue_closed,271,nilearn,nilearn,lesteve,2014-10-30 07:22:18,,closed issue,CanICA map outside of anatomy
+3,issue_comment,271,nilearn,nilearn,banilo,2014-10-29 08:57:14,"A very simple reason might be that the template used for plot_stat_map (which one is it?) visualization is smaller than the gray matter mask that was to select the resting-state signals.
+",,
+4,issue_comment,271,nilearn,nilearn,lesteve,2014-10-29 09:22:10,"By default plot_stat_map uses the MNI template for the anatomy.
+",,
+5,issue_comment,271,nilearn,nilearn,bthirion,2014-10-29 12:28:47,"> Is that a known issue? Maybe the adhd dataset is not in the MNI space?
+> Apparently, the data you use has been warped to MNI space. But there are at least three possible prolems 
+> - There is not one MNI template, but several of them 
+> - the quality of the registration to the MNI space depends on the used algorithm/software 
+> - The EPI images may be distorted wrt the anatomical images. 
+>   For all these reasons, the kind of offset that you describe is not unexpected.
+",,
+6,issue_comment,271,nilearn,nilearn,lesteve,2014-10-29 13:35:10,"By default we use nilearn/data/avg152T1_brain.nii.gz for the background image. According to the nilearn.datasets.load_mni152_template docstring it comes from FSL and I double-checked that they match (on my computer the FSL one is at /usr/share/data/fsl-mni152-templates/avg152T1_brain.nii.gz).
+
+FWIW in the FSL [doc](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases) it is called ""MNI152 standard-space T1-weighted average structural template image"".
+",,
+7,issue_comment,271,nilearn,nilearn,AlexandreAbraham,2014-10-29 15:35:17,"This is not very surprising to me. I agree with Bertrand. ADHD has been preprocessed using SPM, maybe you can get a better mapping by using their template instead of FSL.
+",,
+8,issue_comment,271,nilearn,nilearn,lesteve,2014-10-30 07:22:18,"OK I was just being curious. Thanks for the feed-back.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,257,nilearn,nilearn,dohmatob,2014-10-08 07:07:38,"fetch_haxby (of course the exception is raised lower down the stack) throws cryptic (non-explicit) error message when *NILEARN_DATA not exported. Indeed,
+
+```
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+/home/elvis/CODE/FORKED/nilearn/plot_haxby_smoothlasso.py in <module>()
+     14 
+     15 from nilearn import datasets
+---> 16 data_files = datasets.fetch_haxby()
+     17 
+     18 ### Load Target labels ########################################################
+
+/home/elvis/CODE/FORKED/nilearn/nilearn/datasets.py in fetch_haxby(data_dir, n_subjects, fetch_stimuli, url, resume, verbose)
+    970         n_subjects = 6
+    971 
+--> 972     data_dir = _get_dataset_dir('haxby2001', data_dir=data_dir)
+    973 
+    974     # Dataset files
+
+/home/elvis/CODE/FORKED/nilearn/nilearn/datasets.py in _get_dataset_dir(dataset_name, data_dir, verbose)
+    223             return path
+    224 
+--> 225     raise ValueError('Could not find a writable directory to store dataset')
+    226 
+    227 
+
+ValueError: Could not find a writable directory to store dataset
+> /home/elvis/CODE/FORKED/nilearn/nilearn/datasets.py(225)_get_dataset_dir()
+    224 
+--> 225     raise ValueError('Could not find a writable directory to store dataset')
+    226 
+
+ipdb> 
+```
+
+The error message doesn't tell the user how to fix the problem; it doesn't even mention *NILEARN_DATA, etc. That is, for the frontend user this error message is not very helpful..
+",start issue,fetch_haxby throws cryptic (non-explicit) error message when *NILEARN_DATA not exported
+2,issue_closed,257,nilearn,nilearn,lesteve,2014-10-28 07:54:39,,closed issue,fetch_haxby throws cryptic (non-explicit) error message when *NILEARN_DATA not exported
+3,issue_comment,257,nilearn,nilearn,AlexandreAbraham,2014-10-10 14:44:10,"Well, I did not speack explicitely of the NILEARN_DATA variable because this is not the actual problem. The problem is that you try to run a script in a directory where you don't have writing permissions. Setting a NILEAR_DATA environment variable could solve your problem (and is certainly the most recommended way) but this is not mandatory, you could also specify a data_dir manually.
+
+So you think that, if the download fails because of an IOError, we should issue a message that looks like a usage which specifies all the rules used by nilearn to find a writable path? Ping @GaelVaroquaux 
+",,
+4,issue_comment,257,nilearn,nilearn,GaelVaroquaux,2014-10-10 17:10:18,"> So you think that, if the download fails because of an IOError, we
+> should issue a message that looks like a usage which specifies all the
+> rules used by nilearn to find a writable path? Ping @GaelVaroquaux
+
+If you can find 3 lines that describes this well, this is good. Elsewhere
+it is too long, and people won't read it. Just write a paragraph as well
+as possible in the docs, and do a http link to it in the error message
+(linking to the online version).
+",,
+5,issue_comment,257,nilearn,nilearn,AlexandreAbraham,2014-10-10 22:45:15,"I can say that the most recommended way is to use NILEARN_DATA.
+",,
+6,issue_comment,257,nilearn,nilearn,GaelVaroquaux,2014-10-11 12:03:07,"> I can say that the most recommended way is to use NILEARN_DATA.
+
+Yes, and point to the online docs.
+",,
+7,issue_comment,257,nilearn,nilearn,lesteve,2014-10-14 09:55:44,"It didn't really occur to me until @Titan-C opened #262 but there is a real bug here (somehow I assumed @dohmatob had got himself in a edge case scenario where the current directory was not writable).
+
+Basically, when you start from a fresh install, nilearn_data (or any of the other alternative paths) is not created resulting in
+
+```
+In [7]: d = datasets.fetch_smith_2009()
+---------------------------------------------------------------------------
+IOError                                   Traceback (most recent call last)
+<ipython-input-7-465f00c43b6c> in <module>()
+----> 1 d = datasets.fetch_smith_2009()
+
+/home/lesteve/dev/nilearn/nilearn/datasets.py in fetch_smith_2009(data_dir, url, resume, verbose)
+    927              ]
+    928 
+--> 929     data_dir = _get_dataset_dir('smith_2009', data_dir=data_dir)
+    930     files_ = _fetch_files(data_dir, files, resume=resume)
+    931 
+
+/home/lesteve/dev/nilearn/nilearn/datasets.py in _get_dataset_dir(dataset_name, data_dir, verbose)
+    226 
+    227     raise IOError('Nilearn tried to store the dataset in the following '
+--> 228             'directories, but has no write permission:\n' + '\n'.join(paths))
+    229 
+    230 
+
+IOError: Nilearn tried to store the dataset in the following directories, but has no write permission:
+/home/lesteve/dev/nilearn/nilearn_data
+```
+
+Something similar happens if you have defined NILEARN_DATA but $NILEARN_DATA doesn't exist.
+",,
+8,issue_comment,257,nilearn,nilearn,Titan-C,2014-10-14 10:05:23,"I had the same issue when following the tutorial. My guess was to keep nilearn_data as the default but create the required folder by default if none existing. For a new user, it's hard to follow the tutorial if the default behavior fails.
+",,
+9,issue_comment,257,nilearn,nilearn,lesteve,2014-10-14 11:36:13,"I propose we keep this issue for the error message improvement bit, and we tackle the fresh install dataset download bug in #262.
+",,
+10,issue_comment,257,nilearn,nilearn,dohmatob,2014-10-14 12:18:29,"+1
+
+On Tue, Oct 14, 2014 at 1:36 PM, Loïc Estève notifications@github.com
+wrote:
+
+> I propose we keep this issue for the error message improvement bit, and we
+> tackle the fresh install dataset download bug in #262
+> https://github.com/nilearn/nilearn/pull/262.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/257#issuecomment-59028868.
+
+## 
+
+DED
+",,
+11,issue_comment,257,nilearn,nilearn,lesteve,2014-10-28 07:54:39,"Improving the error message is going to be done in #262.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,270,nilearn,nilearn,lesteve,2014-10-28 12:39:23,"When using `resample=True` in `nilearn.image.resampling.reorder_img` it could be useful to specify additional resampling arguments. The use case that @mrahim had:
+- he wants to plot segmentation images with a discrete set of values (one value per region).
+- Using `plot_img` yields an error because his affine can not be made diagonal by reordering the axes. 
+- Trying to use reorder_img explicitly with resample=True resamples the image with some interpolation which mangles the region you are trying to see: 
+  ![resampled_segmentation](https://cloud.githubusercontent.com/assets/1680079/4808303/089f7658-5e9f-11e4-9ab5-66ef1cf64088.png) This is the picture you would expect:
+  ![resampled_segmentation_nearest](https://cloud.githubusercontent.com/assets/1680079/4808331/51b47032-5e9f-11e4-89ec-8cf91d87d299.png)
+",start issue,Add resampling arguments to nilearn.image.resampling.reorder_img
+2,issue_closed,270,nilearn,nilearn,lesteve,2014-10-30 13:33:48,,closed issue,Add resampling arguments to nilearn.image.resampling.reorder_img
+3,pull_request_title,270,nilearn,nilearn,lesteve,2014-10-28 12:39:23,"When using `resample=True` in `nilearn.image.resampling.reorder_img` it could be useful to specify additional resampling arguments. The use case that @mrahim had:
+- he wants to plot segmentation images with a discrete set of values (one value per region).
+- Using `plot_img` yields an error because his affine can not be made diagonal by reordering the axes. 
+- Trying to use reorder_img explicitly with resample=True resamples the image with some interpolation which mangles the region you are trying to see: 
+  ![resampled_segmentation](https://cloud.githubusercontent.com/assets/1680079/4808303/089f7658-5e9f-11e4-9ab5-66ef1cf64088.png) This is the picture you would expect:
+  ![resampled_segmentation_nearest](https://cloud.githubusercontent.com/assets/1680079/4808331/51b47032-5e9f-11e4-89ec-8cf91d87d299.png)
+",aff8b2bad199c15a76c1447bb866be31278df52d,Add resampling arguments to nilearn.image.resampling.reorder_img
+4,pull_request_merged,270,nilearn,nilearn,lesteve,2014-10-30 13:33:48,Add resampling arguments to nilearn.image.resampling.reorder_img,89a3fcaf7ea2710577586cd0c0b412fa4d7beda3,Pull request merge from lesteve/nilearn:reorder-with-resample-args to nilearn/nilearn:master
+5,issue_comment,270,nilearn,nilearn,lesteve,2014-10-29 10:28:25,"@AlexandreAbraham any comments on this one?
+",,
+6,issue_comment,270,nilearn,nilearn,AlexandreAbraham,2014-10-29 15:51:38,"I'm not sure what to say about this... I think that the problem here is the ""continuous"" part (that should be ""nearest"" in your example). First, I think that reorder_img is a horrible name, reorder_axis would be more meaningful. Also, I don't see why a ""reordering"" function would completely change the affine.
+I would split that into two low_level function: reorder_axis (or reorder_affine) and diagonalize_affine. And then, because diagonalize_affine would imply a resampling, then you don't need a ""resample_args"", it would be basically a wrapper around the resample function.
+
+But to answer your question, if it is just about interpolation, I would go for a string parameter. `resample=True` would be equal to `resample='continuous'`. And you could put `resample='nearest'`. We could also imagine a `resample='auto'` which switches to nearest if all values are integers.
+",,
+7,issue_comment,270,nilearn,nilearn,lesteve,2014-10-29 21:16:59,"I am thinking about a quick fix for now to be honest although I get your points.
+
+About using a string parameter, do we care about maintaining backward-compatibility where resample=True is equivalent to resample='continuous'?
+",,
+8,issue_comment,270,nilearn,nilearn,AlexandreAbraham,2014-10-29 21:19:41,"nilearn is not released, it is a new feature, so I think we don't need to.
+",,
+9,issue_comment,270,nilearn,nilearn,lesteve,2014-10-29 21:26:45,"Hmm maybe I wasn't clear enough, using reorder_img with resample=True is not a new feature and what that was doing is resampling with interpolation='continuous'. Should we maintain this behaviour?
+",,
+10,issue_comment,270,nilearn,nilearn,AlexandreAbraham,2014-10-29 21:30:43,"By new, I meant relatively new. Do you think that a lot of people are using this feature ? If so, then raise a warning message. But I think that you can break backward compatibility.
+",,
+11,issue_comment,270,nilearn,nilearn,lesteve,2014-10-29 21:34:43,"> Do you think that a lot of people are using this feature ?
+
+No clue whatsoever that's why I am asking ;-)
+
+> But I think that you can break backward compatibility.
+
+OK I'll do that then
+",,
+12,issue_comment,270,nilearn,nilearn,bthirion,2014-10-29 22:06:12,"> ```
+> Do you think that a lot of people are using this feature ?
+> ```
+> 
+> No clue whatsoever that's why I am asking ;-)
+> 
+> I would bet that this feature is not frequently used.
+",,
+13,issue_comment,270,nilearn,nilearn,lesteve,2014-10-30 13:11:07,"Switched to a 'resample' string argument as discussed.
+",,
+14,issue_comment,270,nilearn,nilearn,AlexandreAbraham,2014-10-30 13:31:52,"LGTM
+",,
+15,issue_comment,270,nilearn,nilearn,lesteve,2014-10-30 13:33:43,"OK thanks, merging.
+",,
+16,issue_comment,270,nilearn,nilearn,mrahim,2014-10-30 14:47:52,"Thank you @lesteve for the new resampling argument. I agree that it is a very specific case that won't be faced everyday, but it's better to have more flexibility without more complexity :-)
+",,
+17,pull_request_commit,270,nilearn,nilearn,lesteve,2014-10-28 10:23:53,"reorder_img 'resample' argument sets interpolation resampling
+
+Also:
+* niimg variable names should end with _img in test_resampling.py
+* fix PEP8 and typo axis -> axes
+* add value of interpolation in resample_img error message",aff8b2bad199c15a76c1447bb866be31278df52d,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,238,nilearn,nilearn,AlexandreAbraham,2014-09-14 14:58:56,"I did not made test for global path PR because another PR will slightly modify the fetcher system. Tests should be added later.
+",start issue,Add test for global path handling
+2,issue_closed,238,nilearn,nilearn,AlexandreAbraham,2014-10-28 11:27:49,,closed issue,Add test for global path handling
+3,issue_comment,238,nilearn,nilearn,lesteve,2014-10-28 08:38:24,"@AlexandreAbraham I guess this will be tackled by #262 or did you have anything else in mind?
+",,
+4,issue_comment,238,nilearn,nilearn,AlexandreAbraham,2014-10-28 11:27:49,"No, #262 solves it. I close.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,260,nilearn,nilearn,lesteve,2014-10-13 09:14:19,"From @AlexandreAbraham [comment](https://github.com/nilearn/nilearn/pull/227/files#r187348).
+
+> The testing module contains functions related to testing only. If a function in there become useful into nilearn itself, then I think that we should move it out from this package for the sake of clarity.
+",start issue,Move is_spd outside of _utils.testing
+2,issue_closed,260,nilearn,nilearn,lesteve,2014-10-15 10:16:52,,closed issue,Move is_spd outside of _utils.testing
+3,issue_comment,260,nilearn,nilearn,lesteve,2014-10-13 09:17:07,"@AlexandreAbraham any suggestions about the naming of the package? It doesn't seem to fit in any of the _utils subpackages. What about _utils.linalg?
+",,
+4,issue_comment,260,nilearn,nilearn,GaelVaroquaux,2014-10-13 14:37:52,"_utils.maths or _utils.extmaths to fit what is done in scikit-learn?
+",,
+5,issue_comment,260,nilearn,nilearn,AlexandreAbraham,2014-10-13 15:25:28,":+1: 
+",,
+6,issue_comment,260,nilearn,nilearn,lesteve,2014-10-13 16:22:00,"We already have_utils/fast_maths.py which only contains the fast_abs_percentile function. What about renaming it to _utils/extmath.py and sticking the is_spd in it? 
+",,
+7,issue_comment,260,nilearn,nilearn,GaelVaroquaux,2014-10-13 16:22:49,"> We already have_utils/fast_maths.py which only contains the
+> fast_abs_percentile function. What about renaming it to
+> _utils/extmath.py and sticking the is_spd in it?
+
+Good with me.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,256,nilearn,nilearn,dohmatob,2014-10-06 13:25:31,"fixes issue #253 
+",start issue,ENH: nibabel 1.2.2 -> 1.1.0 (in Readme.rst)
+2,issue_closed,256,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:27:08,,closed issue,ENH: nibabel 1.2.2 -> 1.1.0 (in Readme.rst)
+3,pull_request_title,256,nilearn,nilearn,dohmatob,2014-10-06 13:25:31,"fixes issue #253 
+",d53b66fe70f7bb6d6724146cc3e163f952ab1e38,ENH: nibabel 1.2.2 -> 1.1.0 (in Readme.rst)
+4,pull_request_merged,256,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:27:07,ENH: nibabel 1.2.2 -> 1.1.0 (in Readme.rst),a38d1dcd037edb520201ef62676acf72ec4f5699,Pull request merge from dohmatob/nilearn:say-nibabel-in-readme to nilearn/nilearn:master
+5,pull_request_commit,256,nilearn,nilearn,dohmatob,2014-10-06 13:19:30,ENH: nibabel 1.2.2 -> 1.1.0,d53b66fe70f7bb6d6724146cc3e163f952ab1e38,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,251,nilearn,nilearn,lesteve,2014-10-02 12:10:30,"Getting #240 going again. I did:
+
+```
+git checkout -b GaelVaroquaux-better_pca master
+git pull https://github.com/GaelVaroquaux/nilearn.git better_pca
+```
+
+Then I fixed the merge conflicts, fixed the confounds=None default argument in MultiPCA.fit + a typo in the session_pca call.
+",start issue,Better pca (bis)
+2,issue_closed,251,nilearn,nilearn,GaelVaroquaux,2014-10-09 08:43:44,,closed issue,Better pca (bis)
+3,pull_request_title,251,nilearn,nilearn,lesteve,2014-10-02 12:10:30,"Getting #240 going again. I did:
+
+```
+git checkout -b GaelVaroquaux-better_pca master
+git pull https://github.com/GaelVaroquaux/nilearn.git better_pca
+```
+
+Then I fixed the merge conflicts, fixed the confounds=None default argument in MultiPCA.fit + a typo in the session_pca call.
+",53b8c1eb99be9855f96c8fe954169fedd2f16ca0,Better pca (bis)
+4,pull_request_merged,251,nilearn,nilearn,GaelVaroquaux,2014-10-09 08:43:44,Better pca (bis),a17c9dbd58a4cb8fdb3a38890878e6d368fd665b,Pull request merge from lesteve/nilearn:GaelVaroquaux-better_pca to nilearn/nilearn:master
+5,pull_request_commit,251,nilearn,nilearn,GaelVaroquaux,2014-05-16 14:32:48,WIP,fe9133e946a6118178e5b781dffc7c269b66b9b6,
+6,pull_request_commit,251,nilearn,nilearn,GaelVaroquaux,2014-05-16 15:05:53,ENH: use also NiftiMasker,e92818f2ac2438e35436694ec094d586f9fa192e,
+7,pull_request_commit,251,nilearn,nilearn,GaelVaroquaux,2014-05-19 12:55:44,Minor improvements to MultiPCA,bca724dbf69d18820696b2120530196c70952284,
+8,pull_request_commit,251,nilearn,nilearn,GaelVaroquaux,2014-05-21 09:07:12,Make confounds work with MultiPCA,8448c7a3e3851395d91eff10c493c1a36d581119,
+9,pull_request_commit,251,nilearn,nilearn,GaelVaroquaux,2014-05-21 09:08:46,Merge branch 'better_pca' of github.com:GaelVaroquaux/nilearn into better_pca,2220ef1d50464e9f144af8c37b65695819f4ba47,
+10,pull_request_commit,251,nilearn,nilearn,lesteve,2014-10-02 11:13:44,Pull GaelVaroquaux/better_pca into master and fix merge conflicts,0b69f539b86e7e98de18be3e95991e5b4a1e5f49,
+11,pull_request_commit,251,nilearn,nilearn,lesteve,2014-10-02 11:57:46,"Fix default 'confounds' argument in MultiPCA.fit. Also fix typo in
+the session_pca call.",da7cf1a4ec9e50524714fcb38dad84cfca7a86a1,
+12,pull_request_commit,251,nilearn,nilearn,lesteve,2014-10-06 12:29:46,Added smoke test for MultiPCA.fit with a 'confounds' argument,53b8c1eb99be9855f96c8fe954169fedd2f16ca0,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,259,nilearn,nilearn,banilo,2014-10-11 17:19:02,"Added explicit image creation with individual ROIs and how to extract fMRI data in these ROIs
+",start issue,updated ROI extraction
+2,issue_closed,259,nilearn,nilearn,lesteve,2014-11-04 08:49:47,,closed issue,updated ROI extraction
+3,pull_request_title,259,nilearn,nilearn,banilo,2014-10-11 17:19:02,"Added explicit image creation with individual ROIs and how to extract fMRI data in these ROIs
+",adae80a351e3bdd82ea16b5420c863a4005330c5,updated ROI extraction
+4,pull_request_merged,259,nilearn,nilearn,lesteve,2014-11-04 08:49:47,updated ROI extraction,13039bd51475dcc2681edcc99a7b72d596e21517,Pull request merge from banilo/nilearn:roiexupdate to nilearn/nilearn:master
+5,issue_comment,259,nilearn,nilearn,bthirion,2014-10-13 20:24:01,"The example throws 8 figures, which is a bit messy. It would be better if some of them could be subplot of one larger figure. For instance 1-3 and 4-7 could be gathered into two figures.
+I'm not sure I get the gist from fig. 8.
+",,
+6,issue_comment,259,nilearn,nilearn,bthirion,2014-10-13 20:26:28,"Also, the example requires 2g of memory which is a bit surpising. Do we have any lighter dataset in house ?
+",,
+7,issue_comment,259,nilearn,nilearn,banilo,2014-10-14 07:24:08,"Grouping figures: ok
+
+2g: That's because we are loading 1000 images of the Haxby dataset. We could reduce it to 50 or 100 to be less demanding on memory.
+
+Figure 8 is supposed to examplify how data can be easily extract from the extract ROIs. Somebody a better idea for this?
+",,
+8,issue_comment,259,nilearn,nilearn,GaelVaroquaux,2014-10-14 08:33:05,"On Tue, Oct 14, 2014 at 12:24:08AM -0700, Danilo Bzdok wrote:
+
+> 2g: That's because we are loading 1000 images of the Haxby dataset. We could reduce it to 50 or 100 to be less demanding on memory.
+
+That might be a good idea.
+",,
+9,issue_comment,259,nilearn,nilearn,bthirion,2014-10-28 11:18:57,"I have added a couple of cosmetic comments. Besides, this looks good to merge.
+",,
+10,issue_comment,259,nilearn,nilearn,lesteve,2014-10-28 13:57:55,"Hidden in an outdated diff comment:
+
+> This comment is used as a target in the doc, look at doc/building_blocks/manipulating_mr_images.rst. So you'll have to change it in the rst as well.
+> 
+> Also have you regenerated the doc and checked that the order of images hasn't changed and/or that the doc description still matches the pictures?
+",,
+11,issue_comment,259,nilearn,nilearn,lesteve,2014-10-28 14:02:08,"Also could you change the orientation of the x-axis labels, there is some slight overlap in the boxplot at the moment:
+![plot_roi_extraction](https://cloud.githubusercontent.com/assets/1680079/4809349/d514a63a-5eaa-11e4-87b6-eec9c67f2789.png)
+",,
+12,issue_comment,259,nilearn,nilearn,banilo,2014-10-29 15:20:13,"All comments should have been addressed now.
+",,
+13,issue_comment,259,nilearn,nilearn,lesteve,2014-11-04 08:49:50,"Merged, thanks a lot for this!
+",,
+14,issue_comment,259,nilearn,nilearn,banilo,2014-11-04 08:52:16,"Thank you guys for the help.
+
+> On 04 Nov 2014, at 09:49, Loïc Estève notifications@github.com wrote:
+> 
+> Merged, thanks a lot for this!
+> 
+> —
+> Reply to this email directly or view it on GitHub.
+",,
+15,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 06:54:18,"I wouldn't specify cut_coords and let it default to None
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+16,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 06:54:46,"Same comment about letting `cut_coords` default to None.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+17,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:15:34,"I think the naming convention is that `*_img` is reserved for nifti images. Here `first_roi_img` is a numpy array.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+18,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:16:26,"Same thing about `cut_coords=None` as above
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+19,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:19:16,"idem
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+20,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:21:22,"you could use np.arange(1, n_scans + 1) which might be slightly easier to read
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+21,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:28:19,"Just curious, do we lose the information about the header, if we don't specify it explicitly?
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+22,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:33:48,"This comment is used as a target in the doc, look at doc/building_blocks/manipulating_mr_images.rst. So you'll have to change it in the rst as well.
+
+Also have you regenerated the doc and checked that the order of images hasn't changed and/or that the doc description still matches the pictures?
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+23,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:34:58,"Since you are reusing it a few times, why not define a variable for `act_summaries[:, 0]`?
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+24,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:40:37,"I would avoid explicitly specifying default parameter values. It makes for a simpler example and gives us more leeway to change defaults in the future if we wish to do so.
+
+From a quick look at the code it seems to be the case for:
+- `background_label`
+- `smoothing_fwhm`
+- `verbose`
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+25,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:41:48,"Given the name of the file, was this line meant to be in your commit?
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+26,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-13 07:44:11,"I am not 100% convinced that the 2 element loop is simpler to read. I would just unroll it:
+
+```
+first_roi_data = (labels == 1).astype(np.int)
+sedond_roi_data = (labels == 2).astype(np.int)
+```
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+27,pull_request_commit_comment,259,nilearn,nilearn,banilo,2014-10-13 07:56:06,"Sorry, this is an error on my part.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+28,pull_request_commit_comment,259,nilearn,nilearn,banilo,2014-10-13 07:58:36,"I had the same question. Many seem not to specify the header explicitly.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+29,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-13 09:04:21,"I believe there's no need to include the header explictly. I would not 
+do it.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+30,pull_request_commit_comment,259,nilearn,nilearn,GaelVaroquaux,2014-10-13 14:57:11,"> I think the naming convention is that *_img is reserved for nifti images.
+
+Yes
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+31,pull_request_commit_comment,259,nilearn,nilearn,GaelVaroquaux,2014-10-13 14:58:41,"> > -    ((labels == (i + 1)).astype(np.int) for i in xrange(2))
+
+Also, xrange does not exists in Python3, so we try to avoid it in
+general.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+32,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-17 10:32:11,"This is used in the doc too as a `start-after` and a `end-before` target. So you'll need to update doc/building/manipulating_mr_images.rst.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+33,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-20 20:38:16,"pep8: this line (and some others) is too long
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+34,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-20 20:39:25,"My version of matplolib (arguably old) does not support labels as argument to plt.boxplot
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+35,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-20 20:40:06,"trailing whitespace. You should run a pep8 check.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+36,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-20 20:42:04,"Please keep the imports at the beginning of the script.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(84, '', u'plot_roi_extraction.py')"
+37,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-20 21:06:04,"could the value be inferred from trial_list ?
+I'm not sure what max_trials actually means ?
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+38,pull_request_commit_comment,259,nilearn,nilearn,lesteve,2014-10-20 21:19:16,"Although I would definitely agree in general, my impression is that these example scripts are written in order to be easily separated into stand-alone snippets that can be inserted into the documentation. For example this script is used as part of the documentation [here](https://nilearn.github.io/building_blocks/manipulating_mr_images.html#mask-dilation).
+
+In this context it makes sense not to move all the imports at the beginning of the scripts but to use them when they are needed. I guess this way it looks more like an interactive session (or a tutorial) where the user imports packages when he needs them.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(84, '', u'plot_roi_extraction.py')"
+39,pull_request_commit_comment,259,nilearn,nilearn,GaelVaroquaux,2014-10-20 21:21:00,"> In this context it makes sense not to move all the imports at the beginning of
+> the scripts but to use them when they are needed. I guess this way it looks
+> more like an interactive session (or a tutorial) where the user imports
+> packages when he needs them.
+
+Yes. Also when a beginner is reading the script, he can more easily see
+the link between the import and how it is used.
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(84, '', u'plot_roi_extraction.py')"
+40,pull_request_commit_comment,259,nilearn,nilearn,banilo,2014-10-20 21:40:47,"This would correspond to my current coarse heuristics:
+If normal script, strictly list imports at beginning in hierarchical order
+(built-in to specialized).
+If educational script, make local exceptions to leverage readability.
+
+2014-10-20 23:21 GMT+02:00 Gael Varoquaux notifications@github.com:
+
+> In plot_roi_extraction.py:
+> 
+> >  # Dilation
+> > +fig_id = plt.subplot(3, 1, 3)
+> >  from scipy import ndimage
+> 
+>  In this context it makes sense not to move all the imports at the
+> beginning of the scripts but to use them when they are needed. I guess this
+> way it looks more like an interactive session (or a tutorial) where the
+> user imports packages when he needs them.
+> Yes. Also when a beginner is reading the script, he can more easily see
+> the link between the import and how it is used.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/259/files#r19114695.
+
+## 
+
+Viele Grüße,
+Danilo
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(84, '', u'plot_roi_extraction.py')"
+41,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-28 11:17:22,"Please remove this line
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+42,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-28 11:17:58,"log_p_values = -np.log10(pvalues)
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+43,pull_request_commit_comment,259,nilearn,nilearn,bthirion,2014-10-28 11:18:15,"maybe p_values instead of pvalues
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(31, '', u'plot_roi_extraction.py')"
+44,pull_request_commit_comment,259,nilearn,nilearn,dengemann,2014-10-29 16:31:51,"use float litaral 10. for consistency
+",adae80a351e3bdd82ea16b5420c863a4005330c5,"(None, '', u'plot_roi_extraction.py')"
+45,pull_request_commit,259,nilearn,nilearn,banilo,2014-10-11 17:17:10,updated ROI extraction,9d4131a199ab279f788b4bcd8eb95e7cb1724a5a,
+46,pull_request_commit,259,nilearn,nilearn,banilo,2014-10-13 15:33:56,ROI example: second version,16539bf83ec9b06540bd314e8f438bb31aad70fa,
+47,pull_request_commit,259,nilearn,nilearn,banilo,2014-10-15 17:07:37,Now Subplots and boxplots,0a15e72846ad2b2ccfd206f8aff1007240416581,
+48,pull_request_commit,259,nilearn,nilearn,banilo,2014-10-21 14:14:02,PEP8ized + more intuitive variable names,5e055605e835c12f5cb5d89314a13470742849cd,
+49,pull_request_commit,259,nilearn,nilearn,banilo,2014-10-28 23:20:23,variable renaming + cosmetics,7c75a09b6237db3e263eb1d2410be3874aca1f9c,
+50,pull_request_commit,259,nilearn,nilearn,banilo,2014-10-29 15:20:34,Adapted .rst files for Sphinx,3fb6e777e4a2346e9d79fef07c6fec5b7fa62645,
+51,pull_request_commit,259,nilearn,nilearn,banilo,2014-11-02 15:18:23,Uniform use of float literals,adae80a351e3bdd82ea16b5420c863a4005330c5,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,103,nilearn,nilearn,rphlypo,2013-09-04 14:54:24,"When downloading a dataset this is by default in the current directory. However, one does not necessarily group all of its code in the ""data"" directory. It would be nice to 
+
+1) either, warn the end user that the data may be placed wherever as long as a environment variable NILEARN_DATA is created containing a pointer to that directory;
+
+2) or, upon absence of the environment variable, create it from within the procedure (warning could still be issued if needed)
+",start issue,Downloading data with datasets.fetch_XX
+2,issue_closed,103,nilearn,nilearn,AlexandreAbraham,2014-10-31 08:33:08,,closed issue,Downloading data with datasets.fetch_XX
+3,issue_comment,103,nilearn,nilearn,AlexandreAbraham,2014-10-31 08:33:06,"This issue is now treated in #244.
+",,
+4,issue_comment,103,nilearn,nilearn,AlexandreAbraham,2014-03-31 15:57:22,"I am totally against option 2: a software must not mess the user configuration files.
+
+Warning the user seems like a good idea to me. Another option would be to store data in a fixed path like `~/.nilearn`. I think that this is the behavior of most softwares. The problem is that it may not be obvious for people who are not into computer science, if they want to go and see directly the content of the dataset. The other problem is that it a bit user-friendly on Linux, but we would end up with a folder in the AppData folder on windows and I think that most of users does not even know that it exists.
+
+@GaelVaroquaux Any thoughts on this one ? Sorry to highlight you everywhere but I'm cleaning nilearn issues list.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,237,nilearn,nilearn,lesteve,2014-09-12 13:21:44,"A PR I plan to keep open while I am browsing the documentation and bumping into minor things that can be improved.
+",start issue,[MRG] More documentation minor fixes
+2,issue_closed,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 20:32:35,,closed issue,[MRG] More documentation minor fixes
+3,pull_request_title,237,nilearn,nilearn,lesteve,2014-09-12 13:21:44,"A PR I plan to keep open while I am browsing the documentation and bumping into minor things that can be improved.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,[MRG] More documentation minor fixes
+4,pull_request_merged,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 20:32:35,[MRG] More documentation minor fixes,28049740ce0419594bea466122a079fb00bbc4cf,Pull request merge from lesteve/nilearn:more-doc-minor-fixes to nilearn/nilearn:master
+5,issue_comment,237,nilearn,nilearn,bthirion,2014-09-16 12:31:21,"Nihil obtsat.
+",,
+6,issue_comment,237,nilearn,nilearn,lesteve,2014-10-20 12:24:03,"@AlexandreAbraham @GaelVaroquaux @bthirion I think I am done with my first pass on the doc. Any comments let me know.
+",,
+7,issue_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 19:08:14,"Aside the few minor comments above, +1 for merge!
+",,
+8,issue_comment,237,nilearn,nilearn,bthirion,2014-10-20 20:10:32,"+1 for merge.
+",,
+9,issue_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 20:32:44,"Merged. Thanks Loic!
+",,
+10,pull_request_commit_comment,237,nilearn,nilearn,lesteve,2014-09-12 13:36:58,"This is the most controversial change. The --pylab flag will be removed for IPython **notebook** on IPython 3.0 and is discouraged for other front-ends. Not sure about bog-standard IPython to be entirely fair, but I tend to agree with the general opinion that putting so many things in the main namespace (and shadowing builtins while we are at it like sum and all) is never a great idea.
+
+On top of that I didn't look extensively but I could not find a place in the doc that actually relied on accessing functions that  --pylab puts in the main namespace.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(61, '', u'doc/introduction.rst')"
+11,pull_request_commit_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 18:18:09,"Faux ami: I believe that the proper English wording here is to ""warrant"".
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(5, '', u'AUTHORS.rst')"
+12,pull_request_commit_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 18:19:29,"Same comment.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(5, '', u'doc/AUTHORS.rst')"
+13,pull_request_commit_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 18:43:55,"You're loosing a bit the focus of the sentence: standardizing is almost always needed, smoothing is often useful, but not always.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(None, '', u'doc/building_blocks/estimator_choice.rst')"
+14,pull_request_commit_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 19:06:47,"I am OK with this change. It is good practice.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(61, '', u'doc/introduction.rst')"
+15,pull_request_commit_comment,237,nilearn,nilearn,lesteve,2014-10-20 19:22:16,"""guarantee the future"" seems to win the google battle against ""warrant the future"". Also this [link](http://www.linguee.com/english-french/search?source=auto&query=%22garantir+le+futur%22) shows a few occurrences from the European parliament, which hopefully hires translators we can trust.
+
+Otherwise the same link has something like ""to (help) ensure the future"" if you like it better.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(5, '', u'AUTHORS.rst')"
+16,pull_request_commit_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 19:25:57,"> ""guarantee the future"" seems to win the google battle against ""warrant the
+> future"". Also this link shows a few occurrences from the European parliament,
+> which hopefully hires translators we can trust.
+
+OK, point taken.
+
+> Otherwise the same link has something like ""to (help) ensure the
+> future"" if you like it better.
+
+It seems to sound better to my ears, but whatever the european parliement
+says is good!
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(5, '', u'AUTHORS.rst')"
+17,pull_request_commit_comment,237,nilearn,nilearn,lesteve,2014-10-20 19:28:10,"I am more than happy to keep the previous phrasing but then you have to help me finish the sentence:
+Typically: standardizing the data is important, smoothing can often be useful, and removing confounding effects **what?**.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(None, '', u'doc/building_blocks/estimator_choice.rst')"
+18,pull_request_commit_comment,237,nilearn,nilearn,GaelVaroquaux,2014-10-20 19:31:38,"> Typically: standardizing the data is important, smoothing can often be useful,
+> and removing confounding effects what?.
+
+and confounding effects, such as a session effect, must be removed.
+
+Is that good with you?
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(None, '', u'doc/building_blocks/estimator_choice.rst')"
+19,pull_request_commit_comment,237,nilearn,nilearn,lesteve,2014-10-20 20:07:48,"Perfectly fine with me, I have just pushed the changes.
+",a6c8b5527db4ef600a9a4012cf39c6d392080665,"(None, '', u'doc/building_blocks/estimator_choice.rst')"
+20,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-11 13:14:45,Fix a few typos,361833e0efbb738c19d7fbbee3082db2c1bd87f9,
+21,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-12 12:06:20,"Documentation tweaks, the main ones being:
+* replace ipython --pylab by ipython --matplotlib since the former is discouraged and it does not look like the doc is using functions that --pylab is importing in the main namespace
+* EPD has been replaced by Enthought Canopy",83db9923b2a7944bfe2b83ac2abf2da208c69335,
+22,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-12 12:12:12,Missing dot,17218553ed8f0d7a4988da04b36c7cf19b681eb0,
+23,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-12 13:20:15,Move the note about the --matplotlib flag after showing how the interactive prompt looks like,3fc6cb98e9043071219d2f724689e129fd9a4ea8,
+24,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-18 08:58:32,Replace another ipython -pylab usage by ipython --matplotlib,fd19f176e22f6b22eb15e200b9f62d99122a3484,
+25,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-19 07:20:25,"DOC: no mean EPI image computation any more in plot_canica_resting_state.py
+Also fixed typo",8797137ecf2e74083544c16476c7cd9d89dd2916,
+26,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-19 09:36:47,DOC: fix end-before and start-after targets,88af740c1fb4fa01e4e76ebcc4bb158baaab661c,
+27,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-19 14:16:54,DOC: fix broken link targets,eef95bdbcc53a256b7fada47f8a39807dbe27d84,
+28,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-19 14:41:03,"DOC: remove mentions of numpy masked arrays that are no longer relevant
+Remove unused numpy masked array in plot_ica_resting_state.py",eeae8ee39b6d7bddc78135ce8c3abb180123cde2,
+29,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-22 06:50:07,DOC: fix link targets,00ba456288147160854abf5786a468f1cf3c4848,
+30,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-26 14:29:06,DOC: fix typo,957bd6cf9f5b22c64ce465573df5977ac1dd6799,
+31,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-29 09:10:43,DOC: plot_haxby_simple does face vs cats (and not houses),36169b24be7cce0ac4b96af6f78c80e4fad3da90,
+32,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-29 09:11:58,DOC: display_mask is not used to plot the mask in plot_mask_computation.py,4ec3e6fbcf7b960b8d99a9e7cd61fc4d6a4f998b,
+33,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-29 09:19:57,DOC: fix typo,b76e648b629721b1d659f1818803afd7f0c2120a,
+34,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-29 11:49:59,DOC: fix link target and end-before target in plot_haxby_anova_svm.py,5593685cc3bf2711b8d4dba8a84032de2d436500,
+35,pull_request_commit,237,nilearn,nilearn,lesteve,2014-09-29 12:07:24,"DOC: only mention NiftiMapsMasker since the content is under the ""NiftiMapsMasker usage section""",3f29c6f8867d95769daf7d0bc8bcb70dfd5c523e,
+36,pull_request_commit,237,nilearn,nilearn,lesteve,2014-10-08 12:25:09,Fix typo,88049fef37347ce01c9e03b8918171898ad2d565,
+37,pull_request_commit,237,nilearn,nilearn,lesteve,2014-10-17 07:21:39,Spelling correction,6de25f2c7b278a1d34c969bbfc72fc25bf53fedb,
+38,pull_request_commit,237,nilearn,nilearn,lesteve,2014-10-17 07:23:30,Fix typo and footnote link. Some rephrasing.,302f819a7abd0192ab1bfb5447292ac1e8b76f82,
+39,pull_request_commit,237,nilearn,nilearn,lesteve,2014-10-20 11:38:19,Fix links in doc/building_blocks/decoding_simulated.rst,0a9e06658b58518981cbfd622f05033ad3c78c93,
+40,pull_request_commit,237,nilearn,nilearn,lesteve,2014-10-20 12:08:48,Slight rephrasing and typos,05ac7abf917585704944416db88f013dd3162426,
+41,pull_request_commit,237,nilearn,nilearn,lesteve,2014-10-20 20:00:20,DOC: Rephrasing,a6c8b5527db4ef600a9a4012cf39c6d392080665,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,273,nilearn,nilearn,banilo,2014-10-31 07:51:01,"1) For check_niimgs: the ""accept_3d"" argument does not seem to be taken into account in all cases:
+
+``` python
+# nifti IS 3D!!!
+print ""Actual shape x=%i, y=%i, z=%i"" % nib.load('mask.nii').shape  # -> Actual shape x=40, y=64, z=64
+
+l = ['mask.nii']
+print check_niimgs(l, accept_3d=False).shape  # -> (40, 64, 64, 1)
+print check_niimgs(l, accept_3d=True).shape  # -> (40, 64, 64, 1)
+
+path = 'mask.nii'
+print check_niimgs(path, accept_3d=False).shape  # -> TypeError: Data must be either a 4D Nifti 
+print check_niimgs(path, accept_3d=True).shape  # -> (40, 64, 64, 1)
+
+l2 = [nib.load('mask.nii')]
+print check_niimgs(l2, accept_3d=False).shape  # -> (40, 64, 64, 1)
+print check_niimgs(l2, accept_3d=True).shape  # -> (40, 64, 64, 1)
+
+nii = nib.load('mask.nii')
+print check_niimgs(nii, accept_3d=False).shape  # -> TypeError: Data must be either a 4D Nifti 
+print check_niimgs(nii, accept_3d=True).shape  # -> (40, 64, 64, 1)
+```
+
+2) Apart from that check_niimg has a ""ensure_3d"" keyword, whereas check_niimgs has a ""accept_3d"" keyword. What's the rationale? Could it be unified?
+",start issue,Inconsistencies in check_niimg / check_niimgs in behavior and naming
+2,issue_closed,273,nilearn,nilearn,lesteve,2014-11-07 15:39:46,,closed issue,Inconsistencies in check_niimg / check_niimgs in behavior and naming
+3,issue_comment,273,nilearn,nilearn,banilo,2014-10-31 07:52:18,"ups, the bold/big line was not intentional
+",,
+4,issue_comment,273,nilearn,nilearn,AlexandreAbraham,2014-10-31 08:05:53,"1) The behavior is consistent.
+
+`l = ['mask.nii']` and `l2 = [nib.load('mask.nii')]` are 4D. By putting the mask in a list, you add a dimension.
+`path = 'mask.nii'` and `nii = nib.load('mask.nii')` are 3D and thus are not accepted by check_niimgs, unless `accept_3d=True`.
+
+2) Both parameters have been created for developer purposes. It avoids code repetition. `ensure_3d` is an assertion on the input data, whereas you can see `accept_3d` as a `atleast_4d` function for nifti images.
+",,
+5,issue_comment,273,nilearn,nilearn,banilo,2014-11-15 22:19:29,"But if the general working unit in nilearn is the nibabel object then it might be confusing to some user that 3D and 4D here pertains to the general data structure instead of the nibabel object. Perhaps a note in the doc string?
+",,
+6,issue_comment,273,nilearn,nilearn,AlexandreAbraham,2014-11-16 23:55:35,"I don't get your remark.
+",,
+7,issue_comment,273,nilearn,nilearn,GaelVaroquaux,2014-11-17 09:34:45,"> I don't get your remark.
+
+Me neither.
+",,
+8,issue_comment,273,nilearn,nilearn,banilo,2014-11-17 10:09:36,"...ok, what I am awkwardly trying to express is the following. Nifti images (not general data representation) appear to be the working unit of nilearn in general. So, a nifti-image-focused user might expect these two cases from above to actually throw a TypeError.
+
+``` python
+l = ['mask.nii']
+print check_niimgs(l, accept_3d=False).shape  # -> (40, 64, 64, 1)
+
+l2 = [nib.load('mask.nii')]
+print check_niimgs(l2, accept_3d=False).shape  # -> (40, 64, 64, 1)
+```
+
+The image is 3D, only embedding this single image in a list makes it 4D - but only in data representation, the image by itself is still 3D.
+
+Did I explain better this time?
+",,
+9,issue_comment,273,nilearn,nilearn,GaelVaroquaux,2014-11-17 12:16:50,"> Did I explain better this time?
+
+You did. And if I understand things correctly, you are saying that you
+would want the code to throw an error. I think that this is a bad idea,
+because depending on the software you a using, a same analysis can result
+in a 3D or 4D (with shape[3] == 1) image. Typical, AFNI creates 4D
+images. The users are not aware of these sublte differences, and making
+the difference just for the sake of purity is not rendering them a
+service.
+",,
+10,issue_comment,273,nilearn,nilearn,banilo,2014-11-17 12:18:44,"I see, thanks.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,160,nilearn,nilearn,AlexandreAbraham,2014-01-31 09:41:27,"When downloading a dataset, the dataset fetcher looks at different locations (environment var...) and choses one.
+
+However, a new pattern rises recently. An administrator may want to provide read-only data respository to people. In this case, nilearn won't work because, if a dataset is missing, the user does not have write access to the folder.
+
+The solution would be to try other locations to store data if the first one does not work. We thought of allowing two environment variables (NILEARN_DATA and NILEARN_DATA_GLOBAL) or maybe allowing a list of paths in the environment variable, for example: NILEARN_DATA=/lab/data:/$HOME/my_data/
+
+Any other idea ?
+",start issue,[ENH] Dataset fetcher: enable use of several paths.
+2,issue_closed,160,nilearn,nilearn,lesteve,2014-10-08 06:50:49,,closed issue,[ENH] Dataset fetcher: enable use of several paths.
+3,issue_comment,160,nilearn,nilearn,bthirion,2014-04-13 21:44:27,"Not sure what to do. Won't we be exposed to situations where people mess up with the different data directories, which will be quite painful to deal with. I'm afraid you're trying to solve user's problems for which you actually need the user to undertsand what he/she does and take him/herself a decision (e.g. where should I put my data ?)
+",,
+4,issue_comment,160,nilearn,nilearn,AlexandreAbraham,2014-04-15 16:57:46,"My concern is this case: the administrator has partially downloaded a dataset, and the user wants to use the whole dataset. What should we do?
+
+The scenario for me would be like this:
+- Dataset is not present
+  - Find a writable directory in the path, put the dataset in it. If nothing is writable, raise an error
+- Dataset is complete
+  - Return it
+- Dataset is incomplete
+  - the dataset is in a writable directory -> download the rest of the dataset
+  - the dataset is not in a writable directory -> raise an error saying to report this problem to admin.
+
+Now we have to chose if we handle a path-like environement variable or if we have a global one and a local one. I would go for the second option, which is less generic but makes more sense as the first variable could be in system environement and the second one in user env (this avoid to redefine a variable for the user).
+",,
+5,issue_comment,160,nilearn,nilearn,bthirion,2014-04-15 21:52:59,"The second option could be simpler indeed, but I do not have a strong feeling about this.
+",,
+6,issue_comment,160,nilearn,nilearn,AlexandreAbraham,2014-04-09 13:43:08,"As stated in the issue, I don't know which is the best way to do that. Keeping only one environment variable / keyword parameter seems to be the simplest way. Also, do we allow dataset to be present party in global and the rest in local? For example, is the admin only fetched 13 subjects for ADHD, do we downed the rest of the dataset in local ?
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,266,nilearn,nilearn,banilo,2014-10-24 21:13:31,"It's great that 4D images or lists of nifti paths' can be passed on to transform() of Nifti(Labels)Masker instance. Yet, there are situations when those niftis require some preprocessing.
+
+Use case: we know that nifti contain NaN's that we need to np.nan_to_num those NaNs out in each, first.
+
+Might it be conceivable to extend the arguments for transform() such that 3D numpy arrays are also support? The affine could be checked back with the fitted mask image in this case.
+",start issue,Nifti(Labels)Masker: Extend possible data types for transform()?
+2,issue_closed,266,nilearn,nilearn,lesteve,2014-10-28 09:31:52,,closed issue,Nifti(Labels)Masker: Extend possible data types for transform()?
+3,issue_comment,266,nilearn,nilearn,lesteve,2014-10-27 10:47:28,"FWIW, you can use `nilearn.image.smooth_img` with `fwhm=None` to remove non-finite values. 
+
+``` python
+from nilearn import image
+
+niimgs = image.smooth_img(niimgs_with_nans, fwhm=None)
+```
+
+We could have the functionality in a function with a better name, if that's useful.
+
+About having transform take 3D numpy arrays, my understanding of the API is that high-level functions should take niimgs as arguments. Is it that much pain to create the niimgs from your 3D numpy arrays? 
+",,
+4,issue_comment,266,nilearn,nilearn,banilo,2014-10-27 12:52:15,"Ok, thanks.
+
+An alternative idea would be add an optional argument to Nifti(Labels)Masker that allows to specify a pipeline/set of operations that are performed on each of the nifti images before applying any actual masking operations.
+",,
+5,issue_comment,266,nilearn,nilearn,lesteve,2014-10-27 13:13:56,"It feels more natural to me to keep the NiftiMasker interface as it is and add some functions in case they don't exist already to do some common pre-processing directly on niimgs.
+
+Another argument would be that we probably want to maintain a scikit-learn interface for the `transform`, `fit`, `fit_transform` methods.
+",,
+6,issue_comment,266,nilearn,nilearn,banilo,2014-10-27 13:22:34,"To frame my point from the perspective of expense in memory, if the user
+needs to load niis from disc and then apply same modification not already
+supported by NiftiMasker this will double memory consumption - at a given
+moment in time the original and the modified input niis will need to be
+held im memory. Or is there a simple numpy or nibabel solution to this?
+
+2014-10-27 14:13 GMT+01:00 Loïc Estève notifications@github.com:
+
+> It feels more natural to me to keep the NiftiMasker interface as it is and
+> add some functions in case they don't exist already to do some common
+> pre-processing directly on niimgs.
+> 
+> Another argument would be that we probably want to maintain a scikit-learn
+> interface for the transform, fit, fit_transform methods.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/266#issuecomment-60589895.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+7,issue_comment,266,nilearn,nilearn,GaelVaroquaux,2014-10-27 14:39:04,"> Might it be conceivable to extend the arguments for transform() such
+> that 3D numpy arrays are also support? The affine could be checked back
+> with the fitted mask image in this case.
+
+No. It is important to me that we do not collide together nifti images
+and arrays. If we start doing this, the API is going to become blurry.
+In addition, supporting this uniformly would be ill-defined and
+impossible to implement in a consistent way (ie which affine would be
+used). It would make the package difficult to grasp and to use.
+",,
+8,issue_comment,266,nilearn,nilearn,GaelVaroquaux,2014-10-27 14:45:49,"> To frame my point from the perspective of expense in memory, if the user
+> needs to load niis from disc and then apply same modification not already
+> supported by NiftiMasker this will double memory consumption - at a given
+> moment in time the original and the modified input niis will need to be
+> held im memory.
+
+For the time being, my answer would be: buy more memory, or process your
+images in patches.
+
+We don't right now have the infrastructure to handle such a usecase.
+Importantly, we shouldn't try to hack quick fixes, as they won't solve
+much, but will make the code hard to handle. In the long run, we may
+build an out-of-core handling infrastucture, but in the short term, you
+should do loops over your images, and process them in batches.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,254,nilearn,nilearn,mekman,2014-10-06 10:16:56,"I think the adjacency matrix contains information about the `feature` relationship, not about `samples`.
+
+Best,
+ Matthias
+",start issue,"DOC: searchlight docstring for neighbor matrix A, sample should be called feature"
+2,issue_closed,254,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:35:20,,closed issue,"DOC: searchlight docstring for neighbor matrix A, sample should be called feature"
+3,pull_request_title,254,nilearn,nilearn,mekman,2014-10-06 10:16:56,"I think the adjacency matrix contains information about the `feature` relationship, not about `samples`.
+
+Best,
+ Matthias
+",c301edb6de5468214f65119c9275da55766999a3,"DOC: searchlight docstring for neighbor matrix A, sample should be called feature"
+4,pull_request_merged,254,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:35:20,"DOC: searchlight docstring for neighbor matrix A, sample should be called feature",f89dac3a6423f3a7030596683a89e1c054371f9c,Pull request merge from mekman/nilearn:doc_fix_sl to nilearn/nilearn:master
+5,pull_request_commit,254,nilearn,nilearn,mekman,2014-10-06 10:12:40,DOC: sample should be called feature,c301edb6de5468214f65119c9275da55766999a3,
+6,pull_request_commit_comment,254,nilearn,nilearn,GaelVaroquaux,2014-10-06 13:34:45,"Good catch. Merging.
+",c301edb6de5468214f65119c9275da55766999a3,"(None, None, None)"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,268,nilearn,nilearn,lesteve,2014-10-27 14:54:46,"This seems rather hacky for a few different reasons mainly generic OOP ones where the base class knows about a derived class, hard-coded class name, circular import. 
+
+The tests pass but maybe I am missing something subtle so I figured I would ask: is there any reason not to use `self.__class__` rather than `NiftiMasker`?
+",start issue,Remove explicit mention of NiftiMasker from BaseMasker
+2,issue_closed,268,nilearn,nilearn,lesteve,2014-10-30 15:04:49,,closed issue,Remove explicit mention of NiftiMasker from BaseMasker
+3,pull_request_title,268,nilearn,nilearn,lesteve,2014-10-27 14:54:46,"This seems rather hacky for a few different reasons mainly generic OOP ones where the base class knows about a derived class, hard-coded class name, circular import. 
+
+The tests pass but maybe I am missing something subtle so I figured I would ask: is there any reason not to use `self.__class__` rather than `NiftiMasker`?
+",0871250012d31abe2215e4bc1538cb6c2fe8f515,Remove explicit mention of NiftiMasker from BaseMasker
+4,pull_request_merged,268,nilearn,nilearn,lesteve,2014-10-30 15:04:49,Remove explicit mention of NiftiMasker from BaseMasker,b5499eedd7239c1729f95c8e65de85c260fe5f0a,Pull request merge from lesteve/nilearn:remove-niftimasker-from-basemasker to nilearn/nilearn:master
+5,issue_comment,268,nilearn,nilearn,lesteve,2014-10-30 14:46:29,"@AlexandreAbraham any further comments on this one?
+",,
+6,issue_comment,268,nilearn,nilearn,AlexandreAbraham,2014-10-30 14:59:22,"No, that's fine for me since LabelsMasker is not derived from BaseMasker.
+",,
+7,issue_comment,268,nilearn,nilearn,lesteve,2014-10-30 15:04:44,"OK merging then.
+",,
+8,pull_request_commit,268,nilearn,nilearn,lesteve,2014-10-27 14:49:54,Remove explicit mention of NiftiMasker from BaseMasker,0871250012d31abe2215e4bc1538cb6c2fe8f515,
+9,pull_request_commit_comment,268,nilearn,nilearn,AlexandreAbraham,2014-10-27 15:06:44,"I think we should at least check that this is a {Multi,}NiftiMasker. Putting a LabelMasker would work but it is not semantically right.
+",0871250012d31abe2215e4bc1538cb6c2fe8f515,"(6, 156, u'nilearn/input_data/base_masker.py')"
+10,pull_request_commit_comment,268,nilearn,nilearn,lesteve,2014-10-27 15:23:41,"Just trying to deepen my understanding, why wouldn't this be semantically right for a LabelsMasker?
+
+Also it seems that NiftiMasker and MultiNiftiMasker are the only classes deriving from BaseMasker at the moment.
+",0871250012d31abe2215e4bc1538cb6c2fe8f515,"(6, 156, u'nilearn/input_data/base_masker.py')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,275,nilearn,nilearn,banilo,2014-11-04 19:46:54,"Using continuous resampling on a standard nifti (without NaNs) turned the image on the left into the one on the right. I encountered this problem several times. It might have something to the with the dtype of the input data.
+
+![resample_thing](https://cloud.githubusercontent.com/assets/3907396/4906673/fe989eca-645a-11e4-87ed-3b79da3d9963.png)
+
+**Edit**: the Nifti files @banilo was looking had been written in big-endian with SPM (probably due to the platform they were generated on?)
+",start issue,Bug in nilearn.image.resample_img when using non native endianness
+2,issue_closed,275,nilearn,nilearn,lesteve,2014-11-13 12:48:33,,closed issue,Bug in nilearn.image.resample_img when using non native endianness
+3,issue_comment,275,nilearn,nilearn,AlexandreAbraham,2014-11-05 04:47:02,"Can you provide a minimal use case?
+",,
+4,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 06:02:22,"I can send you .nii and code that reproduces the above?
+",,
+5,issue_comment,275,nilearn,nilearn,AlexandreAbraham,2014-11-05 07:09:44,"Yes, that would be awesome :). Can you also send me the nii post-reampling? Just in case the result is different on my machine.
+
+If you suspect a dtype problem, you can diagnose it yourself: just do `img.astype(float)` and see if the resampling does the same. If you give an integer image to resampling in 'continuous' mode, it is in fact known to fail because of the integer rounding.
+",,
+6,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 08:37:09,"I will sent you script + niftis.
+
+Apart from that, why not add a check for float types in resample_img()?
+",,
+7,issue_comment,275,nilearn,nilearn,lesteve,2014-11-05 08:56:21,"IMHO, a code snippet is way better than words for us to understand what you are doing. It does seem related to #270 as @AlexandreAbraham was hinting. If you are using resample_img directly, why not use interpolation='nearest'?
+",,
+8,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 09:15:58,"Because both interpolations are relvant for different situations.
+interpolation='nearest' <- I usually use this for atlases, so that the labels are not corrupted
+interpolation='continuous' <- is what I usually use for Z-map-like activation data
+
+Shouldn't resample_img() work with any nifti using interpolation='interpolation'?
+",,
+9,issue_comment,275,nilearn,nilearn,lesteve,2014-11-05 09:48:29,"Quickly looking at the picture you showed, I wrongly assumed you were using labels, my bad.
+",,
+10,issue_comment,275,nilearn,nilearn,lesteve,2014-11-05 10:22:58,"As a aside, if your problem is too complex to be reduced to a code snippet, one way you can share data (assuming is isn't less than 100MB in size) + scripts is using [gists](https://help.github.com/articles/about-gists/).
+",,
+11,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 11:31:04,"Thanks for the reminder!!
+
+2014-11-05 11:22 GMT+01:00 Loïc Estève notifications@github.com:
+
+> As a anside, if your problem is too complex to be reduced to a code
+> snippet, one way you can share data (assuming is isn't less than 100MB in
+> size) + scripts is using gists
+> https://help.github.com/articles/about-gists/.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/275#issuecomment-61786741.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+12,issue_comment,275,nilearn,nilearn,banilo,2014-11-06 12:19:17,"Little update: it seems to have something to do with big/little Indian encoding. Enforcing dtype='>f8' reproduces the bug, while dtype='<f8' makes the bug dissappear. Some lower-level C/Cython problem in numpy?
+",,
+13,issue_comment,275,nilearn,nilearn,lesteve,2014-11-06 13:05:25,"For completeness, here is a snippet that reproduces the problem:
+
+``` python
+
+import math
+
+import numpy as np
+
+import pandas as pd
+
+from nilearn.image import resample_img
+from nilearn import plotting
+
+import nibabel as nib
+
+
+def make_test_img(dtype):
+    data = np.ones((10, 10, 10), dtype=dtype)
+    data[3:7, 3:7, 3:7] = 2
+
+    affine = np.eye(4)
+    img = nib.Nifti1Image(data, affine)
+    return img
+
+
+def my_resample_img(img):
+    theta = math.pi / 6
+    c = math.cos(theta)
+    s = math.sin(theta)
+
+    affine = np.array([[1, 0, 0, 0],
+                       [0, c, -s, 0],
+                       [0, s, c, 0],
+                       [0, 0, 0, 1]])
+
+    tweaked_img = nib.Nifti1Image(img.get_data(), affine)
+    resampled_img = resample_img(tweaked_img, target_affine=np.eye(4))
+    return resampled_img
+
+
+def my_test(dtype):
+    cut_coords = (5, 5, 5)
+    img = make_test_img(dtype)
+    plotting.plot_img(img, cut_coords=cut_coords)
+    resampled_img = my_resample_img(img)
+    plotting.plot_img(resampled_img, cut_coords=cut_coords)
+    print 'img data dtype: {}\n{}'.format(
+        dtype,
+        pd.Series(resampled_img.get_data().ravel()).describe())
+
+my_test('<f8')
+my_test('>f8')
+
+```
+",,
+14,issue_comment,275,nilearn,nilearn,lesteve,2014-11-06 13:10:06,"I haven't looked into it more, but somehow in the big endian case, we end up with NaN and values of order 10^300...
+",,
+15,issue_comment,275,nilearn,nilearn,GaelVaroquaux,2014-11-06 14:18:13,"Thanks to everybody involved for reporting/digging in the problem. Fixing
+these issues is critical for nilearn!
+",,
+16,issue_comment,275,nilearn,nilearn,lesteve,2014-11-06 15:40:10,"It seems like the culprit is scipy.ndimage.affine_transform. As small example reproducing the issue:
+
+``` python
+import numpy as np
+from scipy import ndimage
+
+data = np.ones((2, 2, 2))
+out = np.empty_like(data, dtype='>f8')
+ndimage.affine_transform(data, np.eye(3), output=out)
+out
+```
+
+The output:
+
+```
+array([[[ -5.48612407e+303,  -8.37116099e+298],
+        [ -8.37116099e+298,  -5.48612407e+303]],
+
+       [[ -8.37116099e+298,  -5.48612407e+303],
+        [ -5.48612407e+303,  -8.37116099e+298]]])
+```
+",,
+17,issue_comment,275,nilearn,nilearn,GaelVaroquaux,2014-11-06 15:41:16,"> It seems like the culprit is scipy.ndimage.affine_transform. As small example
+> reproducing the issue:
+
+OK then I suggest:
+- To submit a bug to the scipy tracker (with the script attached)
+- To cast our data to the right endianess
+",,
+18,issue_comment,275,nilearn,nilearn,AlexandreAbraham,2014-11-07 05:55:06,"+1
+",,
+19,issue_comment,275,nilearn,nilearn,lesteve,2014-11-07 14:46:44,"FYI, I just opened https://github.com/scipy/scipy/issues/4127
+",,
+20,issue_comment,275,nilearn,nilearn,dohmatob,2014-11-07 15:03:15,"+1
+",,

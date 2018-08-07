@@ -1,0 +1,135 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1108","nilearn","nilearn","banilo","2016-06-07 11:08:12","On laptops (one with Windows 7.\* and one with Windows 8.1) we experienced the following suprising MemoryError exception, although each had >10GB of working memory.
+
+``` python
+In [58]: fmri_img = index_img(fmri_img, condition_mask)
+---------------------------------------------------------------------------
+MemoryError                               Traceback (most recent call last)
+<ipython-input-58-d8551e9d255b> in <module>()
+----> 1 fmri_img = index_img(fmri_img, condition_mask)
+
+C:\Users\onur\AppData\Roaming\Python\Python27\site-packages\nilearn\image\image.
+pyc in index_img(imgs, index)
+    554     """"""
+    555     imgs = check_niimg_4d(imgs)
+--> 556     return _index_img(imgs, index)
+    557
+    558
+
+C:\Users\onur\AppData\Roaming\Python\Python27\site-packages\nilearn\_utils\niimg
+_conversions.pyc in _index_img(img, index)
+     72     """"""Helper function for check_niimg_4d.""""""
+     73     return new_img_like(
+---> 74         img, img.get_data()[:, :, :, index], img.get_affine(),
+     75         copy_header=True)
+     76
+
+C:\Python27\lib\site-packages\nibabel-1.3.0-py2.7-win32.egg\nibabel\spatialimage
+s.pyc in get_data(self)
+    339
+    340     def get_data(self):
+--> 341         return np.asanyarray(self._data)
+    342
+    343     @property
+
+C:\Python27\lib\site-packages\numpy\core\numeric.pyc in asanyarray(a, dtype, ord
+er)
+    510
+    511     """"""
+--> 512     return array(a, dtype, copy=False, order=order, subok=True)
+    513
+    514 def ascontiguousarray(a, dtype=None):
+
+C:\Python27\lib\site-packages\nibabel-1.3.0-py2.7-win32.egg\nibabel\arrayproxy.p
+yc in __array__(self)
+     53         ''' Cached read of data from file '''
+     54         if self._data is None:
+---> 55             self._data = self._read_data()
+     56         return self._data
+     57
+
+C:\Python27\lib\site-packages\nibabel-1.3.0-py2.7-win32.egg\nibabel\arrayproxy.p
+yc in _read_data(self)
+     58     def _read_data(self):
+     59         fileobj = allopen(self.file_like)
+---> 60         data = self.header.data_from_fileobj(fileobj)
+     61         if isinstance(self.file_like, basestring):  # filename
+     62             fileobj.close()
+
+C:\Python27\lib\site-packages\nibabel-1.3.0-py2.7-win32.egg\nibabel\analyze.pyc
+in data_from_fileobj(self, fileobj)
+    484         '''
+    485         # read unscaled data
+--> 486         data = self.raw_data_from_fileobj(fileobj)
+    487         # get scalings from header.  Value of None means not present in
+header
+    488         slope, inter = self.get_slope_inter()
+
+C:\Python27\lib\site-packages\nibabel-1.3.0-py2.7-win32.egg\nibabel\analyze.pyc
+in raw_data_from_fileobj(self, fileobj)
+    456         shape = self.get_data_shape()
+    457         offset = self.get_data_offset()
+--> 458         return array_from_file(shape, dtype, fileobj, offset)
+    459
+    460     def data_from_fileobj(self, fileobj):
+
+C:\Python27\lib\site-packages\nibabel-1.3.0-py2.7-win32.egg\nibabel\volumeutils.
+pyc in array_from_file(shape, in_dtype, infile, offset, order)
+    482         if datasize == 0:
+    483             return np.array([])
+--> 484         data_str = infile.read(datasize)
+    485         if len(data_str) != datasize:
+    486             if hasattr(infile, 'name'):
+
+C:\Python27\lib\gzip.pyc in read(self, size)
+    259             try:
+    260                 while size > self.extrasize:
+--> 261                     self._read(readsize)
+    262                     readsize = min(self.max_read_chunk, readsize * 2)
+    263             except EOFError:
+
+C:\Python27\lib\gzip.pyc in _read(self, size)
+    311
+    312         uncompress = self.decompress.decompress(buf)
+--> 313         self._add_read_data( uncompress )
+    314
+    315         if self.decompress.unused_data != """":
+
+C:\Python27\lib\gzip.pyc in _add_read_data(self, data)
+    329         self.crc = zlib.crc32(data, self.crc) & 0xffffffffL
+    330         offset = self.offset - self.extrastart
+--> 331         self.extrabuf = self.extrabuf[offset:] + data
+    332         self.extrasize = self.extrasize + len(data)
+    333         self.extrastart = self.offset
+
+MemoryError:
+```
+","start issue","Ghent nilearn workshop: memory error on some windows machines"
+"issue_closed","1108","nilearn","nilearn","AlexandreAbraham","2016-06-07 15:40:16","","closed issue","Ghent nilearn workshop: memory error on some windows machines"
+"issue_comment","1108","nilearn","nilearn","eickenberg","2016-06-07 11:47:50","convert the image from nii.gz to nii and it will memmap instead of
+unzipping the whole thing in memory
+
+On Tue, Jun 7, 2016 at 1:40 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> The error is quite clear: the computer does not have enough available
+> memory to open the file.
+> 
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly, view it on GitHub
+> https://github.com/nilearn/nilearn/issues/1108#issuecomment-224255345,
+> or mute the thread
+> https://github.com/notifications/unsubscribe/ABPwCzPVNdUQfzDqqadqA1g13RitsmdSks5qJViWgaJpZM4IvzpH
+> .
+","",""
+"issue_comment","1108","nilearn","nilearn","AlexandreAbraham","2016-06-07 11:19:02","This is a nibabel error. Can you confirm that the same error is raised when loading the file directly using nibabel.load(file).get_data() ?
+","",""
+"issue_comment","1108","nilearn","nilearn","AlexandreAbraham","2016-06-07 11:53:25","> convert the image from nii.gz to nii and it will memmap instead of
+> unzipping the whole thing in memory
+
++1. 
+","",""
+"issue_comment","1108","nilearn","nilearn","GaelVaroquaux","2016-06-07 11:40:05","The error is quite clear: the computer does not have enough available
+memory to open the file.
+","",""

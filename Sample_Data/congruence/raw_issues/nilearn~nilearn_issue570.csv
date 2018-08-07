@@ -1,0 +1,149 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","570","nilearn","nilearn","GaelVaroquaux","2015-05-04 12:23:36","We should have a heuristic that flips the sign of components in CanICA to have more positive values than negative values, for instance by making sure that the largest value is positive.
+","start issue","Flip signs of components in CanICA"
+"issue_closed","570","nilearn","nilearn","AlexandreAbraham","2015-05-11 08:28:35","","closed issue","Flip signs of components in CanICA"
+"issue_comment","570","nilearn","nilearn","GaelVaroquaux","2015-05-04 12:34:33","> This issue was brought to my attention by jennifer (and so she has test data).
+> I can roll a quick heuristic fix.
+
+It would be awesome. It's a question of doing something like:
+
+<pre>
+for component in self.components_:
+   if component.max() < -component.min():
+      component *= -1
+</pre>
+
+With an associated test
+","",""
+"issue_comment","570","nilearn","nilearn","GaelVaroquaux","2015-05-07 13:34:04","Forgive me for being stubborn, but the fact that it works for the DMN is not a strong argument.
+
+I would really like to stress that the interpretation of the max heuristic is more clear than that of the sum. In particular, take a network with only one small blob, the sum will be fragile: the background will be contributing more to the decision than the blob. This argument is based on a long experience of running ICA and related algorithms on fMRI.
+
+I'd really like the max heuristic, as mentioned in the description of the issue, rather than the sum heuristic.
+","",""
+"issue_comment","570","nilearn","nilearn","GaelVaroquaux","2015-05-07 13:39:22","Oops! Please forgive me.
+","",""
+"issue_comment","570","nilearn","nilearn","GaelVaroquaux","2015-05-07 14:02:19","> Yes, indeed the change from sum to max has already been made, a few days ago
+> (with appropriate commit messages)
+
+Yes, my infinit apologies. This was a complete brain fart.
+","",""
+"issue_comment","570","nilearn","nilearn","GaelVaroquaux","2015-05-12 09:48:31","Hey @dohmatob :
+
+Thanks a lot, the CanICA example now looks much better:
+http://nilearn.github.io/auto_examples/connectivity/plot_canica_resting_state.html
+","",""
+"issue_comment","570","nilearn","nilearn","eickenberg","2015-05-04 13:18:32","I have no opinion. It was just fyi
+
+On Mon, May 4, 2015 at 3:17 PM, dohmatob elvis dopgima <
+notifications@github.com> wrote:
+
+> Seems to me the manual solution proposed by @GaelVaroquaux
+> https://github.com/GaelVaroquaux is more transparent. Note also that
+> the values of the components are not (and should not be) open to
+> interpretation, and the issue raise here is just for visualization purposes.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/570#issuecomment-98702516.
+","",""
+"issue_comment","570","nilearn","nilearn","dohmatob","2015-05-07 13:21:57","OK, I've just checked with @jennifer and the PR produces the expected outcome.
+
+![comp_2](https://cloud.githubusercontent.com/assets/634068/7516029/76d6f0a6-f4cc-11e4-8bb3-85b0f8f89c5a.png)
+
+Without the PR, the signs were flipped and the DMN appeared de-activated.
+","",""
+"issue_comment","570","nilearn","nilearn","eickenberg","2015-05-07 13:37:42","https://github.com/nilearn/nilearn/pull/571/files#diff-02bccf8e53c6acb92641f710373ebf63R191
+
+this looks like `max` to me
+","",""
+"issue_comment","570","nilearn","nilearn","dohmatob","2015-05-07 13:41:49","Yes, indeed the change from `sum` to `max` has already been made, a few days ago (with appropriate commit messages)
+
+@GaelVaroquaux: The update about the DMN was just meant to show that the PR solves the problem which triggered the issue in the first place...
+","",""
+"issue_comment","570","nilearn","nilearn","dohmatob","2015-05-07 16:03:33","No offence taken :)
+","",""
+"issue_comment","570","nilearn","nilearn","AlexandreAbraham","2015-05-11 08:28:35","Fixed by #571 
+","",""
+"issue_comment","570","nilearn","nilearn","dohmatob","2015-05-12 11:05:47","Nice :)
+
+On Tue, May 12, 2015 at 11:48 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> Hey @dohmatob https://github.com/dohmatob :
+> 
+> Thanks a lot, the CanICA example now looks much better:
+> 
+> http://nilearn.github.io/auto_examples/connectivity/plot_canica_resting_state.html
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/570#issuecomment-101217292.
+
+## 
+
+DED
+","",""
+"issue_comment","570","nilearn","nilearn","eickenberg","2015-05-04 12:45:31","Isn't there a generic fix for this in scikit-learn? I remember Kyle having
+some issues with that for incrementalPCA
+
+On Mon, May 4, 2015 at 2:34 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > This issue was brought to my attention by jennifer (and so she has test
+> > data).
+> > I can roll a quick heuristic fix.
+> 
+> It would be awesome. It's a question of doing something like:
+> 
+> <pre>
+> for component in self.components_:
+> if component.max() < -component.min():
+> component *= -1
+> </pre>
+> 
+> With an associated test
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/570#issuecomment-98694377.
+","",""
+"issue_comment","570","nilearn","nilearn","eickenberg","2015-05-04 12:48:01","sklearn.utils.extmath.svd_flip
+
+used here
+https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/decomposition/incremental_pca.py#L219
+
+The question is whether it gives the right results with respect to what
+Gael proposes, which looks like it is neuro-imaging-informed.
+
+On Mon, May 4, 2015 at 2:45 PM, Michael Eickenberg <
+michael.eickenberg@gmail.com> wrote:
+
+> Isn't there a generic fix for this in scikit-learn? I remember Kyle having
+> some issues with that for incrementalPCA
+> 
+> On Mon, May 4, 2015 at 2:34 PM, Gael Varoquaux notifications@github.com
+> wrote:
+> 
+> > > This issue was brought to my attention by jennifer (and so she has test
+> > > data).
+> > > I can roll a quick heuristic fix.
+> > 
+> > It would be awesome. It's a question of doing something like:
+> > 
+> > <pre>
+> > for component in self.components_:
+> > if component.max() < -component.min():
+> > component *= -1
+> > </pre>
+> > 
+> > With an associated test
+> > 
+> > —
+> > Reply to this email directly or view it on GitHub
+> > https://github.com/nilearn/nilearn/issues/570#issuecomment-98694377.
+","",""
+"issue_comment","570","nilearn","nilearn","eickenberg","2015-05-04 12:51:44","OK it does the same thing https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/utils/extmath.py#L533
+
+Except that it takes both sides of the SVD. It may be able to take `1` as the input for `v` in which case it would be reusable. Otherwise it will have to be cherry-picked.
+","",""

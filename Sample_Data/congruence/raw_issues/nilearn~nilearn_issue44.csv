@@ -1,0 +1,75 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","44","nilearn","nilearn","pgervais","2013-04-11 16:19:37","I did some optimizations in apply_mask(), that reduce execution time a little. 
+Nothing spectacular is to be expected for standard cases (10-15% less time), but it could go much higher.
+- Worst speedup (10% better): passing a compressed nifti filename to apply_mask with an empty cache (nifti file not previously loaded)
+- Best speedup (2x): passing an uncompressed nifti filename to apply_mask with an empty cache (speedup is less with a full cache).
+
+Included in this pull request is a new function as_ndarray() whose purpose in mainly to get rid of memmap objects efficiently. Comments on the function name welcome. 
+
+I also checked that memory consumption was reasonable.
+
+All the tests pass.
+","start issue","apply_mask() speedup"
+"issue_closed","44","nilearn","nilearn","pgervais","2013-04-19 13:10:54","","closed issue","apply_mask() speedup"
+"pull_request_title","44","nilearn","nilearn","pgervais","2013-04-11 16:19:37","I did some optimizations in apply_mask(), that reduce execution time a little. 
+Nothing spectacular is to be expected for standard cases (10-15% less time), but it could go much higher.
+- Worst speedup (10% better): passing a compressed nifti filename to apply_mask with an empty cache (nifti file not previously loaded)
+- Best speedup (2x): passing an uncompressed nifti filename to apply_mask with an empty cache (speedup is less with a full cache).
+
+Included in this pull request is a new function as_ndarray() whose purpose in mainly to get rid of memmap objects efficiently. Comments on the function name welcome. 
+
+I also checked that memory consumption was reasonable.
+
+All the tests pass.
+","aa6fd6e144bd3877131622c3b4a7cac1aa4b125e","apply_mask() speedup"
+"pull_request_merged","44","nilearn","nilearn","pgervais","2013-04-19 13:10:54","apply_mask() speedup","03b01d53891284adcbd6c3e9ae9509e20bd52438","Pull request merge from pgervais/nilearn:mask_optimisation to nilearn/nilearn:master"
+"issue_comment","44","nilearn","nilearn","GaelVaroquaux","2013-04-19 12:54:50","> @AlexandreAbraham , @GaelVaroquaux: anything else to comment on? or can
+> the branch be merged?
+
+I don't have time to review. Merge away!
+","",""
+"issue_comment","44","nilearn","nilearn","pgervais","2013-04-12 07:43:00","I put the file I used for benchmark in the following gist: https://gist.github.com/pgervais/5370261
+","",""
+"issue_comment","44","nilearn","nilearn","pgervais","2013-04-17 13:48:56","As I wrote several profiling scripts, a gist proved too small, so I created a dedicated repository: 
+https://github.com/pgervais/nisl-profiling 
+","",""
+"issue_comment","44","nilearn","nilearn","pgervais","2013-04-19 11:57:00","@AlexandreAbraham , @GaelVaroquaux: anything else to comment on? or can the branch be merged?
+","",""
+"pull_request_commit","44","nilearn","nilearn","pgervais","2013-04-11 08:54:47","Added as_ndarray and tests
+
+as_ndarray() is a convenience function for getting rid of memmap objects.
+It can also be used to convert an array, with the minimum possible copies.","4b32ec99ca41607987726d6c80c73a6f44c87898",""
+"pull_request_commit","44","nilearn","nilearn","pgervais","2013-04-11 12:18:31","Optimized apply_mask()
+
+Added usage of as_ndarray() to avoid codying data in some cases.
+Fixed a bug in as_ndarray(), added test for it.","f27c0ea8b70dc20dad8ac0163008704082760358",""
+"pull_request_commit","44","nilearn","nilearn","pgervais","2013-04-11 15:57:58","Array order related optimization in apply_mask()
+
+Order of arrays is now taken into account by apply_mask(), to improve
+on execution time. When a memmap is received by apply_mask(), it is
+copied with the most appropriate order. A keyword argument has been
+added to force the order in case the heuristic fails.","b1b401d2bf8442c243e2da3e18bc5fdd86dcfcd6",""
+"pull_request_commit","44","nilearn","nilearn","pgervais","2013-04-11 16:06:14","Merge remote branch 'nisl/master' into mask_optimisation","e520a656d65efebb6fd2b04844a4b893640ac49b",""
+"pull_request_commit","44","nilearn","nilearn","pgervais","2013-04-17 13:43:41","Faster smoothing in apply_mask()
+
+gaussian filtering has been tuned to get higher speed.
+Output of apply_mask() is now always in F order (which is good for
+subsequent operations, because timeseries are contiguous in memory)","451621269aeae92589c84188894370339d7955d1",""
+"pull_request_commit","44","nilearn","nilearn","pgervais","2013-04-17 14:06:27","Removed a spurious non-ascii character.","aa6fd6e144bd3877131622c3b4a7cac1aa4b125e",""
+"pull_request_commit_comment","44","nilearn","nilearn","AlexandreAbraham","2013-04-18 08:29:05","We usually keep a ""_img"" suffix for variable that are niimgs.
+","4b32ec99ca41607987726d6c80c73a6f44c87898","(4, 294, u'nisl/masking.py')"
+"pull_request_commit_comment","44","nilearn","nilearn","AlexandreAbraham","2013-04-18 08:34:16","I guess there is a reason but why don't you use id(arr1) == id(arr2) ?
+","4b32ec99ca41607987726d6c80c73a6f44c87898","(15, 109, u'nisl/tests/test_utils.py')"
+"pull_request_commit_comment","44","nilearn","nilearn","pgervais","2013-04-18 09:11:11","This is a bug fix. The first line is useless otherwise. 
+","4b32ec99ca41607987726d6c80c73a6f44c87898","(4, 294, u'nisl/masking.py')"
+"pull_request_commit_comment","44","nilearn","nilearn","pgervais","2013-04-18 09:13:20","Because it wourd return False all the time in this case. id() returns the identifier for python object, not for the underlying buffer. This function checks if the underlying buffer is identical or not.
+","4b32ec99ca41607987726d6c80c73a6f44c87898","(15, 109, u'nisl/tests/test_utils.py')"
+"pull_request_commit_comment","44","nilearn","nilearn","AlexandreAbraham","2013-04-17 14:01:34","Isn't that equivalent to:
+np.asarray(arr, dtype=dtype)
+","f27c0ea8b70dc20dad8ac0163008704082760358","(6, 354, u'nisl/utils.py')"
+"pull_request_commit_comment","44","nilearn","nilearn","AlexandreAbraham","2013-04-17 14:04:20","For the record: the profile used here are removed by the next commit.
+","f27c0ea8b70dc20dad8ac0163008704082760358","(7, 299, u'nisl/masking.py')"
+"pull_request_commit_comment","44","nilearn","nilearn","pgervais","2013-04-17 14:07:54","It is, but the dtype keyword is not available in numpy 1.3, which is supposed to be supported by nisl.
+","f27c0ea8b70dc20dad8ac0163008704082760358","(6, 354, u'nisl/utils.py')"
+"pull_request_commit_comment","44","nilearn","nilearn","pgervais","2013-04-17 14:09:05","Sorry for these calls to profile(), I should find a way to think of getting rid of them in final code.
+","f27c0ea8b70dc20dad8ac0163008704082760358","(7, 299, u'nisl/masking.py')"

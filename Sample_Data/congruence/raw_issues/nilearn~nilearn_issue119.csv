@@ -1,0 +1,101 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","119","nilearn","nilearn","eickenberg","2013-10-29 14:11:58","Especially after resampling in oblique directions and using the heuristic of taking the biggest bounding box containing the rotated original bounding box, one is left with a lot of dead space within the new nifti file.
+
+Similar things can happen after skull stripping an anatomical, if the niimg keeps the same dimensions.
+
+A simple cropping mechanism which finds the closest bounding box around the non-zero part of the nifti file and adjusts the translation part of the affine accordingly, if necessary, is easy to write.
+
+A co-developer, who prefers to remain anonymous, and goes by the pseudonym ""@AlexandreAbraham"", thought it may be useful to propose adding it to e.g. the resampling tools.
+
+What does nilearn think?
+","start issue","crop nifti files"
+"issue_closed","119","nilearn","nilearn","AlexandreAbraham","2013-11-05 15:48:17","","closed issue","crop nifti files"
+"issue_comment","119","nilearn","nilearn","GaelVaroquaux","2013-10-29 20:14:10","> A co-developer, who prefers to remain anonymous, and goes by the pseudonym ""
+> @AlexandreAbraham"", thought it may be useful to propose adding it to e.g. the
+> resampling tools.
+> 
+> What does nilearn think?
+
+It would be useful. I am +1. An boolean option like 'tight_bounds' might
+be the right way to expose it.
+","",""
+"issue_comment","119","nilearn","nilearn","GaelVaroquaux","2013-10-29 20:15:00","> What @eickenberg suggests is mainly useful to save memory.
+
+Where exactly in the pipeline? In the NiftiMasker, I don't really where
+it would save memory. But maybe I am being dense.
+","",""
+"issue_comment","119","nilearn","nilearn","GaelVaroquaux","2013-10-29 22:19:06","> It is useful in the usecase of Michael. His nifti files are so big that they
+> barely fit in memory. Because of that, he cannot resample them to gain memory
+> for example. By cropping original data, it frees enough memory to let him
+> resample the file.
+
+OK, I am +1 for this to be by default, but the way that I would like it
+to happen is with bounds computed on the mask, and not computed
+automatically from the image... Now, we may need to have a
+memory-efficient mask computation routine, but that's needed anyhow.
+
+> This could also be useful for people who inverse_transform large arrays
+
+That would be a surprising behavior: one expects inverse_transform to
+behave as close as possible to the inverse of the transform.
+","",""
+"issue_comment","119","nilearn","nilearn","GaelVaroquaux","2013-10-30 05:55:03","> ```
+> OK, I am +1 for this to be by default,
+> ```
+> 
+> I'm not sure it should be by default.
+> 
+> ```
+> but the way that I would like it to happen is with bounds computed on the
+> mask, and not computed automatically from the image...
+> ```
+> 
+> Yes, this is the easiest way.
+
+In these settings, I am OK with it being by default: I don't see any
+adverse consequence.
+
+> What I meant is that, if I plan to inverse_transform large arrays, then I may
+> set the option tight_bounds = True. We should obviously not crop without a
+> request of the user.
+
+I believe that we limit the amount of options :)
+","",""
+"issue_comment","119","nilearn","nilearn","GaelVaroquaux","2013-10-30 10:03:55","> But it is true that working with the mask, and cropping it as close as
+> possible from all 6 faces to values where it is active, seems to be
+> completely transparent to all other steps in the pipeline while saving
+> some memory and this transparency guarantees that no adverse or
+> surprising consequences can come about.
+
+Yes, this is the type of behavior that I would like.
+
+> If possible, a simple function ""crop"" within nilearn.image or
+> nilearn.resampling should expose the routine that does it, which can then be
+> called by the masker.
+
+Right. I'll let you see how it is best implemented.
+","",""
+"issue_comment","119","nilearn","nilearn","eickenberg","2013-10-30 08:24:29","I never thought of it as something to do by default, just as a simple but useful tool that could be added. But it is true that working with the mask, and cropping it as close as possible from all 6 faces to values where it is active, seems to be completely transparent to all other steps in the pipeline while saving some memory and this transparency guarantees that no adverse or surprising consequences can come about.
+
+If possible, a simple function ""crop"" within nilearn.image or nilearn.resampling should expose the routine that does it, which can then be called by the masker.
+","",""
+"issue_comment","119","nilearn","nilearn","AlexandreAbraham","2013-10-29 14:22:26","What @eickenberg suggests is mainly useful to save memory.
+","",""
+"issue_comment","119","nilearn","nilearn","AlexandreAbraham","2013-10-29 20:38:08","It is useful in the usecase of Michael. His nifti files are so big that they barely fit in memory. Because of that, he cannot resample them to gain memory for example. By cropping original data, it frees enough memory to let him resample the file. This is a very specific usage, which can be solved by other methods (for example loading original data by chunks).This could also be useful for people who inverse_transform large arrays : the resulting niimgs would be lighter.-- Envoyé depuis mon HP Pre3Le 29 oct. 2013 21:15, Gael Varoquaux notifications@github.com a écrit : > What @eickenberg suggests is mainly useful to save memory.
+Where exactly in the pipeline? In the NiftiMasker, I don't really where
+it would save memory. But maybe I am being dense.
+
+—Reply to this email directly or view it on GitHub.
+","",""
+"issue_comment","119","nilearn","nilearn","AlexandreAbraham","2013-10-29 22:28:34","> OK, I am +1 for this to be by default,
+
+I'm not sure it should be by default.
+
+>  but the way that I would like it to happen is with bounds computed on the mask, and not computed automatically from the image... 
+
+Yes, this is the easiest way.
+
+> That would be a surprising behavior: one expects inverse_transform to behave as close as possible to the inverse of the transform.
+
+What I meant is that, if I plan to inverse_transform large arrays, then I may set the option tight_bounds = True. We should obviously not crop without a request of the user.
+","",""

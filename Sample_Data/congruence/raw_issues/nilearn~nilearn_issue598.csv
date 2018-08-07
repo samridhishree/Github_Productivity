@@ -1,0 +1,136 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","598","nilearn","nilearn","lesteve","2015-06-02 14:18:15","for 4d images. The dtype after resampling was always 'float64' for 4d images
+- Share same code for 3d and 4d images
+- add test for dtype equality before and after resampling
+
+An example that highlights the issue:
+
+``` python
+import numpy as np
+
+import nibabel as nib
+
+from nilearn import image
+
+img_4d = nib.Nifti1Image(np.ones((10, 10, 10, 5), dtype='int64'), np.eye(4))
+resampled_img = image.resample_img(img_4d, 2. * np.eye(4))
+print('img_4d dtype:       ', img_4d.get_data().dtype)
+print('resampled_img dtype:', resampled_img.get_data().dtype)
+```
+
+and its output:
+
+```
+img_4d dtype:        int64
+resampled_img dtype: float64
+```
+","start issue","[MRG] Fix output data dtype after resampling for 4d images"
+"issue_closed","598","nilearn","nilearn","AlexandreAbraham","2015-08-25 07:30:11","","closed issue","[MRG] Fix output data dtype after resampling for 4d images"
+"pull_request_title","598","nilearn","nilearn","lesteve","2015-06-02 14:18:15","for 4d images. The dtype after resampling was always 'float64' for 4d images
+- Share same code for 3d and 4d images
+- add test for dtype equality before and after resampling
+
+An example that highlights the issue:
+
+``` python
+import numpy as np
+
+import nibabel as nib
+
+from nilearn import image
+
+img_4d = nib.Nifti1Image(np.ones((10, 10, 10, 5), dtype='int64'), np.eye(4))
+resampled_img = image.resample_img(img_4d, 2. * np.eye(4))
+print('img_4d dtype:       ', img_4d.get_data().dtype)
+print('resampled_img dtype:', resampled_img.get_data().dtype)
+```
+
+and its output:
+
+```
+img_4d dtype:        int64
+resampled_img dtype: float64
+```
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","[MRG] Fix output data dtype after resampling for 4d images"
+"pull_request_merged","598","nilearn","nilearn","AlexandreAbraham","2015-08-25 07:30:11","[MRG] Fix output data dtype after resampling for 4d images","eb53812ec9f52842e8925e582016638d412aa2e3","Pull request merge from lesteve/nilearn:fix-resample-img-dtype to nilearn/nilearn:master"
+"issue_comment","598","nilearn","nilearn","AlexandreAbraham","2015-06-02 23:48:56","I agree that the inconsistency in the behavior of the function is a bug. However, casting to float, in my opinion, is the way to go if resample_img is called with `interpolation=""continuous""`. Because continuous interpolation implies that the values are continuous. For the record, we already do that in `smooth_img`.
+
+So I am :-1: for the behavior proposed here.
+","",""
+"issue_comment","598","nilearn","nilearn","banilo","2015-06-08 08:43:46","> I agree that the inconsistency in the behavior of the function is a bug. However, casting to float, in my opinion, is the way to go if resample_img is called with interpolation=""continuous"".
+
+Sounds good.
+","",""
+"issue_comment","598","nilearn","nilearn","lesteve","2015-08-21 14:41:56","I resuscitated this one. Comments welcome!
+","",""
+"pull_request_commit_comment","598","nilearn","nilearn","banilo","2015-06-02 14:25:46","nice :)
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","598","nilearn","nilearn","lesteve","2015-06-02 14:29:30","I didn't write this part, look at git blame for full credits.
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","598","nilearn","nilearn","banilo","2015-06-02 14:32:30","I am probably missing something, but why only _almost_? Shouldn't only the affine have changed? Rounding?
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(None, '', u'nilearn/image/tests/test_resampling.py')"
+"pull_request_commit_comment","598","nilearn","nilearn","lesteve","2015-06-02 14:37:16","You are probably right, I'll fix that.
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(None, '', u'nilearn/image/tests/test_resampling.py')"
+"pull_request_commit_comment","598","nilearn","nilearn","AlexandreAbraham","2015-06-02 22:38:25","Well, blaming is the word here. It is far less readable than `[:, :, :]` and highly inefficient. There is an iterator to iterate on non-first dimensions, it is `np.nested_iters`. However this is not the fastest solution, transposing the axes is even faster. It has to be noted that, for that particular purpose, a `nditer` may be the faster solution because it would iter on both arrays at the same time.
+
+Here is a small bench to convince you.
+
+``` python
+import numpy as np
+import time
+
+
+a = np.random.random((20, 30, 40, 5, 6))
+
+t0 = time.time()
+for i in range(100):
+    all_img = (slice(None), ) * 3
+    other_shape = a.shape[3:]
+    for ind in np.ndindex(*other_shape):
+        a[all_img + ind].shape
+print time.time() - t0
+
+t0 = time.time()
+for i in range(100):
+    it0, it1 = np.nested_iters(a, [range(3, a.ndim), [0, 1, 2]], flags=['multi_index'])
+    for x in it0:
+        it1.itviews[0].shape
+print time.time() - t0
+
+t0 = time.time()
+for i in range(100):
+    other_shape = a.shape[3:]
+    b = np.transpose(a, range(3, a.ndim) + [0, 1, 2])
+    b = np.reshape(b, (-1,) + a.shape[:3])
+    for x in b:
+        x
+print time.time() - t0
+```
+
+Output:
+
+```
+0.00588703155518
+0.00144195556641
+0.000957012176514
+```
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","598","nilearn","nilearn","banilo","2015-06-09 13:25:03","Not sure what you mean here by ""separable"" :(
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(37, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","598","nilearn","nilearn","AlexandreAbraham","2015-06-12 09:37:58","It means that you can do the interpolation on the 3d slices. You don't need the whole 4d image to do it.
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(37, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","598","nilearn","nilearn","AlexandreAbraham","2015-08-22 21:07:03","That's cool!
+","17cd0e1955982ac227a0a1f03aacfb4971590b61","(29, '', u'nilearn/image/resampling.py')"
+"pull_request_commit","598","nilearn","nilearn","lesteve","2015-06-02 14:07:43","FIX: keep input data dtype during resampling
+
+for 4d images.
+
+* Share same code for 3d and 4d images
+* add test for dtype equality before and after resampling","d8e47719679fa69aa7e24c641125eae7212a6e4a",""
+"pull_request_commit","598","nilearn","nilearn","lesteve","2015-06-02 14:34:49","Reinstate comment explaining the rationale
+
+behind the iteration over 3d images","549ee02fc9c9b170ba6b9d87e7af3453db1a1857",""
+"pull_request_commit","598","nilearn","nilearn","lesteve","2015-06-02 14:38:52","TST: use assert_equal rather than assert_almost_equal","b7146c63e0fc3b406ac2a9d5f54cd58ca72aace9",""
+"pull_request_commit","598","nilearn","nilearn","lesteve","2015-08-21 14:30:26","Int arrays get turned into float
+
+if interpolation is continuous. Add test","17cd0e1955982ac227a0a1f03aacfb4971590b61",""

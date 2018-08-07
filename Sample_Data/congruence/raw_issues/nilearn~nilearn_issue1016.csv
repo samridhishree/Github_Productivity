@@ -1,0 +1,517 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1016","nilearn","nilearn","juhuntenburg","2016-02-25 19:32:11","Adding surface visualization along with example and data fetcher for NKI enhanced surface data.
+","start issue","Enh/surface plotting2"
+"issue_closed","1016","nilearn","nilearn","GaelVaroquaux","2017-02-23 17:49:22","","closed issue","Enh/surface plotting2"
+"pull_request_title","1016","nilearn","nilearn","juhuntenburg","2016-02-25 19:32:11","Adding surface visualization along with example and data fetcher for NKI enhanced surface data.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","Enh/surface plotting2"
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-09-20 06:59:21","Hi, I've been working on the additional plotting function and starting to write the data fetcher for the Destrieux surface atlas. I was wondering if I should include the fsaverage5 surface giftis in that fetcher as well (without them I can't plot the atlas), like I did in the nki fetcher. Or, if there should be an independent fetcher for fsaverage5 (and I remove these files from the nki fetcher as well)?
+","",""
+"issue_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-09-20 07:00:12","I think that an independent fsaverage fetcher seems right.
+","",""
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-09-20 07:06:33","Ok cool, what is the best way to create the new datasets on nitrc? Can I get access to do that?
+","",""
+"issue_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-09-20 07:08:11","> Ok cool, what is the best way to create the new datasets on nitrc? Can I get access to do that?
+
+Ask @AlexandreAbraham, if he is in the same room than you. Else, ping him
+","",""
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-09-20 07:51:24","Ah Vienna brainhack, no not there, will contact him
+","",""
+"issue_comment","1016","nilearn","nilearn","AlexandreAbraham","2016-09-20 07:57:46","Creating a new dataset on nitrc requires some ""click click"" actions. I can do it for you.
+","",""
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:29:33","Yes I agree about the white space. My colleague uses another function to crop the image and combine medial and lateral view into one display: https://github.com/soligschlager/brainsurfacescripts/blob/temp/plotting.py#L343-L420 Would some version of that be an option? Then I would look into it with her. 
+
+Or I will check whether it is possible to avoid the white space in matplotlib in the first place
+","",""
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-07-13 05:16:31","Hi @KamalakerDadi: ah yes, good reminder.
+1. White space around the figure:
+   I looked into this but didn't find a solution yet. In the volumetric plotting code, I figure this is the step to adapt the bounds: https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L92-L94 ? 
+   But since I don't use imshow here I don't see how to translate it directly. I tried to change the bounding box of the 3d axis with ax.set_clip_box but it didn't help. Maybe one of you has an idea that they could point me to?
+2. Example / documentation: 
+   I would like to replace the example which plots an arbitrary volume of a time series with one that plots seed-based connectivity of the example dataset. I will look into this asap and then also write a proper documentation of the example. 
+
+Are there any other crucial points for now?
+","",""
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-07-17 20:52:50","I have reworked the example. For this the Destrieux parcellation (shipped with Freesurfer) would need to be added to the Nilearn NKI dataset. For testing you can find the file here: https://www.dropbox.com/s/j66g4ljqaj5hz3a/lh.aparc.a2009s.annot?dl=0
+Happy for feedback!
+","",""
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-07-17 20:55:08","I also want to make a second function plot_surf_roi (very similar just using the median instead of mean value for the face color and some other defaults) and display the seed region as well.
+","",""
+"issue_comment","1016","nilearn","nilearn","juhuntenburg","2016-07-17 20:59:34","The current function is not ideal for plotting labels (atlas, roi) because it interpolates the values and doesn't create clean borders. This can easily be changed by using the median value instead of the mean to calculate the face colors. 
+Does that make more sense?
+","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:44:36","Example looks great. Just minor details on example `plot_surf_stat_map`
+","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2016-07-12 20:26:06","Hi @juhuntenburg Any progress on this ?
+","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2016-07-13 09:00:29","Thanks @juhuntenburg 
+
+> White space around the figure:
+
+I will try to search for some solutions/hints.
+
+> Example / documentation: 
+
+yes, please. It looks interesting.
+","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2016-07-18 20:47:11","Can you please rebase and resolve the conflicts ?
+
+I can review your PR again this week.
+","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2016-10-26 09:06:30","> (Please ignore the recent changes for now, working on finishing this with @Joaoloula at brainhack and will then rebase etc.)
+
+Thank you for getting back to this. Feel free to ping us if it is ready for reviewing.
+","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2016-10-26 16:24:36","> On the coverage department, we can write tests for the new code if you think it's a good idea.
+
+Its always a good idea to test the written code.
+
+> As for the fetch_surf_fsaverage5 docstring formatting, I'm under the impression it's just an empty line missing before the Parameters, can you confirm this before I commit?
+
+Can you check on your machine by cd doc folder in nilearn and run `make html-strict` ? You will come to know whether failure is fixed or not.
+","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-11 12:39:28","plotting functions would be only smoke tests unless there are error messages which needs to tested if they are raised or not. For example using ```assert_raises_regex```.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 09:22:10","Two failures with respect to version dependency nibabel 1.1.0. ```freesurfer``` module is not implemented in nibabel 1.1.0 and also class ```gifti.GiftiDataArray``` has no argument ```intent```. Hence tests failed with nibabel version dependency 1.1.0.
+
+I am not sure of another failure ```Key Error: <type 'int'>``` when writing empty dictionary to gifti file. Can you please have a look ?
+
+May be we could do something like this to fix the tests:
+```python
+if LooseVersion(nibabel.__version__) == LooseVersion('1.1.0'):
+    # Old nibabel cannot use freesurfer module to load the surf atlases
+    # Therefore, we
+    raise SkipTest
+```
+We need to add as a ""Note"" in documentation of atlas fetchers as well as in plotting examples about minimum version requirement of nibabel. This could be as a warning for users particularly who use nibabel==1.1.0. Do you agree ?
+
+I will keep updating with another version failures if any ?","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 09:40:24",">What's the minimum version of nibabel required? Could one of you do a bisection on the versions of nibabel to find this out?
+
+1.2.0
+Ref: http://nipy.org/nibabel/changelog.html#changelog","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 09:51:20",">Kamalakar, do you want to do it (change the CI and the specified versions in the docs and in our checks, grep the code to make sure that we don't have compatibility layers that are lying around for version 1.1.0), and send a PR. We'll review it, merge it, and Julia can then rebase on master to get rid of these issues.
+
+I am going to try it. Soon do a PR.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 09:58:40","Bumping the requirement to 1.2.0 can fix freesurfer but not argument failure ```intent``` from class gifti.GiftiDataArray ? Any hints with @juhuntenburg ","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 09:59:08",">Also, @KamalakerDadi did you get my e-mail on the report?
+
+I got it. Thanks. I need to go through it.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 13:32:22",">Can anyone give me a hint on what might be going on with the destrieux datafetcher test, i.e. what could be the reason it fails since I added the test setup / teardown decorators?
+
+I cannot reproduce the failure. May be I am missing something.
+
+I think it is better to rebase after NiBabel bump PR is merged to get rid of atleast some failures and then fix remaining ones.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 14:28:56",">Don't test the loading functions to recognize missing intents when loading gifti
+
+If I understood correctly, you want to test the function only for newest version. i.e. nibabel 2.1.
+Using ```LooseVersion``` can be helpful if I am correct.
+```python
+from distutils.version import LooseVersion
+```","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 15:12:45","Same as like with argument ```intent```, we have similar no attribute errors with ```write_morph_data``` and ```write_geometry```with older versions.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 15:27:59","I would rather say doing version check and run tests passing with latest nibabel versions. As users now a days are mostly updating to most recent versions. Mostly, few users will have older versions. We can also have opinions from @GaelVaroquaux @AlexandreAbraham ","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 16:50:29","Reminder: Just in case, if you have forgot to add tests for NKI fetcher.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-22 08:55:49","I am going to add tests for NKI fetcher.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-23 08:18:09",">I added a test, but not entirely sure if this is how it should be. Maybe you can have a look and take it from there?
+
+Tests you have added are good. I think its no need to take.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-23 08:18:24","Can you please rebase onto master ?","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-23 08:27:37",">@KamalakerDadi I just addressed your small comments regarding sphinx, let me know if that fixes it
+
+Sphinx issues are mostly of documentation. We can fix travis and then move on to sphinx.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-23 10:20:25","We decided to skip tests.","",""
+"issue_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-23 10:33:18","Thanks for fixing conflicts and rebasing. I will do the rest.","",""
+"issue_comment","1016","nilearn","nilearn","Joaoloula","2016-10-26 16:16:32","On the coverage department, we can write tests for the new code if you think it's a good idea. As for the fetch_surf_fsaverage5 docstring formatting, I'm under the impression it's just an empty line missing before the Parameters, can you confirm this before I commit?
+","",""
+"issue_comment","1016","nilearn","nilearn","codecov[bot]","2017-02-21 18:19:14","# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1016?src=pr&el=h1) Report
+> Merging [#1016](https://codecov.io/gh/nilearn/nilearn/pull/1016?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e?src=pr&el=desc) will **decrease** coverage by `-0.29%`.
+> The diff coverage is `96.13%`.
+
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1016      +/-   ##
+==========================================
+- Coverage    94.3%   94.02%   -0.29%     
+==========================================
+  Files         116      118       +2     
+  Lines       12896    13310     +414     
+==========================================
++ Hits        12162    12515     +353     
+- Misses        734      795      +61
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1016?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/datasets/__init__.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9fX2luaXRfXy5weQ==) | `100% <ø> (ø)` | :white_check_mark: |
+| [nilearn/plotting/tests/test_surf_plotting.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy90ZXN0cy90ZXN0X3N1cmZfcGxvdHRpbmcucHk=) | `100% <100%> (ø)` | |
+| [nilearn/datasets/atlas.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9hdGxhcy5weQ==) | `96.13% <100%> (+0.3%)` | :white_check_mark: |
+| [nilearn/datasets/tests/test_atlas.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy90ZXN0cy90ZXN0X2F0bGFzLnB5) | `100% <100%> (ø)` | :white_check_mark: |
+| [nilearn/datasets/tests/test_struct.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy90ZXN0cy90ZXN0X3N0cnVjdC5weQ==) | `100% <100%> (ø)` | :white_check_mark: |
+| [nilearn/datasets/tests/test_func.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy90ZXN0cy90ZXN0X2Z1bmMucHk=) | `100% <100%> (ø)` | :white_check_mark: |
+| [nilearn/datasets/struct.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9zdHJ1Y3QucHk=) | `90.9% <100%> (+2.02%)` | :white_check_mark: |
+| [nilearn/plotting/__init__.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9fX2luaXRfXy5weQ==) | `78.94% <100%> (+1.16%)` | :white_check_mark: |
+| [nilearn/datasets/func.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9mdW5jLnB5) | `88.83% <87.87%> (-0.3%)` | :x: |
+| [nilearn/plotting/surf_plotting.py](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...bd7e4dbe7846e6a85814274c8e1e8a8b9981c414?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9zdXJmX3Bsb3R0aW5nLnB5) | `91.44% <91.44%> (ø)` | |
+| ... and [15 more](https://codecov.io/gh/nilearn/nilearn/pull/1016?src=pr&el=tree-more) | |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1016?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1016?src=pr&el=footer). Last update [e5ecaa0...ba96ad6](https://codecov.io/gh/nilearn/nilearn/compare/e5ecaa0af59bd3f5720e0d4dc97a14e638e2b63e...ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1?src=pr&el=footer&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).","",""
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-25 20:27:21","I'd prefer if the acceptable value for ""hemi"" would be ""left"" and ""right"", rather than ""lh"" and ""rh"", which are a bit cryptic.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","AlexandreAbraham","2016-02-25 21:09:33","I guess that the final `[0]` means `lh`. I think we should rather make two fields `fsaverage_pial_left` and `fsaverage_pial_right`.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","AlexandreAbraham","2016-02-25 21:14:06","You can use `nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET']` rather than `1008`
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:33:39","May be you can write few lines about what this example does. For example, I don't know what `nki` is ?
+stating that we are fetching so and so datasets and visualizing them.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:34:30","pin point reference may be :func:nilearn.plotting.plot_surf_stat_map ?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:35:46","All examples start with ############### to have head line representation. If you want you can have a look at other examples.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:36:09","you can use `plotting.show()`
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:37:36","yes that would be more clear.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:39:37","may be its not necessary to import matplotlib
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:40:54","adding `title` would be nice I guess ?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-02-25 21:52:29","you may also need to add in `doc/modules/reference.rst`
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/__init__.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:18:11","Agree, fixed it.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:18:34","Agree, I changed it.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:19:22","Yes, I will add a description both of the dataset and the example asap.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:19:36","Done
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:20:03","Oh good, changed it.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:20:23","Yes, no it isn't necessary anymore.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:20:47","Done
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/__init__.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-27 13:28:28","> I guess that the final [0] means lh. I think we should rather make two fields
+> fsaverage_pial_left and fsaverage_pial_right.
+
++1!
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-27 13:30:07","> May be you can write few lines about what this example does. For example, I
+> don't know what nki is ?
+> stating that we are fetching so and so datasets and visualizing them.
+
+And tell us that this is resting activation.
+
+I just realized something: is it possible to download the FS standard
+parcellations from the web? That would make an awesome visualization
+example.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-27 13:30:47","> pin point reference may be :func:nilearn.plotting.plot_surf_stat_map ?
+
+I think that this is OK, as long as there is a section about surface
+visualization in the docs.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-27 13:40:05","> you can use plotting.show()
+
+Yes. We do this to avoid having to teach beginners to import matplotlib.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-27 14:05:09","Should the ""abs"" be an ""np.abs""?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-28 11:34:00","The parcellations are provided with the FS distribution, so I guess we could use them? The problem is that this function is not exactly optimized to plot labels / rois: the boundaries will be blurred because of the interpolation of vertex values to face values. An easy way around this should be to use the median value instead of the mean. But I thought this would go into a separate function (something similar to plot_roi?) and thus separate example. 
+I agree that the data that is used now not a great example, because it isn't a stat map either, but just some random volume of a time series. So maybe I should look into creating an example map from the nki dataset? Or would it be an option to just use some map from Neurovault for now?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-28 16:03:45","> The parcellations are provided with the FS distribution, so I guess we could
+> use them?
+
+Well, we cannot rely on people having FS installed, so we would need to
+provide downloaders, and for this we would need to check that there
+exists URLs where we can download them.
+
+> median value instead of the mean. But I thought this would go into a separate
+> function (something similar to plot_roi?) and thus separate example.
+
+I agree. Let's do this later.
+
+> So maybe I should look into creating an example map from the nki
+> dataset?
+
+Let's worry about this later.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-02-28 16:24:01","Or just upload them to the example dataset just as we did for the fsaverage mesh?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-02-28 16:24:36","> Or just upload them to the example dataset just as we did for the fsaverage
+> mesh?
+
+It's an option indeed.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-07-19 08:55:29","May be you can use here: `nilearn.plotting.plot_surf_stat_map`. Thats the reason for circleCI failure I guess.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-07-20 10:00:22","Done!
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-07-21 09:42:53","reason for CircleCI failure. 
+
+If you are looking for a destrieux atlas, why don't you pick from nilearn ? `fetch_atlas_destrieux_2009` 
+Is it not the same you are using here ?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-07-21 09:44:18","Ok may be its not I have seen the reference after commenting. Destrieux et al, (2010)
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-07-21 09:57:40","Actually I am not sure it is a different parcellation (It is called 2009 within Freesurfer but the final atlas was published 2010), but anyhow the main difference is that this is surface space and the one in Nilearn is a volume, right?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-07-21 10:54:24","May be can you have a look at the maps. I could not differentiate between surface and volume. But this may help fetched from that atlas description.
+
+## Notes
+
+The 'Destrieux' cortical atlas is based on a parcellation scheme
+that first divided the cortex into gyral and sulcal regions,
+the limit between both being given by the curvature value of the surface.
+A gyrus only includes the cortex visible on the pial view,
+the hidden cortex (banks of sulci) are marked sulcus.
+The result is a complete labeling of cortical sulci and gyri.
+
+## References
+
+Fischl, Bruce, et al. ""Automatically parcellating the human cerebral cortex.""
+Cerebral cortex 14.1 (2004): 11-22.
+
+Destrieux, C., et al. ""A sulcal depth-based anatomical parcellation
+of the cerebral cortex."" NeuroImage 47 (2009): S151.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2016-07-21 12:01:49","So the one in nilearn is definitely a volume (you can load it in MNI space). What I use here is basically just a dictionary associating nodes indices in fsaverage5 space with labels of the Destrieux parcellation, this is what is saved in Freesurfer's standard .a2009s.annot output. I am pretty sure the underlying parcellation is the same, but afaik there is no trivial way to translate one into the other (i.e. without using additional tools like the ones from Freesurfer) so that I could simply use the one that is already in Nilearn on the surface. 
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-07-21 12:06:37","> What I use here is basically just a dictionary associating nodes indices in
+> fsaverage5 space with labels of the Destrieux parcellation, this is what is
+> saved in Freesurfer's standard .a2009s.annot output. I am pretty sure the
+> underlying parcellation is the same, but afaik there is no trivial way to
+> translate one into the other
+
+Indeed
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-08-25 14:51:25","Should we call this function ""fetch_surf_nki_enhance""? Just like we have prefixed all the atlas fetching functions with fetch_atlas?
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'doc/modules/reference.rst')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2016-08-25 14:57:48","This part of the docstring still needs to be finished.
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:19:35","I would write ""Download and load Destrieux et al, 2010 cortical atlas."" and after one line empty space
+
+I would write ""This atlas returns 74 sulco-gyral structures per hemisphere distributed with Freesurfer in fsaverage5 surface space.""
+
+I choose to update with 2010 paper. The annotations are described well in this paper. At some point, users might ask about the reference point from where we have picked those annotations.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:19:52","type forec -> force","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:20:11","May be we can remove one default","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:21:50","Returns section needs to be updated. What we return here are path to annotations in .annot format.
+I would update with the same as what you have written in destrieux_surface.rst file.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:22:05","This can be removed I guess.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:22:41","Why don't we return by loading them rather than path to .annot file ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:23:04","I would update with 2010 reference paper.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:23:57","Is this reference necessary seems like we have reflected with same reference as in ```fetch_atlas_destrieux_2009``` ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:24:23","opts is not use anywhere ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:24:49","typo patterens -> patterns","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/description/destrieux_surface.rst')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:25:35","On the top you have cited 2010 paper. But, here you referred 2009 paper.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/description/destrieux_surface.rst')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:25:56","left -> right","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/description/destrieux_surface.rst')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:28:24","circle ci error can be fixed by giving an empty space between one line description and Parameters.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:29:03","PEP8. two empty lines required between functions.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:29:25","May be you forgot to remove this ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:30:24","May be we need reduce default size in ```n_subjects``` to reduce the burden on CircleCI build ? 10 would be good I guess.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:36:11","Full stop (```.```) is not necessary in the title/headline. I haven't seen anything of that sort with other examples.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:38:11","Same comment here on (```.```)
+
+Also, title/headline needs to be in single line like in other examples. Sphinx build will fail to consider as title of the example if it is in two lines.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:41:38","You may have missed to add references for Dale et al, 1999 and Fischl et al, 1999.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/description/fsaverage5.rst')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:45:25","PEP 8, missing white space here 'rh annot':9342 -> 'rh annot': 9342","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:47:26","Missing indent at [(annot_file)......]","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:47:51","Missing indent at resume","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:53:44","May be NKI can be expanded or atleast in Notes section ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(1, '', u'nilearn/datasets/description/nki_enhanced_surface.rst')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:56:37","From what I see in description file and also return line. You are returning ```func_left``` and ```func_right```. This needs to be updated I guess.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 09:58:47","fsaverage5 space surface would be more informative.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 10:01:00","Missing documentation for parameters ```verbose``` and ```resume```.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 10:09:09","Documentation missing for verbose and resume.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 10:23:42","I am trying to download files. Id: 'A00028185', 'A00033747', seems to download well.
+
+But, I have error fetching 'A00035072'. May this subject id is not available ?
+
+```python
+URLError: <urlopen error EOF occurred in violation of protocol (_ssl.c:590)| Error while fetching file A00035072_rh_preprocessed_fsaverage5_fwhm6.gii; dataset fetching aborted.>
+```","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(61, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 10:28:32","Also, worth to write that the images we return are Gifti-like images.
+
+I would write
+```python 
+- 'func_right' : Gifti-like images
+      Paths to functional resting-state images
+```                         ","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2016-11-24 10:39:59","Ok, now its seems downloading well 'A00035072' both 'lh' and 'rh'. Sorry about previous error comment.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(61, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-01-05 12:02:22","We would need to import nibabel to load the annot file. Should we do this?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-01-05 12:57:03","The example should write in the current directory, and not in /tmp: /tmp might not exist (eg on Windows).","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-01-05 12:59:09","If we end up using ""check_surf_data"" in the examples, we should probably rename it ""load_surf_data"", so that it makes sense to the user.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-01-05 12:59:54","This comment should probably be addressed.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:04:12","Seems like it is too long.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:06:30","Empty line missing below.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:06:50","I would prefer true -> True","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:11:27","Can we keep string -> str ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:11:36","Same here string -> str","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:12:27","string -> str","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:13:04","string -> str","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:17:32","+1","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:25:36","Empty line space missing below.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:25:44","string -> str","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:25:57","same here, string -> str","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:26:46","May we should express that files returned are gifti files ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:33:54","May be adding ```title``` to the plots ? ","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-01-05 13:40:35","We should probably use relative imports here: ""from .._utils.compat import _basestring""
+
+Also, these imports should be moved to the end of the list of imports, as imports should be ordered from general (standard library) to local.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-01-05 13:41:14","This empty line should be removed.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:47:24","Seems like it is ```surf_map_data``` ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:48:48","Could you please add documentation ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 13:51:51","Same here, can you please add documentation ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 14:01:32","[PEP 8] -> line too long","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 14:13:58","I would write more informative error message. ""Format of data file is not recognized. Expected file formats are .nii, .nii.gz, ........ You provided .format(surf_data)""","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 14:14:39","Same comment as above here. More informative error message.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-01-05 14:23:54","Can we raise an error directly here rather than inside ?
+
+```python
+else:
+      raise ValueError(Format of the given data file is not recognized. Expected file formats are .nii, .nii.gz, ........ You provided .format(surf_data))
+```
+
+From what I understood, only two types are accepted, either string or numpy array.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-01-09 14:10:43","I'm not sure how to break these lines correctly","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-01-09 17:24:10","Good point, but how would I find out the format that is given if it's none of the ones we support? Just print out the ending of the filename?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-01-09 17:57:25","But then I guess change the erro message? Because ""file format not understood"" doesn't really make sense when the input was a numpy array?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-03 07:02:26","This needs to run without internet connection, hence you should use (as in the other tests of this file), the test set up / tear down:
+
+<pre>
+ @with_setup(setup_mock, teardown_mock)
+ @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+</pre>","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(5, '', u'nilearn/datasets/tests/test_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:40:10","I don't think that we still need this import in the example.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:41:17","Nitpick: I think that it would be better to add a split above this to have only one plot per cell.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:42:29","We have found that it's useful to print the value of these variables so that people understand what they are (filepaths). Indeed, people don't realize that they just need to give file names to the functions.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:44:38","Missing empty line here.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:47:36","I think that the title of this example could be improved: the example isn't that basic: it included array manipulation to build a seed-based regression.
+
+Maybe I would suggest ""Seed-based connectivity on the surface""","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:49:45","It would be useful to add a see also pointing to the other seed-based connectivity http://nilearn.github.io/auto_examples/03_connectivity/plot_seed_to_voxel_correlation.html and add a see also on the other example pointing here.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(24, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:51:06","It would be nice to add titles, basically underline the above, and similar on each cell. It makes the example easier to read.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 10:59:53","Same remark on printing a few of these variables and adding a comment pointing out that these are just file names.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 11:02:04","It might be useful to split the cell below is several smaller cells: it's easier to comprehend.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(112, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 11:07:17","Do we need that full file, or can we have a shortened version of it?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/tests/data/test.label')"
+"pull_request_commit_comment","1016","nilearn","nilearn","GaelVaroquaux","2017-02-09 11:12:16","Here you are using the global, unseeded PRNG. We try to always avoid this, and to use a local PRNG created by rng = np.random.RandomState(0)","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/plotting/tests/test_surf_plotting.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 10:08:12","Documentation for 'description' is missing here.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 10:13:13","I am in favour of like this:
+
+- 'labels' : list
+            Contains labels defined to regions.
+
+Same with 'map_left' : numpy.ndarray
+                               index into 'labels' for each vertex on the left hemishpere
+                               of the fsaverage5 surface
+
+Also, could you correct spelling of ""hemishpere"" to ""hemisphere""","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-16 10:15:06","Indents are missing in my previous comment. Also a worth to check. Useful for doc build with sphinx.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 13:46:32","Saying that it's ""pial"" is missing in the comment. Like as you said below with inflated.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 13:54:44","What you retrieve here is bunch of templates. May be we need to update that we retrieve templates and then pick one specific template as a background for plotting. For clarity sake.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-02-17 14:01:42","Not sure if I understand. It is the same template, just once inflated and once not inflated. Should I add that?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 14:37:08","Yeah I agree. But you have bunch of templates in fsaverage not one template. I would just write ""Retrieving fsaverage5 surface based templates and use them for plotting"" ","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-02-17 14:37:39","Done","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-02-17 14:37:42","Done
+","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-02-17 14:39:29","Oh didnt see your comment. I did something slightly different: 
+""Retrieve fsaverage5 surface dataset, which contains pial and inflated version of the surface template as well as sulcal depth maps""","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 15:16:19","Empty line missing below.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(36, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 15:36:39","Here, we have some documentation misalignent problems.
+
+ ""data"" can be aligned right below ----------- and missing ""empty line"" between (dictionary-like object, contains:) and (- 'labels' : list) and no space before colon for return argument 'labels' and missing empty line between each return argument.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 15:54:56","Actually, I saw tests you test with 76 labels but you have written 74 here ? Can you tell me difference ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 15:57:52","I just saw other fetchers. They have return arguments in double quotes but not single quotes. May be that's why sphix fails. Can you also correct them ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-17 16:39:47","Could you tell me why index to labels are 10242 but not 76 ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/tests/test_atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-02-22 08:16:25","One label is ""Unknown"" and one is ""Medial wall"", so only 74 real labels. Still seems kind of confusing, I'll fix it","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'nilearn/datasets/atlas.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-22 16:21:54","Can you add ```b'G_cingul-Post-dorsal'``` to make it to unicode. If not fails with Python 3.","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-22 17:23:38","```load_surf_data``` data loader should be in datasets.py or no ?","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(89, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-02-23 10:18:17","no i dont think so ","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(89, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","juhuntenburg","2017-02-23 10:19:05","done","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(None, '', u'examples/01_plotting/plot_surf_stat_map.py')"
+"pull_request_commit_comment","1016","nilearn","nilearn","KamalakerDadi","2017-02-23 10:21:49","imports needs to be reordered. More general to local.
+import os
+import tempfile
+
+import nibabel
+......","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1","(1, '', u'nilearn/plotting/tests/test_surf_plotting.py')"
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-24 16:27:50","initial commit surface loading and plotting","c300693123b218d70af83da6ef0b7afe86c1e80a",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-24 16:30:57","adding imports to init","9de120303123b444d77cce7db856c4e53cb2f259",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-24 16:36:53","fix import","ce85123b8904f331482083f984eecba860e8d0e8",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-24 16:37:18","fix function name","7c2c0c80989b7dbdf33cd96dd4603ff4b55b5bdb",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-24 18:22:01","remove option to input numpy arrays","f3f6e1fbbf7eca25d0efa1d312fcc2d1a26f1385",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-25 17:20:08","adding nki data fetcher and modifying example","05ac2e5e61f2d85db038a3e2024d11ae36f6d1e7",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-25 18:10:33","fixing gifti import, fixing fsaverage fetching","a9dd2c9f6b32596a209ef7a798fc8dad13be327c",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-25 19:12:49","fixing example","d9b3711ca1a9a4d7cd1270fb015bb681fc369467",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-25 19:28:28","adjust threshold in example","f283eb46a583458bd7eac789372cb6f5fd5f197c",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-27 09:55:43","changing parameter values for hemi to left and right","49db1e155f65bce9fff250d62e137bfd427645c7",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-27 11:57:43","updating file names and example to use left right instead of lh rh","2b941edbd937039624a83f719effbe9093f6bfbf",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:03:59","replace numeral intent codes by more explicit ones","f259b138579655f3f40e5354e72c347eb47a09bc",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:04:25"," drop unnecessary matplotlib import from example","91c04394224a6a94b7fd2cbc28c691fec87ecc04",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-27 12:09:24","adding doc/modules/reference.rst","6908cf0b3581c5a2122048fcac00f61862340155",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-28 11:24:02","abs to np.abs","8df6401b45c3a747f80d094442f7362cd8c6b63e",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-02-28 11:26:01","remove non-ascii character","ec447ae538ab4c2623d21aa98e94f8a159c8f2a9",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-07-17 06:56:19","removing gifti array index parameter and have check_surf_data load all darrays by default","c2cc93ab79a86597385ce84fb1b678fde70c6356",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-07-17 07:01:13","adding option to input numpy array as data to the plotting function","852e8002adc3c3ac7efa9a40b74ccc57b9371133",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-07-17 20:37:06","extending plotting exaple to create seed-based connectivity map","cfeaa0be6000400d43879e13c85e13df53137b90",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-07-20 09:59:52","changing reference to plotting function in documentation string","9ddc049505d250dde8757335b1ba6eac7f504772",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-16 12:24:15","making basic plot_surf function to be called by different specific functions (for now only plot_surf_stat_map) with different defaults","05046c29d8b6a55335c4506539688228a0e5c262",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-16 12:49:46","fixing cmap parameter","6cc6c39ff869411c50a4c5134a57ffba8b05606c",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-16 13:31:34","make stat map required input","443ff9e0c56db6fd09bad90c80dfc60580a7615d",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-16 16:48:17","adding plot_surf_roi function and example","39ed514cadc29807d71aa91ff168356f5f9bde48",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-16 17:11:38","make plot_roi accept labels array","7e47ae665774ef27162dedf41b140f11b5e126ed",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-19 11:45:02","changing name of nki surface fetcher","d2bf7276f50244b770753ccfb8875b8dd127b92a",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-19 11:46:34","change alpha","33836a03a3d17e910003e513b2c590cf916cdf6f",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-19 12:07:53","beginning to add atlas plotting","738788d050ef0458bcfa0188cfffb9ba1f577198",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-19 12:22:31","delete double roi function","04148489b1b1e627a0d1926885969ec6a04621b4",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-19 12:43:14","add option to input list of roi indices to plot_surf_roi","566293134a3a3a65762df548dba47036ae4dd23c",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-19 14:41:11","remove seemingly useless line in plot_surf, multiplication of face colors by .5","e2d6eb1aa56d688df3ab61987cf7edcb110315e5",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2016-09-19 15:22:33","starting to add destrieux atlas data fetcher","e3e5e1d5c9fb506fb027d562e21abc872d8c27f9",""
+"pull_request_commit","1016","nilearn","nilearn","Joaoloula","2016-10-25 12:28:05","created fsaverage5 fetcher, separated surface plot examples, updated doc","087969b871b4d5f8f7f03269998a3068c1079fde",""
+"pull_request_commit","1016","nilearn","nilearn","Joaoloula","2016-10-25 12:35:17","added fsaverage5 description","9791baa0005c10df77bcbda5d2626a78ed01ed0c",""
+"pull_request_commit","1016","nilearn","nilearn","Joaoloula","2016-10-26 11:59:14","addressed julia's comments on the PR","af75cd01b9f72cb7234f7b27a862a770ea1db287",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-05 11:46:20","improving documentation","9fca5c05045f4d0daa79d15a59cc22137f6c95b7",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-09 12:18:09","add documentation verbose and resume","d44fc2009b86f4df28d2210e4fe2fb6b15631542",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-09 12:37:50","saving example plot to cd instead of tmp","2111dc409400702b469ff508493fd0f78c0c0c0d",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-09 12:43:28","renaming check_surf_... functions to load_surf_..","3fb7af3d3a5ddffe45f3c64ec144611c6da37a7c",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-09 13:21:55","moving fsaverage fetcher, formatting","e653990281994acabdc5dba9de9818ccfb031fc0",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-09 14:26:12","adding titles","b42beaad932a56cfa94365b5b67462279ec00c4f",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-09 16:45:41","fixing output_file argument which was previously overwritten to None","04a4e8a503ca5bdb8222dd38546c2070f6822e91",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-09 17:57:45","improving error message and documentation loading functions","d81ee0060499460ab877216bfda139334b5e8b81",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-10 12:13:09","input to load functions, documentation and error messages","e9efe4da061f77f39ac97312c2a33ce50ff0733c",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-11 11:45:36","make destrieux surface fetcher load annot files","f646333c0be61a7d9d7df1a4732d7b6e35fa9578",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-18 10:08:41","testing load_surf_data function","097f00bb5b011a887a59c8aeafb9d8c1d3005dec",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-18 10:58:58","adding errors for missing or wrong gifti intent codes, reformatting error messages","c5110acb35a765d930590a156c711d9b90f5fbed",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-18 11:24:39","testing load_surf_mesh function","584228f3998c58a68a7263218437ee9ffd0139f9",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-20 12:50:14","fixing error message, wouldnt raise error when file of wrong format is given as string","74ec941cc6094b3bf3a0df0736d913444c1b5950",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-20 12:52:56","testing error messages of load_surf_data","66dbe0409ff3cd04806ec2664aac246e493de816",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-20 15:07:25","adding test for load_surf_mesh errors","9439a3978bfcfcf22626704d0ac482ba165fddc4",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-20 15:43:47","fix test data file location","d480faa6e61a4011750d3f4c06df0842e768211f",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-20 16:03:54","adding __init__ to data","b5f9cef99cb20955606f5ff42401effce93fef1a",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-01-27 12:04:30","fixing plot_surf_stat_map example according to new data fetcher and changing some display options","e4fe9add11856d4e3f8af8c40258b6f37eed6216",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-02 09:34:35","removing unnecessary nibabel import","06079a0228c4c44af6c3cbcfcd114ac260fe8586",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-02 09:55:45","including example data files in setup.py","be2f14a90e66ed5a426d8897f845b70c8f3a7989",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-02 10:28:00","removing file name from error assertion tests","4a69db698f2234aa171913bb20b9cbc955b31ccb",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-02 12:03:20","adding tests for plotting functions","6dd084426df322c13f25a9c2bd2db6e2d6d597db",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-02 16:38:33","testing fetch_atlas_surf_destrieux","d9a77d70ebf4279de6818e073a3dfffea14c3958",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-03 00:01:52","fsaverage5 data fetcher to return filenames instead of list with one filename","7e2257b4525520f74e61941cee23413c5755d765",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-03 00:10:12","testing fetch_surf_fsaverage5","893c2bd2bdd4303637ea8892be7ab853ff027b9d",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-03 08:47:01","fixing destrieux surf fetcher test","bc248872cda97f8631aa8c7e5ac6765a9bbc382f",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-15 10:19:51","minor changes examples and tests surface plotting","aeee59631bd9e5524d6ade36a7e0fbfcfae8df85",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-17 12:55:39","minor improvement documentation destrieux datafetcher","f0b2c5a4971dba2c31a772946bede0283d089b8b",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-17 14:25:05","fixing nibabel gifti import","2c22cddf44288fec7a3abc039179d2d6185616ee",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-17 14:37:03","minor improvement plot_surf_atlas example docs","4b4a98dab0de9d2bbfb5caa649ed6e990827f5be",""
+"pull_request_commit","1016","nilearn","nilearn","GaelVaroquaux","2017-02-21 17:36:32","BUG: fix tests
+
+Create a mock annotation files for the destrieux loader","68df06645b8a77288f7fab992d6b8865d9940bff",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-22 08:19:17","minor fixes for sphinx","b95cd01cfd0c2b5b60c5b9059d791f9ca4e96c76",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-22 08:56:04","adding test for nki datafetcher","509e9d6dc28976218a4f65843f8c8016bcf58de6",""
+"pull_request_commit","1016","nilearn","nilearn","GaelVaroquaux","2017-02-23 10:01:54","FIX: bugware to avoid a bug in old nibabel versions","70a3d8f7356e85727ea5e330e23fc2ae14ce1457",""
+"pull_request_commit","1016","nilearn","nilearn","juhuntenburg","2017-02-23 10:21:25","plot_surf_stat_map label unicode to work with python3","ba96ad67f4d0eb3f9265aadfdc0e856dc290f8c1",""

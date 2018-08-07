@@ -1,0 +1,25 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","720","nilearn","nilearn","AlexandreAbraham","2015-07-24 12:46:27","Nilearn code has expanded a lot and unfortunately, there were a lot of copy/paste. We also recoded the same things several times. I think that it is possible to factorize a lot of code and actually make it modular. Here is a list of epsilonesque task that aims to a codebase where all maskers, decomposition methods and searchlight would share common code patterns. It would for example give Multi\* objects for all maskers for free.
+
+Basically, this refactoring aims at splitting long procedure, like masking, into smaller steps that could used elsewhere (but not opened to public). I would also like to introduce ""aggregating patterns"". Basically, we spend half of our time processing data and the other half agregating it. We agregate voxels signals into mean signal, we aggregate data of several subjects into group data... This kind of map/reduce strategy give us headache here and there in nilearn so I think that we should factorize them.
+
+If you don't agree with my vision of nilearn, feel free to pay me a coffee while I explain you why you're wrong :P. More seriously, I don't motivate all the changes I list here and, actually, I am not quite sure that all of them go in the right way (although, I am very sure for steps 1 and 2). It is just a range of possible evolutions that I wish to narrow as time passes by.
+
+Step 1: Factorize maskers
+- [x] Factorize code between NiftiLabelsMasker and NiftiMapsMasker (PR #665)
+- [x] Factorize code between Nifti{Labels,Maps}Masker and NiftiMasker: it simply boils down to use `_apply_mask` as extraction function and harmonize verbosity (PR #738)
+- [x] Factorize this code with NiftiSpheresMasker: again, it boils down to adapt `_extract_nifti_spheres_signal` as extraction function (PR #738)
+- [x] Extract MultiNiftiMasker logic from BaseMasker. (PR #738)
+
+Step 2: Extend this to Searchlight
+- [ ] Factorize code between NiftiSpheresMasker and Searchlight.
+
+Step 3: Aggregation pattern
+- [ ] If we think of it, the MultiNiftiMasker is just a multi-subject aggregation of data over the NiftiMasker. It is the ""reduce"" step of the map reduce. Other strategies are possible: using a PCA for example (this has already been introduced by Arthur).
+- [ ] Propagate this abstraction in MultiPCA.
+
+Note: we can imagine aggregation strategies for 4d data, see #719.
+
+Step 4: Break the pipelines
+- [ ] Separate Masker pipeline in unitary block. Masking is basically the succesion of 3 steps : smoothing, masking, cleaning. 2 motivations to do so: the ""extraction function"" will become a simple block of the chain which is, in my opininon, cleaner, and we will also be able to make some optimizations like chaining CanICA and DIctLearning without pre-processing data twice. I must admit that this part is mainly a personal bias on how code should be written.
+","start issue","Refactoring: coding patterns in nilearn"

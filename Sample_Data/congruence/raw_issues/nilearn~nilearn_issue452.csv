@@ -1,0 +1,83 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","452","nilearn","nilearn","bcipolli","2015-02-21 09:47:53","`find_xyz_cut_coords` says it returns 3 floats, but it was actually returning 3 one-element arrays.  Tweak the code to return a list of floats.
+
+This necessitated a call to `np.asscalar` in https://github.com/nilearn/nilearn/pull/441 (since changed).
+
+I also added a bit of linting / line breaks while I was in the code.
+","start issue","Return cut coords as a list of floats"
+"issue_closed","452","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:35:24","","closed issue","Return cut coords as a list of floats"
+"pull_request_title","452","nilearn","nilearn","bcipolli","2015-02-21 09:47:53","`find_xyz_cut_coords` says it returns 3 floats, but it was actually returning 3 one-element arrays.  Tweak the code to return a list of floats.
+
+This necessitated a call to `np.asscalar` in https://github.com/nilearn/nilearn/pull/441 (since changed).
+
+I also added a bit of linting / line breaks while I was in the code.
+","4ff19eea12c5319413fa645c96066d11d66be0ae","Return cut coords as a list of floats"
+"pull_request_merged","452","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:35:24","Return cut coords as a list of floats","0f38989a56cc2d005de6b64a3bde68a5ad054512","Pull request merge from bcipolli/nilearn:clean_coords to nilearn/nilearn:master"
+"issue_comment","452","nilearn","nilearn","lesteve","2015-02-21 10:05:21","> This necessitated a call to np.asscalar in #441 (since changed).
+
+I realised that the np.asscalar wasn't needed at all in my case. Do you have a use case where it matters whether you have a list of numpy scalar arrays vs a list of floats?
+
+Note that you actually return an array of shape (3, ) not a list. To be honest I am not sure whether there is any guarantee about the return type when the docstring says something like this:
+
+```
+Returns
+-------
+x : float
+    the x world coordinate.
+y : float
+    the y world coordinate.
+z : float
+    the z world coordinate.
+```
+","",""
+"issue_comment","452","nilearn","nilearn","bcipolli","2015-02-21 10:11:43","That was the use-case :)  Anotehr is checking to see whether a set of coordinates exists in a list (of lists).  I spent a good chunk of time today debugging matplotlib because of exactly that case--having the numpy object, rather than the actual scalar, broke the `in` check.
+
+So when I saw this just now, it raised red flags.  You can get weird errors.
+
+Also note that `tolist()` is called there, so it should be returning a list (and unpack properly).
+","",""
+"issue_comment","452","nilearn","nilearn","lesteve","2015-02-21 10:19:59","> having the numpy object, rather than the actual scalar, broke the in check.
+
+Somehow it seems to work for me, not an expert of numpy scalar arrays though:
+
+```
+In [16]: l = [np.array(0), 1]
+
+In [17]: 0 in l
+Out[17]: True
+
+In [18]: np.array(1) in l
+Out[18]: True
+```
+
+> Also note that tolist() is called there, so it should be returning a list (and unpack properly).
+
+I did miss that thanks for pointing it out.
+","",""
+"issue_comment","452","nilearn","nilearn","bcipolli","2015-02-21 10:48:37","Cool.  I looked more closely, and apparently the issue wan't quite what I thought it was--only the final case causes a problem, which is not the case here.
+
+``` python
+>>> (1,2,3) in ((1,2,3),(4,5,6))
+True
+>>> (np.array(1),2,3) in ((1,2,3),(4,5,6))
+True
+>>> (np.array(2),2,np.array(3)) in ((1,2,3),(4,5,6))
+False
+>>> (np.array([1,2,3])) in ((1,2,3),(4,5,6))
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+```
+
+So no--no specific use-case.  Feel free to close (or to cherry-pick the linting)!
+","",""
+"issue_comment","452","nilearn","nilearn","GaelVaroquaux","2015-02-21 15:37:58","LGTM! :+1: for merge.
+","",""
+"issue_comment","452","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:34:52","Yeah, I would have been puzzled too if I received a list of scalar arrays. Thanks!
+","",""
+"issue_comment","452","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:35:19","Sorry, closed instead of merge :P
+","",""
+"pull_request_commit_comment","452","nilearn","nilearn","bcipolli","2015-02-21 09:49:48","The only functional change is here.
+","4ff19eea12c5319413fa645c96066d11d66be0ae","(48, '', u'nilearn/plotting/find_cuts.py')"
+"pull_request_commit","452","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-21 09:43:00","Return a list of coordinates, as advertised (previously, returned floats wrapped in array)","feed4ea16d2c6bd2c252c01d03f2f88509bad350",""
+"pull_request_commit","452","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-21 09:43:13","Drive-by linting","4ff19eea12c5319413fa645c96066d11d66be0ae",""

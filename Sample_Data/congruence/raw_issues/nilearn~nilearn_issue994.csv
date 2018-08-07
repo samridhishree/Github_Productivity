@@ -1,0 +1,136 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","994","nilearn","nilearn","arthurmensch","2016-02-18 11:02:02","Needs code + doc. @aabraham does it look lightweight enough ?
+","start issue","[MRG] Shelving for NiftiMasker"
+"issue_closed","994","nilearn","nilearn","AlexandreAbraham","2016-06-09 08:30:28","","closed issue","[MRG] Shelving for NiftiMasker"
+"pull_request_title","994","nilearn","nilearn","arthurmensch","2016-02-18 11:02:02","Needs code + doc. @aabraham does it look lightweight enough ?
+","f603053bf611b5dc82b7fc59ae5f0c021c901601","[MRG] Shelving for NiftiMasker"
+"issue_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-18 11:14:01","To, the simplest option would be to add a `shelve` parameter to `masker._cache` which would prevent you from ugly stuff like passing `self` as an argument (which is weird... If you need to pass self as an argument, just create a method).
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-18 14:02:09","Address issue #203. I guess we should first merge this and then trickle change to CanICA -- with auto setting for `len(imgs) > 50`. Can you clarify where do you want to put shelving on `compute_multi_epi_masks` / `compute_multi_epi_masks` ? By shelving the results of `compute_epi_masks` I reckon ?
+
+Also I think that the `shelve` param is useless for NiftiMasker, but we have to expose it if we do not want to copy `transform_single_imgs` in `MultiNiftiMasker`
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-18 15:15:34","Ready for review ping @AlexandreAbraham 
+","",""
+"issue_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 09:05:41","I am +1 given some small comments. The next step will be an integration of that in CanICA and the addition of an example.
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 13:40:13","What should we use as an example ? Simple plotting ? The brilliant `mask_and_reduce` based structure that I came up with for the decomposition module does not make it so simple to integrate the change into CanICA...
+","",""
+"issue_comment","994","nilearn","nilearn","GaelVaroquaux","2016-02-19 13:42:37","> What should we use as an example ? Simple plotting function ?
+
+No need for example. Just integration in CanICA and DictLearning.
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 13:43:59","Unless I am allowed to rewrite the pipeline as:
+- mask and shelve all data in parallel
+- reduce all shelved data in parallel
+
+Instead of mask and reduce all data in parallel without shelving (which is what we currently do)
+","",""
+"issue_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 13:46:09","Yeah, now that you point it out, it is meaningless in CanICA.
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 13:48:16","Unless we allow dimension reduction within `MultiNiftiMasker`, which is something that I advocated for once upon a time but may not be such a good idea.
+
+On the other hand, the rewriting of the pipeline does make sense to me as it would simplifies the code quite much -- but it would be a large PR with no improvement for the end user.
+","",""
+"issue_comment","994","nilearn","nilearn","GaelVaroquaux","2016-02-19 13:49:29","> Yeah, now that you point it out, it is meaningless in CanICA.
+
+Yes, indeed, because the reduction does not happen in the NiftiMasker,
+and that's the operation done in Parallel. So that PR is actually only
+useful for our internal needs, isn't it?
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 13:49:59","We also need to disable this feature for `sklearn <= 0.14.1`
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 13:51:03","It is. It would be useful for MSDL if it ever comes to nilearn, and for online (sparse) PCA if it ever comes to nilearn. Wonder if it would not be useful in decoding as well @dohmatob ?
+","",""
+"issue_comment","994","nilearn","nilearn","GaelVaroquaux","2016-02-19 13:54:39","> It is. It would be useful for MSDL if it ever comes to nilearn, and for online
+> (sparse) PCA if it ever comes to nilearn.
+
+Indeed. The problem is that those are still pending.
+
+> Wonder if it would not be useful in decoding as well @dohmatob ?
+
+Maybe. But I am not sure that it would be the case in the SpaceNet
+object.
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 13:57:30","I might be wrong, but I don't think `MultiNiftiMasker` if actually used outside of `decomposition` module isn't it ?
+","",""
+"issue_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 14:16:27","It's actually not really used in decomposition, we just use the fit to compute the mask.
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 14:24:05","Should I have a shot at decomposition refactorisation or should we just advertise in a small example ? Btw there are estimators in the code (SearchLight, SpaceNet), that uses a NiftiMasker on list of images, while they could be parallelized.
+","",""
+"issue_comment","994","nilearn","nilearn","GaelVaroquaux","2016-02-19 14:28:22","> Should I have a shot at decomposition refactorisation or should we just
+> advertise in a small example ?
+
+No refactor. An example in the advanced section would be good. Not sure
+about what, though :$
+
+> Btw there are estimators in the code (SearchLight, SpaceNet), that uses
+> a NiftiMasker on list of images, while they could be parallelized.
+
+Good point. Could you add an issue where you expose the point.
+","",""
+"issue_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 14:28:28","SearchLight does not iterate on a list of images.
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-02-19 14:29:18","Just added an issue on SpaceNet: it actually fails on list of images.
+","",""
+"issue_comment","994","nilearn","nilearn","AlexandreAbraham","2016-05-26 14:32:59","@arthurmensch, I'm working on integrating MSDL in nilearn and I thinking that providing shelving would really be a big plus. I think that, as suggested by Gael, we should make this option public for the moment and just use it internally. Basically, a few modifications are needed in your PR. Do you want to take care of it or do you want me to take over the PR?
+","",""
+"issue_comment","994","nilearn","nilearn","arthurmensch","2016-05-26 14:43:43","I'll take it!
+Le 26 mai 2016 16:33, ""Alexandre Abraham"" notifications@github.com a
+écrit :
+
+> @arthurmensch https://github.com/arthurmensch, I'm working on
+> integrating MSDL in nilearn and I thinking that providing shelving would
+> really be a big plus. I think that, as suggested by Gael, we should make
+> this option public for the moment and just use it internally. Basically, a
+> few modifications are needed in your PR. Do you want to take care of it or
+> do you want me to take over the PR?
+> 
+> —
+> You are receiving this because you were mentioned.
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/994#issuecomment-221888488
+","",""
+"issue_comment","994","nilearn","nilearn","AlexandreAbraham","2016-05-26 14:51:36","Sorry, I meant ""not public"". So, I think that you just need to rebase and then removing the option from MultiNiftiMasker constructor. Maybe we should create a method `_enable shelving` or so? I leave that to you :innocent: 
+","",""
+"pull_request_commit_comment","994","nilearn","nilearn","arthurmensch","2016-02-18 15:18:25","Actually there is an end of line in the file, Github bug ?
+","f603053bf611b5dc82b7fc59ae5f0c021c901601","(None, '', u'nilearn/input_data/tests/test_multi_nifti_masker.py')"
+"pull_request_commit_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 09:00:35","nilearn has its own boolean type, the boolearn :P
+","f603053bf611b5dc82b7fc59ae5f0c021c901601","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 09:01:28","booleaaaaaaarn
+","f603053bf611b5dc82b7fc59ae5f0c021c901601","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 09:01:49","I'm afraid that this doc is highly not understand by non technical people.
+","f603053bf611b5dc82b7fc59ae5f0c021c901601","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","994","nilearn","nilearn","AlexandreAbraham","2016-02-19 09:02:57","can you put `compute_mask, ignore=[...])` on  a single line for prettier code?
+","f603053bf611b5dc82b7fc59ae5f0c021c901601","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit","994","nilearn","nilearn","arthurmensch","2016-02-18 10:59:30","Initial commit
+
+Test + doc
+
+Test + doc
+
+Python 2.7 compat
+
+Added space
+
+Minor comments
+
+Removed functionality for scikit-learn <0.15
+
+PEP8
+
+PEP8
+
+PEP8
+
+gitingore
+
+gitingore
+
+gitingore
+
+gitingore","884b17e9ef0a04c0e06980528d358348044db167",""
+"pull_request_commit","994","nilearn","nilearn","arthurmensch","2016-05-27 12:52:11","Cleaned API","858555779b82a5bf532940ae19f4d40bec3b03e5",""
+"pull_request_commit","994","nilearn","nilearn","arthurmensch","2016-05-27 13:38:25","Fix python<3.5","4f2a8fd880db7b3ca6f3b9a42730f6b647c96f53",""
+"pull_request_commit","994","nilearn","nilearn","arthurmensch","2016-05-27 13:45:30","removed crap","1ed05e4a9fbacca74d7ec7c19d7b603460dde3a8",""
+"pull_request_commit","994","nilearn","nilearn","arthurmensch","2016-05-27 13:47:31",".gitignor","f603053bf611b5dc82b7fc59ae5f0c021c901601",""

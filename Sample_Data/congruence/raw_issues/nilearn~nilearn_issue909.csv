@@ -1,0 +1,108 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","909","nilearn","nilearn","SylvainTakerkart","2015-12-15 10:17:03","Hello!
+
+I'm trying to use the searchlight object, but I need to have access to the scores_ maps for each fold of the cv... Starting from the haxby example, I tried to modify the code as follows by removing the cv argument and the looping over the cv object (scikit-learn style):
+
+``` python
+for train_index, test_index in cv:
+    # define train and test datasets
+    fmri_img_train = index_img(fmri_img, train_index)
+    fmri_img_test = index_img(fmri_img, test_index)
+    y_train = y[train_index]
+    y_test = y[test_index]
+    searchlight = nilearn.decoding.SearchLight(
+        mask_img,
+        process_mask_img=process_mask_img,
+        radius=5.6, n_jobs=n_jobs,verbose=1)
+    searchlight.fit(fmri_img_train, y_train)
+    searchlight.predict(fmri_img_test)
+```
+
+but there's no 'predict' method... then I read the doc of the searchlight class, and it says that if no cv is given, it does a 3-fold cv... so I'm stuck now!
+
+Any clue on how to do this?
+
+Thanks,
+
+Sylvain
+","start issue","searchlight without cv"
+"issue_closed","909","nilearn","nilearn","SylvainTakerkart","2015-12-16 11:03:31","","closed issue","searchlight without cv"
+"issue_comment","909","nilearn","nilearn","eickenberg","2015-12-15 13:31:52","For 2. : You can use
+
+from sklearn.cross_validation import ShuffleSplit
+cv = ShuffleSplit(n_samples, n_iter=1, test_size=.5)
+
+where test_size needs to be set to the fraction of data or the number of
+data points that you want in your test fold.
+
+On Tue, Dec 15, 2015 at 2:29 PM, SylvainTakerkart notifications@github.com
+wrote:
+
+> OK, thanks Gael, and yes, that's what I want! Two more questions then...
+> 
+>    1.
+> 
+>    for info, how is searchlight.scores_ computed?
+>    2.
+> 
+>    can you guide me (at least to get me started) on how to design CV
+>    object with just one fold?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/909#issuecomment-164764993.
+","",""
+"issue_comment","909","nilearn","nilearn","eickenberg","2015-12-15 13:57:13","Then maybe: define `cv` however you want, and then
+
+```
+
+results = []
+for cv_item in cv:
+    one_cv = [cv_item]
+    results.append(do_searchlight_analysis(one_cv))
+
+
+On Tue, Dec 15, 2015 at 2:54 PM, SylvainTakerkart <notifications@github.com>
+wrote:
+
+> thanks, but, once again, I think my question was not properly framed,
+> sorry... I actually want to do a LeaveOneLabelOut cv... so now, I'd need to
+> construct several cvs which would correspond to each fold of my
+> LeaveOneLabelOut cv
+>
+> —
+> Reply to this email directly or view it on GitHub
+> <https://github.com/nilearn/nilearn/issues/909#issuecomment-164771785>.
+>
+```
+","",""
+"issue_comment","909","nilearn","nilearn","sgagnon","2017-05-29 19:36:55","How is the searchlight.scores_ map computed, if not by taking the mean across CV folds? It looks like the code is taking the mean across the folds (i.e., the output from `cross_val_scores` - an array of scores (shape = (len(list(cv)),)) of the estimator for each run of the cross validation). 
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/decoding/searchlight.py#L166","",""
+"issue_comment","909","nilearn","nilearn","sgagnon","2017-05-30 13:45:45","Thanks for the reply. I have a pretty good idea about how the searchlight object works, I'm just specifically focused on how `searchlight.scores_` is computed, given the earlier comment in this thread where ""_from what I understand, the searchlight.scores_ map is the average of the maps I'm looking for_"" (@SylvainTakerkart) was followed with a direct reply stating that ""_searchlight.scores_ map is not computed that way_."" My confusion is related to the specific code ~line 166 in `nilearn/decoding/searchlight.py` which says the following:
+
+`par_scores[i] = np.mean(cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs))`
+
+Given this code, I'm confused how searchlight.scores_ is *not* simply the mean across CVs, given that `cross_val_score` returns an array of scores of shape = (len(list(cv)),) of the estimator for each run of the cross validation.","",""
+"issue_comment","909","nilearn","nilearn","banilo","2015-12-15 22:53:04","One way to view this would be: searchlight performs repeated local function approximation and maps the results to each voxel of the brain (this is why a single predict is ambiguous), whereas other whole-brain classifiers would act on the brain, globally (predict then makes sense).
+","",""
+"issue_comment","909","nilearn","nilearn","SylvainTakerkart","2015-12-15 13:13:50","Hey, thanks for your feedback, but I think my question was not clear... Let me try to rephrase...
+
+I'm trying to do a searchlight analysis where I would have access to the classification accuracy maps of each fold of the cv that I pass with cv=cv... Any suggestion on how to do this? (from what I understand, the searchlight.scores_ map is the average of the maps I'm looking for)
+
+Sylvain
+","",""
+"issue_comment","909","nilearn","nilearn","SylvainTakerkart","2015-12-15 13:29:18","OK, thanks Gael, and yes, that's what I want! Two more questions then...
+1. for info, how is searchlight.scores_ computed?
+2. can you guide me (at least to get me started) on how to design CV object with just one fold?
+","",""
+"issue_comment","909","nilearn","nilearn","SylvainTakerkart","2015-12-15 13:54:32","thanks, but, once again, I think my question was not properly framed, sorry... I actually want to do a LeaveOneLabelOut cv... so now, I'd need to construct several cvs which would correspond to each fold of my LeaveOneLabelOut cv
+","",""
+"issue_comment","909","nilearn","nilearn","SylvainTakerkart","2015-12-15 22:34:46","excellent, that does the job, thanks a lot!!
+
+other than that, I would still be interested in knowing how searchlight.scores_ is computed... thanks in advance!
+","",""
+"issue_comment","909","nilearn","nilearn","SylvainTakerkart","2015-12-16 11:03:31","ok, thanks everybody!
+
+(I guess you could also view the searchlight in yet another way for which having a predict method would make sense, but you probably have thought this through more than me ;) )
+","",""

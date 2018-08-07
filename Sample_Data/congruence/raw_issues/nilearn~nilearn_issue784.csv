@@ -1,0 +1,130 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","784","nilearn","nilearn","poldrack","2015-09-26 16:55:37","currently plot_stat_map will crash if a scalar is passed to cut_coords in single-axis display mode:
+
+```
+Traceback (most recent call last):
+  File ""mk_tsne_figure.py"", line 57, in <module>
+    draw_cross=False,display_mode='z',colorbar=False,cut_coords=0.)
+  File ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/img_plotting.py"", line 891, in plot_stat_map
+    **kwargs)
+  File ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/img_plotting.py"", line 163, in _plot_img_with_bg
+    colorbar=colorbar)
+  File ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/displays.py"", line 400, in init_with_figure
+    cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
+  File ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/displays.py"", line 950, in find_cut_coords
+    n_cuts=cut_coords)
+  File ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/find_cuts.py"", line 213, in find_cut_slices
+    spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
+ZeroDivisionError: float division by zero
+```
+
+should check to see if the arguments to cut_coords are a list, and coerce single coord into a list if passed as a scalar.
+","start issue","check for proper coords on plot_stat_map"
+"issue_closed","784","nilearn","nilearn","lesteve","2015-10-22 11:24:33","","closed issue","check for proper coords on plot_stat_map"
+"issue_comment","784","nilearn","nilearn","dohmatob","2015-09-27 02:55:54","Russ,
+
+cut_coords : None, a tuple of floats, or an integer
+            The MNI coordinates of the point where the cut is performed
+            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            For display_mode == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+            If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
+            in which case it specifies the number of cuts to perform
+
+If _cut_coords_ is a scalar (as in your example), then it's expected to be
+and integer representing the number of cuts you want. We can't do the
+coercing automatically, as this would run into conflicts with the rest of
+the logic. The error you're getting is because the 0 you passed for
+_cut_coords_ is being interpreted as number of slices (_n_cuts_ in your
+traceback), leading to a zero-division. The latter tells us there is a
+stealth bug in the _find_cuts_ function: it should sanitize the value
+_n_cuts_ param and throw a meaningful error in case invalid (for example,
+in case it's _0_).
+","",""
+"issue_comment","784","nilearn","nilearn","poldrack","2015-09-27 15:11:09","thanks - yes, better error reporting sounds like a good solution.
+
+> On Sep 26, 2015, at 7:55 PM, DOHMATOB Elvis notifications@github.com wrote:
+> 
+> Russ,
+> 
+> _cut_coords : None, a tuple of floats, or an integer_
+> - The MNI coordinates of the point where the cut is performed*
+> - If display_mode is 'ortho', this should be a 3-tuple: (x, y,
+>   z)*
+> - For display_mode == 'x', 'y', or 'z', then these are the*
+> - coordinates of each cut in the corresponding direction.*
+> - If None is given, the cuts is calculated automaticaly.*
+> - If display_mode is 'x', 'y' or 'z', cut_coords can be an
+>   integer,*
+> - in which case it specifies the number of cuts to perform*
+> 
+> If _cut_coords_ is a scalar (as in your example), then it's expected to be
+> and integer representing the number of cuts you want. We can't do the
+> coercing automatically, as this would run into conflicts with the rest of
+> the logic. The error you're getting is because the 0 you passed for
+> _cut_coords_ is being interpreted as number of slices (_n_cuts_ in your
+> traceback), leading to a zero-division. The latter tells us there is a
+> stealth bug in the _find_cuts_ function: it should sanitize the value
+> _n_cuts_ param and throw a meaningful error in case invalid (for example,
+> in case it's _0_).
+> 
+> On Sat, Sep 26, 2015 at 6:55 PM, Russ Poldrack notifications@github.com
+> wrote:
+> 
+> > currently plot_stat_map will crash if a scalar is passed to cut_coords in
+> > single-axis display mode:
+> > 
+> > Traceback (most recent call last):
+> > File ""mk_tsne_figure.py"", line 57, in
+> > draw_cross=False,display_mode='z',colorbar=False,cut_coords=0.)
+> > File
+> > ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/img_plotting.py"",
+> > line 891, in plot_stat_map
+> > **kwargs)
+> > File
+> > ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/img_plotting.py"",
+> > line 163, in _plot_img_with_bg
+> > colorbar=colorbar)
+> > File
+> > ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/displays.py"",
+> > line 400, in init_with_figure
+> > cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
+> > File
+> > ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/displays.py"",
+> > line 950, in find_cut_coords
+> > n_cuts=cut_coords)
+> > File
+> > ""/Users/poldrack/anaconda/lib/python2.7/site-packages/nilearn-0.1.5.dev0-py2.7.egg/nilearn/plotting/find_cuts.py"",
+> > line 213, in find_cut_slices
+> > spacing = max(int(.5 / n_cuts \* data.shape[axis]), 1)
+> > ZeroDivisionError: float division by zero
+> > 
+> > should check to see if the arguments to cut_coords are a list, and coerce
+> > single coord into a list if passed as a scalar.
+> > 
+> > —
+> > Reply to this email directly or view it on GitHub
+> > https://github.com/nilearn/nilearn/issues/784.
+> 
+> ## 
+> 
+> DED
+> —
+> Reply to this email directly or view it on GitHub https://github.com/nilearn/nilearn/issues/784#issuecomment-143514209.
+
+---
+
+Russell A. Poldrack
+Professor of Psychology
+Bldg. 420, Jordan Hall
+Stanford University
+Stanford, CA 94305
+
+poldrack@stanford.edu
+http://www.poldracklab.org/
+","",""
+"issue_comment","784","nilearn","nilearn","lesteve","2015-09-28 14:07:10","It looks like we should check that n_cuts is an integer > 0 in nilearn.plotting.find_cuts.find_cut_slices indeed and raise a meaningful error message if not.
+
+@KamalakerDadi, if you have some spare time, that shouldn't be too hard to do.
+","",""

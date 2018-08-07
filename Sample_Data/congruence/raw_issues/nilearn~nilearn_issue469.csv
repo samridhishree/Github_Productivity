@@ -1,0 +1,207 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","469","nilearn","nilearn","GaelVaroquaux","2015-02-28 19:57:04","As I am writing examples using plot_connectome, I am finding that I need to concatenate x, y, z coordinates (for instance that come from a CSV file), and also that I sometimes get the transposition wrong. This makes for code that is a bit ugly (basically it introduces numpy operations in the examples, while I'd like to avoid that as much as possible.
+
+We could decide to have as a signature plot_connectome(adjacency_matrix, x, y, z). The logic behind this would be that it is easy to split than concatenate.
+
+What do people think?
+","start issue","API discussion: changing signature of plot_connectome"
+"issue_closed","469","nilearn","nilearn","GaelVaroquaux","2015-07-15 18:15:27","","closed issue","API discussion: changing signature of plot_connectome"
+"issue_comment","469","nilearn","nilearn","bthirion","2015-03-01 22:01:27","+1
+","",""
+"issue_comment","469","nilearn","nilearn","eickenberg","2015-03-01 22:13:44","The same thing is done e.g. in `mayavi.mlab.triangular_mesh(x, y, z, triangles)`. From `nibabel.freesurfer` ones gets the coordinates in a `coords.shape=(n_coords, 3)` array, and all it takes to split is `x, y, z = coords.T`.
+
+Although I haven't understood the design choice until now, it has never been a problem to use it that way. 
+
+In this proposition here the idea is to be able to avoid needing to hstack `recarray['x'], recarray['y'], recarray['z']` and to be able to pass them directly to the `plot_connectome` function. Seems like a very good idea.
+","",""
+"issue_comment","469","nilearn","nilearn","lesteve","2015-03-02 08:34:18","I am going to argue the other way. It feels to me that plot_connectome wants a list of 3d coordinates and related things should be passed in together rather than in 3 separate variables.
+
+Can you show us an example where you need to concatenate the x, y and z coordinates? In the plot_adhd_covariance example you do get a list of 3d coordinates via find_xyz_cut_coords and no additional numpy manipulation is needed.
+
+> In this proposition here the idea is to be able to avoid needing to hstack recarray['x'], recarray['y'], recarray['z'] and to be able to pass them directly to the plot_connectome function. Seems like a very good idea.
+
+Why not use recarray[['x', 'y', 'z']] rather than hstack?
+","",""
+"issue_comment","469","nilearn","nilearn","AlexandreAbraham","2015-03-02 09:38:23","I feel like this is an implementation vs. semantic representation debate. First, I'd like to underline the fact that this does not impact `plot_connectome` only. For the sake of consistency, if the signature changes here, I will change `NiftiSpheresMasker` accordingly.
+
+> The logic behind this would be that it is easy to split than concatenate.
+
+Let's compare! First version is the current implementation, second is the proposed one.
+
+If I have a recarray with x, y and z fields:
+`plot_connectome(adj, recarray[['x', 'y', 'z']])`
+`plot_connectome(adj, recarray['x'], recarray['y'], recarray['z'])`
+
+If I have 3 numpy arrays (or lists):
+`plot_connectome(adj, zip(x, y, z))`
+`plot_connectome(adj, x, y, z)`
+
+If I have a list of triblets:
+`plot_connectome(adj, coords)`
+`plot_connectome(adj, *zip(*coords))`
+
+Given that there is no performance issue either way, I would be in favor of the triblet representation.
+","",""
+"issue_comment","469","nilearn","nilearn","AlexandreAbraham","2015-03-02 09:51:53","Also, as underline by @eickenberg during the coffee break, using 3 lists will force us to have additional checks as the 3 litsts must have the same length. Whereas, with the actual representation, the condition is inherent to the data structure.
+","",""
+"issue_comment","469","nilearn","nilearn","GaelVaroquaux","2015-03-02 12:52:31","> plot_connectome(adj, recarray[['x', 'y', 'z']])
+
+I don't think that this works. I have just tried it.
+
+> plot_connectome(adj, recarray['x'], recarray['y'], recarray['z'])
+> 
+> If I have 3 numpy arrays (or lists):
+> plot_connectome(adj, zip(x, y, z))
+
+Well. I would write 'np.vstack(x, y, z).T' given that the good practice
+is usually to teach people numpy
+
+> plot_connectome(adj, x, y, z)
+> 
+> If I have a list of triblets:
+> plot_connectome(adj, coords)
+> plot_connectome(adj, _zip(_coords))
+
+That one is horrible and should never be written in an example, but you
+would write:
+
+```
+x, y, z = coords.T
+plot_connectome(adj, *zip(*coords))
+```
+
+By the way, an example of where it's troubling me is:
+https://github.com/GaelVaroquaux/nilearn/blob/doc_rework/examples/connectivity/plot_probabilistic_atlas_extraction.py
+
+The atlas here helpfully provides a list of coordinates, that gets loaded
+as a recarray.
+","",""
+"issue_comment","469","nilearn","nilearn","GaelVaroquaux","2015-03-02 12:53:05","> Also, as underline by @eickenberg during the coffee break, using 3 lists will
+> force us to have additional checks as the 3 litsts must have the same length.
+> Whereas, with the actual representation, the condition is inherent to the data
+> structure.
+
+We are talking about usability for the end user here. I don't mind have
+these 3 checks.
+","",""
+"issue_comment","469","nilearn","nilearn","AlexandreAbraham","2015-03-02 13:51:33","> I don't think that this works. I have just tried it.
+
+Oh, OK, you really use a recarray. I quit using them to use panda dataframes because of jokes like this. Note that a lot of stuff may break in nilearn if you use recarrays. I have started a branch where I fix some of these but it's a lot of work.
+
+> Well. I would write 'np.vstack(x, y, z).T' given that the good practice is usually to teach people numpy
+
+I think that good practices don't include recarrays. In particular, getting back to regular arrays is very very ugly (I would advise to pass by a list instead): `a.view(np.float).reshape(len(a), -1)`
+
+> That one is horrible and should never be written in an example
+
+Agreed, but I showed one-liners only. This would work too but it contains ""magic"": `plot_connectome(adj, *coords.T)`
+
+> By the way, an example of where it's troubling me is [url]
+
+```
+import pandas
+labels = pandas.read_csv(csv_filename)
+# ...
+plotting.plot_connectome(correlation_matrix, coords[['x', 'y', 'z']], edge_threshold=""80%"")
+```
+
+Problem solved ;)
+
+Actually, I would be more in favor of accepting object that has fields 'x', 'y', and 'z' rather than 3 separate arrays. But again, personal opinion from a pandas user.
+
+Why not accepting something like: `plotting.plot_connectome(correlation_matrix, (x, y, z))`
+","",""
+"issue_comment","469","nilearn","nilearn","GaelVaroquaux","2015-03-02 14:06:48","> Oh, OK, you really use a recarray. I quit using them to use panda dataframes
+> because of jokes like this.
+
+OK. Then let's use panda dataframes in our examples. You were against it
+a while ago. I think that this is a good option.
+
+> Note that a lot of stuff may break in nilearn if you use recarrays. I
+> have started a branch where I fix some of these but it's a lot of work.
+
+I have no specific love for recarrays. It's just that so far, we didn't
+use pandas in the examples. I am +1 for pandas.
+
+> I think that good practices don't include
+
++1
+
+> ```
+> By the way, an example of where it's troubling me is [url]
+> ```
+> 
+> import pandas
+> labels = pandas.read_csv(csv_filename)
+> 
+> # ...
+> 
+> plotting.plot_connectome(correlation_matrix, coords[['x', 'y', 'z']], edge_threshold=""80%"")
+> 
+> Problem solved ;)
+
+That's how I wrote it originally.
+
+> Actually, I would be more in favor of accepting object that has fields 'x',
+> 'y', and 'z' rather than 3 separate arrays. But again, personal opinion from a
+> pandas user.
+
+That would tie use very much to pandas. Too much IMHO.
+
+> Why not accepting something like: plotting.plot_connectome(correlation_matrix,
+> (x, y, z))
+
+OK. Let's discuss this when I come back. There is no big hurry.
+","",""
+"issue_comment","469","nilearn","nilearn","AlexandreAbraham","2015-03-02 14:18:49","> OK. Then let's use panda dataframes in our examples. You were against it a while ago. I think that this is a good option.
+
+Yes, I thought that it was a bit ""overkill"". But the only alternative is np.recarray and the `shape` problem is not the only one with them... So let's use pandas.
+
+> That would tie use very much to pandas. Too much IMHO.
+
+It would also handle dicts, bunchs... But this was just a suggestion.
+
+> OK. Let's discuss this when I come back. There is no big hurry.
+
+I think that it would be very useful to consult our guinea pigs about that. Let's ask Baptiste!
+","",""
+"issue_comment","469","nilearn","nilearn","bthirion","2015-03-02 14:22:23","There's at least one good reason not rely too heavily on pandas, namely the difficulty to install it in some environments (e.g. Neurospin).
+","",""
+"issue_comment","469","nilearn","nilearn","GaelVaroquaux","2015-03-02 14:23:55","Yes, it's an extra dependency, and that's quite clearly a problem.
+","",""
+"issue_comment","469","nilearn","nilearn","lesteve","2015-03-02 14:34:04","Not sure what the Neurospin environment includes but Ubuntu 14.04 comes with pandas 0.13.1 according to [this](http://packages.ubuntu.com/trusty/python-pandas). That's probably recent enough for what we want to do with it.
+","",""
+"issue_comment","469","nilearn","nilearn","AlexandreAbraham","2015-03-02 14:37:14","> Not sure what the Neurospin environment includes
+
+Pandas is not included by default. However, `pip install pandas --user` works.
+","",""
+"issue_comment","469","nilearn","nilearn","banilo","2015-03-02 14:37:42","An alternative could be: pass on a dictionary object {'x': [1, 2,3]...} with three keys (x, y, z) and a list associated with each. Additionally, one could derive a nilearn-specific class for coordinate ensembles (I know, we do not like classes) that could then be uniformly used by `NiftiSpheresMasker` and `plot_connectome`
+","",""
+"issue_comment","469","nilearn","nilearn","GaelVaroquaux","2015-03-02 14:40:10","> Pandas is not included by default. However, pip install pandas --user works.
+
+At the scale of a large institute, advising beginners to manage software
+installs themselves via pip creates a pretty crazy mess in a few years.
+
+G
+","",""
+"issue_comment","469","nilearn","nilearn","eickenberg","2015-03-02 14:51:10","i don't know if this is still the case, but a few months ago there was a
+beautiful thread over at pandas where somebody who was trying to use it in
+production was very annoyed because they keep changing major stuff at each release without a
+deprecation cycle in the name of rapid development
+
+On Monday, March 2, 2015, Gael Varoquaux notifications@github.com wrote:
+
+> > Pandas is not included by default. However, pip install pandas --user
+> > works.
+> 
+> At the scale of a large institute, advising beginners to manage software
+> installs themselves via pip creates a pretty crazy mess in a few years.
+> 
+> G
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/469#issuecomment-76722313.
+","",""
+"issue_comment","469","nilearn","nilearn","AlexandreAbraham","2015-04-17 07:31:21","So, what do we do about this one?
+","",""

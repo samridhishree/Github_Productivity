@@ -1,0 +1,147 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","275","nilearn","nilearn","banilo","2014-11-04 19:46:54","Using continuous resampling on a standard nifti (without NaNs) turned the image on the left into the one on the right. I encountered this problem several times. It might have something to the with the dtype of the input data.
+
+![resample_thing](https://cloud.githubusercontent.com/assets/3907396/4906673/fe989eca-645a-11e4-87ed-3b79da3d9963.png)
+
+**Edit**: the Nifti files @banilo was looking had been written in big-endian with SPM (probably due to the platform they were generated on?)
+","start issue","Bug in nilearn.image.resample_img when using non native endianness"
+"issue_closed","275","nilearn","nilearn","lesteve","2014-11-13 12:48:33","","closed issue","Bug in nilearn.image.resample_img when using non native endianness"
+"issue_comment","275","nilearn","nilearn","AlexandreAbraham","2014-11-05 04:47:02","Can you provide a minimal use case?
+","",""
+"issue_comment","275","nilearn","nilearn","banilo","2014-11-05 06:02:22","I can send you .nii and code that reproduces the above?
+","",""
+"issue_comment","275","nilearn","nilearn","AlexandreAbraham","2014-11-05 07:09:44","Yes, that would be awesome :). Can you also send me the nii post-reampling? Just in case the result is different on my machine.
+
+If you suspect a dtype problem, you can diagnose it yourself: just do `img.astype(float)` and see if the resampling does the same. If you give an integer image to resampling in 'continuous' mode, it is in fact known to fail because of the integer rounding.
+","",""
+"issue_comment","275","nilearn","nilearn","banilo","2014-11-05 08:37:09","I will sent you script + niftis.
+
+Apart from that, why not add a check for float types in resample_img()?
+","",""
+"issue_comment","275","nilearn","nilearn","lesteve","2014-11-05 08:56:21","IMHO, a code snippet is way better than words for us to understand what you are doing. It does seem related to #270 as @AlexandreAbraham was hinting. If you are using resample_img directly, why not use interpolation='nearest'?
+","",""
+"issue_comment","275","nilearn","nilearn","banilo","2014-11-05 09:15:58","Because both interpolations are relvant for different situations.
+interpolation='nearest' <- I usually use this for atlases, so that the labels are not corrupted
+interpolation='continuous' <- is what I usually use for Z-map-like activation data
+
+Shouldn't resample_img() work with any nifti using interpolation='interpolation'?
+","",""
+"issue_comment","275","nilearn","nilearn","lesteve","2014-11-05 09:48:29","Quickly looking at the picture you showed, I wrongly assumed you were using labels, my bad.
+","",""
+"issue_comment","275","nilearn","nilearn","lesteve","2014-11-05 10:22:58","As a aside, if your problem is too complex to be reduced to a code snippet, one way you can share data (assuming is isn't less than 100MB in size) + scripts is using [gists](https://help.github.com/articles/about-gists/).
+","",""
+"issue_comment","275","nilearn","nilearn","banilo","2014-11-05 11:31:04","Thanks for the reminder!!
+
+2014-11-05 11:22 GMT+01:00 Loïc Estève notifications@github.com:
+
+> As a anside, if your problem is too complex to be reduced to a code
+> snippet, one way you can share data (assuming is isn't less than 100MB in
+> size) + scripts is using gists
+> https://help.github.com/articles/about-gists/.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/275#issuecomment-61786741.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","275","nilearn","nilearn","banilo","2014-11-06 12:19:17","Little update: it seems to have something to do with big/little Indian encoding. Enforcing dtype='>f8' reproduces the bug, while dtype='<f8' makes the bug dissappear. Some lower-level C/Cython problem in numpy?
+","",""
+"issue_comment","275","nilearn","nilearn","lesteve","2014-11-06 13:05:25","For completeness, here is a snippet that reproduces the problem:
+
+``` python
+
+import math
+
+import numpy as np
+
+import pandas as pd
+
+from nilearn.image import resample_img
+from nilearn import plotting
+
+import nibabel as nib
+
+
+def make_test_img(dtype):
+    data = np.ones((10, 10, 10), dtype=dtype)
+    data[3:7, 3:7, 3:7] = 2
+
+    affine = np.eye(4)
+    img = nib.Nifti1Image(data, affine)
+    return img
+
+
+def my_resample_img(img):
+    theta = math.pi / 6
+    c = math.cos(theta)
+    s = math.sin(theta)
+
+    affine = np.array([[1, 0, 0, 0],
+                       [0, c, -s, 0],
+                       [0, s, c, 0],
+                       [0, 0, 0, 1]])
+
+    tweaked_img = nib.Nifti1Image(img.get_data(), affine)
+    resampled_img = resample_img(tweaked_img, target_affine=np.eye(4))
+    return resampled_img
+
+
+def my_test(dtype):
+    cut_coords = (5, 5, 5)
+    img = make_test_img(dtype)
+    plotting.plot_img(img, cut_coords=cut_coords)
+    resampled_img = my_resample_img(img)
+    plotting.plot_img(resampled_img, cut_coords=cut_coords)
+    print 'img data dtype: {}\n{}'.format(
+        dtype,
+        pd.Series(resampled_img.get_data().ravel()).describe())
+
+my_test('<f8')
+my_test('>f8')
+
+```
+","",""
+"issue_comment","275","nilearn","nilearn","lesteve","2014-11-06 13:10:06","I haven't looked into it more, but somehow in the big endian case, we end up with NaN and values of order 10^300...
+","",""
+"issue_comment","275","nilearn","nilearn","GaelVaroquaux","2014-11-06 14:18:13","Thanks to everybody involved for reporting/digging in the problem. Fixing
+these issues is critical for nilearn!
+","",""
+"issue_comment","275","nilearn","nilearn","lesteve","2014-11-06 15:40:10","It seems like the culprit is scipy.ndimage.affine_transform. As small example reproducing the issue:
+
+``` python
+import numpy as np
+from scipy import ndimage
+
+data = np.ones((2, 2, 2))
+out = np.empty_like(data, dtype='>f8')
+ndimage.affine_transform(data, np.eye(3), output=out)
+out
+```
+
+The output:
+
+```
+array([[[ -5.48612407e+303,  -8.37116099e+298],
+        [ -8.37116099e+298,  -5.48612407e+303]],
+
+       [[ -8.37116099e+298,  -5.48612407e+303],
+        [ -5.48612407e+303,  -8.37116099e+298]]])
+```
+","",""
+"issue_comment","275","nilearn","nilearn","GaelVaroquaux","2014-11-06 15:41:16","> It seems like the culprit is scipy.ndimage.affine_transform. As small example
+> reproducing the issue:
+
+OK then I suggest:
+- To submit a bug to the scipy tracker (with the script attached)
+- To cast our data to the right endianess
+","",""
+"issue_comment","275","nilearn","nilearn","AlexandreAbraham","2014-11-07 05:55:06","+1
+","",""
+"issue_comment","275","nilearn","nilearn","lesteve","2014-11-07 14:46:44","FYI, I just opened https://github.com/scipy/scipy/issues/4127
+","",""
+"issue_comment","275","nilearn","nilearn","dohmatob","2014-11-07 15:03:15","+1
+","",""

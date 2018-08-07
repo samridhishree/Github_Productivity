@@ -1,0 +1,10 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1551","nilearn","nilearn","GaelVaroquaux","2017-11-14 17:57:39","For two images that are looking at the same data, but with a different FOV, nilearn.image.resample_img currently uses the affine resampling straegy. However, the transformation could easily be done via a simple padding of arrays.
+
+We should probably be able to detect this with the ""A"" matrix on line 
+https://github.com/nilearn/nilearn/blob/e442a34a9eda52b2c2697c5b176ec3d95a99e8d3/nilearn/image/resampling.py#L488
+which should pretty much be the identity. Once we've detected this, the challenge will be write code that computes the translation and padding.
+
+The benefit might be a large speedup in some settings, as often the mask and the data are on the same grid (typically the grid of the MNI template at a given resolution), but with a different FOV that was inherited from where they originated.","start issue","Avoid resampling when it's just different FOV, and not different affine"
+"issue_comment","1551","nilearn","nilearn","bthirion","2017-11-14 21:34:25","+1
+Actually, when there is only a translation/padding the A matrix should be the identity.","",""

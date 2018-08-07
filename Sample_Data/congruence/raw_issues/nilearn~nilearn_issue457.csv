@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","457","nilearn","nilearn","bcipolli","2015-02-23 18:01:33","I expect a call to `cache` with default arguments to cache the result.  It does not.
+
+The following code to cache does not cache:
+
+``` python
+from nilearn._utils.cache_mixin import cache
+
+def my_fun(X, Y)
+     return X + Y
+Z = cache(my_fun, memory='nilearn_cache')(1, 1)
+```
+
+Instead, the call must be:
+
+``` python
+Z = cache(my_fun, memory='nilearn_cache', func_memory_level=1, memory_level=1)(1, 1)
+```
+
+I suggest tweaking the semantics of `func_memory_level`, such that if `func_memory_level is None`, everything gets cached.  Put it this way: if you call `cache` without specifying a `func_memory_level`, you always want it cached--rather, than _never_ cached.
+
+Alternately, I would like the function to raise a warning if `func_memory_level is None`.  Since `func_memory_level is None` currently means the result will  _never_ be cached, it shouldn't have been wrapped at all.. and so clearly the user's confused about the design, and we can warn them.
+
+I would be glad to submit a PR on this, but wanted to open things to discussion first.
+","start issue","Caching is disabled with default args"
+"issue_closed","457","nilearn","nilearn","GaelVaroquaux","2015-07-13 12:40:52","","closed issue","Caching is disabled with default args"
+"issue_comment","457","nilearn","nilearn","AlexandreAbraham","2015-02-23 21:55:39","> I expect a call to `cache` with default arguments to cache the result. It does not.
+
+You don't expect but yet it is the expected behavior ;). We certainly don't want to cache things if the user does not explicitely specify it. The `cache` function is a helper function, it is here to avoid doing an `if` statement each time we have to call a function that can be cached. You can see it as a `joblib.Memory(cachedir=None)`.
+","",""
+"issue_comment","457","nilearn","nilearn","bcipolli","2015-02-23 22:00:47","Using the `cache` function explicitly is the user specifying it.  Within the `nilearn` codebase, ``func_memory_level` is never `None`... or the call to `cache` should simply be removed, as no user input could ever cause anything to be cached.
+
+It seems strange to have a case where you can have a case where you wrap something in `cache`, and it can never lead to cached results (when `func_memory_level` is `None`).  Why allow that?  Am I missing a use-case above?
+","",""
+"issue_comment","457","nilearn","nilearn","AlexandreAbraham","2015-02-23 22:14:06","`cache` is hidden in the `_utils` package and thus should not be called directly by the user. But I get your point, you say that `func_memory_level` should not be optional since caching is triggered by `memory` and `memory_level`.
+OK, let's do it then ;).
+","",""
+"issue_comment","457","nilearn","nilearn","bcipolli","2015-02-23 22:25:39","I guess I'm suggesting to make `cache` available to users, not an internal API.  Easy, ubiquitous caching is a great feature in `nilearn`, and making `cache` as a user function.
+
+I am finding `cache` to be extremely useful.  It's interface is more consistent with how caching is done throughout `nilearn`, and makes for more concise code.  If it's too much trouble for users to pass a `joblib.Memory` object to functions, why ask them to use joblib to do any caching on their own?
+
+Looking at the code again, I think setting both to zero by default is simplest and meaningful--if you call `cache` with no args, it means you want to cache it, always.  Adding `None` in the loop simply forces an extra check (`is None`) with no semantic addition.
+","",""
+"issue_comment","457","nilearn","nilearn","AlexandreAbraham","2015-02-23 22:39:50","To be honest, I have my own caching system. I don't know if we should expose that to the user since joblib should do the job.
+","",""
+"issue_comment","457","nilearn","nilearn","bcipolli","2015-02-23 22:50:26","I think nilearn is doing something in-between.  On the one hand, it allows passing strings as a ""memory"", and there's some concern for allowing users to clear the cache (so cache management and abstracting away from joblib).  On the other hand, apparently `cache` is an internal function--so to cache any of their own stuff, users have to use joblib.
+
+I'd like to see it become more consistent--either push users to joblib.Memory, or give them more succinct, abstracted alternatives.  My vote is to create a  `nilearn.caching` module and exposing `cache` to users, then make the `cache_mixin` class work on top of that.
+
+(p.s. I just did it now, and it was 2 minutes of work).
+","",""
+"issue_comment","457","nilearn","nilearn","GaelVaroquaux","2015-02-24 12:27:56","I agree. This is an internal stuff. And it is imported from a private sub package. I am not opposed to making it easier to understand / follow but that's more about changing names and api rather than changing behavior. The behavior is tailored to our internal needs. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 24, 2015, 11:26, at 11:26, Alexandre Abraham notifications@github.com wrote:
+
+> To be honest, I have my own caching system. I don't know if we should
+> expose that to the user since joblib should do the job.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/457#issuecomment-75653464
+","",""
+"issue_comment","457","nilearn","nilearn","AlexandreAbraham","2015-02-24 12:39:54","@bcipolli yet raised a point that I agree with: `func_memory_level` should not be optional.
+","",""
+"issue_comment","457","nilearn","nilearn","AlexandreAbraham","2015-02-24 12:41:40","@bcipolli let's fix that. For the rest, there is an open issue about the caching system: #420.
+
+I don't think that we can take a decision about that without user feedback.
+","",""
+"issue_comment","457","nilearn","nilearn","AlexandreAbraham","2015-03-16 13:05:55","Quickly checked this one during lunch. In functions `nilearn.masking.compute_*_mask`, cache is called without memory level so the call is basically never cached. We should make memory levels mandatory and propagate in the code.
+","",""

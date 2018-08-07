@@ -1,0 +1,358 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","144","nilearn","nilearn","eickenberg","2013-12-02 23:24:21","Here is a start. Data loads, can be looked at and is processed according to the description in the paper.
+
+Probably can be simplified a lot in many places, but it's a start.
+","start issue","WIP: Haxby data processing example"
+"issue_closed","144","nilearn","nilearn","GaelVaroquaux","2013-12-11 23:11:58","","closed issue","WIP: Haxby data processing example"
+"pull_request_title","144","nilearn","nilearn","eickenberg","2013-12-02 23:24:21","Here is a start. Data loads, can be looked at and is processed according to the description in the paper.
+
+Probably can be simplified a lot in many places, but it's a start.
+","197ac7da87011f8e96174a91861bef30addaa0d2","WIP: Haxby data processing example"
+"issue_comment","144","nilearn","nilearn","fabianp","2013-12-03 08:30:34","Would it be possible to reuse the maps in dataset_files.func instead of redoing the GLM? it seems to me that there are the response for the 8+1 categories
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:06:41","Can we rename the script to plot_....py, so that it is compiled during building of the webpage.
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:27:52","Indeed, I agree with Fabian that the GLM is confusing.
+
+It poses a bit of a problem, because the data in .func are not beta maps, but raw EPIs. In general, it is never a good idea to use the raw EPIs. With the Haxby dataset, we do it anyhow, but it's not great.
+
+Ideally, we would have an object to estimate the betas from conditions. We don't have it currently. I don't know what is our best option here.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-03 09:55:57","The structure of the GLM is taken from the paper and is rather specific. Looks like this is what worked best after trying a bunch of stuff. I don't think one can make an easily understandable object that generates this type of design matrix. But of course there is potential to simplify the code generating the design.
+I deliberately used sklearn.linear_model.LinearRegression in order to avoid using linalg.pinv etc
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:59:04","Thinking more about the issue of the GLM: let's do as in the original article. I don't think that they used a GLM.
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 10:00:19","Ok, I need more time to understand the problem (right now I am multitasking too much).
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 10:01:40","Also, it would be good to have @bthirion's opinion on that.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-03 11:54:06","They used a GLM and then computed similarities between conditions between even and odd runs.
+
+I am not completely sure yet how they did their testing, since this leaves relatively few values for doing statistics
+
+There is a very simple but pretty effective SVM decoding routine in the script I wrote. It currently reaches a .8 classification average over 9 classes. It is learned on single TRs. But it is just ""a stub"" in the sense that I did the absolutely simplest thing possible, not even removing rest data, but predicting it as a label.
+","",""
+"issue_comment","144","nilearn","nilearn","bthirion","2013-12-03 21:38:29","As discussed today, the GLM is just meant to create averages something like
+X_avg = np.array([X[y==i].mean(0) for in in np.unique(y)])
+should suffice.
+But, more importantly, classifier-based experiments are more compelling 
+than cross-session correlations, so we may just drop this part of 
+Haxby's historical experiments.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-04 14:00:36","All GLMs gone, two SVM experiments coded.
+To be optimized and possibly extended with logistic regression etc
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-05 15:30:35","yup, kernel=linear helps ... a lot ... especially in full brain
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-05 15:31:45","I did look at the cimputed epi mask, and to me it looked just fine. Then again, I only looked at some slices. Where do you think is the problem? Is it too small?
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-05 15:34:53","Question: I know I am supposed to kick out the resting state intervals ... right now I am predicting them with the label ""rest"". If I do cut them out, I get the opportunity to do some hemodynamic shifting (I could do it without cutting, but still). Do I lag the data (TR=2.5s, 2TR=5s) or do I leave it as is?
+","",""
+"issue_comment","144","nilearn","nilearn","bthirion","2013-12-05 15:50:21","Leave it as is.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-06 16:44:58","This is getting closer and closer to plot_haxby_decoding.py
+
+Which direction do we take? Merge this with plot_haxby_decoding or make it into something different / more elaborate?
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-06 16:58:50","I had in mind that this example would be a bit more elaborate than the plot_haxby_decoding and stick more the to spirit of the original article: working on masks rather than doing a full brain analysis with anova, and reporting prediction power with bar plots for different categories of objects and different parts of the brain (using the masks provided with the dataset).
+
+Does this sound reasonable?
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-06 18:07:34","Added code to look at other ROIs.
+
+Not sure what to put in box plot since as of now scores are global classification accuracy.
+
+Am I supposed to look at per class scores in different regions?
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-06 18:17:23","Well, I think that to answer thé neuroscientific question that was asked in thé original paper, scores on différent types of stimuli must be reported.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-06 18:51:57","Definitely,
+
+however I am afraid of the implications on code readability: I cannot create a scorer that returns multiple scores -- this will be blocked by cross_val_score as of one of the recent sklearn releases.
+
+I can do everything by hand -- but in that case switching to one v one may be more understandable in terms of the code
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-06 18:58:58","forget about the last statement about one v one.
+
+What I could do is write a scoring function that for each class returns true (and maybe false) positive scores.
+
+And do a list comprehension iterating over a cv=KFold instead of a cross_val_score.
+
+Does that sound like a compromise?
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-06 21:31:23","I would indeed do a manual for loop. The question is whether we simply
+want to do the 'one vs all' manually, in a for loop, without even calling
+it one vs all. That should probably be quite simple and not require
+notions that beginners do not understand.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-08 21:35:01","The latest refactoring commit adds a rudimentary visualization of the f1_scores
+
+https://github.com/eickenberg/nilearn/commit/c7c44e7010ee2e259d172ab7dcd91c3e99613f30
+
+Performance is very bad except in mask_vt and mask_house. Very bad as in f1_score = 0.0
+
+I have written (but not yet pushed) a cross-validation routine over the SVM C parameter. It looks like C > 1, e.g. C=1000 sometimes helps. The loop takes pretty long though. I was actually going to add a loop over classweights, since this had been discussed. But I think all this is very time consuming.
+
+Any ideas on how to proceed? Let me know if I should push the crossvalidation routine
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-08 21:46:17","> Don't push the cross-validation routine.
+
+To justify this: the goal is to have a very simple example, not the best
+performing one. We want to be tutorial.
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-08 21:46:26","> Any ideas on how to proceed? Let me know if I should push the
+> crossvalidation routine
+
+Don't push the cross-validation routine. However, it is really good that
+you have found that it helps a lot. I will use it in my tutorial to
+stress the importance of cross-validation.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-08 22:33:46","Ok. I was going to up the penalty to 100. (Not overfitting, of course -- I could have chosen this by chance, right? :))
+
+But this makes the SVM have great difficulties treating the difficult stuff. I have the feeling it goes to max_iter before  converging. A waste of time that I won't push either.
+
+The crossvalidation scheme will be on another branch once it is done.
+","",""
+"issue_comment","144","nilearn","nilearn","eickenberg","2013-12-09 21:37:18","As an alternative I just made a one versus one scheme which shows scores for all couplings of labels in a matrix. One for each region. So if necessary I can also push that up here.
+","",""
+"issue_comment","144","nilearn","nilearn","fabianp","2013-12-11 08:53:17","I've looked a bit into alternative classifiers. The mean of the scores_mean matrix is 0.26 using a LinearSVC as in the example and jumps to 0.30 if using a LogisticRegression with l1 penalty (default parameters). 
+
+I plotted the difference is score in the confusion matrix (I can fix the colorbar and make it easier to read if you think it would be useful to show).
+
+![difference](https://f.cloud.github.com/assets/277639/1722245/1e915b34-623d-11e3-9672-f4f80c3ef594.png)
+
+so you win on almost all tasks (but not all!). Other stuff that I tried and did not get better results are Anova-SVM,  ensemble methods (RandomForestClassifier) and (surprisingly) a LogisticRegression with elasticnet penalty.
+
+Please tell me if you would me to make a patch (in a single file or as an option for Michel's code?) for this or if you plan to say this in the oral/slides.
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-11 19:27:57","> Please tell me if you would me to make a patch (in a single file or as
+> an option for Michel's code?)
+
+That would be fantastic. As a single file, ie a new example. Thanks a
+lot!
+","",""
+"issue_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-11 23:11:57","Merged. Thank you
+","",""
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:10:14","I think that we should maybe move this in another script. We are going to drown the beginning under too many things.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:10:56","I would prefer if you used scipy.misc.imread, rather than the PIL
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:12:02","We have decided to only use ""import matplotlib.pyplot as plt"" rather than ""pylab as pl""
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:13:57","Ideally we want to use the NiftiMasker. We loose people when we go in these details.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:14:31","Using strings are comments is going to confuse a lot beginners.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","AlexandreAbraham","2013-12-03 09:18:13","This is useful code anyway. The most important fact is that it points out that stimuli are not returned with absolute paths, which make them unusable for the end-user. I have fixed that and here is the same code to show them:
+
+```
+if take_a_look_at_stimuli:
+    import Image
+    import pylab as pl
+    for stim_type, files in data_files.stimuli.items():
+        if stim_type == ""controls"":
+            # skip control images, there are too many
+            continue
+        pl.figure()
+        for i in range(48):
+            pl.subplot(6, 8, i + 1)
+            try:
+                pl.imshow(Image.open(files[i]), origin=""lower"")
+                pl.gray()
+                pl.axis(""off"")
+            except:
+                # just go to the next one if the file is not present
+                continue
+        pl.title(stim_type)
+    pl.show()
+```
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","AlexandreAbraham","2013-12-03 09:25:27","Awesome. `scipy.misc.imread` does not have the bug of random flipped images !
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:43:17","> This is useful code anyway.
+
+It is. I just think that it should not be there.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-03 09:45:51","Cool! Do I update this section with Alex's code and scipy.misc.imread or do I remove it altogether?
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-03 09:46:25","OK, will correct and do this in the future
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-03 09:47:39","> Cool! Do I update this section with Alex's code and scipy.misc.imread or do I
+> remove it altogether?
+
+Move it to a separate file and update it, please.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-03 09:51:35","Two things:
+1) When I tell NiftiMasker standardize=True, then the masked BOLD timecourses have neither zero mean nor unit variance. Not completely sure what is going on there. @AlexandreAbraham is looking into it I think. Otherwise I can do the same
+
+2) Independently of this, the data seems to be naturally structured into 12 blocks of 121TR, which were probably acquired in different scanner runs. Detrending over the borders of these blocks makes no sense and neither does standardizing. If we want to use the NiftiMasker, we need to either break the file into these blocks and then mask or be able to pass breakpoints to the masker, such that it can pass them on using the bp kwarg to scipy.signal.detrend.
+
+Seems overspecific but at the same time a rather recurrent phenomenon to me. Any thoughts?
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-03 09:52:08","Just trying to distinguish citations from comments. Will remove this.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","AlexandreAbraham","2013-12-03 10:16:21","I have tested and see no problem with the NiftiMasker.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-03 11:50:49","Ok, do I gloss over boundary problems and just let the niftimasker do its job globally or do I take into account the structure of the data?
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 13:27:47","don't you want kernel='linear' ?
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 13:28:32","""ANOVA + Linear SVM C=1 on full brain""
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 13:29:27","import matplotlib.pyplot as plt
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_stimuli.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 15:34:06","pep8 line too long
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-05 19:42:30","Can you not do a function. I don't think that it is useful here, and it makes the example more complex.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_stimuli.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 19:47:57","the function is used in the other script
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_stimuli.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 20:27:53","matplotlib.pyplot
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 20:28:06","remove these comments
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 20:33:50","n_jobs=12 ???
+
+use 1 by default please. For the poor people :)
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 20:34:30","I would print the std rather than all the scores.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 20:36:32","I get 0.69 mean score on full brain. Do you confirm?
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-05 20:37:51","import matplotlib.pyplot as plt
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_stimuli.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-05 22:04:23","I get .87 on full brain and .86 in the ROI.
+
+this is without removing rest. Unfortunately I have uncommitted stuff on the other machine so I prefer continuing tomorrow
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-05 22:06:14","I can remove the function call from the plot_haxby_full_analysis.py if it seems unncessary and change the stimulus visualization to script style. The reason for making a function was only this.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_stimuli.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-05 22:07:10","0.69 is what I got without kernel=""linear"" on full brain btw
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-06 06:23:51","> the function is used in the other script
+
+But I would rather if this would not be the case. It forces to explain
+way too many things when all we are trying to teach people is basic
+nilearn usage.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_stimuli.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","bthirion","2013-12-06 22:23:08","cv=12 is supposed to amount to a leave-on-session-out cross-validation, I guess ? 
+This is not obvious.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","bthirion","2013-12-06 22:46:05","Score: 0.67 +- 0.09 # on my laptop. I should run my experiments on your machine... what is you is number ?
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","bthirion","2013-12-06 22:47:48","Score: 0.60 +- 0.13 # here. After the tutorial, people will not only want to use nilearn, but use it on your box...
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-06 23:38:58","is146139
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-06 23:39:49","This is definitely weird...
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-06 23:41:40","hmm, same on my laptop now. Will compare all software versions Monday
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-06 23:42:43","got the same on my laptop.
+
+I guess my computer is really powerful ...
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-07 18:34:17","+1 for using LeaveOneLabelOut to make it explicit
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-08 01:17:43","To make the example simpler, I would completely forgo the ANOVA + SVM part.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-08 01:19:34","You need to give an rst title in the docstring, for rendering in the example gallery.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_stimuli.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-08 01:22:52","Is there a reason that the vt mask is treated differently from the two others (eg face vs house)?
+
+I think that the way that I would architecture that script is that I would do a loop over the masks names and a loop over the subjects inside that to produce the different values per subject and per mask, and end up with bar plots (or some other nice summary figure).
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-08 20:18:31","No reason, except that I hadn't refactored yet, after adding the new functionality.
+
+Restructuring done, but need a little more to make it nice.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-08 20:19:29","I agree. 
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-08 20:22:02","This may  be related to different scoring standards in possibly different versions of sklearn. 
+
+Not sure though.
+
+In any case, I will have to deal with a strong class imbalance problem while doing OvR for each label. Chance level for 0-1 scoring is at 87.5%
+I am now going for f1_score. Any reason why I shouldn't?
+If I go for AUC, I will have to dig into the classifier and move an offset around, which may not be ideal for a simple example
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-08 20:22:28","yes
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-08 20:33:27","F1_score is good. Thé standard accuracy score -by default- doesn't work if se do simple per-category scoring?eickenberg notifications@github.com a écrit :In plot_haxby_full_analysis.py:
+
+> -    all_timecourses = brain_masker.fit_transform(data_files.func[subject_id])
+> -    from sklearn.feature_selection import f_classif, SelectKBest
+> -    from sklearn.pipeline import Pipeline
+> -    feature_selection = SelectKBest(f_classif, 500)
+> -    pipeline = Pipeline([(""Feature selection"", feature_selection),
+> -                         (""Classifier"", classifier)])
+>   +
+> -    scores_anova_svm = cross_val_score(pipeline,
+> -                                       all_timecourses[resting_state == False], 
+> -                                       labels['labels'][resting_state == False],
+> -                                       cv=12, n_jobs=1,
+> -                                       verbose=True)
+> -    # With resting removed state this scores at .91 (with RS: .87)
+> -    print ""ANOVA + Linear SVM C=1 on full brain""
+> -    print ""Score: %1.2f +- %1.2f"" % (scores_anova_svm.mean(),
+> -                                     scores_anova_svm.std())
+>   This may be related to different scoring standards in possibly different versions of sklearn. 
+
+Not sure though.
+
+In any case, I will have to deal with a strong class imbalance problem while doing OvR for each label. Chance level for 0-1 scoring is at 87.5%
+I am now going for f1_score. Any reason why I shouldn't?
+If I go for AUC, I will have to dig into the classifier and move an offset around, which may not be ideal for a simple example
+
+—
+Reply to this email directly or view it on GitHub.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-10 08:43:34","same here you need title for rst rendering
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","agramfort","2013-12-10 08:45:15","the figure layout is not perfect. Text goes out on the figure on my box.
+
+Also I think the colorbar should reflect where the chance level is. It looks too black I feel.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-10 15:08:09","Fixed the figure layout.
+
+The scoring is done using f1_score. Where it is black I get no recall at all. So the score is bad.
+
+If I use 0/1 scoring, the one vs rest chance level is at 87.5 % ....
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","eickenberg","2013-12-10 15:08:31","was did
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit_comment","144","nilearn","nilearn","GaelVaroquaux","2013-12-11 00:46:31","Thanks a lot. I'll be in the plane tomorrow, I think that I'll merge this
+in, and modify a bit the example when I am in the plane, as I need to
+converge on the course.
+","197ac7da87011f8e96174a91861bef30addaa0d2","(None, '', u'plot_haxby_full_analysis.py')"
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-02 18:39:07","Most of the data loading and pre-treatment done","b372dfb21b577d3c10763630a30f6f324b418961",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-02 20:22:00","Going the wrong way. Should be using beta maps. Will correct","345b63edfdaacc571561f00b947537c714c1899b",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-02 23:22:22","Correlation Matrix and rudimentary svm in cross_val","59755c88e407fa106682b470f810a8b98db93c36",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-03 10:35:01","commit before merge","cf3a150a84a7c74a6cf6cf05c2bf83376662a7f8",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-03 10:35:05","Merge branch 'master' of github.com:nilearn/nilearn into haxby_full","8323dc8c5fb2aee08b637c4f502ab5299894089d",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-03 11:44:56","Exported function for showing stimuli to another example file","52a558a88149852488d282667b68586428cbb787",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-03 11:49:37","changed pl to plt everywhere","f266cf7609e4aba90a277038b415e02fa4af4ab0",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-03 12:12:29","Removed comments in quotes. Replaced by frame of # signs","2d0150fc271fd0c1babadc0c930fcf1c58c1007b",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-04 13:40:06","Removed @@@@@ Michael comments in source in favour of discussion in diff and cleaner code","4f9892220665bfca79511c642b015aa8f85739ac",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-04 13:40:41","Merge branch 'master' of github.com:nilearn/nilearn into haxby_full","bacb46e75d704ed992f1a103bd12f17d47644b0d",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-04 13:59:14","Scrapped the whole GLM + similarity matrix stuff in favour of two decoding schemes, one in the given ventral temporal ROI, one on full brain. Both perform way above chance, but the ROI one is better","81d0aedfa135b33d8384eb74b7200634fc0c95a8",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-05 15:15:42","why is the default kernel of that svm package the rbf???","834736dfad9eeac9ccdd02d554305e49aa3dc526",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-05 15:17:17","changed prints and comments","9a28c07bd9a70395f2930e24c9c9b1bb603e4c33",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-05 15:18:13","pylab -> matplotlib.pylab","e80c4f8ce0fb3bdffaa4ccdac1604e49517e369b",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-05 15:19:04","updated svm scores in comment - yes, linear does better","9464e6396511136199efe3b98142726755ef27c9",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-05 15:35:23","PEP8","f3bcf6e62dd1298ae84726485fdfd4cf4b45bbbe",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-05 15:37:27","removed unnecessary lines","a8d3d6d4846860229bea567620cbdf7db43e3119",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-06 09:01:52","Removed some comments, set n_jobs to 1, print mean score + stdev, changed pylab to pyplot","6b8dfe6fd528a65dcb3065d78baf309bb8df4da0",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-06 09:04:55","turned haxby stimulus presentation back into script","f2fa47eee854163b1d421eaf16fcf6790f477c00",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-06 16:41:36","removed resting state blocks. Makes scores better on full brain, worse in ROI. scores are marked in code","e625b0cba00c2bdc87ec99ae0d9d87d5cf3abe2d",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-06 17:55:45","Scrapped detrending for the ROI, scores up to same level as full brain ...... is this scary?","7c97791383adb5c641492ca424c61d8028385e81",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-06 18:06:20","taking a look at the other ROIs in the dataset","cdb90fe1c5dffa3611f785a5e016d4ea918eafc0",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-08 20:16:30","refactoring script. One cross-validation per label and mask. Changed scoring to f1 precision/recall, because 0-1 score chance level is at .875","f68b316c3ce64c37844fbfbe0bcac0597934af7f",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-08 20:23:53","refactoring","99e57da01db8c5fa3760b63f693838f77b1481cb",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-08 21:03:41","more refactoring","c7c44e7010ee2e259d172ab7dcd91c3e99613f30",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-10 14:54:32","RST","690ad0243dfd3aa535d81006605f695062d289b9",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-10 15:04:42","fixed plotting issue","3f57ab1fed0999aa6584931e96e4f68ef7a54c00",""
+"pull_request_commit","144","nilearn","nilearn","eickenberg","2013-12-10 15:05:34","set SVM C back to 1","197ac7da87011f8e96174a91861bef30addaa0d2",""
+"pull_request_commit_comment","144","nilearn","nilearn","AlexandreAbraham","2013-12-05 13:34:09","Have you looked at the mask ? In my memories, `compute_epi_mask` has bad results on Haxby with default parameters.
+","81d0aedfa135b33d8384eb74b7200634fc0c95a8","(135, 103, u'plot_haxby_full_analysis.py')"

@@ -1,0 +1,156 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","715","nilearn","nilearn","dohmatob","2015-07-21 17:56:56","At the moment it's not possible to fit_transform more than say 150 subjects of the OASIS dataset on a box with 4G ram: a **MemoryError** is triggered. The average user will have a 4G box (and that's been
+generous). There should be memory-friendly way to load large nifti images
+and mask out 2D matrix from it, under this memory constraint.
+","start issue","Make the NiftiMasker memory-friendly"
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-22 00:12:06","As said in your issue, there is one: the MultiNiftiMasker.
+","",""
+"issue_comment","715","nilearn","nilearn","GaelVaroquaux","2015-07-22 06:01:44","I think that we should at least consider the issue and see what we can
+do. We cannot tell end users to use the MultiNiftiMasker for such
+problems. Elvis's usecase is valid.
+
+I am not saying that we should do everything we can do to solve the
+problem, but at least have a look. One thing that does come to mind is
+trying to block the operations.
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-22 06:47:46","He has several subjects, I don't see why we can't tell him to use the MultiNiftiMasker that has been designed for this particular case.
+","",""
+"issue_comment","715","nilearn","nilearn","GaelVaroquaux","2015-07-22 06:49:15","> He has several subjects, I don't see why we can't tell him to use the
+> MultiNiftiMasker that has been designed for this particular case.
+
+It's a different problem: it's VBM, their is only one map per subject.
+The MultiNiftiMasker should be thought of as multiple blocks, not
+multiple subjects: one block may be a subject, a session, a group...
+
+Elvis has only one block.
+","",""
+"issue_comment","715","nilearn","nilearn","dohmatob","2015-07-22 06:52:10","@AlexandreAbraham:  the masking is done in the SpaceNet estimator. Users don't have to see this. They don't need to know the different recipies and use-cases for *Nifiti*Masker. In the mean time, I'll _tweak_ my code to use the MultiNiftiMasker since it seems to implement the appropriate memory-friendly strategies...
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-22 07:00:54","See the doc of the MultiNiftiMasker. It is designed for several subjects. The session parameter is available for multiple sessions.
+","",""
+"issue_comment","715","nilearn","nilearn","GaelVaroquaux","2015-07-22 07:06:10","> He has several subjects, I don't see why we can't tell him to use the
+> MultiNiftiMasker that has been designed for this particular case.
+
+No. Once again, he has only one data point per subjects. One image, if
+you may.
+
+You are thinking as in fMRI, where a subject comes with multiple images.
+In anatomical imaging, there is usually no single-subject data. The
+natural block of data is the group of subject, which is a list of images.
+In this sense, the MultiNiftiMasker is not relevent. It would be if he
+had multiple groups.
+
+""Multi"" in MultiNiftiMasker is multi-block, not multi-subject, and the
+relevant notion of block varies from one modality to another.
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-22 07:22:16","I am not thinking in fMRI. I plainly understand the situation.
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-22 08:49:44","Longer answer, now that I have a proper keyboard.
+
+Honestly, this is the first time @GaelVaroquaux that I heard you say that MultiNiftiMasker should process blocks of data and not subjects. If you take a look at the original version of the MultiNiftiMasker (when nilearn was called nisl and MultiNiftiMasker was called NiftiMultiMasker), it has always been labelled as to process ""multiple subjects"". You can convince yourself by taking a look at the mask computing strategies: Elvis clearly needs the `compute_multi_epi_mask` and not `compute_epi_mask` which has no sense in his usecase.
+
+Also, the politic has always been ""subject data must fit in memory"". This is why NiftiMasker is purposely not optimized for data that is bigger than memory. And changing that state of thing is not trivial since, in every function, we call `check_niimg` before anything else. You will have to change the masker, the smoothing function, the mask-computation function and all functions that call `check_niimg`.
+
+Still, up until one and half year ago, the NiftiMasker would have been able to process Elvis' data because an all-purpose function was behind the scenes. Decision has been made, not by me, to change this behavior for optimization reasons. After that, NiftiMasker was optimized to load lists of 3d data and the transform methods of all maskers have been force to accept 4d data only (list of 4d data in the case of MultiNiftiMasker). I have personaly always advocated in favor of the distinction between 4d data and list of 3d data if you remember.
+
+Finally, this is not at all a secret that _Nifti_Masker are tailored for fMRI. For example, if Elvis uses NiftiMasker and set `detrend=True`, he's really going to have a bad time (not that this is OK with MultiNiftiMasker).
+
+Note that my answers do not reflect my personal opinions in any way. I am standing up to the decisions made by the developers one year ago. Not only because I am obtuse, but because lots of effort have been put in this particular design and changing it now would be a lot of work. If you really want to do it, I suggest to put this task in the hands of the next nilearn developer of the team, this is a nice way to take over the project. Plus, I have absolutely no time to do it.
+","",""
+"issue_comment","715","nilearn","nilearn","GaelVaroquaux","2015-07-22 08:59:41","> Honestly, this is the first time @GaelVaroquaux that I heard you say that
+> MultiNiftiMasker should process blocks of data and not subjects.
+
+Well, sorry. Information gets lost, as always.
+
+> If you take a look at the original version of the MultiNiftiMasker
+> (when nilearn was called nisl and MultiNiftiMasker was called
+> NiftiMultiMasker), it has always been labelled as to process ""multiple
+> subjects"".
+
+The scope of nilearn is wider than that of nisl. Anatomical images are
+part of the scope of nilearn, and the OASIS data is there to remind us.
+
+> You can convince yourself by taking a look at the mask computing
+> strategies: Elvis clearly needs the compute_multi_epi_mask and not
+> compute_epi_mask which has no sense in his usecase.
+
+Neither. He doesn't have epi data.
+
+> This is why NiftiMasker is purposely not optimized for data that is
+> bigger than memory. And changing that state of thing is not trivial
+> since, in every function, we call check_niimg before anything else.
+
+That's an argument I am willing to take :).
+
+> Still, up until one and half year ago, the NiftiMasker would have been
+> able to process Elvis' data because an all-purpose function was behind
+> the scenes. Decision has been made, not by me, to change this behavior
+> for optimization reasons.
+
+Sorry, this is too kryptic to me. Can you be more explicit about the
+exact change that made this a problem.
+
+> Finally, this is not at all a secret that NiftiMasker are tailored for
+> fMRI. For example, if Elvis uses NiftiMasker and set detrend=True, he's
+> really going to have a bad time
+
+Some options make no sense if there is no notion of order. It doesn't
+imply that NiftiMasker is only for fMRI. And even in fMRI, there are
+other type of inputs than raw time-series. I think that you are too
+focussed on the type of data you usually process. There is a bigger
+picture, and we need to cater to it.
+
+> Note that my answers do not reflect my personal opinions in any way. I am
+> standing up to the decisions made by the developers one year ago. Not only
+> because I am obtuse, but because lots of effort have been put in this
+> particular design and changing it now would be a lot of work.
+
+Once again, I need you to be more explicit here. Let's have a technical
+discussion on how feasible my desire is, rather than a conceptual
+discussion on what is the essence of the NiftiMasker :)
+
+> If you really want to do it, I suggest to put this task in the hands of
+> the next nilearn developer of the team, this is a nice way to take over
+> the project. Plus, I have absolutely no time to do it.
+
+I never said that you had to do it.
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-22 09:25:42","> Neither. He doesn't have epi data.
+
+`compute_multi_epi_mask` should work though where `compute_epi_mask` has no sense.
+
+> Sorry, this is too kryptic to me. Can you be more explicit about the exact change that made this a problem.
+
+Before, in the case of a list of 3D images, each image was loaded, smoothed and masked separately and then aggregated to 4d before cleaning. This has been changed for concatenation to 4d, then smoothing, masking, and cleaning. The first step is the blocking one here.
+
+> Some options make no sense if there is no notion of order. [...] There is a bigger picture, and we need to cater to it.
+
+Well, this my main problem with the NiftiMasker: I don't feel comfortable with an all-purpose object that may mislead users (still, I don't know if maskers targeted to a particular modality would be a better option).
+
+>  Let's have a technical discussion on how feasible my desire is, rather than a conceptual discussion on what is the essence of the NiftiMasker :)
+> I never said that you had to do it.
+
+Problem is that I am the one that knows best the _Nifti_Masker code (now that Philippe's gone since he wrote most of it). Plus, I know where are the code flaws and I have plans to solve them, only no time to do it. For example, the code factorization PR is one of them.
+What you ask is feasible quickly with a hack. Doing it ""cleanly"" would take a bit longer. The problem is that you add a level of complexity to the code, which means less readability and trickier maintenance.
+","",""
+"issue_comment","715","nilearn","nilearn","GaelVaroquaux","2015-07-22 09:34:22","> What you ask is feasible quickly with a hack. Doing it ""cleanly"" would take a
+> bit longer.
+
+The goal of having an issue open to keep in mind that we should look at
+this. Not to try to immediatly solve it.
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-23 11:09:50","@GaelVaroquaux, @dohmatob: FYI, @arthurmensch ran into that same problem when trying to mask HCP data. The files are huge so it takes a lot of memory and we may benefit of a clever block-strategy. This is however not trivial since he is working on gzipped niftis that must be uncompressed into memory at loading.
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-08-05 07:23:01","Linked to #736, for tests.
+","",""
+"issue_comment","715","nilearn","nilearn","AlexandreAbraham","2015-07-24 09:14:33","OK. So, multiple issues are raised here. After discussion with Gael, we are going to break down the _Nifti_Masker related problems in several (smaller) issues. Keep tuned!
+","",""
+"issue_comment","715","nilearn","nilearn","banilo","2015-07-24 04:02:02","> ""Multi"" in MultiNiftiMasker is multi-block, not multi-subject, and the
+> relevant notion of block varies from one modality to another.
+
+perhaps we should expose this more clearly in the docs
+","",""
+"issue_comment","715","nilearn","nilearn","banilo","2015-07-24 04:11:50","> @GaelVaroquaux, @dohmatob: FYI, @arthurmensch ran into that same problem when trying to mask HCP data. The files are huge so it takes a lot of memory and we may benefit of a clever block-strategy. This is however not trivial since he is working on gzipped niftis that must be uncompressed into memory at loading.
+
+I just wanted to broadly confirm that I also ran into the limits of the maskers when working with HCP task+rest data. Given that this is (gonna be) a reference dataset, it would be nice make sure that we support about any data processing strategy with this dataset. The HCP-compatability could not only be explicitly promoted in the nilearn pages later, but could even be an important unique-selling-proposition comparing to alternative software solutions in the fMRI field.
+","",""

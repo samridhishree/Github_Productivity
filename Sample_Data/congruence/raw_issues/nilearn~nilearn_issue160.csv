@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","160","nilearn","nilearn","AlexandreAbraham","2014-01-31 09:41:27","When downloading a dataset, the dataset fetcher looks at different locations (environment var...) and choses one.
+
+However, a new pattern rises recently. An administrator may want to provide read-only data respository to people. In this case, nilearn won't work because, if a dataset is missing, the user does not have write access to the folder.
+
+The solution would be to try other locations to store data if the first one does not work. We thought of allowing two environment variables (NILEARN_DATA and NILEARN_DATA_GLOBAL) or maybe allowing a list of paths in the environment variable, for example: NILEARN_DATA=/lab/data:/$HOME/my_data/
+
+Any other idea ?
+","start issue","[ENH] Dataset fetcher: enable use of several paths."
+"issue_closed","160","nilearn","nilearn","lesteve","2014-10-08 06:50:49","","closed issue","[ENH] Dataset fetcher: enable use of several paths."
+"issue_comment","160","nilearn","nilearn","bthirion","2014-04-13 21:44:27","Not sure what to do. Won't we be exposed to situations where people mess up with the different data directories, which will be quite painful to deal with. I'm afraid you're trying to solve user's problems for which you actually need the user to undertsand what he/she does and take him/herself a decision (e.g. where should I put my data ?)
+","",""
+"issue_comment","160","nilearn","nilearn","AlexandreAbraham","2014-04-15 16:57:46","My concern is this case: the administrator has partially downloaded a dataset, and the user wants to use the whole dataset. What should we do?
+
+The scenario for me would be like this:
+- Dataset is not present
+  - Find a writable directory in the path, put the dataset in it. If nothing is writable, raise an error
+- Dataset is complete
+  - Return it
+- Dataset is incomplete
+  - the dataset is in a writable directory -> download the rest of the dataset
+  - the dataset is not in a writable directory -> raise an error saying to report this problem to admin.
+
+Now we have to chose if we handle a path-like environement variable or if we have a global one and a local one. I would go for the second option, which is less generic but makes more sense as the first variable could be in system environement and the second one in user env (this avoid to redefine a variable for the user).
+","",""
+"issue_comment","160","nilearn","nilearn","bthirion","2014-04-15 21:52:59","The second option could be simpler indeed, but I do not have a strong feeling about this.
+","",""
+"issue_comment","160","nilearn","nilearn","AlexandreAbraham","2014-04-09 13:43:08","As stated in the issue, I don't know which is the best way to do that. Keeping only one environment variable / keyword parameter seems to be the simplest way. Also, do we allow dataset to be present party in global and the rest in local? For example, is the admin only fetched 13 subjects for ADHD, do we downed the rest of the dataset in local ?
+","",""

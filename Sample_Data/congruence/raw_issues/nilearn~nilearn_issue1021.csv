@@ -1,0 +1,58 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1021","nilearn","nilearn","fliem","2016-02-26 10:08:25","This came up in a conversation with @GaelVaroquaux at Brainhack Paris, 2016.
+
+It seems that in the example http://nilearn.github.io/auto_examples/03_connectivity/plot_adhd_spheres.html#sphx-glr-auto-examples-03-connectivity-plot-adhd-spheres-py
+
+the t_r is set to 2.5 seconds at masking. The time series’ header says tr = 2.0 s. Is the header wrong, or the example?
+
+More generally, signal.clean has a t_r default value of 2.5. It would be more intuitive for the default to be None, and if no t_r is provided, it is fetched from the header. 
+@GaelVaroquaux’s point on this: since the header info is often wrong, it would be best to set the default to None, and in the  case of bandpass filtering without explicitly providing a t_r raise an error and print the header t_r with a word of caution that the header info might be wrong.
+","start issue","signal.clean t_r default value"
+"issue_comment","1021","nilearn","nilearn","banilo","2016-02-29 13:01:42","On general basis, the information in the nifti header is neglected in neuroimaging, unfortunately.
+","",""
+"issue_comment","1021","nilearn","nilearn","fliem","2016-02-28 10:23:58","The TR can be found in hdr['pixdim'][4](see http://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/pixdim.html <http://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields/nifti1fields_pages/pixdim.html)
+
+> Am 27.02.2016 um 22:00 schrieb Shahnawaz Ahmed notifications@github.com:
+> 
+> If no t_r is provided by user, the script crashes rather than setting of default value of 2.5
+> 
+> from nilearn import datasets
+> adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+> 
+> from nilearn import input_data
+> masker = input_data.NiftiSpheresMasker(
+>     dmn_coords, radius=8,
+>     detrend=True, standardize=True,
+>     low_pass=0.1, high_pass=0.01,
+>     memory='nilearn_cache', memory_level=1, verbose=2)
+> 
+> func_filename = adhd_dataset.func[0]
+> confound_filename = adhd_dataset.confounds[0]
+> print (confound_filename)
+> time_series = masker.fit_transform(func_filename,
+>                                    confounds=[confound_filename])
+> Error
+> ```dev/nilearn/nilearn/signal.py in clean(signals, sessions, detrend, standardize, confounds, low_pass, high_pass, t_r)
+>     501 
+>     502     if low_pass is not None or high_pass is not None:
+> --> 503         signals = butterworth(signals, sampling_rate=1. / t_r,
+>     504                               low_pass=low_pass, high_pass=high_pass)
+>     505 
+> 
+> TypeError: unsupported operand type(s) for /: 'float' and 'NoneType'
+> Also, how do I find the t_r value from the header? New to this so I tried
+> 
+> import nibabel as nib
+> filename = '/nilearn_data/filtered_func_data.nii.gz'
+> img = nib.load(filename)
+> hdr = img.header
+> print (hdr) 
+> But there is no time series parameter in the header. Is it anything to do with confounds?
+> 
+> —
+> Reply to this email directly or view it on GitHub https://github.com/nilearn/nilearn/issues/1021#issuecomment-189725373.
+","",""
+"issue_comment","1021","nilearn","nilearn","fliem","2016-02-29 08:32:26","> As I mentioned, if no t_r is provided by user the script crashes and if 2.5 is an acceptable default value then we can set it to that instead of a crash, with a warning ofcourse?
+
+TR is depending on how the data was acquired, and varies between experiments. A default value of None to me makes more sense than a default of 2.5 sec.
+","",""

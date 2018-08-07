@@ -1,0 +1,37 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1149","nilearn","nilearn","KirstieJane","2016-06-23 17:10:37","At the moment the [_get_colorbar_and_data_ranges](https://github.com/nilearn/nilearn/blob/40069cb14b43333a73137797eac895cfb054db29/nilearn/plotting/img_plotting.py#L55) function within [img_plotting.py](https://github.com/nilearn/nilearn/blob/40069cb14b43333a73137797eac895cfb054db29/nilearn/plotting/img_plotting.py) by design forces the stat_map to be shown between `-vmax` and `vmax` or between `0` and `vmax`.
+
+This clearly makes sense for [diverging colormaps](http://matplotlib.org/examples/color/colormaps_reference.html) but it doesn't make sense if you want to show, for example, regions that are significantly positively correlated using the `autumn` map or any other [sequential colormaps](http://matplotlib.org/examples/color/colormaps_reference.html). Ideally I'd like to be able to use the whole range of the colormap for values ranging between `2.3` and `5.0`. As the code currently runs, I'm left with only yellow regions!
+
+![encode trial_gt_baseline allwords allsubs groupmean_glassbrain_ortho](https://cloud.githubusercontent.com/assets/3626306/16312080/f6a2ce66-396a-11e6-8376-f2f2000396fa.png)
+
+What I'd really like to do is to have the colorbar start at `2.3` and finish at `5.0` and for that range to cover the whole colormap.
+
+It looks like it would be easy to change the [_get_colorbar_and_data_ranges](https://github.com/nilearn/nilearn/blob/40069cb14b43333a73137797eac895cfb054db29/nilearn/plotting/img_plotting.py#L55) function to bring back the ability to set lower and upper limits for a colormap? Is there a reason not to?
+","start issue","Adding back in vmin to plotting colormap command"
+"issue_comment","1149","nilearn","nilearn","erramuzpe","2016-10-04 14:04:22","+1 on this
+","",""
+"issue_comment","1149","nilearn","nilearn","erramuzpe","2017-11-21 15:50:08","Hi again!
+
+So, I encountered myself again with this bug :rofl: 
+
+The key here are in [these](https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/img_plotting.py#L1132-L1137) lines, where it could be that you have passed the function your vmin and `_get_colorbar_and_data_ranges` overwrites it and also assigns a mistaken `cbar_vmin`. I would like to solve this, but in `_get_colorbar_and_data_ranges` says clearly: 
+
+```
+if '    vmin_ = vmin' in kwargs:
+        raise ValueError('this function does not accept a ""vmin"" '
+                         'argument, as it uses a symmetrical range '
+                         'defined via the vmax argument. To threshold '
+                         'the plotted map, use the ""threshold"" argument')
+```
+
+So, IDK how to proceed. 
+
+PS: @alexlicohen If you need a fast (but unclean) fix for this, just add a pair of lines in `plot_glass_brain` in your local nilearn package. One to save your value of  `vmin`  in the beginning
+
+`vmin_ = vmin`
+
+and another one to overwrite `vmin` and `cbar_vmin`, after `_get_colorbar_and_data_ranges` 
+
+`vmin = cbar_vmin = vmin_ `","",""
+"issue_comment","1149","nilearn","nilearn","alexlicohen","2017-07-18 19:53:11","This is still an issue","",""

@@ -1,0 +1,93 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","240","nilearn","nilearn","GaelVaroquaux","2014-09-15 12:54:58","This is a pending branch that fixes a lot of things but hasn't been merged.
+
+@AlexandreAbraham and @lesteve : do you think that you have time to have a look and see what needs to be merged.
+","start issue","Better pca"
+"issue_closed","240","nilearn","nilearn","lesteve","2014-10-02 12:11:27","","closed issue","Better pca"
+"pull_request_title","240","nilearn","nilearn","GaelVaroquaux","2014-09-15 12:54:58","This is a pending branch that fixes a lot of things but hasn't been merged.
+
+@AlexandreAbraham and @lesteve : do you think that you have time to have a look and see what needs to be merged.
+","2220ef1d50464e9f144af8c37b65695819f4ba47","Better pca"
+"issue_comment","240","nilearn","nilearn","AlexandreAbraham","2014-09-15 13:02:50","LGTM. If you merge it, ping me so I fix the little bug I've spotted. Or I can make a PR on your branch but that would be a waste of time I think.
+","",""
+"issue_comment","240","nilearn","nilearn","lesteve","2014-09-15 13:53:52","It seems like the the tests are broken because confounds is None by default in MultiPCA.fit so you have problem where you try to iterate in https://github.com/GaelVaroquaux/nilearn/blob/better_pca/nilearn/decomposition/multi_pca.py#L276.
+
+That was already noted in
+https://github.com/GaelVaroquaux/nilearn/commit/8448c7a3e3851395d91eff10c493c1a36d581119
+
+I guess you could do something like:
+
+``` python
+if confounds is None:
+    confounds = [None] * len(niimgs)
+```
+
+The merge conflict is very easy to resolve, in case that's what you were asking for.
+
+For completeness, here is the traceback of one of the failing tests:
+
+```
+~/code/nilearn $ nosetests nilearn/decomposition/tests/test_canica.py --ipdb
+nilearn.decomposition.tests.test_canica.test_canica_square_img ... /home/lesteve/code/nilearn/nilearn/input_data/multi_nifti_masker.py:194: UserWarning: [MultiNiftiMasker.fit] Generation of a mask has been requested (niimgs != None) while a mask has been provided at masker creation. Given mask will be used.
+  ' will be used.' % self.__class__.__name__)
+
+- TRACEBACK --------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/lesteve/anaconda/lib/python2.7/unittest/case.py"", line 329, in run
+    testMethod()
+  File ""/home/lesteve/anaconda/lib/python2.7/site-packages/nose/case.py"", line 197, in runTest
+    self.test(*self.arg)
+  File ""/home/lesteve/code/nilearn/nilearn/decomposition/tests/test_canica.py"", line 49, in test_canica_square_img
+    canica.fit(data)
+  File ""/home/lesteve/code/nilearn/nilearn/decomposition/canica.py"", line 147, in fit
+    MultiPCA.fit(self, niimgs, y=y, confounds=confounds)
+  File ""/home/lesteve/code/nilearn/nilearn/decomposition/multi_pca.py"", line 276, in fit
+    for niimg, confound in zip(niimgs, confounds))
+TypeError: zip argument #2 must support iteration
+--------------------------------------------------------------------------------
+> /home/lesteve/code/nilearn/nilearn/decomposition/multi_pca.py(276)fit()
+    275             )
+--> 276             for niimg, confound in zip(niimgs, confounds))
+    277         subject_pcas, subject_svd_vals = zip(*subject_pcas)
+
+ipdb> l
+    271                 memory=self.memory,
+    272                 ref_memory_level=self.memory_level,
+    273                 confounds=confounds,
+    274                 verbose=self.verbose
+    275             )
+--> 276             for niimg, confound in zip(niimgs, confounds))
+    277         subject_pcas, subject_svd_vals = zip(*subject_pcas)
+    278 
+    279         if len(niimgs) > 1:
+    280             if not self.do_cca:
+    281                 for subject_pca, subject_svd_val in \
+
+ipdb> confounds
+ipdb> q
+```
+","",""
+"issue_comment","240","nilearn","nilearn","AlexandreAbraham","2014-09-16 13:19:14","As you said, I already raised this problem. But I think that we should not make this PR wait any longer.
+
+@GaelVaroquaux, can you rebase your PR and/or fix the little problem we raised? If you have no time, just do the minimum and I will fix the rest. Apart from that problem, I tested your code and for me everything is fine.
+
+I can also make you a PR or cherrypick the commits. But I'd like to avoid that because it would take more time.
+","",""
+"issue_comment","240","nilearn","nilearn","lesteve","2014-10-02 12:11:27","This has been moved to #251.
+","",""
+"pull_request_commit","240","nilearn","nilearn","GaelVaroquaux","2014-05-16 14:32:48","WIP","fe9133e946a6118178e5b781dffc7c269b66b9b6",""
+"pull_request_commit","240","nilearn","nilearn","GaelVaroquaux","2014-05-16 15:05:53","ENH: use also NiftiMasker","e92818f2ac2438e35436694ec094d586f9fa192e",""
+"pull_request_commit","240","nilearn","nilearn","GaelVaroquaux","2014-05-19 12:55:44","Minor improvements to MultiPCA","bca724dbf69d18820696b2120530196c70952284",""
+"pull_request_commit","240","nilearn","nilearn","GaelVaroquaux","2014-05-21 09:07:12","Make confounds work with MultiPCA","8448c7a3e3851395d91eff10c493c1a36d581119",""
+"pull_request_commit","240","nilearn","nilearn","GaelVaroquaux","2014-05-21 09:08:46","Merge branch 'better_pca' of github.com:GaelVaroquaux/nilearn into better_pca","2220ef1d50464e9f144af8c37b65695819f4ba47",""
+"pull_request_commit_comment","240","nilearn","nilearn","AlexandreAbraham","2014-05-29 17:56:04","Isn't that going to fail if confounds is None? Because I have no good solution for this problem, I sometimes instantiate a list of None values.
+","8448c7a3e3851395d91eff10c493c1a36d581119","(5, 276, u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","240","nilearn","nilearn","GaelVaroquaux","2014-05-29 18:01:15","> Isn't that going to fail if confounds is None?
+
+Good point. It was a quick hack while I was working on a problem.
+
+> Because I have no good solution for this problem, I sometimes
+> instantiate a list of None values.
+
+Sounds like a good solution. We need to work on this during the sprint.
+","8448c7a3e3851395d91eff10c493c1a36d581119","(5, 276, u'nilearn/decomposition/multi_pca.py')"

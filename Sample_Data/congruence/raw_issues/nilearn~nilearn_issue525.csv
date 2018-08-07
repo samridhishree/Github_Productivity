@@ -1,0 +1,87 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","525","nilearn","nilearn","surchs","2015-03-27 21:13:12","Hey,
+
+I have encountered a bit of a weird bug.
+Running
+`from nilearn import plotting`
+triggers
+
+```
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-1-35cd2f5e057b> in <module>()
+----> 1 from nilearn import plotting
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/__init__.py in <module>()
+     31 
+     32 from . import cm
+---> 33 from .img_plotting import plot_img, plot_anat, plot_epi, \
+     34     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome
+     35 from .find_cuts import find_xyz_cut_coords
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/img_plotting.py in <module>()
+    308               output_file=None, display_mode='ortho', figure=None,
+    309               axes=None, title=None, annotate=True, draw_cross=True,
+--> 310               black_bg='auto', dim=False, cmap=pl.cm.gray, **kwargs):
+    311     """""" Plot cuts of an anatomical image (by default 3 cuts:
+    312         Frontal, Axial, and Lateral)
+
+NameError: name 'pl' is not defined
+```
+
+Not sure what is happening, since pl is defined right at the start. However, if I run the same command again in the same shell, I get a different error:
+
+```
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+<ipython-input-2-35cd2f5e057b> in <module>()
+----> 1 from nilearn import plotting
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/__init__.py in <module>()
+     30 ###############################################################################
+     31 
+---> 32 from . import cm
+     33 from .img_plotting import plot_img, plot_anat, plot_epi, \
+     34     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome
+
+ImportError: cannot import name cm
+```
+
+So far, I have tried updating nilearn and matplotlib but still have the same error. Any ideas?
+","start issue","Pylab import undefined in img_plotting with Enthought"
+"issue_closed","525","nilearn","nilearn","AlexandreAbraham","2015-04-08 22:39:47","","closed issue","Pylab import undefined in img_plotting with Enthought"
+"issue_comment","525","nilearn","nilearn","AlexandreAbraham","2015-03-27 23:45:49","Hi,
+Could you run that in a terminal: `python -c 'import pylab'`. My guess is that you don't have pylab installed. The problem is that we are not supposed to depend on pylab but matplotlib only. @lesteve do you know why we have pylab stuff here?
+","",""
+"issue_comment","525","nilearn","nilearn","surchs","2015-03-28 01:16:06","Yes, there is definitely something wrong
+
+```
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/pylab.py"", line 1, in <module>
+    from matplotlib.pylab import *
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/pylab.py"", line 274, in <module>
+    from matplotlib.pyplot import *
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/pyplot.py"", line 109, in <module>
+    _backend_mod, new_figure_manager, draw_if_interactive, _show = pylab_setup()
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/backends/__init__.py"", line 32, in pylab_setup
+    globals(),locals(),[backend_name],0)
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/backends/backend_wxagg.py"", line 10, in <module>
+    from . import backend_wx    # already uses wxversion.ensureMinimal('2.8')
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/backends/backend_wx.py"", line 76, in <module>
+    raise ImportError(missingwx)
+ImportError: Matplotlib backend_wx and backend_wxagg require wxPython >=2.8
+```
+","",""
+"issue_comment","525","nilearn","nilearn","AlexandreAbraham","2015-03-28 01:26:05","This is very weird... Does pylab in Canopy uses wxagg backend by default? @lesteve @GaelVaroquaux, we may have to add a canopy build in Travis if they have a special default matplotlib configuration.
+","",""
+"issue_comment","525","nilearn","nilearn","surchs","2015-03-29 03:46:39","I don't know but I found [this thing](https://support.enthought.com/hc/en-us/articles/204469930-wxPython-2-8-and-2-9) which seems to adress my specific issue. I will see if that fixes it.
+","",""
+"issue_comment","525","nilearn","nilearn","surchs","2015-03-29 04:01:15","Ok, I imagine this is what you referred to but [changing my default backend to qt](http://matplotlib.org/users/customizing.html#matplotlibrc-sample) fixed my problem - it seems that there are some issues with wxpython and Canopy.
+","",""
+"issue_comment","525","nilearn","nilearn","lesteve","2015-03-29 19:02:21","> @lesteve do you know why we have pylab stuff here?
+
+No reason other than historical ones I reckon, it'd be good to change `import pylab` by `import matplotlib.pyplot as plt` which is probably recommended anyway.
+","",""
+"issue_comment","525","nilearn","nilearn","AlexandreAbraham","2015-04-08 22:39:47","Pylab has been removed.
+","",""

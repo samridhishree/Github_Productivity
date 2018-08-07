@@ -1,0 +1,26 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","771","nilearn","nilearn","arthurmensch","2015-08-31 08:44:56","This example shows that cache is not properly used
+
+``` python
+from nilearn.datasets import fetch_adhd
+from nilearn.input_data import MultiNiftiMasker
+
+masker = MultiNiftiMasker(memory=""nilearn_cache"", verbose=10)
+
+data = fetch_adhd(n_subjects=10)
+func = data.func
+
+masker.fit(func)
+data = masker.transform(func)
+data = masker.transform(func)  # Cache is used
+
+
+data = masker.fit(func)
+data = masker.transform(func) # Cache is recomputed !
+```
+
+What happens is that mask_img is considered a different argument in `filter_and_mask` after two different `fit`. I don't know how to fix this, as I believe it is a joblib argument hashing issue.
+","start issue","MultiNiftiMasker does not properly use cache when not provided a mask_img"
+"issue_closed","771","nilearn","nilearn","arthurmensch","2015-09-30 06:58:12","","closed issue","MultiNiftiMasker does not properly use cache when not provided a mask_img"
+"issue_comment","771","nilearn","nilearn","arthurmensch","2015-09-30 06:58:09","Yes it should
+","",""

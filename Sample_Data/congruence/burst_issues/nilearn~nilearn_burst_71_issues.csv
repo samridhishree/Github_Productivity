@@ -1,0 +1,99 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,963,nilearn,nilearn,GaelVaroquaux,2016-01-26 07:56:27,"When the signal is not detrended or normalized, we need to account for
+constant confounds
+",start issue,BUG: don't ignore constant part of confounds
+2,issue_closed,963,nilearn,nilearn,GaelVaroquaux,2016-01-28 12:00:32,,closed issue,BUG: don't ignore constant part of confounds
+3,pull_request_title,963,nilearn,nilearn,GaelVaroquaux,2016-01-26 07:56:27,"When the signal is not detrended or normalized, we need to account for
+constant confounds
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,BUG: don't ignore constant part of confounds
+4,pull_request_merged,963,nilearn,nilearn,GaelVaroquaux,2016-01-28 12:00:32,BUG: don't ignore constant part of confounds,d82f22c75f494656883f424a06fa4c6c219916ff,Pull request merge from GaelVaroquaux/nilearn:standardize_confounds to nilearn/nilearn:master
+5,pull_request_commit_comment,963,nilearn,nilearn,bthirion,2016-01-26 08:20:23,"pep8
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+6,pull_request_commit_comment,963,nilearn,nilearn,lesteve,2016-01-26 09:09:32,"Shameful plug, this was caught by the allowed failures build in Travis:
+https://travis-ci.org/nilearn/nilearn/jobs/104836962
+
+You can run ./continuous_integration/flake8_diff.sh if you want to make sure you don't introduce errors that flake8 would detect.
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+7,pull_request_commit_comment,963,nilearn,nilearn,GaelVaroquaux,2016-01-26 09:20:01,"Indeed. Fixed!
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+8,pull_request_commit_comment,963,nilearn,nilearn,AlexandreAbraham,2016-01-26 09:40:41,"Personally, I prefer `np.abs(confounds).max(axis=0)`.
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+9,pull_request_commit_comment,963,nilearn,nilearn,GaelVaroquaux,2016-01-26 09:44:20,"> > -            confound_max = np.maximum(confounds.max(axis=0),
+> > -                                      -confounds.min(axis=0))
+> 
+> Personally, I prefer np.abs(confounds).max(axis=0).
+
+It creates a larger temporary array. But that may be premature
+optimization. On the other hand, your preference may also be premature
+optimization :).
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+10,pull_request_commit_comment,963,nilearn,nilearn,eickenberg,2016-01-26 09:47:31,"that makes a temporary array, but probably no problem since it wouldn't be
+big
+
+On Tue, Jan 26, 2016 at 10:40 AM, Alexandre Abraham <
+notifications@github.com> wrote:
+
+> In nilearn/signal.py
+> https://github.com/nilearn/nilearn/pull/963#discussion_r50812317:
+> 
+> > @@ -473,7 +473,16 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
+> >      # Remove confounds
+> >      if confounds is not None:
+> >          confounds = _ensure_float(confounds)
+> > -        confounds = _standardize(confounds, normalize=True, detrend=detrend)
+> > -        confounds = _standardize(confounds, normalize=standardize,
+> > -                                 detrend=detrend)
+> > -        if not standardize:
+> > -            # Improve numerical stability by controlling the range of
+> > -            # confounds. We don't rely on _standardize as it removes any
+> > -            # constant contribution to confounds
+> > -            confound_max = np.maximum(confounds.max(axis=0),
+> > -                                      -confounds.min(axis=0))
+> 
+> Personally, I prefer np.abs(confounds).max(axis=0).
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/963/files#r50812317.
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+11,pull_request_commit_comment,963,nilearn,nilearn,AlexandreAbraham,2016-01-26 10:16:30,"> It creates a larger temporary array. But that may be premature
+> optimization. On the other hand, your preference may also be premature
+> optimization :).
+
+On one hand, my solution allocates a temporary array of negligible size (given my prior information on what confounds may look like). On the other hand, it is faster and IMHO easier to read than yours.
+
+As I said, it a personal opinion, and I also love to nitpick ;).
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+12,pull_request_commit_comment,963,nilearn,nilearn,GaelVaroquaux,2016-01-26 10:27:16,"> As I said, it a personal opinion, and I also love to nitpick ;).
+
+OK, I addressed your nitpick. But I think that we should focus on the
+bigger picture.
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(None, '', u'nilearn/signal.py')"
+13,pull_request_commit_comment,963,nilearn,nilearn,lesteve,2016-01-28 08:28:02,"Nitpick: would it not be slightly better to check that all the values are close to 0, i.e. removing the `.mean()`?
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(6, '', u'nilearn/tests/test_signal.py')"
+14,pull_request_commit_comment,963,nilearn,nilearn,GaelVaroquaux,2016-01-28 09:49:55,"> Nitpick: would it not be slightly better to check that all the values
+> are close to 0, i.e. removing the .mean()?
+
+Addressed. Let's wait for CI.
+",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,"(6, '', u'nilearn/tests/test_signal.py')"
+15,pull_request_commit,963,nilearn,nilearn,GaelVaroquaux,2016-01-26 07:54:13,"BUG: don't ignore constant part of confounds
+
+When the signal is not detrended or normalized, we need to account for
+constant confounds",03518f81d1448b4bc72a4127e6df6b948acea485,
+16,pull_request_commit,963,nilearn,nilearn,GaelVaroquaux,2016-01-26 10:26:18,MISC: address nitpicks by @AlexandreAbraham,dcd0500745161bd6877e3e529cd9fbe8de6e373f,
+17,pull_request_commit,963,nilearn,nilearn,GaelVaroquaux,2016-01-28 09:49:00,"MISC: tighter test
+
+Addresses @lesteve's comment",ace4d6b476cdd9fe6d1ac928066396c3c3ba702d,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,964,nilearn,nilearn,dohmatob,2016-01-26 14:46:53,"A small change that improves on the readability of  canica example.
+",start issue,[MRG+1] REWRITE: dataset.func[0] ==> func_filenames[0]
+2,issue_closed,964,nilearn,nilearn,aabadie,2016-01-26 15:10:35,,closed issue,[MRG+1] REWRITE: dataset.func[0] ==> func_filenames[0]
+3,pull_request_title,964,nilearn,nilearn,dohmatob,2016-01-26 14:46:52,"A small change that improves on the readability of  canica example.
+",3f8b84c4db8e870482ca99bad715f91c2d4f3605,[MRG+1] REWRITE: dataset.func[0] ==> func_filenames[0]
+4,pull_request_merged,964,nilearn,nilearn,aabadie,2016-01-26 15:10:35,[MRG+1] REWRITE: dataset.func[0] ==> func_filenames[0],067ef32ab32b3563b9ae12ea5f5ba091fc58173b,Pull request merge from dohmatob/nilearn:tiny-issue to nilearn/nilearn:master
+5,pull_request_commit,964,nilearn,nilearn,dohmatob,2016-01-26 14:38:39,REWRITE: dataset.func[0] ==> func_filenames[0],3f8b84c4db8e870482ca99bad715f91c2d4f3605,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,966,nilearn,nilearn,dohmatob,2016-01-28 15:13:54,"This example script creates an CanICA instant specifying `smoothing_fwhm=6`, but this is already the default value. We need to check that this (potential) source of confusion is not present in other examples.
+",start issue,plot_canica_resting_state.py useless smoothing_fwhm=6
+2,issue_closed,966,nilearn,nilearn,dohmatob,2016-01-28 15:56:48,,closed issue,plot_canica_resting_state.py useless smoothing_fwhm=6

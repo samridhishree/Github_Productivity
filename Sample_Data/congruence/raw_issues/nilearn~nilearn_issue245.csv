@@ -1,0 +1,677 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","245","nilearn","nilearn","lesteve","2014-09-26 09:57:48","This pull request is WIP for now and was only opened to get some feedback, both visualisation-wise and code-wise.
+
+Here is how it looks like atm:
+![glass_brain](https://cloud.githubusercontent.com/assets/1680079/4442285/9d705a8c-47dd-11e4-9732-31fc07802367.png)
+
+The code to generate the plots is [there](https://github.com/lesteve/nilearn/blob/glass-brain/nilearn/plotting/glass_brain_scripts/plot_glass_brain.py).
+","start issue","[MRG] Glass brain visualisation"
+"issue_closed","245","nilearn","nilearn","lesteve","2014-12-04 15:21:44","","closed issue","[MRG] Glass brain visualisation"
+"pull_request_title","245","nilearn","nilearn","lesteve","2014-09-26 09:57:48","This pull request is WIP for now and was only opened to get some feedback, both visualisation-wise and code-wise.
+
+Here is how it looks like atm:
+![glass_brain](https://cloud.githubusercontent.com/assets/1680079/4442285/9d705a8c-47dd-11e4-9732-31fc07802367.png)
+
+The code to generate the plots is [there](https://github.com/lesteve/nilearn/blob/glass-brain/nilearn/plotting/glass_brain_scripts/plot_glass_brain.py).
+","88f70361a337a72718e3697a83d3a614ef7876be","[MRG] Glass brain visualisation"
+"pull_request_merged","245","nilearn","nilearn","lesteve","2014-12-04 15:21:44","[MRG] Glass brain visualisation","9c6fab537cdebd818f0c1f6b559ba2b162520723","Pull request merge from lesteve/nilearn:glass-brain to nilearn/nilearn:master"
+"issue_comment","245","nilearn","nilearn","agramfort","2014-09-26 11:05:14","indeed ! really nice !
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-13 14:06:19","Is this PR still a WIP, or should it be changed to MRG? In other terms, what is there to be done remaining?
+
+What's the test coverage? Are the plots pretty? Have the docs been updated?
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-13 14:30:49","I just added tests and a fix for the buglet involving the colorbar plotting I mentioned above.
+
+I think what remains to be done is:
+- [x] add plot_glass_brain to the documentation 
+- [x] import plot_glass_brain it in `nilearn/plotting/__init__.py`
+- [x] add some example plots in plot_demo_plotting.py
+
+The test coverage for nilearn.plotting.glass_brain is 96% according to nosetests.
+
+IMHO, I reckon the plots are reasonably pretty (they haven't changed from the pictures posted above), maybe the last minor thing would be to decide if we want to set a default alpha for the brain schematics. To be honest, I am wondering whether it isn't best to tackle any further aesthetic enhancements involving tweaking the svg in a new PR.
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-13 14:34:31","> The test coverage for nilearn.plotting.glass_brain is 96% according to
+> nosetests.
+
+That's good enough!
+
+> IMHO, I reckon the plots are reasonably pretty (they haven't changed from the
+> pictures posted above),
+
+I am worried that the default setting look pretty bad. Could you replace
+the colormap by an alpha one, to see how things look like. We would need
+things to be good by default, and right now it is not the case. My
+suggestion would be to use a transparent colorbar starting fully
+transparant at the threshold, and becoming fully non transparent at the
+max value.
+
+> I am wondering whether it isn't best to tackle any further aesthetic
+> enhancements involving tweaking the svg in a new PR.
+
+Agreed!
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-14 06:38:53","> My suggestion would be to use a transparent colorbar starting fully transparant at the threshold, and becoming fully non transparent at the max value.
+
+I'll take a look at that
+
+Also a tiny detail I forgot about is the 
+- [x] choice of the default threshold for plot_glass_brain
+
+For now it is set to the same value as for plot_stat_map, namely 1e-6. Does that sound reasonable?
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-14 14:38:46","Here is an example with transparent colormap, i.e. `cmap=nilearn.plotting.cm.red_transparent`:
+![glass_brain_transparent_cmap](https://cloud.githubusercontent.com/assets/1680079/4630508/d4a9c4c6-53ad-11e4-842d-949a739e1013.png)
+
+And to compare it with, an example using a non-transparent, i.e. `cmap=plt.cm.Reds`:
+![glass_brain_red_cmap](https://cloud.githubusercontent.com/assets/1680079/4630545/2df07764-53ae-11e4-94f0-199933a814f0.png)
+
+By the way I reckon the colorbar range setting is wrong in the projection case, probably because it is set using the 3d data, rather than the projected data.
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-14 14:46:18","> By the way I reckon the colorbar range setting is wrong in the
+> projection case, probably because it is set using the 3d data, rather
+> than the projected data.
+
+Yes, and that's quite clearly a problem. I am afraid that the colormap
+setting might also be wrong, which would explain the saturation effect
+that I have the impression that I am seeing in the figures above.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-14 17:14:46","> I am afraid that the colormap setting might also be wrong
+
+From a quick look at the [code](https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/cm.py#L94), the alpha goes from 0.5 to 1. They may be a reason for that though.
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-15 05:07:37","> From a quick look at the code, the alpha goes from 0.5 to 1. They may be a
+> reason for that though.
+
+It doesn't suit our purposes. You should probably add an extra argument
+to the colormap-generating function to control the lower value for alpha,
+and set it to 0 in the case of the glass-brain.
+","",""
+"issue_comment","245","nilearn","nilearn","banilo","2014-10-29 15:34:43","Just as a general note/idea, we have already discussed with Loïc: it would be nice if the glass brain plot supports plotting simple label atlases (in line with existing NiftiLabelsMasker-like API) and that the plots are compatible with corresponding discrete colormaps. Though, I have no good ideas how the potential perspective issues (overlaps between different of homotop regions) might be handled elegantly.
+","",""
+"issue_comment","245","nilearn","nilearn","bthirion","2014-10-30 22:01:10","Note that glass brain is often used for Maximum Intensity projection (at least in the SPM interface), which of course does not work well in case of label images. Actually it works reasonably well if you have a single-label image, but the visualization becomes cluttered very quickly with multiple labels. My opinion is thus:
+- Not in this PR
+- Could you come with an example ?
+","",""
+"issue_comment","245","nilearn","nilearn","banilo","2014-10-30 22:53:40","Some loose thoughts would be:
+- parcellation results are turning into a generally accepted neuroimaging modality; e.g., the NeuroVault paper claims explicit support for these
+- parcellation is often performed by clustering, which is a type of learning from data, which would relate it to Nilearn
+- explicit example here (sorry for the self-reference):
+
+![image](https://cloud.githubusercontent.com/assets/3907396/4853592/77c275c8-6087-11e4-80f7-55656c6c4615.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-05 10:04:48","I agree with @banilo that we should open the door to supporting visualization of labels. I am not sure how to do it. Maybe by introducing a new projection strategy that takes the value last non-zero coefficient along the projection axis.
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-05 10:05:16","@lesteve : could you paste here the current view of the generate plot, as I see that a lot has changed recently.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-05 10:31:35","I have some wip stuff in my local branch atm. Let me tidy that up before posting an updated picture.
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-05 10:32:10","> I have some wip stuff in my local branch atm. Let me tidy that up before
+> posting an updated picture.
+
+Sure. Thanks!
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-13 10:51:53","Updated plots with red transparent color maps using the full alpha range:
+
+![glass_brain](https://cloud.githubusercontent.com/assets/1680079/5027080/6156a38c-6b2b-11e4-9a34-4d4f4f265d71.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-13 11:59:51","Looks good! We are making progress.
+
+The black images look really nice. I'd say that they are almost there. On the white background images, the colormap is fading to a grayish color. I think that it would be much better if it could fade to white. I suspect that the issue is somewhat subtle, maybe related to the way the colormap traverses the space of colors.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-13 12:12:52","I agree on the aesthetic judgement but I am not too sure about the technical problem yet ...
+","",""
+"issue_comment","245","nilearn","nilearn","banilo","2014-11-13 12:28:34","Looks great! Yet,
+
+a) there seems to be activation outside of the broad on the 2 lower panels.
+
+b) I already mentioned this, but it would be nice to include the main neuroanatomical realities into the template: especially the
+- Gyrus temporalis superior et inferior
+- perhas make the Sulcus centralis bold because it separates Lobus frontalis from Lobus parietalis, and is therefore an actually important  landmark, rather than the lines that are currently in bold
+  Other than this, it looks greaty from a neuroanatomical standpoint in my humble opinion
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-13 12:40:15","> a) there seems to be activation outside of the broad on the 2 lower panels.
+
+There is already a discussion about this one above.
+
+> b) I already mentioned this, but it would be nice to include the main neuroanatomical realities into the template:
+
+It is definitely in the back of my mind. My take on it is to defer this kind of enhancements to further PRs.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-18 08:47:56","I looked at the grayness issue a bit more and I can reproduce it with a simple snippet. Not an alpha colormap expert but this does look a bit strange to me...
+
+``` python
+import numpy as np
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+
+import matplotlib
+
+matplotlib.rcParams['figure.facecolor'] = 'white'
+
+
+cm_dict = {'red':  ((0.0, 1.0, 1.0),
+                    (1.0, 1.0, 1.0)),
+           'green': ((0.0, 0.0, 0.0),
+                     (1.0, 0.0, 0.0)),
+           'blue':  ((0.0, 0.0, 0.0),
+                     (1.0, 0.0, 0.0)),
+           'alpha': ((0.0, 0.0, 0.0),
+                     (1.0, 1.0, 1.0))
+          }
+
+my_cm = LinearSegmentedColormap('my_cm', cm_dict)
+
+vals = np.tile(np.linspace(-1, 1, 30), (20, 1))
+
+fig = plt.figure()
+ax = plt.imshow(vals, cmap=my_cm)
+plt.colorbar()
+plt.show()
+```
+
+![alpha_gradient](https://cloud.githubusercontent.com/assets/1680079/5085765/5a1520b0-6f15-11e4-9f87-bd6306368ec2.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-18 09:27:27","I am confused. I can reproduce the pb. I suggest that you ask on the
+matplotlib mailing list.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-18 09:43:25","> I suggest that you ask on the matplotlib mailing list.
+
+Yep I'll do that. FWIW I also noticed that this matplotlib 1.2.1 seems exempt from this issue:
+
+![alpha_gradient_1 2](https://cloud.githubusercontent.com/assets/1680079/5085781/7f1b5a3c-6f15-11e4-9db8-7c1afde0da4d.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-18 09:45:42","> Yep I'll do that. FWIW I also noticed that this matplotlib 1.2.1 seems exempt
+> from this issue:
+
+Shit, we'll probably get this answer.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-18 09:50:17","> FWIW I also noticed that this matplotlib 1.2.1 seems exempt from this issue:
+
+TBH maybe it's just that I have been staring at this way too long and that I am now unable to reliably distinguish gray from transparent red any more...
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-18 10:08:45","> TBH maybe it's just that I have been staring at this way too long and that I am now unable to reliably distinguish gray from transparent red any more...
+
+No, no, I confirm.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-24 08:46:08","OK an attempt to use a non transparent colormap (plt.cm.Reds, better suggestion welcome). Default threshold is still 1e-6 (same as plot_stat_map):
+
+![glass_brain_plt_reds](https://cloud.githubusercontent.com/assets/1680079/5162329/4fc4a1be-73be-11e4-96a5-4395a33e63f1.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-24 10:10:05","This looks better, but it's still not there.
+
+The first thing that worries me is that the colormap doesn't seem to go all the way to white. Do you understand why?
+
+The second thing is that on the black bg, we should probably have a colormap going to black (which tells us that the argument that we take should maybe be a color, not a colormap, and we would generate the corresponding colormap.
+
+The last thing is that the threshold is wrong. But maybe we should not try to guess a threshold, and let the user specify one, or give us thresholded maps. By the way, are you applying the threshold on the projected maps? I think that we should apply it on the raw maps, and then project, as this is what a user would want to do when visualizing a statistical map: do not display any voxel that has too small a statistic.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-24 10:45:06","> The first thing that worries me is that the colormap doesn't seem to go all the way to white. Do you understand why?
+
+I think it does, there are a few very negative values in the eyes that survive the max along an axis.
+
+> The second thing is that on the black bg, we should probably have a colormap going to black (which tells us that the argument that we take should maybe be a color, not a colormap, and we would generate the corresponding colormap.
+
+We could have the cmap default to None and then do the logic in plot_glass_brain to switch between the white and black background. The white background would have a colormap going from white to red and the black one a colormap going from black to red.
+
+> I think that we should apply it on the raw maps, and then project, as this is what a user would want to do when visualizing a statistical map: do not display any voxel that has too small a statistic.
+
+I believe that's what we are doing at the moment. That would explain why you see some white pixels (e.g. top left or bottom left) with the threshold=10 which are not here with the default threshold. The threshold removes small positive values and you are left with the more extreme negative ones. 
+
+One last comment, the data is actually contrast data, I am wondering whether it would be worth calculating p-values like this [example](http://nilearn.github.io/auto_examples/plot_localizer_simple_analysis.html#example-plot-localizer-simple-analysis-py) to have a more realistic use case.
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-24 10:57:37","> I think it does, there are a few very negative values in the eyes that survive
+> the max along an axis.
+
+Ah, OK. Shouldn't we be taking the absolutely value before summing?
+
+> We could have the cmap default to None and then do the logic in
+> plot_glass_brain to switch between the white and black background. The white
+> background would have a colormap going from white to red and the black one a
+> colormap going from black to red.
+
+That's an option. It's simple and would do the trick. Let's go for this.
+
+> One last comment, the data is actually contrast data, I am wondering
+> whether it would be worth calculating p-values like this example to
+> have a more realistic use case.
+
+These are T maps? If they are T maps, that's a pretty good example of
+standard usecase.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-24 13:49:36","> Ah, OK. Shouldn't we be taking the absolutely value before summing?
+
+I went back on forth on this one, that's what I did naively at first but I got convinced by @bthirion to only take the max (something related to the fact that you can easily transformation t-tests into F-test and that the latter only has only positive values). Also as a side comment, note we are not summing but taking the max along an axis.
+
+> These are T maps? If they are T maps, that's a pretty good example of standard usecase.
+
+I think we are using the contrasts via `datasets.get_localizer_contrasts`. I hadn't seen until now that you could get t_maps by setting `get_tmaps=True` in this function. I'll try that.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-27 14:33:21","OK now with localizer t-maps and a cmap that changes depending on the background. My choices of cmap were mostly dictated by finding matplotlib built-in ones which is black for low values. Better suggestions of colorbar more than welcome!
+
+![glass_brain_t_maps](https://cloud.githubusercontent.com/assets/1680079/5218204/4d677a98-764a-11e4-85a0-cfb6ec9bb296.png)
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-27 14:45:40","Oops, I unintentionally added the colormap for the last plots I posted. Now fixed:
+![glass_brain_t_maps](https://cloud.githubusercontent.com/assets/1680079/5218374/5cb76c22-764c-11e4-99c0-73cbf9c293fb.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-27 14:59:00","That last things looks really good. I think that the lines should all be
+a little bit thinner (like .66 times their current value), but aside from
+that, I think that this is a final good iteration on the visual aspects.
+
+I still need to review the code...
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-11-28 09:58:41","Now with thinner lines:
+
+![glass_brain_t_maps_thinner_lines](https://cloud.githubusercontent.com/assets/1680079/5226205/753d1724-76ec-11e4-8ccc-bda9b9a26692.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-11-28 10:36:04","I think that this looks awesome! Absolutely awesome. I'll review the code on Tuesday (deadline Monday night). In the mean time, maybe someone like @AlexandreAbraham or @eickenberg can have a look at the code.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-12-02 08:45:25","Added inferior temporal sulcus to make @banilo happy:
+![glass_brain_inferior_temporal_sulcus](https://cloud.githubusercontent.com/assets/1680079/5259883/d098ade0-7a07-11e4-8e22-b40b5859af8d.png)
+","",""
+"issue_comment","245","nilearn","nilearn","banilo","2014-12-02 08:48:40",":+1:  Perfect, good job!
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:43:29","OK, I have finished my review. Only very minor, cosmetic comments. This is almost merged. Hurray!
+","",""
+"issue_comment","245","nilearn","nilearn","AlexandreAbraham","2014-12-03 16:15:24","A small visual effect is bugging me. If you look at the last figure posted by @lesteve, on the left column (black background) you can see in the first subplot (the yellow one) that they gray ""internal"" lines are very contrasted while the white ""external"" lines are not visible. On the contrary, when the plot is mainly red (just below) the white lines are visible but not the gray ones. I think that the problem here is that the color of the lines should not depend on the background color, but on the context of the line.
+
+I don't think that matplotlib allows complex overlays of images. And it is technically doable but it would require some dirty code. But it may be good enough for the users to allow a custom value for these colors.
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-03 16:25:42","> I don't think that matplotlib allows complex overlays of images. And it is
+> technically doable but it would require some dirty code. But it may be good
+> enough for the users to allow a custom value for these colors.
+
+Let's move on. We have spent enough time on that. We need nilearn to be
+moving on as a bigger picture (and niconnect as a result).
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-12-04 12:45:31","I realised one of the main remaining sticking point was in a folded [comment](https://github.com/nilearn/nilearn/pull/245#discussion-diff-21186596), so I am duplicating it here for more visibility. tl; dr. I am going to leave kwargs undocumented and will leave visual improvements for further PRs.
+
+> Please document what the kwargs are (what they are passed for, and where to find what values they can take).
+
+This is a kludge that is only used to be able to get the alpha to percolate from img_plotting.plot_glass_brain to brain_glass.plot_brain_schematics. Eventually they get passed to the matplotlib patches of the brain schematics.
+
+To be honest I am not sure we need alpha. The plots do look better with alpha=0.7 (which has been used for the most recent snapshots) but maybe we can achieve a similar effect by just tweaking the color of the lines in the svg.
+
+**alpha=0.7**
+![glass_brain_alpha_07](https://cloud.githubusercontent.com/assets/1680079/5279213/770ce332-7ae2-11e4-9b85-d9c94fb7d80d.png)
+
+**alpha=1**
+![glass_brain_alpha_1](https://cloud.githubusercontent.com/assets/1680079/5279241/d802030c-7ae2-11e4-8b05-da056d89f428.png)
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-04 13:40:45","I saw that, but I prefer it with the alpha. 
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-12-04 15:21:38","OK merging this long standing one ! 
+","",""
+"issue_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-04 16:37:45","Fucking Ay!
+
+Can you rebuild the online docs, please;
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-09-27 06:48:09","The outline comes from an SVG with a little bit of work to extract the coordinates of the nodes from the SVG and draw the Bézier curves in matplotlib.
+
+The SVG was created by Gaël by vectorising and simplifying a bitmap picture.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-09-29 20:52:46","I was wondering about where these data points outside the brain were coming from and I was told it may well be the eyes. Those regions can be seen in the [plotting examples](https://nilearn.github.io/auto_examples/plot_demo_plotting.html) too for example this one:
+![picture](https://nilearn.github.io/_images/plot_demo_plotting_7.png).
+
+If there is a way to remove these regions automatically, it's probably worth doing. Something interesting to note, is that the values are pretty high (in this case very negative) and setting a high threshold won't make them go away.
+
+Definitely a good idea to get some feedback from neuroscientists at one point in the future.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-09-29 20:59:33","That's a valid point indeed but then maybe it's still worth removing these regions in an ad-hoc way in our examples.
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-07 13:36:07","Same plots with an alpha of 0.7:
+![glass_brain](https://cloud.githubusercontent.com/assets/1680079/4542937/d018707e-4e26-11e4-955e-b8486952ee95.png)
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-10 08:10:52","@GaelVaroquaux I think I tackled the comments you had the other day
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-10 08:34:40","> We should rename 'slicers.py'. But we need a better name. Any suggestions?
+
+I was thinking about displays.py
+","",""
+"issue_comment","245","nilearn","nilearn","lesteve","2014-10-10 09:05:40","> What's your feeling on the code? I personnaly like a lot what I am seeing. I have the impression that this is a good design for what we need.
+
+I would agree using only functions glass_brain.py is simpler. Having the glass brain plotting as part of the Axes makes sense but you need to jump through a few more levels (the `**kwargs` I added to a few methods [recently](https://github.com/lesteve/nilearn/commit/9909e211752197a844a18dd26043eb6792b8a5e0)). Other than that, there are still coord (axes level) and cut_coords (display level) in a few places in slicers.py which is a bit awkward given that it doesn't really apply to the glass brain use case.
+
+> Next step is to add smoke tests, so that the test coverage is as high as possible (we aim for 90% or more).
+
+Yep I started doing that but I bumped into errors I don't really understand yet.
+","",""
+"pull_request_commit_comment","245","nilearn","nilearn","bthirion","2014-09-29 21:19:38","What do these values come from ? It's a bit disturbing for users who don't understand them.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_scripts/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","bthirion","2014-09-29 21:24:01","This seems of a much wider interest than glass brain plotting. This should go to some utils subdir, and possibly to another library in the future.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_scripts/svg_to_json_converter.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-09-29 21:28:07","> This seems of a much wider interest than glass brain plotting. This should go
+> to some utils subdir, and possibly to another library in the future.
+
+Agreed for the utils, but I don't want to invest time in something like a
+library that is of no use to us. People are welcome to take the code and
+make it a library.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_scripts/svg_to_json_converter.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-09-30 06:48:31","I tweaked these values by hand to have a nicer color range. To be honest, the only use of this plot is to align the brain schematics with the anatomy and eventually hand-tweak the SVG to make them fit a bit better. I don't think it will stay as an example plot.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_scripts/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","bthirion","2014-09-30 16:43:09","Sorry, I don't understand the status of this in the codebase. Is it supposed to be removed ?
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_scripts/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-09-30 16:44:34","> Sorry, I don't understand the status of this in the codebase. Is it
+> supposed to be removed ?
+
+Probably moved into a 'utils' directory (not a module: this would not be
+code that we would deploy on the user's computer).
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_scripts/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","bthirion","2014-09-30 16:54:37","pending TODO
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-09-30 16:56:35","Yeah, this script main purpose is to check the good alignment of the anat and the svg. It could be useful to keep it in case we need to tweak the svg further at one point in the future. It does makes sense to move it out of the way.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_scripts/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-09-30 17:04:45","There are definitely a few of those TODOs sprinkled in the code. I'll add a note to myself to make sure I tackled all of them before merging.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-10-07 09:10:20","I am still inheriting from the cut-based slicer and disabling a few methods which is rather hacky. There must be a better way to structure this code, suggestions welcome!
+","88f70361a337a72718e3697a83d3a614ef7876be","(580, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-07 09:20:39","> I am still inheriting from the cut-based slicer and disabling a few methods
+> which is rather hacky. There must be a better way to structure this code,
+> suggestions welcome!
+
+I would say: add a base class, and inherit from it in the OrthoSlicer,
+where you add methods, and in your own projector, where you add different
+methods.
+","88f70361a337a72718e3697a83d3a614ef7876be","(580, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-07 12:16:23","Is there a reason to have a staticmethod, rather than a function, here? (ie something not linked to the class).
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain/brain_schematics.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-07 12:18:50","Same remark: why a staticmethod?
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain/brain_schematics.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-10-07 13:31:53","The main reason is that this is a helper function which is only used within the class. I could change it to a module-level function but you would then lose the hint.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain/brain_schematics.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-10-07 13:32:41","Mostly the same reason as above
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain/brain_schematics.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-07 13:50:23","> The main reason is that this is a helper function which is only used
+> within the class. I could change it to a module-level function but you
+> would then lose the hint.
+
+But it's not a method. An object is more than a namespace of methods. It
+has an internal state and methods act on its internal state. That's why
+reading code that is object-oriented is harder to read: you never know
+what has changed and what has not.
+
+Thus, I would really push for using functions rather than staticmethods.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain/brain_schematics.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-10-07 14:18:46","Yeah I think we quickly chatted about that already before. I just see this low-level helper functions as not important enough to warrant polluting the module namespace. During a first read of the code, I feel it is easier to ignore these unnecessary details if they are nested within the class they are related to.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain/brain_schematics.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-10 08:29:14","Unused import
+
+You should use pyflakes in your editor, it is great to detect these things. See http://scipy-lectures.github.io/advanced/debugging/index.html#a-type-as-go-spell-checker-like-integration
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-10 08:31:26","Good idea to rename the method!
+
+I think that I would prefer it to be named something like 'draw_volume'. Also, we should probably make it private: it's for the internals of the object, not for end-users to call.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-10 08:32:40","Please disregard the comment on making it private: I hadn't seen that it was in our Axes object. End users are not meant to use this object anyhow, so let's not bother.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-10-10 08:33:49","Actually something like this configured already. I just didn't spot this one.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-10-10 08:37:30","The thing is that `draw` actually draws some 2d data. I could rename it `draw_2d` to make it more explicit.
+
+As a side comment I also plan to go over the file and remove the `cut*` occurrences where easily doable.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-10-10 08:41:58","> The thing is that draw actually draws some 2d data. I could rename it draw_2d
+> to make it more explicit.
+
+Yes, that's a good suggestion.
+
+> As a side comment I also plan to go over the file and remove the cut*
+> occurrences where easily doable.
+
+Good idea. Thanks!
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/slicers.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 19:52:06","Thanks for renaming slicer to display in the docs!
+","88f70361a337a72718e3697a83d3a614ef7876be","(119, '', u'doc/building_blocks/plotting.rst')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 20:00:20","Please document what the kwargs are (what they are passed for, and where to find what values they can take).
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 20:48:43","I think that I'd prefer a name like: transform_to_2d, or project_to_2d?
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 20:52:48","When can d be None? What warrants that not all ds are None?
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 20:55:21","Is there really a reason to use an izip instead of a zip? It seems to me that the list will always be small, so expanding it isn't a problem.
+
+In addition, I believe that in Python3, itervalues is deprecated, and you should use 'values', that returns some clever view that is not an expanded list.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:09:58","I think that I would prefer this attribute to be named '_axes_class' (ie to be private).
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:10:53","A small module-level docstring would be great here.
+","88f70361a337a72718e3697a83d3a614ef7876be","(5, '', u'nilearn/plotting/glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:14:08","A comment in this file saying what it does would be a good thing.
+","88f70361a337a72718e3697a83d3a614ef7876be","(1, '', u'nilearn/plotting/glass_brain_files/generate_json.sh')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:15:52","I'd like a module-level docstring here too :). I am trying to make it as easy as possible for someone to follow up on this work.
+","88f70361a337a72718e3697a83d3a614ef7876be","(6, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:23:06","https://twitter.com/GaelVaroquaux/status/539892002092228608 :)
+","88f70361a337a72718e3697a83d3a614ef7876be","(6, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:27:25","What's the point of the partial? I don't think that you are using other values elsewhere for these arguments. Maybe you should just define the function as:
+
+def add_brain_schematic(display, options=dict(alpha=.5, ...)):
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:31:37","Module-level docstring :)  (remember, the serial killer)
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:32:17","Actually, is there a specific reason that this file is here, and not as an example. It would do a great example, IMHO.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:34:05","Ouch, code smell: we should be able to deal with nans in the data (because, as you are witnessing, it is often the case in neuroimaging)
+
+I'd be very happy if we could write this example without using nibabel, as an exercise to check that our API is good.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:34:58","Module level docstring
+- why the uft-8? I prefer files not to have utf-8 (because it can be hard to type and hard to read).
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/svg_to_json_converter.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:36:02","It doesn't really make much sens to plot an anat in a glass brain. I think that you should remove the few lines above.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:38:39","You should probably document that new argument.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:40:02","Why the future tense? ""are added"", I would say.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-02 21:41:25","Nice design: this function is very tight.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 08:00:46","Nice one, I knew it with the ""and knew where you live"" addition but maybe that didn't fit in 140 characters :smile:
+","88f70361a337a72718e3697a83d3a614ef7876be","(6, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-03 08:05:19","Indeed. It's hard to do philosophy with 140 chars. 
+","88f70361a337a72718e3697a83d3a614ef7876be","(6, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 08:08:55","plot_glass_brain.py was mostly used to produce the plots I was showing in this PR. I think it can go. There is an example of glass brain in plot_demo_plotting.py already.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 08:10:19","Agreed, the anat was only plotted for alignment purposes. This can probably go to plot_svg_align.py.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-03 08:10:19","Ok
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/glass_brain_files/plot_glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 08:45:30","This is an internal function without detailed documentation for other arguments. It says refer to the docstring of plot_img but that doesn't apply to quite a few arguments like bg_vmin, bg_vmax, interpolation, ...
+
+For completeness create_display_fun is the function that takes a display_mode argument and return a display class. Suggestions for better naming welcome!
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-03 08:47:47","I think that mayber we should document only the parameters not explained
+in plot_img.
+
+> For completeness create_display_fun is the function that takes a display_mode
+> argument and return a display class. Suggestions for better naming welcome!
+
+This is usually called a 'factory'. At least in C++/java world :). So I
+would call it 'display_factory'.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 09:55:46","There is a README.md in the glass_brain_files folder but maybe that's not good enough
+","88f70361a337a72718e3697a83d3a614ef7876be","(1, '', u'nilearn/plotting/glass_brain_files/generate_json.sh')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 10:02:18"," The logic was there before me: an IndexError is caught and ignored when plotting slices. In this case data_2d will be None.
+
+This is slicer-specific so this can probably be improved.
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 10:52:53","This is a kludge that is only used to be able to get the alpha to percolate from img_plotting.plot_glass_brain to brain_glass.plot_brain_schematics. Eventually they get passed to the matplotlib patches of the brain schematics.
+
+To be honest I am not sure we need alpha. The plots do look better with alpha=0.7 (which has been used for the most recent snapshots) but maybe we can achieve a similar effect by just tweaking the color of the lines in the svg.
+
+**alpha=0.7**
+![glass_brain_alpha_07](https://cloud.githubusercontent.com/assets/1680079/5279213/770ce332-7ae2-11e4-9b85-d9c94fb7d80d.png)
+
+**alpha=1**
+![glass_brain_alpha_1](https://cloud.githubusercontent.com/assets/1680079/5279241/d802030c-7ae2-11e4-8b05-da056d89f428.png)
+","88f70361a337a72718e3697a83d3a614ef7876be","(None, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 13:52:24","Done.
+","88f70361a337a72718e3697a83d3a614ef7876be","(5, '', u'nilearn/plotting/glass_brain.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 13:52:34","> A comment in this file saying what it does would be a good thing.
+
+Done
+","88f70361a337a72718e3697a83d3a614ef7876be","(1, '', u'nilearn/plotting/glass_brain_files/generate_json.sh')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 13:53:24","> I'd like a module-level docstring here too :)
+
+Done
+","88f70361a337a72718e3697a83d3a614ef7876be","(6, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","GaelVaroquaux","2014-12-03 13:54:33","Merge when you feel ready!
+","88f70361a337a72718e3697a83d3a614ef7876be","(6, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","AlexandreAbraham","2014-12-03 15:38:34","Not Python 3.
+","88f70361a337a72718e3697a83d3a614ef7876be","(443, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","AlexandreAbraham","2014-12-03 15:40:10","Deprecated.
+","88f70361a337a72718e3697a83d3a614ef7876be","(502, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","AlexandreAbraham","2014-12-03 15:40:20","Deprecated too.
+","88f70361a337a72718e3697a83d3a614ef7876be","(503, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","AlexandreAbraham","2014-12-03 15:41:50","Not Python 3
+","88f70361a337a72718e3697a83d3a614ef7876be","(542, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","AlexandreAbraham","2014-12-03 16:17:53","Why do you do that?
+","88f70361a337a72718e3697a83d3a614ef7876be","(13, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 17:29:26","Probably the remains of using %run inside ipython to run the script repeatedly between incremental tweakings of the SVG alignment parameters. I can remove it. 
+","88f70361a337a72718e3697a83d3a614ef7876be","(13, '', u'nilearn/plotting/glass_brain_files/plot_align_svg.py')"
+"pull_request_commit_comment","245","nilearn","nilearn","lesteve","2014-12-03 17:37:56","@eickenberg  ahah I didn't remember at all since that happened ages ago in this branch but I actually fixed the whish -> wish ...
+","88f70361a337a72718e3697a83d3a614ef7876be","(245, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-08 14:12:54","First commit of glass brain related scripts
+
+* svg_to_json_converter.py: exporter which leverages off https://github.com/cjlano/svg and exports the points of the paths in the svg to json
+* brain_plotter.py: read from the exported json and plots on a matplotlib axes
+* align_svg.py: script with by-hand alignment of the svg on top of the anatomy image","5856e7ca5078a0803024a0c3d11a57077758d3bb",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-08 15:33:20","Added a README.md + simple bash script to generate the json files","e17cf3698afbc27590fe3fd135322eb0f02a9a48",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-08 15:41:02","Removed svg folder","15c72369f14d3f9d1ffe297176e34ecc46a6ec6c",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-09 15:27:59","Tiny markdown improvement","6c66244863327a4c50aff182025b4735bf822255",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 07:41:24","First stab at implementing high-level function in img_plotting for glass brain visualisation","ef0687cd0391afc50405144313826273f0267057",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 07:55:06","Remove stale comment","2fbcdfe9cee33bcd179bd080a40f74fe5aaf1d80",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 09:57:14","Add demo for glass brain visualisation","724a4c45ebcbd9ba08cb107b4479f3b723251aa0",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 11:34:15","Rename align_svg.py to get the Travis tests to run
+
+nose is trying to import align_svg.py which is trying to do plots and fail with an error like ""Failure: TclError (no display name and no $DISPLAY environment variable)""","16d0f8010a493a1e56bfca78991e889080582860",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 12:07:11","Additional hack to get the Travis tests to run","90b73222f93740fcea14e489121fc20f5bf1e194",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 12:26:06","Move glass_brain_scripts inside plotting
+
+Hoping that the backend magic in plotting/__init__.py will help for the Travis tests","e578705a787bac8ee2f69a2a0fca14d244a7e1b5",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 12:27:46","glass_brain_scripts has been moved inside plotting. Also use generic location for json rather than the one on my machine","185404bd8512b32040419e3f9f14a7b0217bfece",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-26 12:34:59","MAINT: remove unneeded svg_bak folder","f493f2702b9ddd4b5abe4b6699425c50e3a69932",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-29 13:35:12","Brain schematics inverts its colors with a black background","e5df5b6255873d5414b0fff337738a2a18126633",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-29 14:30:17","Add svg bounds into the json document and update brain_plotter accordingly.
+
+Regenerated the json documents.","0dbdfc8e8a9966290069af1a23c91dce3ed9a604",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-09-29 14:36:08","Revert addition of object bounds margin and only use it when plotting brain schematics","8b8b22d8c927998ab6c6ce69f15cfb3c1a3e580c",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-07 07:33:15","Rename glass_brain_scripts to glass_brain and brain_plotter to brain_schematics.
+
+Also tidied up brain_schematics a little bit","ffaa6609e1d0ea774b35888acfd4f0537ff2befa",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-07 07:53:50","Move a few files to nilearn/plotting/glass_brain/scripts","29af2c3b49b61b289bbe5fa71acd0fed25ba7d2e",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-07 08:57:43","First stab at tidying up slicers.py and img_plotting.py
+
+* Add BaseAxes as a common class to cut-based and projection-based Axes.
+* Rename do_cut -> transform_2d and draw_cut -> draw
+* Add OrthoProjector to display projections of 3D data. Add derived classes
+to chose which directions to display.","b69ef471820f356e7d8579f899c196145c421bc1",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-07 11:50:02","Add optional alpha argument to plot_glass_brain.","24a5838870940227bf7abb9704857b5467b88515",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-08 07:16:55","Reuse _plot_img_with_bg in plot_glass_brain
+
+Also:
+* tidied up plot_glass_brain parameters and documentation
+* fix whish -> wish typo","1c25b857a3dce40df9a6bff48ca7a5d66dfec171",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-08 07:35:45","Fix wrong class variable name","2d579577fe09b503097d0d85170d583695758d66",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-08 08:49:44","Move slice finding code to BaseStackedSlicer.find_cut_coords
+
+cut_coords has been changed from 12 to 7 to mirror what the code was doing in img_plotting","d4098099ad13e5ac53db6e280041c66a783e748b",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-08 14:06:10","Flatten the glass brain related folders
+
+* plotting.glass_brain.brain_schematics moved to plotting.glass_brain
+* plotting/glass_brain/scripts/* moved to plotting/glass_brain_files","24e7bea54ab5a9b56f644c4578b228a14e8b5290",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-09 13:09:01","Refactor nilearn.plotting.glass_brain to use functions","4b4c4c766cba58fba47db019070cca07e7591c79",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-10 08:08:21","Move the brain schematic plotting to the Axes rather than the display
+
+A few methods needed **kwargs, so that additional arguments find their way
+from img_plotting.plot_glass_brain to glass_brain.plot_brain_schematics in GlassBrainAxes.__init__","00cd6ad663a6f119134bbcbebc04726ffcb2e7e2",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-10 08:25:43","Update plot_align_svg.py now that add_brain_schematics has been removed from displays
+
+Tweak it to use additional arguments to ease alignment + remove commented code","ad2dc036111193f373db88dacda35ed27adcc456",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-10 09:47:55","Fix bug for display_mode != 'ortho'","f5ec85bc64b3155bc07c47e1a8e9a13ce197373e",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-10 11:52:41","Minor renaming/tidy-up
+* BaseAxes.draw -> BaseAxes.draw_2d
+* cut_ax -> display_ax
+* other minor changes","aca9483b329467da3039d5c44824d245810cae1e",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-10 12:00:41","Rename slicers.py -> displays.py
+* Update doc to use display rather than slicer
+* Update slicers imports","4ed433fad1b967fe120581de1c1646de9f0a0ca9",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-10 13:16:03","PEP8 fix since since I touched this line","610ef8ac497c6742aee32b3deb9ad80d22d1f86d",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-13 14:18:03","Add tests for plot_glass_brain.
+Also fix edge case bug when plotting the colorbar and the data has a single value","4a90f4632edab1fa93ee373af84502895a4aea1c",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-16 15:48:43","Remove colorbar from plot_glass_brain
+
+Because we are summing along one axis the value does not mean much for example when you are summing z-values.
+Also remove TODO comment","583784ddfdc206d2c501e2f266bd6449c5dd4b7e",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-17 09:24:26","Add plot_glass_brain to nilearn.plotting","1720900108dc9634470477e558387c59b5c7e8a8",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-17 09:31:33","Add glass brain plot to plot_demo_plotting.py
+
+Automatically generated figure names needed renaming since the glass
+brain plot was inserted in the middle of plot_demo_plotting.py","a355f5a20b13399d3311f04125982a2c34047969",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-17 11:04:56","Add plot_glass_brain to documentation.
+
+Needed to reformat the rst table in order to fit plot_glass_brain in the
+first column","5ad6ff4fb8463a3b5f34a50bf3ef96aac5f25312",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-10-20 13:23:07","Fix typo tran*s*form_2d","a5f4fb572f7dd23808630ee4a09aca2a4ac9af1e",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-05 10:50:51","Use max rather than sum along an axis
+
+Analog to SPM maximum intensity projection","92c5f8ca6c53ad0883d8c566bfa4a3ce8e8348a3",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-13 10:26:20","vmin and vmax are determined by the 2d data min and max
+
+rather than doing the min and max of the 3D volume","5e3cd5a9f1dfc0e320d3ff5a384505bf06904365",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-13 10:48:16","Add transparent color maps using the full alpha range
+
+* Use it in the glass brain plot by default
+* Minort tweaks in plot_glass_brain.py to use the default color map","5aa0a6a1fab6354a121e589009ca6f91250f9c63",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-18 09:38:11","Removal of redundant if statement","31ce2c96d39eec8f539f7e400c43c9079f912933",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-20 15:05:42","The color should stay constant for transparent colormap
+
+Otherwise the colormap goes gray towards the low alpha values","6cada3a43c7935be1b842e1f7854564d1f5a181d",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-25 09:58:22","Use t-maps rather than contrasts in plot_glass_brain.py","7d17f985def68822fe0ac8b72a2d6b47bdc71d90",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-27 14:12:38","Use max(abs(data)) for 2d projection rather than max(data)","d4d51e4298a702057d48b5486eafe99161d13612",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-27 14:42:27","Change default plot_glass_brain colormap
+
+depending on black_bg. Also black_bg default to False because 'auto' makes sense only
+when plotting an anat. Updated plot_glass_brain.py accordingly.","f5ef98cc9bf6a2c49c3a6c539d83ab613243950b",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-28 09:34:37","Simplified glass brain SVGs
+
+- Only three kind of stroke-widths: 1.2, 2.5, 3
+- Did some ungrouping in brain_schematics_top.svg
+- Regenerated JSONs","66dfaa4e1ad4977ded3492e19d500a9d0f178a82",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-28 09:41:24","Remove invisible path
+
+in brain_schematics_top.svg. Regenerated JSON","9f011d7996d4c3c46020febbcfc4726ac2fb36fb",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-28 09:52:04","Thiner lines in the glass brain SVGs
+
+and regenerated JSONs","4e1a37bf37ef0c5933d634d8423ea324beaf8177",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-28 12:03:50","Use auto threshold for glass brain","927fa06de0a561b4561d1056d76bd6e4ad183779",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-11-28 12:26:55","Tweak glass brain example in plot_demo_plotting.py","c2a6bf9f01436500053be7db857db6c1d4ded6b4",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-02 08:41:42","Add inferior temporal sulcus","7bcf1a2e04b41e7f9b9b54e32799e4521cb2dae9",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-03 08:58:11","Rename some lingering slicer to display","8a42985efed7eb736cabf03307ac298ef7a81521",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-03 09:11:56","Fix max instead of min typo in auto vmin logic","9c8f0b6539f9d855319912c6450fefb01ef94ad3",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-03 09:50:50","Cosmits
+
+* transform_2d -> transform_to_2d
+* axes_class -> _axes_class
+* other minor stuff","f37072bba78c1dc71b40df5bca3a149d92fa32ee",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-03 10:14:15","Add module docstrings","3e25fe601c65acc83cf526194f93570560697ce9",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-03 10:21:34","Document more parameters in _plot_img_with_bg
+
+Also:
+* create_display_fun renamed to display_factory
+* removed unused import
+* PEP8 fix","d97191733c787f7f41dad97536f80f51209a7466",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-03 12:37:30","Added OrthoProjector smoke test","71c81114f16817bc6717038bd5aaba38461ff740",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-03 12:59:11","Add anatomy in plot_align_svg.py
+
+Also other minor tweaks","4db09951b571a122f86cfc6b68282a3d9337bcd8",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-04 12:50:48","Explicitly say that input data needs to be in MNI space
+
+in plot_glass_brain in order to be aligned with brain schematics","bc75c30fdd9f2d6de383c4cdad64a545a91709e8",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-04 12:51:54","Use alpha=0.7 by default for the brain schematics
+
+This is the value that was used in all the latest screen snapshots from the PR","a58cc1507492ee687b8862a7b7251b0e10d0ad94",""
+"pull_request_commit","245","nilearn","nilearn","lesteve","2014-12-04 12:59:24","Remove plot_glass_brain.py
+
+This script was mostly useful to produce the snapshots in the PR","88f70361a337a72718e3697a83d3a614ef7876be",""

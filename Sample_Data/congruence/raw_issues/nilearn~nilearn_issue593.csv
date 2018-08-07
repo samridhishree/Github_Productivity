@@ -1,0 +1,259 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","593","nilearn","nilearn","banilo","2015-05-20 18:02:47","attempts to fix #566
+","start issue","[MRG] port new_img_like to nilearn/image"
+"issue_closed","593","nilearn","nilearn","GaelVaroquaux","2015-07-16 06:18:47","","closed issue","[MRG] port new_img_like to nilearn/image"
+"pull_request_title","593","nilearn","nilearn","banilo","2015-05-20 18:02:47","attempts to fix #566
+","cdc1587474cfeb9a1f24be2221da7142165cb500","[MRG] port new_img_like to nilearn/image"
+"pull_request_merged","593","nilearn","nilearn","GaelVaroquaux","2015-07-16 06:18:47","[MRG] port new_img_like to nilearn/image","8d298448535bc9e1f4ee2c8edd65173330a9577a","Pull request merge from banilo/nilearn:expose_new_img_like to nilearn/nilearn:master"
+"issue_comment","593","nilearn","nilearn","banilo","2015-05-20 18:03:32","Two remarks:
+a) Just ported the function to image for new
+b) will do the other aspects soon
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-05-22 19:34:04","Simple exposure, as suggest by Gael, appears to work better.
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-05-22 23:11:31","I don't think that introducing anti-patterns at such an early stage in a software is the way to go.
+","",""
+"issue_comment","593","nilearn","nilearn","GaelVaroquaux","2015-05-22 23:12:06","> I don't think that introducing anti-patterns at such an early stage in a
+> software is the way to go.
+
+What do you mean?
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-05-26 11:26:35","I don't like to import code in one module from a totally different one. In particular because it is less intuitive for developers. For me, this reveals a flow in the architecture of the software itself (hence the term anti-pattern). I would prefer to put it in a submodule of image for example.
+","",""
+"issue_comment","593","nilearn","nilearn","eickenberg","2015-05-26 11:29:25","then again, the `image` module, up until now, to me, felt more like a
+collection of tools to work on the voxel+affine level, e.g. smoothing,
+cropping, resampling
+
+On Tue, May 26, 2015 at 1:26 PM, Alexandre Abraham <notifications@github.com
+
+> wrote:
+> 
+> I don't like to import code in one module from a totally different one. In
+> particular because it is less intuitive for developers. For me, this
+> reveals a flow in the architecture of the software itself (hence the term
+> anti-pattern). I would prefer to put it in a submodule of image for example.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/593#issuecomment-105493668.
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-05-26 11:34:51","Maybe we need to do a discussion and design the package to integrate forthcoming features (because I guess that check_niimg may also become public in a near future).
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-06-09 14:56:42","Ok for the argument swapping.
+
+But I am wondering about the optimal affine argument idea: Do you mean that we only checked for matching shape in case no affine is specified?
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-06-09 19:52:39","> Ok for the argument swapping.
+
+We agreed not to swap.
+
+> Do you mean that we only checked for matching shape in case no affine is specified?
+
+Yes, we suppose that the affine of the reference image is also the one of the resulting image. For me, it is always the case.
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-06-11 13:18:31","Alright..
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-06-11 13:24:56","Shouldn't we support niimg instead of img? User may want to do that with filenames.
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-06-12 09:09:10","> Shouldn't we support niimg instead of img? User may want to do that with filenames
+
+You mean add ""check_niimg_3D""?
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-06-12 09:18:44","Yes, do a wrapper around the existing function and calling `check_niimg` (we don't have dimension restriction).
+","",""
+"issue_comment","593","nilearn","nilearn","lesteve","2015-06-12 09:25:48","> Shouldn't we support niimg instead of img? User may want to do that with filenames.
+
+Is it really that useful? It feels to me that you generally load the data from the file before transforming it and using new_img_like.
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-06-12 09:34:49","> Is it really that useful
+
+For us, it is not since we do proper checking before calling it so calling it again is spurious. For the users, it is a small cost and it will in particular do all proper checking regarding the type of the image. For the moment, the function clearly lacks of error handling.
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-06-24 13:55:27","So what did we exactly agree on?
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-06-27 08:56:45","How about now?
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-06-28 22:08:45","You didn't add a wrapper but modified the original function. For some functions, we have an internal version (optimized, straight to the point) and for other we have expose version (with error handling). This is the case for `index_img` for example. I think you should not modify the original function but create another one that does `check_niimg` and calls `new_img_like`.
+
+Anybody else to comment that choice?
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-07-14 12:01:35","In response to Alex' comments, I restored the the original code we had that raised a circular import
+
+``` python
+
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+<ipython-input-1-398362f15096> in <module>()
+----> 1 from nilearn.image import new_img_like
+
+/git/nilearn/nilearn/image/__init__.py in <module>()
+      3 data, and an affine.
+      4 """"""
+----> 5 from .resampling import resample_img, reorder_img
+      6 from .image import high_variance_confounds, smooth_img, crop_img, \
+      7     mean_img, swap_img_hemispheres, index_img, iter_img
+
+/git/nilearn/nilearn/image/resampling.py in <module>()
+     13 from scipy import ndimage, linalg
+     14 
+---> 15 from .. import _utils
+     16 from .._utils import new_img_like
+     17 from .._utils.compat import _basestring
+
+/git/nilearn/nilearn/_utils/__init__.py in <module>()
+      1 
+----> 2 from .niimg_conversions import (check_niimg, check_niimg_3d, concat_niimgs,
+      3     check_niimg_4d)
+      4 
+      5 from .niimg import _repr_niimgs, copy_img
+
+/git/nilearn/nilearn/_utils/niimg_conversions.py in <module>()
+     12 from .cache_mixin import cache
+     13 from .niimg import _safe_get_data, load_niimg
+---> 14 from ..image import new_img_like
+     15 from .compat import _basestring
+     16 
+
+ImportError: cannot import name new_img_like
+
+```
+
+The only option I see right now would be to make several imports in _utils local.
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-14 12:33:50","The solutions I see.
+
+Option 1 : refactoring (my favorite)
+- leave `new_img_like`, `index_img` and `index_img` in `image.py`
+- evacuate other functions in `image/process.py` or something since they are explictely modifying the image.
+
+Option 2 : local import
+- import `reorder_img` locally in `swap_img_hemispheres` to avoid the circular import. This is the local import option that makes most sense to me.
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-07-14 14:15:45","I would like to do Option 2.
+
+2015-07-14 14:33 GMT+02:00 Alexandre Abraham notifications@github.com:
+
+> The solutions I see.
+> 
+> Option 1 : refactoring (my favorite)
+> - leave new_img_like, index_img and index_img in image.py
+> - evacuate other functions in image/process.py or something since they
+>   are explictely modifying the image.
+> 
+> Option 2 : local import
+> - import reorder_img locally in swap_img_hemispheres to avoid the
+>   circular import. This is the local import option that makes most sense to
+>   me.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/593#issuecomment-121225949.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-14 14:22:56","That's just because I said that I prefer the first one, right?
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-14 23:13:00","You won @banilo, I give up! I still see two options and I don't like both of them:
+- leave `new_img_like` in `_utils` and import it from there
+- move `new_img_like` to `image` but make all imports of `new_img_like` local in `niimg_conversion`.
+
+Well, I would be in favor of option 1.
+
+Sorry for wasting your time, I really thought that we could find a cleaner solution :-/.
+","",""
+"issue_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:01:05","Minor remark. :+1: 
+","",""
+"issue_comment","593","nilearn","nilearn","lesteve","2015-07-15 15:13:23","Wow capital letters, have you looked at the Travis build status ?
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-07-15 14:55:35","_WORKING_
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-07-15 14:55:42","_NOW_
+","",""
+"issue_comment","593","nilearn","nilearn","banilo","2015-07-16 06:06:07","> Minor remark
+
+Addressed! We should be ready to go now.
+","",""
+"pull_request_commit_comment","593","nilearn","nilearn","AlexandreAbraham","2015-05-21 11:51:37","Too many delayed imports is a sign of bad software design. First, you should not delay the import here but delay the import of masking in the image module, since it's used only one time. You should also check if there is a way to avoid these delayed imports by refactoring some code.
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","banilo","2015-05-21 12:56:19","I did this because there appeared to be many circular imports when directly importing at the topic in the lower level scripts.
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","AlexandreAbraham","2015-05-21 14:25:21","My remark still holds. Too much delayed import is bad.
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","bthirion","2015-05-21 21:40:57","Sorry if I am dumb, but why are you importing a function from this module ?
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","banilo","2015-05-22 18:52:55","My bad...
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","banilo","2015-05-22 19:01:18","if I make this import global (that is, only in masking.py), nosetests gives me 15 errors due to circular imports.
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","banilo","2015-05-22 19:11:51","making these imports global gives 15 errors due to circular imports, too
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","GaelVaroquaux","2015-05-22 19:14:52","> > -    from .image import new_img_like
+> 
+> making these imports global gives 15 errors due to circular imports, too
+
+This tells me that new_img_like should probably be defined in utils, and
+imported in places where it's used (including image to expose it).
+
+Other option is to always import it from image.image in the codebase. I
+think that this might solve the circular import problems.
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","banilo","2015-05-22 19:18:23","So we stay in _utils with new_img_like, yet expose it in image/image.py on
+the __init__-level?
+
+2015-05-22 21:14 GMT+02:00 Gael Varoquaux notifications@github.com:
+
+> In nilearn/image/resampling.py
+> https://github.com/nilearn/nilearn/pull/593#discussion_r30923273:
+> 
+> > @@ -340,6 +339,8 @@ def resample_img(img, target_affine=None, target_shape=None,
+> >      This function handles gracefully NaNs and infinite values in the input
+> >      data, however they make the execution of the function much slower.
+> >      """"""
+> > -    from .image import new_img_like
+> > - from .image import new_img_like making these imports global gives 15
+> >   errors due to circular imports, too
+> >   This tells me that new_img_like should probably be defined in utils, and
+> >   imported in places where it's used (including image to expose it). Other
+> >   option is to always import it from image.image in the codebase. I think
+> >   that this might solve the circular import problems.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/593/files#r30923273.
+
+## 
+
+Viele Grüße,
+Danilo
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","GaelVaroquaux","2015-05-22 19:20:17","> So we stay in _utils with new_img_like, 
+
+We can try doing the internal imports from image.image to see if it
+solves the problem (add a comment saying that this is to avoid circular
+imports).
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","lesteve","2015-06-25 07:08:53","Shouldn't affine be None by default in the arguments?
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-13 15:52:16","I think refactoring is better that local import. Plus, you don't use it.
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","GaelVaroquaux","2015-07-14 07:28:52","Can you be more explicit: what refactoring are you suggesting exactly (I am asking to make it more clear what need to be done on the PR before merging).
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-14 07:38:30","Create one function, having one that call another is useless. Use `load_img` and not `check_niimg` (we want to load the data if it's a filename, we don't want to load list of niimgs). If it must be released, move that code to the image module. That's how I see it.
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/_utils/niimg.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:00:13",", optional
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit_comment","593","nilearn","nilearn","AlexandreAbraham","2015-07-15 20:00:29","Maybe elaborate a little bit?
+","cdc1587474cfeb9a1f24be2221da7142165cb500","(None, '', u'nilearn/image/image.py')"
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-05-22 19:31:03","simple exposure of new_img_like","8392c02c806a4e488e04a3d42d612d0060332ae8",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-06-11 13:15:09","new_img_like: make affine optional","9702879c4ee2218a19c961c03fb70cca7fa039c5",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-06-27 08:56:00","new_img_like: niimg compat","f49328dbe3361efb8a5c7094bb2dde53c6bb090c",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-06-29 19:08:01","added wrapper","de2a4664ddadf76b32651c13b2b24715414bf27d",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-07-14 11:51:12","restore circular import","8a5f35ea5d2329072bfff9094aa349dd6497484a",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-07-15 11:31:32","iterm","a2b25170a91938c4e6fdb45792bf827560f6af93",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-07-15 14:46:10","fix im/exports","a368c454acca72514badfb798bc8883fef41e817",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-07-15 16:43:43","update setup.py","888ee31bdf2e9dbbb0e0d018a69cab26eb8c6d0d",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-07-15 17:02:20","add missing init file","2d99112d13f6f48115b86dd17cb9688fd93eb9ec",""
+"pull_request_commit","593","nilearn","nilearn","banilo","2015-07-16 06:17:10","cosmit","cdc1587474cfeb9a1f24be2221da7142165cb500",""

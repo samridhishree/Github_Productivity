@@ -1,0 +1,922 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","693","nilearn","nilearn","arthurmensch","2015-07-16 15:36:20","Decomposition estimators (`DictLearning` / `MultiPCA`) now inherit a  `DecompositionEstimator`.
+
+Loading of data is made through a `PCAMultiNiftiMasker`, which loads data from files and compress it.
+
+Potentially, the function check_masker could solve issue #688, as it factorizes the input checking of estimator to which you provide either a masker or parameters for a mask. It is tuned to be able to use `PCAMultiNiftiMasker`
+","start issue","[MRG] Dictionary learning + nilearn.decomposition refactoring"
+"issue_closed","693","nilearn","nilearn","AlexandreAbraham","2015-12-08 14:44:07","","closed issue","[MRG] Dictionary learning + nilearn.decomposition refactoring"
+"pull_request_title","693","nilearn","nilearn","arthurmensch","2015-07-16 15:36:20","Decomposition estimators (`DictLearning` / `MultiPCA`) now inherit a  `DecompositionEstimator`.
+
+Loading of data is made through a `PCAMultiNiftiMasker`, which loads data from files and compress it.
+
+Potentially, the function check_masker could solve issue #688, as it factorizes the input checking of estimator to which you provide either a masker or parameters for a mask. It is tuned to be able to use `PCAMultiNiftiMasker`
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","[MRG] Dictionary learning + nilearn.decomposition refactoring"
+"pull_request_merged","693","nilearn","nilearn","AlexandreAbraham","2015-12-08 14:44:07","[MRG] Dictionary learning + nilearn.decomposition refactoring","3a9614cb04687f6384691ad00fc0cb17a8a4e7b2","Pull request merge from arthurmensch/nilearn:l1_dict_learning_composition_mask to nilearn/nilearn:master"
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-07-20 05:48:15",">   • SinglePCA is a transformer that takes masked data and returns their PCA.
+
+The problem with this is that it forces to do things with the wrong
+parallel-execution layout: you would have to load and mask all the data,
+then do SVDs. Both in terms of parallel execution (imposing a barrier
+between loading and SVDs) and in terms of memory usage (storing the data
+in memory).
+
+I tend to think that the basic element of reuse for stateless pipeline
+operations is much more the function than the class. Indeed, objects are
+not needed to keep state (the only reason that the Transformer is an
+object is because it has separate fit and transform stages, and needs to
+keep a state between the two). Functions lead to code reuse with less
+boilerplate.
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-07-21 09:51:55","> Honestly, I don't see why we have make_pca_masker and PCAMultiNiftiMasker where
+> we could just use MultiNiftiMasker followed by a PCA.
+
+Once again: parallel computing + memory conception.
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 14:49:43","In terms of examples, I think we need:
+- The unmodified CanICA example
+- An example comparing both (like you had in June)
+
+In terms of narrative docs:
+- I would rename the title of resting_state_networks.rst to ""Extracting resting-state networks: ICA and related""
+- In the above, I would have the current content in a section called 'Multi-subject ICA: CanICA' and another section with the doc for dict learning.
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 18:24:56","Can you use 30 subjects from ADHD in your example, please. It will make it use a bit less memory. I checked and it looks quite nice.
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-03 07:25:33","We are blowing the memory limit on CircleCI when running the examples. It corresponds to what I have observed: right now the examples use too much memory. Scaling down to 30 subjects would help a bit.
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-03 09:59:04","I have made a PR to this PR:
+https://github.com/arthurmensch/nilearn/pull/1
+
+It addresses the main blocker for merging this, ie that the memory usage of the current state of this PR is linear increasing with the number of subjects. This is blocker.
+
+My PR is not satisfactory, in the sense that it pushes all checking in the inner loop. But right now I am not sure of a way of doing it right, and I don't want to delay merging this feature.
+
+As a side note, we have a major design problem, maybe even a regression compared to the code in master. Right now, if people give images that are not resampled properly, it will run for a long time, and then fail miserably when trying to concatenate data. We'll need to revisit this whole codepath. But I'd rather add an issue and do it later.
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-03 12:43:19","> @GaelVaroquaux it should not fail if provided with images with different size
+> isn't it ? n_voxels is based on mask_img size
+
+Good point, the masker does a lot to make it work.
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-03 13:07:18","> To answer you about the design flaw, I listed it in my big refactoring
+> issue. I suggest that we merge and take a closer look afterward.
+
+Absolutely!
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-04 13:20:15","> A rebase never comes for free ;)
+
+Quote of the week!
+","",""
+"issue_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-08 14:45:57","Yipi!!!!
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Dec 8, 2015, 09:44, at 09:44, Alexandre Abraham notifications@github.com wrote:
+
+> Merged #693.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/693#event-485710127
+","",""
+"issue_comment","693","nilearn","nilearn","eickenberg","2015-07-21 09:55:59","> We never make pipelines out of transformers, we make pipelines by using
+> the functions on which the transformers depend.
+
+It is however imaginable that some such transformers may need spatial
+information. I am thinking specifically about the feature screening
+currently only used in SpaceNet but which in the future could very well
+serve for other estimators as well. In this case it would need to be inside
+the masker.
+
+On Tue, Jul 21, 2015 at 11:51 AM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > Honestly, I don't see why we have make_pca_masker and
+> > PCAMultiNiftiMasker where
+> > we could just use MultiNiftiMasker followed by a PCA.
+> 
+> Once again: parallel computing + memory conception.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/693#issuecomment-123245049.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-20 00:35:46","As a general matter, I am not comfortable with the ""pipelining through inheritance"" pattern. Especially because it is not easy to combine it with out caching system.
+
+What we have now in nilearn.decomposition.MultiPCA is:
+- MultiPCA takes a MultiNiftiMasker as parameter (or directly a mask, this is not the point here)
+- It masks data and runs a PCA on the masked data.
+- Its associated function, session_pca, takes niimgs as parameter, calls filter_and_mask and runs the PCA afterward. We can easily cache the call to session_pca because most of the time niimgs are strings.
+- However, if we want to add more steps to the pipeline (ie CanICA), we have to inherit from MultiPCA and thus we don't have access to intermediate data, the masked data in our case.
+
+What is proposed in this PR:
+- PCAMultiNiftiMasker inherits from MultiNiftiMasker
+- MultiPCA is now almost empty, it is just a wrapper around PCAMultiNiftiMasker
+- nothing has changed regarding session_pca function.
+
+What I think is the way to go:
+- SinglePCA is a transformer that takes masked data and returns their PCA.
+- MultiPCA is a transformer. It has init parameters of both MultiNiftiMasker and SinglePCA. It creates instances of both of them and, on fit, streamline the process: it takes the niimgs as input, mask them in the MNMasker, gives the masked data to the SinglePCA and aggregates the results, doing a cca if asked. Obviously, this is run online and efficiently (njobs and stuff)
+- This patterns allows the results of MultiNiftiMasker to be reused in further steps of the process if needed. It also does as little mixing as possible between methods.
+
+Sidenote: is we think of it, the NiftiMasker is already a pipeline of operations (smooting, masking, cleaning). Re-designing it using my proposition would be equivalent to have a SmoothingTransformer, MaskingTransformer, CleaningTransformer and chaining them in a class called NiftiMasker (pretty much the actual code). Using the other pattern, we would have a function called cleaning that would call a function called masking that would call a function called smoothing. Unless you are competing for the prize of the biggest call stack size, this seems not like a good idea to me. This is why I intuitively came up with the other solution.
+
+I am sorry to raise this kind of concern in your PR but, if we are to refactor the entire decomposition framework, I think we should do it well.
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-07-20 11:35:43","I moved the fast concatenation to a separate `_utils` function. For the moment you can observe than `multi_pca` and `dict_learning` has a few common lines that could be factorized, but I think that these belongs to the own logic of both objects so it may not be worth.
+
+In term of merging strategy, I merged PR #702 for testing purpose on this PR, but I can remove the commits for this PR easily, so we can merge this PR on top of PR #702
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-07-21 06:35:03","Needs a rebase + failing tests.
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-07-21 08:05:41","> MultiPCA is a transformer. It has init parameters of both MultiNiftiMasker and SinglePCA. It creates instances of both of them and, on fit, streamline the process: it takes the niimgs as input, mask them in the MNMasker, gives the masked data to the SinglePCA and aggregates the results, doing a cca if asked. Obviously, this is run online and efficiently (njobs and stuff)
+
+This is basically what is done with make_pca_masker : streamline is done within function `session_pca`, instead of setting up a explicit pipe between two transformers. Trouble being that if we want to do that, we need to use MultiNiftiMasker.transform_single_imgs, piped to randomized_pca, which forces use to use Parallel over an already parallel ready object (MultiNiftiMasker)
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-21 09:00:46","Since your PR is working and improving code organization, I suggest that we go for merge and discuss of code engineering afterward. I don't want this PR to be blocked like Elvis' and the inner code won't change anything for the user.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-21 09:30:42","Honestly, I don't see why we have `make_pca_masker` and `PCAMultiNiftiMasker` where we could just use `MultiNiftiMasker` followed by a PCA. We never make pipelines out of transformers, we make pipelines by using the functions on which the transformers depend.
+
+Current state:
+- MultiNiftiMasker
+  - `fit` calls `filter_and_mask`
+- MultiPCA
+  - `fit` calls `session_pca`
+  - `session_pca` calls `filter_and_mask`
+- CanICA
+  - `fit` calls `MultiPCA.fit`
+  - `fit` then does the work
+
+Proposition:
+- MultiNiftiMasker
+  - `fit` calls `filter_and_mask`
+- SinglePCA
+  - `fit` calls`single_pca` that takes as input masked data and do a PCA
+- MultiPCA
+  - `fit` calls `session_pca`
+  - `session_pca` chains `filter_and_mask` and `single_pca`
+- CanICA
+  - `fit` calls `canica`
+  - `canica` calls `session_pca`, and then `single_pca` and does ica afterward.
+  - Note : this is optional.
+- DictLearning
+  - `fit` calls `dict_learning`
+  - `dict_learning` calls `filter_and_mask` can easily do the job if init is provided, and compute a CanICA while keeping masked_data in memory since everything is functional. Or it can call `canica` directly and use caching.
+
+I see no need whatsoever for a PCAMultiNiftiMasker, this is over-engineering for me. But maybe I'm wrong.
+
+Also, it is possible to chain transformers. We just need a `transform_iter` method that does no parallel computation but returns an iterator to treat subjects on the fly.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-21 11:14:04","> Once again: parallel computing + memory conception.
+
+Well, no this is not the reason because the code behind the scenes is unchanged, this is only a refactoring the class organization where a part of MultiPCA becomes a class itself.
+
+OK, it took me some time but now I get it. I'm not happy with `make_pca_masker` (I think that you could always use a PCAMultiNiftiMasker and decide to do the PCA or not inside) and I'm not happy with the naming, but I can live with that ;).
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-21 11:23:35",">  In this case it would need to be inside the masker.
+
+It would precisely need to be inside the masker, after the smoothing and before the cleaning. So, just where the masking is. This is precisely the code pattern I introduced in #665 and that allows to define NiftiMasker, NiftiLabelsMasker, or even NiftiUnivariateScreeningMasker if you want, using the same piece of code. Here, we are talking about software design for a PCA after masking. To summarize it, if masking and pca were 2 boxes, the actual choice is put the masking box inside the pca box. For me, it's not the best choice given that if you want to add another step, then you'll need a bigger box. I see that as boxes put next to each other.
+
+But that's my personal bias, I am aware of that and I am totally opened to other solutions. I am just arguing a bit here because, in my head, I see a very simple schema and my impression here is that the spaghetti code has been replaced by lasagna code.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-21 11:25:33","In particular, the concept itself of MultiNiftiMasker in the MultiPCA is a fraud: we use it to compute the mask, in the fit, that's a fact. But we don't use it for masking at all. For that, we basically use a NiftiMasker chained with a PCA in a parallel loop.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-21 12:03:29","Talking with Arthur, we have identified the same weaknesses in the approach of software design in nilearn. Since his PR is an enhancement compared to existent, I suggest that we merge it and we discuss software refactoring after since it's another subject.
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-07-21 13:42:55","Your example doesn't work with python 3 for some reason I don't really understand. In the traceback below `n_iter` is a float (2085.16... if you want to know). The fact that it was not caught by the tests is not really reassuring:
+
+```
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+/home/le243287/dev/nilearn/examples/connectivity/plot_dict_learning_resting_state.py in <module>()
+     53     print('[Example] Learning maps using %s model'
+     54           % type(estimator).__name__)
+---> 55     estimator.fit(func_filenames)
+     56     print('[Example] Dumping results')
+     57     components_img = estimator.masker_.inverse_transform(estimator.components_)
+
+/home/le243287/dev/nilearn/nilearn/decomposition/dict_learning.py in fit(self, imgs, y, confounds)
+    209             random_state=self.random_state,
+    210             shuffle=True,
+--> 211             n_jobs=1)
+    212         self.components_ = self.components_.T
+    213         if self.verbose:
+
+/volatile/le243287/miniconda3/lib/python3.4/site-packages/sklearn/externals/joblib/memory.py in __call__(self, *args, **kwargs)
+    481 
+    482     def __call__(self, *args, **kwargs):
+--> 483         return self._cached_call(args, kwargs)[0]
+    484 
+    485     def __reduce__(self):
+
+/volatile/le243287/miniconda3/lib/python3.4/site-packages/sklearn/externals/joblib/memory.py in _cached_call(self, args, kwargs)
+    428                           'directory %s'
+    429                         % (name, argument_hash, output_dir))
+--> 430             out, metadata = self.call(*args, **kwargs)
+    431             if self.mmap_mode is not None:
+    432                 # Memmap the output at the first call to be consistent with
+
+/volatile/le243287/miniconda3/lib/python3.4/site-packages/sklearn/externals/joblib/memory.py in call(self, *args, **kwargs)
+    673         if self._verbose > 0:
+    674             print(format_call(self.func, args, kwargs))
+--> 675         output = self.func(*args, **kwargs)
+    676         self._persist_output(output, output_dir)
+    677         duration = time.time() - start_time
+
+/volatile/le243287/miniconda3/lib/python3.4/site-packages/sklearn/decomposition/dict_learning.py in dict_learning_online(X, n_components, alpha, n_iter, return_code, dict_init, callback, batch_size, verbose, shuffle, n_jobs, method, iter_offset, random_state, return_inner_stats, inner_stats, return_n_iter)
+    658     ii = iter_offset - 1
+    659 
+--> 660     for ii, this_X in zip(range(iter_offset, iter_offset + n_iter), batches):
+    661         dt = (time.time() - t0)
+    662         if verbose == 1:
+
+TypeError: 'float' object cannot be interpreted as an integer
+> /volatile/le243287/miniconda3/lib/python3.4/site-packages/sklearn/decomposition/dict_learning.py(660)dict_learning_online()
+    659 
+--> 660     for ii, this_X in zip(range(iter_offset, iter_offset + n_iter), batches):
+    661         dt = (time.time() - t0)
+```
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-07-21 14:00:55","i guess I should push the coverage to 100%
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-10-05 12:26:11","python 2.6 errors are quite easy to fix,  assert_greater should be nilearn._utils somewhere and you can replace assert_is(a, b) by assert_true(a is b).
+
+About the CircleCI error, it happens during the documentation generation. Not sure what the exact reason is but it looks like this is related to adding `nilearn/examples/__init__.py`. Did you do that on purpose ?
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-11-03 16:04:03","I updated the doc. It seems ready to me
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-11-04 08:03:21","Travis is supposed to be green, but for some reason it does not find conda
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-11-04 08:24:46","@lesteve I addressed your comments, sorry I oversaw them. Travis CI is failing on conda due to an install error, do you reckon it is related to Travis itself ?
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-11-04 08:26:52","> @lesteve I addressed your comments, sorry I oversaw them. Travis CI is failing on conda due to an install error, do you reckon it is related to Travis itself ?
+
+The error is a bit weird indeed. Let me try to reproduce it.
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-11-04 08:31:30","It looks like the path of conda has changed. I am testing a fix in one of my branch and I'll push it into master if that works.
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-11-04 08:52:09","@arthurmensch if you rebase on master, Travis has more chances to be green now.
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-11-04 12:04:28","For once the codacy status is actually spotting a real issue. You have added a PEP8 violation.
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-11-04 13:31:17","Done
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:50:29","On test seems to be failing (which is weird because travis is happy). Apart from small details, LGTM.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:55:15","Failing test is : 
+
+```
+File ""/home/ubuntu/nilearn/nilearn/decomposition/tests/test_dict_learning.py"", line 49, in test_dict_learning
+    assert_true(recovered_maps >= 2)
+```
+
+Please use proper functions (something like `assert_less`) to get more accurate errors.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-12-03 13:05:00","> Good point, the masker does a lot to make it work.
+
+To answer you about the design flaw, I listed it in my big `refactoring` issue. I suggest that we merge and take a closer look afterward.
+","",""
+"issue_comment","693","nilearn","nilearn","AlexandreAbraham","2015-12-08 14:43:14","Merging this one. I opened issues regarding initialization documentation and broken links. Feel free to open issues if problems remain if I missed them.
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-12-03 12:42:14","@GaelVaroquaux it should not fail if provided with images with different size isn't it ? `n_voxels` is based on `mask_img` size
+","",""
+"issue_comment","693","nilearn","nilearn","lesteve","2015-12-04 10:09:03","Hmmm it looks like this needs a rebase on master. Maybe you'll get a few URL fixes by @mrahim for free.
+","",""
+"issue_comment","693","nilearn","nilearn","arthurmensch","2015-12-04 10:37:14","A rebase never comes for free ;)
+","",""
+"issue_comment","693","nilearn","nilearn","bthirion","2015-12-08 14:50:59","Congrats !
+","",""
+"pull_request_commit_comment","693","nilearn","nilearn","bthirion","2015-07-17 08:25:56","memory_level=5, verbose=2, random_state=0 makes it a bit frightening to users. I think that @GaelVaroquaux already raised this issue. Couldn't we rely on defaults ? If not, this couls mean that the defaults are not well chosen... 
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","bthirion","2015-07-17 08:31:20","The example is broken here on my box: the masker is not happy with the provided input.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-07-17 08:58:13","You changed n_init default from 10 to 1, is that on purpose ?
+
+Not sure why you reordered the parameters, but that make things like this a lot more likely to pass through the cracks ...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-07-17 09:03:48","I reordered the parameters so that they are consistent with MultiNiftiMasker parameters (an instance of MultiNiftiMasker being created)
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-17 09:53:05","You can add `""Expected type: *NiftiMasker but got type %s"" % type(masker)`
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-17 09:53:43","None would be more meaningful
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","bthirion","2015-07-17 10:05:45","...the mask is calculated.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","bthirion","2015-07-17 10:06:34","To do in this PR ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","bthirion","2015-07-17 10:08:23","Could you reorder the parameters in the docstring for readability ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","bthirion","2015-07-17 10:18:30","Explain that this is typically applied prior to ICA of fMRI data.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-07-17 12:25:07","This relates to #630. As scoring functions are useful for all decomposition estimators, the idea to derive them from a base DecompositionEstimator definitely makes sense.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-07-17 13:56:41","Sorted
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-07-17 14:33:03","We have to put memory_level=2 to have good performance (reuse masking from initialization in dictionary learning). I could make it the default
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-07-17 14:33:21","Just did
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-07-17 14:41:20","> We have to put memory_level=2 to have good performance (reuse masking
+> from initialization in dictionary learning). I could make it the
+> default
+
+memory_level=1 should always be the default. Maybe we need to change our
+'func_memory_level' in a few places.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-17 15:00:33","You say 10 and later you fetch 20.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:33:36","Line looks very long. Should be at most 79 characters.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:34:05","Same comment as about, about very long lines.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:34:16","Again.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:35:14","Long lines ... You need to integrate pyflakes et al. into your editor.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:46:04","Prefer assert_equal, assert_false, assert_true over raw assert.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/tests/test_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:46:46","Same remark about assert as above.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/input_data/tests/test_masker_validation.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:47:53","What does the method return ? Document it.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:50:17","The comment is not useful. At least not for the line you've applied it to.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:51:17","Consistently end each docstring entry with a fullstop ""."".
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:52:11","Remove space before ""Prepare"".
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:52:58","Missing fullstop. See related comment below.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:56:32","How is this the user's fault ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:57:18","Can't you just concatenate the pcas in a one-liner ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 16:58:27","Missing document for y and confounds.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-07-18 16:58:48","> > -            self.components_ = np.empty((len(imgs) \* self.n_components,
+> 
+> Can't you just concatenate the pcas in a one-liner ?
+
+This is actually faster. I believe that it is because numpy has a
+sub-optimal memory allocation strategy in the simple concatenation
+strategy.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 17:05:47","This line is dangerous. It produces a _generator_ of len(imgs_list) Nones. Generators are consumed without replacement, and you don't want this. Just do a one-liner like `confounds = [None] * len(imgs_list)` or something similar. Also you definitely don't need itertools here.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","dohmatob","2015-07-18 17:08:32","OK.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-07-19 22:15:30","Really?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-07-19 22:18:38","I said something related in an earlier version of this code.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-07-19 22:23:26","What do you mean by sorting? PCA-ish, According to explained variance?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-07-19 22:34:28","As discussed earlier with Michael, there is some controvery how to call these things. Many appear to say ""component weights"" for the actual maps in our case and ""loadings"" for the coefficients of the linear combination of these maps.
+
+Means: here better `loadings`or something like that
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-07-19 22:37:23","Use provided loadings to compute corresponding linear component combination in whole-brain voxel space
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-07-19 22:41:02","loose underscore in filename?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-19 23:16:17","Your comment is not very helpful.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-07-19 23:26:29","This is not the most elegant code but if you really need that, you should probably call `check_niimg(imgs, ensure_ndim=4, atleast_4d=True)`.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-07-20 09:07:22","I don't think this is a good idea if we do not want to support `PCAMultiNiftiMasker`, which is really an internal tool.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_subject_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-07-20 11:31:14","I ll leav it here as this is the same code as in MultiNiftiMasker. Either we change everything or we keep to this (this is not dangerous as we know that we use it only once).
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-07-21 17:09:24","You are not using the `mem` object it looks like. You can also remove the Memory import at the beginning.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-07-21 17:15:41","Doesn't seem to be used in `__init__`
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-08-21 15:45:42","The master version fails with floats...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/input_data/masker_validation.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:32:21","Why don't you take `n_components` from `data[0].shape[0]`?
+
+Note: I think we use this kind of code pattern several time in nilearn. It shouldn't be too much work to add an `axis` parameter and use it elsewhere. If you don't plan to do it, we'll add an issue about that after merging your PR.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/_utils/numpy_conversions.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:32:39","Having the index of the image is usually useful in that context.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/_utils/numpy_conversions.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:33:01","This should not be removed...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/datasets/__init__.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:33:11","Same here.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/datasets/__init__.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:33:26","Revert here too.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/datasets/__init__.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:34:40","Warning: this is not safe, `reduction_ratio` could be something else.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:37:56","I think it's time to make a `_get_niimg_shape` function that does not load the data to get the shape.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:39:46","This has to be discussed. We should, at minimum, allow overriding of this heuristic using an environment variable.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:40:46","You have no guarantee that the directory will be writeable. Please use `tempfile`.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:42:56","transform method can cache the masking cleanly, is there any reason to do it by hand here?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-08-24 08:46:27","Is the plan to add fetch_hcp_rest to nilearn.datasets? Maybe you didn't mean to git add this example.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state_shuffle.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-08-24 08:48:06","You don't seem to be using fast_same_size_concatenation anywhere.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/_utils/numpy_conversions.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-24 08:50:26","I think that you meant to remove this function along with PCAMultiNiftiMasker. Could you do it so we don't review unused code?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:34:45","You say 20 but there are 40.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:35:21","Did you want to compare to CanICA?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:38:41","I think that `memsize` is a more common naming.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 12:38:54","You are say ""example apply"" twice in the same line
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:41:05","Again, write access is not guaranteed here. Is there any reason to save the file here instead of the system temporary folder?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:42:15","Seems like debug code.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:44:20","God bless you!
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:46:07","Please raise warning when you override user-defined values.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-08-27 12:49:03","We exposer the masker because it ca be used by the user to `inverse_transform` components. Why do make it private?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-08-27 12:50:13","I tend to strongly prefer parentheses over backslashes for multi-line stuff
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 12:51:53","I know we have not done this in the other examples, but why not have one argument to `DictLearning` per line and comment right to it briefly what it roughly means?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 12:52:59","I guess `canica` is not in hear for debugging purposes...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 12:56:15","For a user who does not already know the `NiftiMasker`family, it might be difficult to understand this line. Isn't there a way to expand this into multiple steps for didactic reasons?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 12:58:48","What is the `type`for? - Does it not work without it?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:03:03","This line appears ciritical to understand how the visu works, perhaps add an additional comment.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-08-27 13:05:37","Yes that was the idea ! Caching it means that it takes very little extra time, as it would be computed anyway in DictLearning
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:06:17","`PCA`appears out of date now.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-08-27 13:06:33","Ah, true. It can be possibly very large, that's why I wanted to put it in some kind of data folder
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-08-27 13:07:23","Doc error, sorry
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:13:14","that DO not
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:22:08","PEP8
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:26:39","Are you sure the `int()` is necessary here?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:28:55","within
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:31:40","perhaps mention somewhere that SVD or RandomizedSVD is used depending on sample/subject ratio...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 13:33:33","""output"" instead of ""data""?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 14:00:48","""signal"" -> ""loading"" ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 14:03:22","Apparently, it is said nowhere where what the ""score"" corresponds to mathematically? 
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 14:06:09","loose , here?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 14:12:49","Explanation could be clearer here. ""Upper limit on...""?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-08-27 14:19:21","could still be clearer...the difference between ""in memory"" and memmap file ""on disk"" could be more explicit. As well as what the decision rule is exactly.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","bthirion","2015-08-31 07:57:22","This probably needs to go to some other places e.g. _utils
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-09-10 12:07:09","You need that to introspect class name
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-10-05 14:30:07","Why the parentheses around the reference ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/dictionary_learning.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-10-05 14:38:20","Did mean to write something like this instead?
+
+``` python
+try:
+    WindowsError
+except AttributeError:
+    WindowsError = None
+```
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/_utils/file_io.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:10:06","PEP8: 2 empty lines
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:12:22","@AlexandreAbraham : can we avoid this code thanks to our checkers? I don't like the idea of having it spread in the codebase.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:22:49","name: BaseDecomposition
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:23:25","I suggest that we don't support persistence to memmap and use a function instead of this object.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:24:15","I think that I would prefer 'session' to 'record'.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-10-28 12:24:36","No there is not. But it can be done using a one-liner though.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-10-28 12:25:59","My username is not arthur so I may have some problems :)
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_sparse_pca_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:26:06","This function cannot be named 'score', because is the scikit-learn API, score returns only one number.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:26:17","PEP8: two empty lines.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-10-28 12:29:30","If we remove support for out of core via the memmap, batches are no longer critical here, and we use dict_learning_online with return_code=True.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-10-28 12:34:27","Please use masking._load_mask_img
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:13:50","necessary? Why not just one variable instead?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_sparse_pca_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:17:29","perhaps add comment, why ""6"" as an example
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_sparse_pca_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:22:09","Just checking: does this work on Windows machines?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:27:11","I know I already said that: but some broad indicators of the conceptual difference between sparse PCA and dictionary learning would be helpful, along the lines of ""Informally, think of sparse PCA (parsimony in voxels) as the transpose of dictionary learning (parsimony in components).""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:28:04","too unspecific. What's the difference to PCA, sparse PCA and ICA?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/plot_dict_learning_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:34:15","point-not-point-at-end is inconsistent
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:40:52","This explanation does not help much in understanding what this argument actually does.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 13:55:44","PEP8
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 14:07:53","kind of tautological with the score() function of the base class in terms of the explanation #descriminability
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 14:15:51","a) why?
+b) Are we sure that we have at least 10 maps?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 14:17:59","""...(as opposed to voxel sparsity)""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-10-28 14:19:33","compoent sparsity = voxel sparsity
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 14:20:17","Isn't it more intuitive not to manipulate the data by default?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 14:24:02","Is this pythonic? Is time_[1] ever used?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 14:24:42","typo?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-10-28 14:33:58","As far as I understand it, sparse PCA typcially imposes an L1 penalty term on the single voxels, whereas sparse dictionary learning typically imposes an L1 penalty term on the coefficients of the entire components of the dictionary, rather than the voxels of the space that is explained by the components.
+
+Exactly for these aspect, I feel, that the distinction between DictLearning and SparsePCA should be explicit in both examples and nilearn base code.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-10-28 14:45:14","See below ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-11-04 09:53:51","Missing end of the sentence.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-11-04 09:53:54","Missing dot at the end.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-11-04 09:54:32","Typo: M**ap**s ... lea**r**ning
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-11-04 09:55:34","cur -> cut
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-11-04 09:56:15","Do you need the atexit?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-11-04 10:06:51","why not put subject_n_samples in the zip in order to avoid the enumerate?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-04 14:34:55","Is this been added or I have missed it ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/index.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-11-05 12:12:13","Good catch, dictionary_learning.rst hasn't been git added.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/index.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:11:10","""DictLearning is a ready-to-use class just like CanICA"" should be sufficient I guess.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:11:53","It would be nice to make an indentity to parameter ""alpha"". It is mixed in the sentence.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:12:11","fullstop ).
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:14:24","I would write ""Group comparisons of Dictionary Learning and Canonical ICA analysis on resting-state fMRI""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:18:06","By default it fetches 40 subjects.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:24:57","""Dumping"" to ""Saving"" ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:32:13","For nicer look \* Gael Varoquaux et al. ""Multi-subject dictionary learning to segment an atlas of brain spontaneous activity"", Information Processing in Medical Imaging, 2011, pp. 562-573, Lecture Notes in Computer Science.
+
+""Available on hal""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:33:26","""utilities""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:34:54","May be ""provided data"" to ""input data"" .
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:36:19","""provided masker"" to ""given masker""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:38:05","I don't think ""using a PCA"" is required because anyway you are describing below.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:41:16","""utilities for masking and dimensionality reduction of data"". If you agree.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:42:30","For multiple ""images""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:50:19","May be ""An instance used to mask the input data"" ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:51:11","subject to ""subjects""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:53:24","or 2D matrix ""in an array""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:54:50","It would be nice I guess if you say what is default and what is optional. Just for the sake of clarity.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(23, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:55:55","Between 0. ""and"" 1.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:56:20","Forget if I am mistaken.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 20:57:41","please fullstop :)
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 21:00:12","""Returns""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-11-05 21:02:28","For consistency either ""int"" or ""integer""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 21:46:10","Sparsity is controlled by a parameter for sparse maps. ;-)
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 21:51:05","grammar (second sentence)
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 21:53:59","style: leave out ""doing""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 21:55:34","""4D plotting""? Perhaps not exactly intuitive...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 22:04:35","content already in the line above and does not go well with the few lines below
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 22:21:00","Wether ...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 22:23:08","typo
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 22:40:41","typo
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 22:43:19","Should not extend, rather than amount, indicate whether we flip signes?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 22:54:01","Bach & Co usually like to distinguish ""fixed"" and non-""fixed"" dictionaries in DL appraoches.
+Besides a reminder to be explicit about wether the map coeffients/loadings (typical sparse DL) or weights (closer to SparsePCA) are what will be sparse.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 22:59:07","""initial estimation""?...perhaps more ""Custom initilization of map parameters...""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(64, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 23:01:20","...or even extend+amount
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 23:04:01","comment on these three lines
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(183, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 23:06:40","unit-variance scaling?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-11-05 23:18:21","More precisely, one could mention, it's an initialization of only V or for V+U
+(http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.dict_learning_online.html).
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(64, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:11:16","Do you actually need to save components to file?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:11:42","~~It should be plotting.show() to avoid the matplotlib import~~. **Edit**: actually you are using plt in plenty of other places so that's fine.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-01 12:14:18","> Do you actually need to save components to file?
+
+I think that it is useful because users will most likely want to do that,
+and that way, when they copy-paste from the example they don't have to
+look for how to do it.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:14:47","Personally in favor of Python types, i.e. int.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:15:16","else clause not needed.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:15:35","else clause not needed
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:16:03","""0. and 1.""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:17:56"," 'int' is platform-dependent, I would use an explicit dtype i.e. 'int64'
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:21:33","There has to be a better way of doing this with numpy.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:22:42","Use -----
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:23:24","Short description should fit on one line. Move second sentence below.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:24:39","{'background', 'epi'} is the way of indicating choices
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:25:27","str rather than string (maybe just my own preference for Python types here)
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:26:00","---- rather than ====
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:35:06","Actually this attribute doesn't seem to be used anywhere, has it changed its name somehow?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:35:36","Same comment as above `_pca_masker_` doesn't seem to be used anywhere in the code, maybe the name has changed.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-01 12:46:00","Newline needed here, see [PEP 0257](https://www.python.org/dev/peps/pep-0257/#id17). ""Multi-line docstrings consist of a summary line just like a one-line docstring, followed by a blank line, followed by a more elaborate description""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-02 09:40:04","What do you mean ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","KamalakerDadi","2015-12-02 09:42:34","something like this to indicate that it is a parameter 'alpha' ?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-02 09:44:07","It's V only, but I don't think we should talk about it in the documentation, nilearn users do not need to know that.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(64, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-02 09:44:52","We're using extend there !
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:55:45","To be addressed.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:56:27","To be addressed
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/index.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-02 09:57:29","Not sure of that
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:57:50","+1 on that suggestion.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 09:59:06","This file should be called 'plot_compare...' to be run by sphinx-gallery to generate a plot.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:00:11","Could you rebase on master, and then use the new style of division (for notebook-style sphinx gallery):
+
+<pre>
+#######################################################################
+# Load ADHD rest dataset
+</pre>
+
+throughout the example.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:01:14","We no longer need to import matplotlib, as we can use show from nilearn.plotting.show (it simplifies the example).
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:02:09","I'd rather use multiple figures than multiple axes. It makes the code more complicated, and we are trying to phase out support for this.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:16:05","I think that we should move this affection below, as it is not used before the for loop (useful for readability and memory usage).
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:16:33","Me neither :)
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:17:03","State that they can be 3D or 4D.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:17:52","I would state in the first line that this function is efficient on multiple blocks of data.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:19:39","Is this argument still valid?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:20:24","It seems to me that you can search for all the occurences of in_memory and remove them.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:35:03","You cannot pass the 2D list (or array) to the inverse_transform of nifti_maps_masker?
+
+What I don't like about this code is that it is going to be returning a list of 3D imgs. For consistency, it seems that we would like a 4D image.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(388, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:37:27","Why did you reorder the arguments to CanICA? It's potentially a backward incompatible change, and I don't think that we want it.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:43:30","Can you do a short one-line docstring here.
+
+The reason being that it helps coders (not end users) understand the purpose of the function.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:47:24","+1
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(64, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:48:06","I think that the formatting is broken here.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:53:16","@arthurmensch  has validated this choice empirically, and it works well.
+
+@arthurmensch : could you add a comment in the code saying exactly this, so that we avoid people changing it in the future.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:54:45","Reordering arguments :). I am not sure that it is a good thing.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 10:55:41","What does the 2 mean here?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 11:54:48","I think that we should remove these lines.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/tests/test_base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 12:02:16","We tend to run tests using nose from the command line. Thus I think that we should remove this line.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/tests/test_canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-02 12:27:48","IMHO it is better : we put all estimator related argument first, then masker related argument, then system related argument
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-02 12:44:35","Loadings is a list of loadings related to subjetcs. I'll write an issue
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(388, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 13:37:17","1) typo
+2) ""Sparsity here refers to parsimony in ....""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 13:38:00","intended?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_canica_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 13:39:16","I would expect that HAL is perhaps not known to everybody.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-02 13:43:46","While you are at it, touching this file, this line is way too long ...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 13:45:51","It is not helpful to explain something with the same something.
+
+""""select pertinent slice section for display""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 13:50:02","typo
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-02 13:51:34","Just a side-comment, although it might not really matter in this particular case, changing the order of the arguments might break people code if they pass arguments by position rather than by name.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 13:51:50","sorry, but kinda far from being clear what this does, when not considering the code
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(50, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 13:55:09","PEP8
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-02 14:14:14","what about:
+
+``` python
+current_pos = 0
+for data in data_list:
+    len_data = len(data)
+    data[current_pos:current_pos+len_data] = data
+    current_pos += len_data
+```
+
+At the end of the day, isn't this thing just a concatenation?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 15:14:51","""initial estimation"" still does not make sense; one could also use an anatomically motivated map which would then not be ""estimated""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(64, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 15:15:07","The notion of compression remains elusive
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-02 15:15:30","empty line
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:24:44","Identation is wrong above (by one whitespace).
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:27:12","Typo: activitym (last word).
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:29:22","You should move this comment one line below
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:30:32","This reference is wrong. You can grab the right reference from the build of sphinx-gallery, once it is finished.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:30:55","Indentation is wrong in the two lines above.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:31:53","Here use "":class:'DictLearning'""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:32:30","You should remove this.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_canica_resting_state.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:32:51","Wrong indentation.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:33:07","Still wrong.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:34:33","You need to clean this.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:37:16","You should fix the indentation: this is not valid rst.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-02 17:45:41","It seems that you changed the default smoothing from None to 6.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/canica.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:14:43","two comment sharpes?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:17:16","I thought, brackets are cleaner or even more pythonic in this setting?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:18:13","...and add a short comment for why and what of these two indices.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:18:40","Perhaps even expand line 77, which might be a little overloaded for beginners.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'examples/connectivity/plot_compare_resting_state_decomposition.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:21:38","People might wonder, why ""PCA"" if `mask_and_reduce` is a general purpose function?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:33:53","Suggestion for higher specificity: ""for MATRIX decomposition""
+
+Also ""estimatorS""
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:39:05","a) Perhaps introduce a helper function `isemptylist()` that performs both type-checking and test the length
+b) perhaps profit from implicit booleaness of list -> `not imgs`?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:43:55","I think this function name may contain a grammatical error -> do you mean ""sort by score"", that is, as a fucntion of each components' score/explained variance?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:47:18","Do we have a test for both these two code branches?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(453, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:52:57","just day `performs dimensionality reduction by subsampling in the temporal domain`. What is written here is a little fuzzy.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","banilo","2015-12-03 09:53:55","One could also make expilcit the way the smaller subset of time point is chosen?
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/dict_learning.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-12-03 12:03:20","For me, this is clear. However, I am a bit puzzled by the word ""ratio"". In data compression, the compression ratio is usually computed using the formula `uncompressed data size / compressed data size`, thus a ratio inferior to 1 seems a bit odd. But maybe it's just me.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(50, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-12-03 12:04:57","This is definitely not a good idea. You will waste a lot of memory here if you load everything instead of iterating over it.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-03 12:09:58","> This is definitely not a good idea. You will waste a lot of memory here if you
+> load everything instead of iterating over it.
+
+My PR to this branch solves this problem, to the cost of doing things a
+bit more manually. However, I think that we should accept this cost, in
+order to merge this PR for the release. We should later  inspect our
+loading / checking code to see what is the best way to do this.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","AlexandreAbraham","2015-12-03 12:16:39","It's as simple as removing `list` here.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","GaelVaroquaux","2015-12-03 12:25:25","> > -    imgs = list(_iter_check_niimg(imgs, atleast_4d='True', memory=memory,
+> > -                             memory_level=memory_level))
+> 
+> It's as simple as removing list here.
+
+No, that wasn't enough to limit the memory explosion, it just delayed it.
+
+I suspect that images spanned by the iterator were not properly garbage
+collected. But it does require investigation.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-03 12:25:57","No beacuse we iterate twice. I was stupid to add this list() though. Reviewing Gaël PR now
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-03 12:52:31","Seems more natural to me...
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(50, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-03 12:54:11","Yes
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(453, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:07:34","You probably don't want to change this link.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:07:42","This one either.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:08:20","This reference should probably stay the same.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:11:23","In order to be compatible with the changes that have been going on in sphinx-gallery, you should probably a pattern something like this here:
+
+../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_003.png
+
+Same thing for the png below.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:27:17","This link is wrong, it should be:
+http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:27:34","http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:28:01","wrong link, should be:
+http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-03 15:28:09","wrong link, should be:
+http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","arthurmensch","2015-12-04 08:39:05","49 occurence in the whole codebase. I'll do a pull request to change this once this one is merged
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-04 10:03:05","> 49 occurence in the whole codebase
+
+Nope, all occurences have been fixed by @mrahim recently in master. Just fix yours please!
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(None, '', u'nilearn/decomposition/base.py')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-04 12:37:20","Genuine error in CircleCI, it looks like you need a space after the :
+
+Try to run the doc generation with make html-strict and you'll be able to reproduce the error and possibly find other problems.
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(114, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-04 14:09:58","You probably shouldn't change this link
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(75, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit_comment","693","nilearn","nilearn","lesteve","2015-12-04 14:10:03","and this link either
+","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9","(80, '', u'doc/connectivity/resting_state_networks.rst')"
+"pull_request_commit","693","nilearn","nilearn","arthurmensch","2015-09-09 13:18:30","Added l1 code based dictionary learning","1a9e8de6d6a3c3663f50a3851c187282b7cc6633",""
+"pull_request_commit","693","nilearn","nilearn","arthurmensch","2015-12-02 09:30:28","Addressed comments","7af3a07a9fe836f3dc7350732dd71cb214853533",""
+"pull_request_commit","693","nilearn","nilearn","arthurmensch","2015-12-04 10:41:26","Comments","8d15dfe8ed9a541c24b64dfa5513e1964df4d2b9",""

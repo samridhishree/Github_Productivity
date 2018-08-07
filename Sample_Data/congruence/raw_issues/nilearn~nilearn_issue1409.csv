@@ -1,0 +1,149 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1409","nilearn","nilearn","SRSteinkamp","2017-03-04 17:57:28","Work on Issue: #1296  
+Created the largest_connected_component_img and fixed a small bug in largest_connected_component, where entering a nifti image returns True. ","start issue","[MRG] Added largest_connected_component_img"
+"issue_closed","1409","nilearn","nilearn","GaelVaroquaux","2017-06-15 16:55:28","","closed issue","[MRG] Added largest_connected_component_img"
+"pull_request_title","1409","nilearn","nilearn","SRSteinkamp","2017-03-04 17:57:28","Work on Issue: #1296  
+Created the largest_connected_component_img and fixed a small bug in largest_connected_component, where entering a nifti image returns True. ","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","[MRG] Added largest_connected_component_img"
+"pull_request_merged","1409","nilearn","nilearn","GaelVaroquaux","2017-06-15 16:55:28","[MRG] Added largest_connected_component_img","58f9dc4862d3f384ef69761471250a90c5e235b2","Pull request merge from SRSteinkamp/nilearn:master to nilearn/nilearn:master"
+"issue_comment","1409","nilearn","nilearn","GaelVaroquaux","2017-03-06 08:42:24","> I had a short discussion with @KamalakerDadi about this. We were a bit unsure
+> about how ndimage would behave in the case of 4D images. I am going to look
+> into this tonight.
+
+In case of a 4D image, ndimage is going to take the large CC in all
+direction, ie in the 4D space. That is most likely going to surprise the
+user. I think that, if the input image is 4D, we want to either raise an
+error, or loop on every 3D image.
+
+","",""
+"issue_comment","1409","nilearn","nilearn","GaelVaroquaux","2017-03-06 12:02:16","> I think that we should add for 3d first, and discuss in a separate issue how to make it easy for users to process 4d images.
+
+It's my feeling too. The functionality is one that I would expect on 3D,
+but less on 4D data.
+","",""
+"issue_comment","1409","nilearn","nilearn","GaelVaroquaux","2017-03-14 08:54:51","> +    - Function :func:`nilearn._utils.ndimage.largest_connected_component_img`
+
+I just realized: that function shouldn't be in nilearn._utils.ndimage,
+which is a private utilities module, but in nilearn.image.
+","",""
+"issue_comment","1409","nilearn","nilearn","GaelVaroquaux","2017-06-15 16:55:24","Merging. Thanks a lot","",""
+"issue_comment","1409","nilearn","nilearn","AlexandreAbraham","2017-03-06 11:33:52","Note that for other functions we have chosen not to handle 3d and 4d in the same function. The reason is that we tried this previously and the codebase has grown to handle 3d/4d cases, and also users ended up feeding 4d images to some functions, thinking it was 3d, which resulted in unexpected results.
+
+I think that we should add for 3d first, and discuss in a separate issue how to make it easy for users to process 4d images (and possibly do it for other functions as well).","",""
+"issue_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-12 18:31:17","Added the suggestions. Sorry for the double commit. ","",""
+"issue_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-15 15:29:06","Thanks for changes @SRSteinkamp . We have to wait because for some reason scipy server is down which leads to tests failed on CircleCI.","",""
+"issue_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-16 14:50:11","Regarding CircleCI reference error, I missed to tell you that you need to add your function in ```doc/modules/reference.rst```. Should be in alphabetical order so right after ```load_img``` in mod:```nilearn.image```.
+Can you add that please and hopefully CircleCI will be fixed ?","",""
+"issue_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-16 15:24:55","If it's alphabetical, then it should be before load_img ;) 
+Done, hopefully, everything goes through now. 
+Thanks for guiding me through all this :)
+ 
+","",""
+"issue_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-16 16:06:05","Thank you @SRSteinkamp for working on this. Feel free to shoot for another issue ;)","",""
+"issue_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-17 08:07:31","Will do if I find some time at my hand :) 
+Hm, I do not understand the CI error-message, but it seems to be related to the docs/sphinx again? ","",""
+"issue_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-17 12:54:21",">Hm, I do not understand the CI error-message, but it seems to be related to the docs/sphinx again?
+
+Build is succeeded which your changes are fine. But, I don't get the error message.","",""
+"issue_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-17 13:06:28","Ok ... Well I see ""ci/circleci — Your tests failed on CircleCI "":
+
+A small excerpt of the error message for build no. 2367:
+``Exception occurred:
+  File ""/home/ubuntu/nilearn/doc/sphinxext/sphinx_gallery/docs_resolv.py"", line 262, in _get_link
+    raise``
+
+
+``source continuous_integration/circle_ci_test_doc.sh returned exit code 2``","",""
+"issue_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-17 15:53:39",">Ok ... Well I see ""ci/circleci — Your tests failed on CircleCI "":
+
+I see that but I don't know what is causing ?
+For me your PR looks good.","",""
+"issue_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-31 13:39:15","All went green. Can I have reviews or should I merge this one ?
+Please let me know if I missed to review ?","",""
+"issue_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-10 09:10:03","Some minor comments from my side. ","",""
+"issue_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-06 09:06:23","Ok, I'll implement the loop over the 3D images. I think this will be nicer from a user's perspective. ","",""
+"issue_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-06 12:18:38","So in the current form check_niimg_3d(img) should already provide the right error when a 4D image is given - at least if I got that right?
+
+> I think that we should add for 3d first, and discuss in a separate issue how to make it easy for users to process 4d images.
+
+For me (being more of a user): In my feeling no added functionality is needed as iter_image & concat_img should do the job already. But maybe adding an explicit example could do the trick, to stress the usefulness of those function (also new_img_like etc.). However: different issue. ","",""
+"issue_comment","1409","nilearn","nilearn","codecov[bot]","2017-03-04 19:29:54","# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=h1) Report
+> Merging [#1409](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/1d6c15d48d3fa51ee03765485641e63186c266ff?src=pr&el=desc) will **increase** coverage by `0.01%`.
+> The diff coverage is `97.72%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1409/graphs/tree.svg?height=150&width=650&token=KpYArSdyXv&src=pr)](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1409      +/-   ##
+==========================================
++ Coverage   94.51%   94.53%   +0.01%     
+==========================================
+  Files         118      118              
+  Lines       13469    13511      +42     
+==========================================
++ Hits        12730    12772      +42     
+  Misses        739      739
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/image/\_\_init\_\_.py](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS9fX2luaXRfXy5weQ==) | `100% <ø> (ø)` | :arrow_up: |
+| [nilearn/tests/test\_ndimage.py](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree#diff-bmlsZWFybi90ZXN0cy90ZXN0X25kaW1hZ2UucHk=) | `100% <100%> (ø)` | :arrow_up: |
+| [nilearn/image/tests/test\_image.py](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS90ZXN0cy90ZXN0X2ltYWdlLnB5) | `99.66% <100%> (+0.02%)` | :arrow_up: |
+| [nilearn/image/image.py](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS9pbWFnZS5weQ==) | `96.95% <100%> (+0.21%)` | :arrow_up: |
+| [nilearn/\_utils/ndimage.py](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree#diff-bmlsZWFybi9fdXRpbHMvbmRpbWFnZS5weQ==) | `91.42% <75%> (+0.8%)` | :arrow_up: |
+| [nilearn/plotting/find\_cuts.py](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9maW5kX2N1dHMucHk=) | `90.37% <0%> (+0.07%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=footer). Last update [1d6c15d...f784fb2](https://codecov.io/gh/nilearn/nilearn/pull/1409?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).","",""
+"pull_request_commit_comment","1409","nilearn","nilearn","bthirion","2017-03-05 20:57:59","I'm curious about what happens with a 4D image","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","bthirion","2017-03-05 21:00:02","A test with a 4D image, then ?","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-06 08:40:35","I had a short discussion with @KamalakerDadi  about this. We were a bit unsure about how ndimage would behave in the case of 4D images. And decided to limit the function to 3D images. 
+I am going to look into this tonight. ","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-10 09:02:31","Can you write a short comment here of what you are testing ?
+It will be useful for anybody who can quickly follow and understand.
+
+Same for both tests you have added here.","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-10 09:09:19","Can you add this here ?  ```.. versionadded:: 0.3``` with empty line space before and after.
+
+In Nilearn, you can have a look at this link
+https://github.com/nilearn/nilearn/blob/230279e885aae8f9ae28c99c291ed3b0b4e93588/nilearn/connectome/connectivity_matrices.py#L204
+
+Ref for version added and other: http://www.sphinx-doc.org/en/stable/markup/para.html","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:18:34",">did this break the check ?
+
+CircleCI build failed because reference you have given as ```nilearn._utils.ndimage.largest_connected_component_img``` could not be found. Since this function is not initialized in ```nilearn/_utils/__init__.py``` from ndimage module.
+
+We could initialize this function in ```_utils/__init__.py``` from ndimage and refer as ``nilearn._utils.largest_connected_component_img``` directly in whats_new.rst. In this way we can find the target and build will go through.","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'doc/whats_new.rst')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:18:49","Also, I could not understand why largest_connected_component is referred here. May be you could write ""so that Nifti images can now be passed on directly to extract largest connected components in the images.""","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'doc/whats_new.rst')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:19:45","Should be ```.. versionadded:: 0.3```. Space is missing between "".."" and ""versionadded""","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:23:15","PEP: Missing white space after "","". Should be like shape=(10, 11, 12) and n_regions=2)","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:24:34","Space missing between ""#"" and Test","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:25:36","PEP8: regions = [1, 3] space missing after "","".","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:26:16","PEP8: Some unexpected whitespaces here. Should be like shape=shapes[0].","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:27:23","Here too, PEP8 unexpected white space between n_regions and = and space before "")""","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:27:49","Same here PEP8 as commented above.","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:28:16","Unexpected space after [0]","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:28:41","Same here unexpected space.","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-13 09:30:04","flake8 package would be helpful to check these minor errors.","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'nilearn/tests/test_ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-13 12:38:50","Would this mean adding 
+`from .ndimage import largest_connected_component_img`  
+and `'largest_connected_component_img'` to `__all__` in `_utils/__init__.py`?
+
+(I'll do all the little changes later -- and I thought I spend extra attention to the little details :/ . I have flake8 installed though, but I am also quite new to vim - so apparently my setup still isn't working as expected.) ","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'doc/whats_new.rst')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-14 08:53:43","Yes. If you add then you can check by importing ```from nilearn._utils import largest_connected_component_img``` without necessarily specifying ```ndimage``` module.","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(None, '', u'doc/whats_new.rst')"
+"pull_request_commit_comment","1409","nilearn","nilearn","KamalakerDadi","2017-03-16 15:55:11","Ideally, it would be better to leave other things not to change which are not related to your PR. Sometimes reviewing PR might get complex. Just a suggestion. :)","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(5, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","SRSteinkamp","2017-03-16 16:35:41","I see the point, won't do this in the future... I got a bit overzealous when I got flake working. ","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(5, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","GaelVaroquaux","2017-06-15 16:53:45","Style: Python developers do not like continuation lines. We prefer to use parenthesis. We will merge this, to avoid more waiting time, but change it after merge.","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(20, '', u'nilearn/_utils/ndimage.py')"
+"pull_request_commit_comment","1409","nilearn","nilearn","GaelVaroquaux","2017-06-15 16:54:56","Need to change this to 0.3.1. We'll do it in master","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49","(9, '', u'nilearn/image/image.py')"
+"pull_request_commit","1409","nilearn","nilearn","simon.richard.steinkamp@uni-oldenburg.de","2017-03-04 17:53:23","Added largest_connected_component_img, a few checks to largest_connected_component and the corresponding tests","e6cdf9a239144c897134d0e2309662baf5eb2aee",""
+"pull_request_commit","1409","nilearn","nilearn","simon.richard.steinkamp@uni-oldenburg.de","2017-03-12 18:21:50","Updated whats_new, test for 4D images in largest_connected_component_img","9fa8601075f2d7caa0850aec68971460b6d147d3",""
+"pull_request_commit","1409","nilearn","nilearn","simon.richard.steinkamp@uni-oldenburg.de","2017-03-12 18:26:00","fixed spaces","98d294f8d3d30a24b3831744529835bbbb9d2d40",""
+"pull_request_commit","1409","nilearn","nilearn","simon steinkamp","2017-03-13 08:22:54","fixed a typo - did this break the check?","e996a01cf010ca70bec29db243836858d854d9d9",""
+"pull_request_commit","1409","nilearn","nilearn","simon steinkamp","2017-03-14 12:52:19","Moved largest_connected_component_image from '_utils/ndimage.py' to 'image/image.py' and added it to 'image/__init__.py'. Moved tests for largest connected component from '/tests/test_ndimage' to '/image/tests/test_image.py'. Corrected some additional formatting errors. Added image.largest_connected_component to whats_new.rst","52c19d04a37e55f90201ed1dc4a87b789a465a10",""
+"pull_request_commit","1409","nilearn","nilearn","simon steinkamp","2017-03-16 15:22:21","Added largest_connected_component_img to reference.rst","f784fb2cd08ebb26a5c822a5c8dfb73c3a88db49",""

@@ -1,0 +1,64 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","270","nilearn","nilearn","lesteve","2014-10-28 12:39:23","When using `resample=True` in `nilearn.image.resampling.reorder_img` it could be useful to specify additional resampling arguments. The use case that @mrahim had:
+- he wants to plot segmentation images with a discrete set of values (one value per region).
+- Using `plot_img` yields an error because his affine can not be made diagonal by reordering the axes. 
+- Trying to use reorder_img explicitly with resample=True resamples the image with some interpolation which mangles the region you are trying to see: 
+  ![resampled_segmentation](https://cloud.githubusercontent.com/assets/1680079/4808303/089f7658-5e9f-11e4-9ab5-66ef1cf64088.png) This is the picture you would expect:
+  ![resampled_segmentation_nearest](https://cloud.githubusercontent.com/assets/1680079/4808331/51b47032-5e9f-11e4-89ec-8cf91d87d299.png)
+","start issue","Add resampling arguments to nilearn.image.resampling.reorder_img"
+"issue_closed","270","nilearn","nilearn","lesteve","2014-10-30 13:33:48","","closed issue","Add resampling arguments to nilearn.image.resampling.reorder_img"
+"pull_request_title","270","nilearn","nilearn","lesteve","2014-10-28 12:39:23","When using `resample=True` in `nilearn.image.resampling.reorder_img` it could be useful to specify additional resampling arguments. The use case that @mrahim had:
+- he wants to plot segmentation images with a discrete set of values (one value per region).
+- Using `plot_img` yields an error because his affine can not be made diagonal by reordering the axes. 
+- Trying to use reorder_img explicitly with resample=True resamples the image with some interpolation which mangles the region you are trying to see: 
+  ![resampled_segmentation](https://cloud.githubusercontent.com/assets/1680079/4808303/089f7658-5e9f-11e4-9ab5-66ef1cf64088.png) This is the picture you would expect:
+  ![resampled_segmentation_nearest](https://cloud.githubusercontent.com/assets/1680079/4808331/51b47032-5e9f-11e4-89ec-8cf91d87d299.png)
+","aff8b2bad199c15a76c1447bb866be31278df52d","Add resampling arguments to nilearn.image.resampling.reorder_img"
+"pull_request_merged","270","nilearn","nilearn","lesteve","2014-10-30 13:33:48","Add resampling arguments to nilearn.image.resampling.reorder_img","89a3fcaf7ea2710577586cd0c0b412fa4d7beda3","Pull request merge from lesteve/nilearn:reorder-with-resample-args to nilearn/nilearn:master"
+"issue_comment","270","nilearn","nilearn","lesteve","2014-10-29 10:28:25","@AlexandreAbraham any comments on this one?
+","",""
+"issue_comment","270","nilearn","nilearn","AlexandreAbraham","2014-10-29 15:51:38","I'm not sure what to say about this... I think that the problem here is the ""continuous"" part (that should be ""nearest"" in your example). First, I think that reorder_img is a horrible name, reorder_axis would be more meaningful. Also, I don't see why a ""reordering"" function would completely change the affine.
+I would split that into two low_level function: reorder_axis (or reorder_affine) and diagonalize_affine. And then, because diagonalize_affine would imply a resampling, then you don't need a ""resample_args"", it would be basically a wrapper around the resample function.
+
+But to answer your question, if it is just about interpolation, I would go for a string parameter. `resample=True` would be equal to `resample='continuous'`. And you could put `resample='nearest'`. We could also imagine a `resample='auto'` which switches to nearest if all values are integers.
+","",""
+"issue_comment","270","nilearn","nilearn","lesteve","2014-10-29 21:16:59","I am thinking about a quick fix for now to be honest although I get your points.
+
+About using a string parameter, do we care about maintaining backward-compatibility where resample=True is equivalent to resample='continuous'?
+","",""
+"issue_comment","270","nilearn","nilearn","AlexandreAbraham","2014-10-29 21:19:41","nilearn is not released, it is a new feature, so I think we don't need to.
+","",""
+"issue_comment","270","nilearn","nilearn","lesteve","2014-10-29 21:26:45","Hmm maybe I wasn't clear enough, using reorder_img with resample=True is not a new feature and what that was doing is resampling with interpolation='continuous'. Should we maintain this behaviour?
+","",""
+"issue_comment","270","nilearn","nilearn","AlexandreAbraham","2014-10-29 21:30:43","By new, I meant relatively new. Do you think that a lot of people are using this feature ? If so, then raise a warning message. But I think that you can break backward compatibility.
+","",""
+"issue_comment","270","nilearn","nilearn","lesteve","2014-10-29 21:34:43","> Do you think that a lot of people are using this feature ?
+
+No clue whatsoever that's why I am asking ;-)
+
+> But I think that you can break backward compatibility.
+
+OK I'll do that then
+","",""
+"issue_comment","270","nilearn","nilearn","bthirion","2014-10-29 22:06:12","> ```
+> Do you think that a lot of people are using this feature ?
+> ```
+> 
+> No clue whatsoever that's why I am asking ;-)
+> 
+> I would bet that this feature is not frequently used.
+","",""
+"issue_comment","270","nilearn","nilearn","lesteve","2014-10-30 13:11:07","Switched to a 'resample' string argument as discussed.
+","",""
+"issue_comment","270","nilearn","nilearn","AlexandreAbraham","2014-10-30 13:31:52","LGTM
+","",""
+"issue_comment","270","nilearn","nilearn","lesteve","2014-10-30 13:33:43","OK thanks, merging.
+","",""
+"issue_comment","270","nilearn","nilearn","mrahim","2014-10-30 14:47:52","Thank you @lesteve for the new resampling argument. I agree that it is a very specific case that won't be faced everyday, but it's better to have more flexibility without more complexity :-)
+","",""
+"pull_request_commit","270","nilearn","nilearn","lesteve","2014-10-28 10:23:53","reorder_img 'resample' argument sets interpolation resampling
+
+Also:
+* niimg variable names should end with _img in test_resampling.py
+* fix PEP8 and typo axis -> axes
+* add value of interpolation in resample_img error message","aff8b2bad199c15a76c1447bb866be31278df52d",""

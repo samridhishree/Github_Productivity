@@ -1,0 +1,60 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1346","nilearn","nilearn","alexsavio","2016-12-14 14:07:32","Hi,
+
+This is a comment on a possible small feature addition.
+
+Do you think it makes sense if the function `index_img` returned the whole 3D image when the `imgs` parameter is a 3D image and the `index` is 0?
+
+This is how SPM works.","start issue","`image.index_img` for the case of 3D volumes"
+"issue_comment","1346","nilearn","nilearn","AlexandreAbraham","2016-12-14 14:49:59","One remark, `index_img` is used in several places in the code (including the masker). So if there is a modification, we have to keep a _safe_ version foir internal use.
+
+My opinion is that it violates the principle of ""3D niimages are different from 4D niimages"". So maybe it can be added as a flag but I think that putting this by default can lead to unexpected behaviors (for example, if I put the file of a mask instead of a time series, I expect it to crash, not to go on).","",""
+"issue_comment","1346","nilearn","nilearn","AlexandreAbraham","2016-12-14 17:07:25","Let me reformulate your problem. You have a list of string with `filename, n`. You want to load the scan number `n` from `filename` but you don't know the dimensionality of the filename. And, if it is 3D, you want to simply load the image.
+
+In my opinion, this is not the job of `ìndex_img` to do this. `index_img` integrates a default file loading mechanism, for easier use, but it should not integrate options to modify the image otherwise, otherwise these options will spread in all nilearn functions (this is what happened a long time ago and we had to refactor quite a lot of things).
+
+I would see your problem the other way: you have a  niimage that can be 3D or 4D but you want it to be 4D in all cases so that it can be eaten by `index_img`. This is something that we already have internally. If you look at function `check_niimg`, it has an `atleast_4d` option that turns 3d images into 4D images. Unfortunately, `check_niimg` is exposed as `load_img` without this option. You can use `check_niimg` by doing a dirty import (`from nilearn._utils import check_niimg` if I remember well). Then you can do `index_img(check_niimg(path, atleast_4d=True), 0)`.
+
+And for long term, I would be in favor of exposing `atleast_4d` in `load_img` so that you can use it without the dirty import `index_img(load_img(path, atleast_4d=True), 0)`.
+
+How does it sound to you?","",""
+"issue_comment","1346","nilearn","nilearn","alexsavio","2016-12-14 15:03:19","Thanks for your input @AlexandreAbraham, it makes sense.
+
+Would make sense to add a flag `accept_3d` with a default value of `False` for `index_img`?
+","",""
+"issue_comment","1346","nilearn","nilearn","alexsavio","2016-12-14 15:34:15","A flag would work for me. However I can implement this outside nilearn, I was just checking.
+
+My usecase is to post-process output files from GIFT (tell my boss to use CanICA... XD). In the output, the input data is specified by a list of lines like:
+```
+[""/home/alexandre/ica_input/subject_01.nii, 1""
+ ""/home/alexandre/ica_input/subject_02.nii, 1""]
+```
+
+or:
+
+```
+[""/home/alexandre/ica_input/subject_01.nii, 1""
+ ""/home/alexandre/ica_input/subject_01.nii, 2""]
+```
+In the first case I have a list of 3D files, in the second case I have a list of 4D files.
+I tried to used `index_img` for both cases, but got stuck. So I was just curious if you considered it.
+","",""
+"issue_comment","1346","nilearn","nilearn","alexsavio","2016-12-14 17:13:43","Hi @AlexandreAbraham,
+
+Thanks for that, yes, your option sounds better than mine in #1347.
+
+This is the index_img function I implemented for my stuff some hours ago:
+```
+   from nilearn._utils.niimg_conversions import check_niimg, _index_img
+
+    def _index_img(img_file, index):
+        """""" Return the volume in `index` 4th dimension index of `img_file`.
+        If the image is 3D and idx is zero will return the container of `img_file`.
+        """"""
+        imgs = check_niimg(img_file, ensure_ndim=4, atleast_4d=True)
+        return _index_img(imgs, index)
+```
+
+My problem is that I don't like to import private things from `nilearn`.
+
+","",""

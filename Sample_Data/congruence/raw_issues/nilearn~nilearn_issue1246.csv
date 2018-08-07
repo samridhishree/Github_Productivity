@@ -1,0 +1,125 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1246","nilearn","nilearn","salma1601","2016-08-16 13:35:43","I extracted voxel time series within seeds using `nifti_spheres_masker._iter_signals_from_spheres`. Since `NiftiSpheresMasker` doesn't have an `inverse_transform` for the moment, I tried to recover my image using directly `NiftiMasker` and identifiying which voxels actually have the same signals as my within seeds voxels.
+
+Things look OK when I don't use a `mask_img` in my `NiftiSpheresMasker`, but when I use a grey matter mask to intersect my seed with grey matter, I have very strange results, as if voxels were sliced with a step of 3. I find this very strange, and actually don't know if it's my code or a `NiftiSpheresMasker` bug, so posting it just to report. I tried this with different seed/radius, and it's the same strory.
+![rtj_sphere_no_gm_mask](https://cloud.githubusercontent.com/assets/7080143/17700526/63ec96d4-63c6-11e6-8842-ad4c5c82e85f.png)
+![rtj_sphere_with_gm_mask](https://cloud.githubusercontent.com/assets/7080143/17700530/676045f4-63c6-11e6-9b4d-0b1bc7895b03.png)
+
+I am providing my code if needed for checking, it's very long and ugly :$
+
+``` python
+from nilearn import datasets, input_data
+adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+func_filename = adhd_dataset.func[0]
+rtj_coords = (-46, -68, 32)
+radius = 8.
+brain_masker = input_data.NiftiMasker(standardize=True)
+brain_voxels_time_series = brain_masker.fit_transform(func_filename)
+
+# Manual extraction of voxel timeseries within the masked sphere
+import nibabel
+import numpy as np
+from nilearn.input_data.nifti_spheres_masker import _iter_signals_from_spheres
+sphere_masker = input_data.NiftiSpheresMasker(
+    [rtj_coords], standardize=True, radius=radius)
+sphere_masker.fit()
+func_img = nibabel.load(func_filename)
+sphere_time_series = _iter_signals_from_spheres(
+    sphere_masker.seeds_, func_img, sphere_masker.radius,
+    sphere_masker.allow_overlap, mask_img=sphere_masker.mask_img).next()
+print('Check no zero time series: min std is {0}'.format(
+    sphere_time_series.std(axis=0).min()))
+
+# Form sphere image
+sphere_indicator = np.zeros(brain_voxels_time_series.shape[1:])
+indices = []
+for ts in (sphere_time_series / sphere_time_series.std(axis=0)).T:
+    voxel_index = np.argmin(
+        np.linalg.norm(brain_voxels_time_series - ts[:, np.newaxis], axis=0))
+    indices.append(voxel_index)
+
+sphere_indicator[indices] = 1.
+assert(np.sum(sphere_indicator) == sphere_time_series.shape[1])
+sphere_indicator_img = brain_masker.inverse_transform(sphere_indicator)
+
+# Repeat wile masking with GM 
+icbm152_grey_mask = datasets.fetch_icbm152_brain_gm_mask()
+gm_masker = input_data.NiftiMasker(
+    mask_img=icbm152_grey_mask, standardize=True)
+gm_voxels_time_series = gm_masker.fit_transform(func_filename)
+gm_seed_masker = input_data.NiftiSpheresMasker(
+    [rtj_coords], standardize=True, radius=radius, mask_img=icbm152_grey_mask)
+gm_seed_masker.fit()
+gm_sphere_time_series = _iter_signals_from_spheres(
+    gm_seed_masker.seeds_, func_img, gm_seed_masker.radius,
+    gm_seed_masker.allow_overlap, mask_img=gm_seed_masker.mask_img).next()
+gm_sphere_indicator = np.zeros(gm_voxels_time_series.shape[1:])
+indices = []
+for ts in (gm_sphere_time_series / gm_sphere_time_series.std(axis=0)).T:
+    voxel_index = np.argmin(
+        np.linalg.norm(gm_voxels_time_series - ts[:, np.newaxis], axis=0))
+    indices.append(voxel_index)
+
+gm_sphere_indicator[indices] = 1.
+assert(np.sum(gm_sphere_indicator) == gm_sphere_time_series.shape[1])
+gm_sphere_indicator_img = gm_masker.inverse_transform(gm_sphere_indicator)
+
+from nilearn import _utils, plotting
+for img, title in zip([sphere_indicator_img, gm_sphere_indicator_img],
+                      ['unmasked', 'GM masked']):
+    display = plotting.plot_roi(_utils.check_niimg(img, atleast_4d=True),
+                                display_mode='z',
+                                cut_coords=range(24, 45, 3),
+                                title=title, bg_img=icbm152_grey_mask)
+plotting.show()
+```
+","start issue","localisation of voxels time series within gray matter masked seed of NiftiSpheresMasker look strange"
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-16 13:59:27","> MemoryError with your script
+
+computing all voxels timeseries is memory consuming I guess ? I actually don't have this pb
+
+> Could you take a look at mask_coords and see if there is something fishy
+
+Ok
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-16 14:28:58","`mask_coords` seem to be sliced by a stem of 3, for instance here are the first 10 (I changed the radius to 3 to accelerate)
+
+> [[90, -126, -72], [90, -126, -69], [90, -126, -66], [90, -126, -63], [90, -126, -60], [90, -126, -57], [90, -126, -54], [90, -126, -51], [90, -126, -48], [90, -126, -45]]
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-16 14:48:19","do you want me to try fix this issue or you want to fix it ?
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-16 15:00:04","`mask_coords` has shape `(271633, 3)`
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-16 17:44:56","I think `_apply_mask_and_get_affinity` is OK: I have exactly the same time points for a radius of 3mm with and without GM mask !
+But still the same issue when plotting.
+![rtj_sphere_3mm_no_gm_mask](https://cloud.githubusercontent.com/assets/7080143/17709519/ba90cc94-63e9-11e6-9a35-e98601a3d520.png)![rtj_sphere_3mm_with_gm_mask](https://cloud.githubusercontent.com/assets/7080143/17709526/c34a23f8-63e9-11e6-86ab-077a3b8785d3.png)
+
+ Can the pb be related to the `NiftiMasker` `inverse_transform` ??
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-17 09:04:05","> but your data seems to be float.
+
+my grey matter mask and my seed mask are int. But I converted everything to float and it does change nothing.
+
+> Could you save the img that you are plotting? 
+
+Yes I saved it in .nii and I looked at it with fslview, but same issue ... 
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-17 09:19:21","with fsl looks the same as the plotted image with nilearn plotting
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-17 13:19:55","Ok, thank you very much !
+","",""
+"issue_comment","1246","nilearn","nilearn","salma1601","2016-08-17 22:24:47","The first code
+
+``` python
+gm_masker = input_data.NiftiMasker(
+    mask_img=icbm152_grey_mask, standardize=True, target_affine=3*np.eye(3))
+```
+
+ throws an error
+
+> Given mask is not made of 2 values
+
+may be related to #1171 ?
+But the second one works fine !
+![rtj_sphere_6mm_no_gm_mask](https://cloud.githubusercontent.com/assets/7080143/17755381/0d8adf66-64da-11e6-926a-fcbf31cf9cd2.png)![rtj_sphere_6mm_with_gm_mask](https://cloud.githubusercontent.com/assets/7080143/17755398/19ab6464-64da-11e6-922d-516b022911e7.png)
+","",""

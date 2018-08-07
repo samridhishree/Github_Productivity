@@ -1,0 +1,68 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","482","nilearn","nilearn","GaelVaroquaux","2015-03-04 08:52:38","Our usage of butterworth looks like it is not doing what is should.
+","start issue","Filtering looks broken"
+"issue_closed","482","nilearn","nilearn","GaelVaroquaux","2015-03-25 14:15:30","","closed issue","Filtering looks broken"
+"issue_comment","482","nilearn","nilearn","GaelVaroquaux","2015-03-04 08:54:00","Related to #374 ?
+","",""
+"issue_comment","482","nilearn","nilearn","AlexandreAbraham","2015-03-04 08:59:03","Can you be more specific?
+","",""
+"issue_comment","482","nilearn","nilearn","GaelVaroquaux","2015-03-04 20:39:33","Sorry, I wrote this issue live during the course at Leipzig, in front of the audience. I dug a bit more, and the following seems really wrong:
+</pre>
+import numpy as np
+from nilearn.signal import butterworth
+from matplotlib import pyplot as plt
+
+t = np.linspace(0, 10, 2000)
+y = np.cos(t)
+
+plt.clf()
+plt.plot(y)
+plt.plot(butterworth(y[:, np.newaxis], sampling_rate=1., low_pass=10000.,
+         ).squeeze())
+
+plt.show()
+</pre>
+
+Even  though I am putting a very high cut off frequency for the low_pass filter, I am getting the signal entirely cut. Even stranger, if I change the low_pass to a high_pass, I am getting the opposite: no cut at all. It seems to me that there is something deeply broken here.
+","",""
+"issue_comment","482","nilearn","nilearn","bthirion","2015-03-04 21:09:06","On 04/03/2015 21:39, Gael Varoquaux wrote:
+
+> plt.plot(butterworth(y[:, np.newaxis], sampling_rate=1., low_pass=10000.,
+> ).squeeze())
+> On numpy 1.9.1, this throws an error (""wn should be btw 0 and 1"").
+","",""
+"issue_comment","482","nilearn","nilearn","AlexandreAbraham","2015-03-04 21:15:52","> On numpy 1.9.1, this throws an error (""wn should be btw 0 and 1"").
+
+Not on my box.
+","",""
+"issue_comment","482","nilearn","nilearn","GaelVaroquaux","2015-03-04 21:30:19","> On 04/03/2015 21:39, Gael Varoquaux wrote:
+> 
+> > plt.plot(butterworth(y[:, np.newaxis], sampling_rate=1., low_pass=10000.,
+> > ).squeeze())
+> > On numpy 1.9.1, this throws an error (""wn should be btw 0 and 1"").
+
+Yes, we have had this in the workshop also. It clearly seems to me that
+this code is broken.
+","",""
+"issue_comment","482","nilearn","nilearn","AlexandreAbraham","2015-03-04 23:03:24","OK, I think that I got it. In fact, Wn (see scipy.signal.butter) must be in [0, 1] for a digital filter. The problem is that when the value is outside of the bounds, the filter seems to have an unexpected behavior.
+
+You can see it easily: with `low_pass=0.5` you get the expected behavior (signal is the same, `Wn=1.`). But with `low_pass=0.501` you can see that the filter goes completely crazy. 
+
+I still don't know why I don't get the warning associated with Wn value.
+","",""
+"issue_comment","482","nilearn","nilearn","AlexandreAbraham","2015-03-05 00:59:50","> Related to #374 ?
+
+No. This issue has been clearly identified and we only need to agree on the behavior to adopt if a high pass filter is applied on data with a linear trend.
+","",""
+"issue_comment","482","nilearn","nilearn","GaelVaroquaux","2015-03-05 06:27:13","> OK, I think that I got it. In fact, Wn (see scipy.signal.butter) must
+> be in [0, 1] for a digital filter. 
+
+It seems that we should clip it (and maybe warn) for values too high or
+too low.
+","",""
+"issue_comment","482","nilearn","nilearn","AlexandreAbraham","2015-03-05 09:19:33",":+1:
+","",""
+"issue_comment","482","nilearn","nilearn","banilo","2015-03-05 18:35:11","> On numpy 1.9.1, this throws an error (""wn should be btw 0 and 1"").
+
+I also get this error on Mac + numpy '1.9.2'
+","",""

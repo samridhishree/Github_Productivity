@@ -1,0 +1,108 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1371","nilearn","nilearn","duchesnay","2017-01-30 13:38:47","Atlas sub-maxprob-thr0-1mm of HarvardOxford.tgz contains incorrect labels.
+
+**1) Fetch** from http://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz
+```
+import numpy as np
+import nibabel as nib
+import nilearn.datasets
+
+atlascort = nilearn.datasets.fetch_atlas_harvard_oxford(""cort-maxprob-thr0-1mm"",
+    data_dir=None, symmetric_split=False, resume=True, verbose=1)
+atlassub = nilearn.datasets.fetch_atlas_harvard_oxford(""sub-maxprob-thr0-1mm"",
+    data_dir=None, symmetric_split=False, resume=True, verbose=1)
+
+atlascort_img_fetch = nib.load(atlascort.maps)
+atlassub_img_fetch = nib.load(atlassub.maps)
+```
+
+**2) Local** HarvardOxford atlas from FSL
+```
+atlascort_filename = '/usr/share/data/harvard-oxford-atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr0-1mm.nii.gz'
+atlassub_filename = '/usr/share/data/harvard-oxford-atlases/HarvardOxford/HarvardOxford-sub-maxprob-thr0-1mm.nii.gz'
+
+atlascort_img_local = nib.load(atlascort_filename)
+atlassub_img_local = nib.load(atlassub_filename)
+
+```
+**3) Compare**
+
+```
+# cort is OK
+assert np.all(np.unique(atlascort_img_local.get_data()) == 
+       np.unique(atlascort_img_fetch.get_data()))
+
+# sub cort label image contains errors
+assert np.all(np.unique(atlassub_img_local.get_data()) == 
+    np.unique(atlassub_img_fetch.get_data())), ""Labels mismatch""
+
+print(np.unique(atlassub_img_local.get_data()))
+# [  0.   1.   2.   3.   4.   5.   6.   7.   8.   9.  10.  11.  12.  13.  14.
+#  15.  16.  17.  18.  19.  20.  21.]
+
+print(np.unique(atlassub_img_fetch.get_data()))
+# [ 0  2  3  4 10 11 12 13 16 17 18 26 41 42 43 49 50 51 52 53 54 58]
+```","start issue","nilearn.datasets.fetch_atlas_harvard_oxford: Errors in HarvardOxford.tgz / sub-maxprob-thr0-1mm"
+"issue_closed","1371","nilearn","nilearn","GaelVaroquaux","2017-11-16 19:47:10","","closed issue","nilearn.datasets.fetch_atlas_harvard_oxford: Errors in HarvardOxford.tgz / sub-maxprob-thr0-1mm"
+"issue_comment","1371","nilearn","nilearn","mrahim","2017-01-30 15:44:14","Thanks @duchesnay  for spotting this.
+According to the header, the atlas on nitrc is outdated (FSL 3.3).
+```python
+<class 'nibabel.nifti1.Nifti1Header'> object, endian='<'
+sizeof_hdr      : 348
+data_type       : b''
+db_name         : b''
+extents         : 0
+session_error   : 0
+regular         : b'r'
+dim_info        : 0
+dim             : [  3 182 218 182   1   1   1   1]
+intent_p1       : 0.0
+intent_p2       : 0.0
+intent_p3       : 0.0
+intent_code     : none
+datatype        : uint8
+bitpix          : 8
+slice_start     : 0
+pixdim          : [-1.  1.  1.  1.  1.  1.  1.  1.]
+vox_offset      : 0.0
+scl_slope       : nan
+scl_inter       : nan
+slice_end       : 0
+slice_code      : unknown
+xyzt_units      : 10
+cal_max         : 58.0
+cal_min         : 0.0
+slice_duration  : 0.0
+toffset         : 0.0
+glmax           : 0
+glmin           : 0
+descrip         : b'FSL3.3'
+aux_file        : b'MGH-Subcortical'
+qform_code      : aligned
+sform_code      : aligned
+quatern_b       : 0.0
+quatern_c       : 1.0
+quatern_d       : 0.0
+qoffset_x       : 90.0
+qoffset_y       : -126.0
+qoffset_z       : -72.0
+srow_x          : [ -1.   0.   0.  90.]
+srow_y          : [   0.    1.    0. -126.]
+srow_z          : [  0.   0.   1. -72.]
+intent_name     : b''
+magic           : b'n+1'
+```
+","",""
+"issue_comment","1371","nilearn","nilearn","mrahim","2017-03-14 10:36:33","I would prefer replacing current archive (3.3) with the newest one.","",""
+"issue_comment","1371","nilearn","nilearn","KamalakerDadi","2017-03-13 19:35:06","Can we fix this by adding an argument called `version` to choose atlas data between 3.3 (current version) and 5.0 (enhancement) ?
+This also requires to upload data of version 5.0 to NITRC.","",""
+"issue_comment","1371","nilearn","nilearn","GaelVaroquaux","2017-03-14 10:38:16","> I would prefer replacing current archive (3.3) with the newest one.
+
+Agreed. But I also think that we should stop loading from the local FSL
+install, as we are going to keep running in this problem.
+","",""
+"issue_comment","1371","nilearn","nilearn","KamalakerDadi","2017-03-15 15:27:19"," >I would prefer replacing current archive (3.3) with the newest one.
+>Agreed. But I also think that we should stop loading from the local FSL
+install, as we are going to keep running in this problem.
+
+Ok.","",""

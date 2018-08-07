@@ -1,0 +1,105 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1474","nilearn","nilearn","alpinho","2017-06-24 01:48:33","Attempts to fix issue #1226 plus check whether input for dim argument is out of range. Please, review it.","start issue","FIXUP: check invalid input for dim argument (issue #1226)"
+"issue_closed","1474","nilearn","nilearn","GaelVaroquaux","2017-06-26 16:50:03","","closed issue","FIXUP: check invalid input for dim argument (issue #1226)"
+"pull_request_title","1474","nilearn","nilearn","alpinho","2017-06-24 01:48:33","Attempts to fix issue #1226 plus check whether input for dim argument is out of range. Please, review it.","b1636bfecc92f17dcb098c810b6f09d14ea457d5","FIXUP: check invalid input for dim argument (issue #1226)"
+"pull_request_merged","1474","nilearn","nilearn","GaelVaroquaux","2017-06-26 16:50:03","FIXUP: check invalid input for dim argument (issue #1226)","8506509daeb5a557c521f3992369742f206d45f1","Pull request merge from alpinho/nilearn:fix_dim_plotting_func to nilearn/nilearn:master"
+"issue_comment","1474","nilearn","nilearn","bthirion","2017-06-24 20:39:22","
+    
+The documentation is reasonable, but data are not always reasonable...Could the code issue a warning rather than an error ?
+
+
+
+Sent from my smartphone. Sorry for misspelling and brevity.
+
+-------- Message d'origine --------
+De : KamalakerDadi <notifications@github.com> 
+Date : 24/06/2017  14:13  (GMT+01:00) 
+À : nilearn/nilearn <nilearn@noreply.github.com> 
+Cc : bthirion <bertrand.thirion@inria.fr>, Comment <comment@noreply.github.com> 
+Objet : Re: [nilearn/nilearn] FIXUP: check invalid input for dim argument  (issue #1226) (#1474) 
+
+@KamalakerDadi commented on this pull request.
+
+
+
+In nilearn/plotting/img_plotting.py:
+> @@ -383,6 +383,17 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
+             else:
+                 black_bg = True
+     if dim:
++        if dim != 'auto' and not isinstance(dim, numbers.Number):
++            raise ValueError(
++                ""The input given for 'dim' needs to be ""
++                ""a float. ""
++                ""You provided dim=%s in %s"" % (str(dim), type(dim)))
++        elif dim != 'auto' and dim not in range(-1, 1):
+
+But, the documentation says range is in (-1, 1) ?
+
+—
+You are receiving this because you commented.
+Reply to this email directly, view it on GitHub, or mute the thread.
+
+
+  
+  
+
+
+
+
+{""api_version"":""1.0"",""publisher"":{""api_key"":""05dde50f1d1a384dd78767c55493e4bb"",""name"":""GitHub""},""entity"":{""external_key"":""github/nilearn/nilearn"",""title"":""nilearn/nilearn"",""subtitle"":""GitHub repository"",""main_image_url"":""https://cloud.githubusercontent.com/assets/143418/17495839/a5054eac-5d88-11e6-95fc-7290892c7bb5.png"",""avatar_image_url"":""https://cloud.githubusercontent.com/assets/143418/15842166/7c72db34-2c0b-11e6-9aed-b52498112777.png"",""action"":{""name"":""Open in GitHub"",""url"":""https://github.com/nilearn/nilearn""}},""updates"":{""snippets"":[{""icon"":""PERSON"",""message"":""@KamalakerDadi commented on #1474""}],""action"":{""name"":""View Pull Request"",""url"":""https://github.com/nilearn/nilearn/pull/1474#discussion_r123876114""}}}","",""
+"issue_comment","1474","nilearn","nilearn","bthirion","2017-06-25 21:14:44","Sounds good for me.","",""
+"issue_comment","1474","nilearn","nilearn","KamalakerDadi","2017-06-25 18:00:59","From the discussions and comments on this PR. To summarize, correct me if I am wrong. Fix would be:
+
+-  To add in the documentation at related plotting functions saying ""typically it should be in between -2 and 2"".
+- Raise an error or warning if dim is not 'auto' or not a number. I am more leaning towards raising an error.","",""
+"issue_comment","1474","nilearn","nilearn","KamalakerDadi","2017-06-26 16:47:41","ping @GaelVaroquaux merge ?","",""
+"issue_comment","1474","nilearn","nilearn","codecov[bot]","2017-06-24 03:24:40","# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=h1) Report
+> Merging [#1474](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/34543ef31ec562b87585dabce95e0259f67b3eb6?src=pr&el=desc) will **decrease** coverage by `0.01%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1474/graphs/tree.svg?src=pr&width=650&token=KpYArSdyXv&height=150)](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1474      +/-   ##
+==========================================
+- Coverage    94.7%   94.68%   -0.02%     
+==========================================
+  Files         120      120              
+  Lines       14774    14781       +7     
+==========================================
++ Hits        13991    13996       +5     
+- Misses        783      785       +2
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/plotting/img\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9pbWdfcGxvdHRpbmcucHk=) | `94.34% <100%> (+0.04%)` | :arrow_up: |
+| [nilearn/plotting/tests/test\_img\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy90ZXN0cy90ZXN0X2ltZ19wbG90dGluZy5weQ==) | `100% <100%> (ø)` | :arrow_up: |
+| [...learn/plotting/glass\_brain\_files/plot\_align\_svg.py](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9nbGFzc19icmFpbl9maWxlcy9wbG90X2FsaWduX3N2Zy5weQ==) | `0% <0%> (ø)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=footer). Last update [34543ef...b1636bf](https://codecov.io/gh/nilearn/nilearn/pull/1474?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+","",""
+"pull_request_commit_comment","1474","nilearn","nilearn","bthirion","2017-06-24 07:52:43","I disagree with that one: to render Haby's dataset anat images I had to use dim=-1.5. ","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","bthirion","2017-06-24 07:54:01","I think that the three are redundant: only one would be enough","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(None, '', u'nilearn/plotting/tests/test_img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","KamalakerDadi","2017-06-24 12:13:30","But, the documentation says range is in (-1, 1) ?","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","alpinho","2017-06-24 18:46:58","I removed the plot_roi and plot_anat test.","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(None, '', u'nilearn/plotting/tests/test_img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","GaelVaroquaux","2017-06-24 22:33:00","The documentation is wrong :(.
+
+I think that it's in [-infty, 1]","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(None, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","KamalakerDadi","2017-06-24 22:41:31",">Could the code issue a warning rather than an error ?
+
+@bthirion You mean here raising a warning than a error ?","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(5, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","bthirion","2017-06-24 22:43:30","Yes.","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(5, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","KamalakerDadi","2017-06-24 22:50:46","Raise warning and override given value to 'auto'. Sounds  good ?","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(5, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit_comment","1474","nilearn","nilearn","bthirion","2017-06-25 15:37:20","Yes, but from reading the code, I think that we can accept values between -2 and +2.","b1636bfecc92f17dcb098c810b6f09d14ea457d5","(5, '', u'nilearn/plotting/img_plotting.py')"
+"pull_request_commit","1474","nilearn","nilearn","alpinho","2017-06-24 01:44:27","FIXUP: check invalid input for dim argument (issue #1226)","1edca4cda46f578802a74bd5f4e6333985e9d218",""
+"pull_request_commit","1474","nilearn","nilearn","alpinho","2017-06-24 18:45:03","ENH: remove redundat tests in test_img_plotting function","77845bbec824f04a7acf2fcde5e70bc34cfaeb90",""
+"pull_request_commit","1474","nilearn","nilearn","alpinho","2017-06-26 06:17:16","ENH: raise error if dim is not auto or float and improve documentation in related functions","b1636bfecc92f17dcb098c810b6f09d14ea457d5",""

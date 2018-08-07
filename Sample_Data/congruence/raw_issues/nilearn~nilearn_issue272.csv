@@ -1,0 +1,77 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","272","nilearn","nilearn","banilo","2014-10-30 08:36:31","Can be useful for less-memory-intense on-the-fly nifti preprocessing settings
+","start issue","[ENH] Generator utility for nifti sequences"
+"issue_closed","272","nilearn","nilearn","lesteve","2014-11-01 11:25:41","","closed issue","[ENH] Generator utility for nifti sequences"
+"pull_request_title","272","nilearn","nilearn","banilo","2014-10-30 08:36:31","Can be useful for less-memory-intense on-the-fly nifti preprocessing settings
+","1fdbfb765b65dce902c049752bb885e7555f29f4","[ENH] Generator utility for nifti sequences"
+"issue_comment","272","nilearn","nilearn","banilo","2014-10-30 10:59:48","Fixed: dataset fetcher in unit test worked fine on local machine but failed for Github/Travis. Now solved by writing random niftis in mktemp()-folder
+","",""
+"issue_comment","272","nilearn","nilearn","AlexandreAbraham","2014-10-30 13:28:20","I don't see why a generator would save memory compared to a for loop. Your generator can basically be replaced by:
+
+```
+for img in list_img:
+    img = _utils.check_niimg(img)
+    data = img.get_data()
+    affine = img.get_affine()
+```
+","",""
+"issue_comment","272","nilearn","nilearn","banilo","2014-10-31 07:26:44","Thanks for your point.
+
+Regarding the for-loop, the idea is not to _shorten_ code for iteration though series of niftis but to _unify_ it. This can have at least two advantages:
+a) Increase readability: using a generator (at least internally) allows for identical for loop bodies regardless of whether one is dealing with a list of paths, a list of Nifti1Image instances in 3D or a 4D NiftImage - perhaps the most recurrent forms of series of niftis.
+b) Centralize and further standardize nifti access: several aspects need/can/should be checked in a majority of situations: verify nifti properties by check_niimg(), does file exist, _get_shape instead of get_shape(), _safe_get_data instead of get_data(). These and other routine calls could be built into the generator object. This could help enforce good-practice usage and boil the for loops down to the essential operation.
+
+Regarding memory, the possibility of processing niftis one-by-one can also be realized in an easier fashion, of course, is only present for lists of paths, and is a mere side effect.
+","",""
+"issue_comment","272","nilearn","nilearn","AlexandreAbraham","2014-10-31 07:57:36","My problem here is that you try to solve a non-existent problem. `check_niimg` already handles all the cases you describe here:
+a) `check_niimg` load any kind of image, whether it is a path, or a list of 3D nifti or a 4D nifti.
+b) Nifti1Image has been chosen as the image type in nilearn. If you have an object that exposes another interface, then you have to write a decorator of handle this particular case in `check_niimg`.
+
+I'm not saying that your code is not useful, but that it is the exact equivalent of `for img in (check_niimg(i) for i in list_img):`
+","",""
+"issue_comment","272","nilearn","nilearn","lesteve","2014-10-31 08:02:08","> I'm not saying that your code is not useful, but that it is the exact equivalent of for img in (check_niimg(i) for i in list_img):
+
+My feeling is the same. @banilo do you have some toy code example that would clearly show the benefits of your NiftiGenerator?
+","",""
+"issue_comment","272","nilearn","nilearn","banilo","2014-11-01 09:04:24","You guys are right! There is now difference in speed or memory usage:
+
+```
+Line     Mem usage    Increment   Line Contents
+   159     80.7 MiB      0.0 MiB   @profile
+   160                             def mean_1800niis_checkniimg(list_img):
+   161     80.8 MiB      0.1 MiB       first_nii_shape = nibabel.load(list_img[0]).shape
+   162     80.8 MiB      0.0 MiB       rolling_mean = np.zeros((first_nii_shape))
+   163                             
+   164     82.6 MiB      1.8 MiB       for img in (check_niimg(i) for i in list_img):
+   165     82.6 MiB      0.0 MiB           rolling_mean += img.get_data()
+   166                             
+   167     83.8 MiB      1.2 MiB       return rolling_mean / len(list_img)
+```
+
+```
+%timeit -r1 -n1 mean_1800niis_checkniimg(stat_img)
+1 loops, best of 1: 1min 19s per loop
+```
+
+```
+Line     Mem usage    Increment   Line Contents
+   168     80.9 MiB      0.0 MiB   @profile
+   169                             def mean_1800niis_NiftiGenerator(list_img):
+   170     81.0 MiB      0.1 MiB       first_nii_shape = nibabel.load(list_img[0]).shape
+   171     81.0 MiB      0.0 MiB       rolling_mean = np.zeros((first_nii_shape))
+   172                             
+   173     82.7 MiB      1.8 MiB       for img, data, aff in NiftiGenerator(list_img):
+   174     82.7 MiB      0.0 MiB           rolling_mean += data
+   175                             
+   176     83.9 MiB      1.2 MiB       return rolling_mean / len(list_img)
+```
+
+```
+%timeit -r1 -n1 mean_1800niis_NiftiGenerator(stat_img)
+1 loops, best of 1: 1min 19s per loop
+```
+","",""
+"issue_comment","272","nilearn","nilearn","lesteve","2014-11-01 11:25:41","ok, closing this one then
+","",""
+"pull_request_commit","272","nilearn","nilearn","banilo","2014-10-30 08:33:52","Added generator for niftis","f36d8a4cf689164c0242a9bcc7792e691b83b6fb",""
+"pull_request_commit","272","nilearn","nilearn","banilo","2014-10-30 10:57:50","test using datasets failed on Travis, now replaced by temp files","1fdbfb765b65dce902c049752bb885e7555f29f4",""

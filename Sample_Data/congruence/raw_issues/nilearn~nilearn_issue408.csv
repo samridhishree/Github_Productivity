@@ -1,0 +1,170 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","408","nilearn","nilearn","mrahim","2015-02-05 17:21:50","As @GaelVaroquaux said, it will speed up travis execution. 
+","start issue","Speed up plotting tests (was Nifti image size should be small when testing)"
+"issue_closed","408","nilearn","nilearn","lesteve","2015-03-03 14:27:06","","closed issue","Speed up plotting tests (was Nifti image size should be small when testing)"
+"issue_comment","408","nilearn","nilearn","GaelVaroquaux","2015-02-10 14:38:10","-1 for mocking. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 10, 2015, 15:30, at 15:30, Alexandre Abraham notifications@github.com wrote:
+
+> Quick test during the parietal meeting: by replaceing the backend by
+> `template`, closing each figure just after it is opened (and not
+> letting dozens of figures opened before closing them all) and using
+> rasterized=True option on the axis in `test_plot_img_functions`, I
+> dropped from 58 seconds to 46 seconds. I'm not sure of which
+> modification led to that.
+> 
+> Question: can't we test `plot_img` completely and then mock it? Or
+> maybe mock pyplot if we just want to test the logic of the plot
+> functions and not the actual plotting?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/408#issuecomment-73707713
+","",""
+"issue_comment","408","nilearn","nilearn","GaelVaroquaux","2015-02-11 16:56:12",">   • nosetests --processes=8
+
+That's not solving the problem. That's hidding it.
+
+>   • removing coverage speeds up tests too.
+
+Maybe we should do that. However, we still need to work on making tests
+faster.
+","",""
+"issue_comment","408","nilearn","nilearn","AlexandreAbraham","2015-02-09 12:53:26","As said in another thread, using _template_ matplotlib backend may speed things up a little bit. Not sure how much though.
+","",""
+"issue_comment","408","nilearn","nilearn","AlexandreAbraham","2015-02-10 14:30:17","Quick test during the parietal meeting: by replaceing the backend by `template`, closing each figure just after it is opened (and not letting dozens of figures opened before closing them all) and using rasterized=True option on the axis in `test_plot_img_functions`, I dropped from 58 seconds to 46 seconds. I'm not sure of which modification led to that.
+
+Question: can't we test `plot_img` completely and then mock it? Or maybe mock pyplot if we just want to test the logic of the plot functions and not the actual plotting?
+","",""
+"issue_comment","408","nilearn","nilearn","AlexandreAbraham","2015-02-10 23:51:04","What about using something like nosetests --processes=8?
+","",""
+"issue_comment","408","nilearn","nilearn","AlexandreAbraham","2015-02-11 15:32:33","A few comments:
+- nosetests --processes=8 can speed up tests. However, it parallelizes tests wrt files. In our case, the longest test shoudl be split into several files. Also, Travis machines have 1 or 2 cores, meaning that the speedup will not be significant.
+- removing coverage speeds up tests too. However,  I've noticed that coverage is not enabled on Travis.
+  So, I have no idea how to speed things up except by removing some of the tests.
+","",""
+"issue_comment","408","nilearn","nilearn","lesteve","2015-02-12 09:51:24","I think the best thing to do is to split test_plot_functions into multiple tests. I think we can avoid a few plots in the doubly nested loops (for example it isn't really crucial to test that plot_anat or plot_glass_brain works with negative and positive images and same thing for saving to .png a few times for every different flavors of plot_stat_map, etc ...)
+
+@eickenberg nicely volunteered for it.
+
+For completeness, here is the profiling info for running nose restricted to test_plot_functions only. I didn't spot anything obvious, but maybe somebody else will:
+
+```
+         32667948 function calls (32273609 primitive calls) in 49.387 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      2/1    0.000    0.000   49.387   49.387 site-packages/nose/suite.py:176(__call__)
+      2/1    0.000    0.000   49.387   49.387 site-packages/nose/suite.py:197(run)
+        1    0.000    0.000   49.386   49.386 site-packages/nose/case.py:44(__call__)
+        1    0.000    0.000   49.386   49.386 site-packages/nose/case.py:115(run)
+        1    0.000    0.000   49.386   49.386 site-packages/nose/case.py:142(runTest)
+        1    0.000    0.000   49.386   49.386 unittest/case.py:392(__call__)
+        1    0.000    0.000   49.386   49.386 unittest/case.py:295(run)
+        1    0.000    0.000   49.386   49.386 site-packages/nose/case.py:196(runTest)
+        1    0.004    0.004   49.386   49.386 nilearn/plotting/tests/test_img_plotting.py:61(test_plot_functions)
+      125    0.007    0.000   42.294    0.338 nilearn/plotting/img_plotting.py:42(_plot_img_with_bg)
+      764    0.033    0.000   39.021    0.051 site-packages/matplotlib/axes/_base.py:328(__init__)
+      125    0.002    0.000   34.760    0.278 nilearn/plotting/displays.py:271(init_with_figure)
+      125    0.002    0.000   34.485    0.276 nilearn/plotting/displays.py:238(__init__)
+     9168    0.117    0.000   33.075    0.004 site-packages/matplotlib/axis.py:725(cla)
+      650    0.007    0.000   32.567    0.050 site-packages/matplotlib/figure.py:799(add_axes)
+12224/9168    0.069    0.000   32.511    0.004 site-packages/matplotlib/axis.py:760(reset_ticks)
+24628/18516    0.437    0.000   32.348    0.002 site-packages/matplotlib/axis.py:67(__init__)
+      587    0.004    0.000   29.371    0.050 site-packages/matplotlib/pyplot.py:724(axes)
+       72    0.002    0.000   25.137    0.349 nilearn/plotting/img_plotting.py:534(plot_stat_map)
+      764    0.046    0.000   24.729    0.032 site-packages/matplotlib/axes/_base.py:816(cla)
+    74226    1.477    0.000   21.352    0.000 site-packages/matplotlib/lines.py:249(__init__)
+       56    0.005    0.000   19.685    0.352 nilearn/plotting/displays.py:815(_init_axes)
+     3056    0.003    0.000   16.476    0.005 site-packages/matplotlib/spines.py:159(cla)
+12224/9168    0.026    0.000   16.319    0.002 site-packages/matplotlib/axis.py:1657(_get_tick)
+12404/9348    0.029    0.000   16.070    0.002 site-packages/matplotlib/axis.py:1959(_get_tick)
+   298344    1.578    0.000   14.885    0.000 site-packages/matplotlib/markers.py:182(_recache)
+       69    0.004    0.000   14.793    0.214 nilearn/plotting/displays.py:653(_init_axes)
+      764    0.008    0.000   13.585    0.018 site-packages/matplotlib/axes/_base.py:479(_init_axis)
+       41    0.000    0.000   10.926    0.266 nilearn/plotting/img_plotting.py:135(plot_img)
+   149172    0.594    0.000    8.855    0.000 site-packages/matplotlib/markers.py:229(set_marker)
+     3056    0.003    0.000    8.560    0.003 site-packages/matplotlib/spines.py:148(register_axis)
+104624/74064    0.199    0.000    8.228    0.000 site-packages/matplotlib/spines.py:389(get_spine_transform)
+110736/74064    0.053    0.000    8.062    0.000 site-packages/matplotlib/spines.py:142(_ensure_position_is_set)
+     6112    0.038    0.000    8.024    0.001 site-packages/matplotlib/spines.py:349(set_position)
+   149172    0.162    0.000    7.427    0.000 site-packages/matplotlib/markers.py:206(set_fillstyle)
+   340879    1.152    0.000    6.785    0.000 site-packages/matplotlib/path.py:103(__init__)
+      121    0.001    0.000    6.606    0.055 site-packages/matplotlib/pyplot.py:833(subplot)
+      121    0.002    0.000    6.553    0.054 site-packages/matplotlib/figure.py:880(add_subplot)
+      121    0.002    0.000    6.542    0.054 site-packages/matplotlib/axes/_subplots.py:23(__init__)
+    74946    0.174    0.000    6.399    0.000 site-packages/matplotlib/markers.py:148(__init__)
+       12    0.000    0.000    6.239    0.520 nilearn/plotting/img_plotting.py:669(plot_glass_brain)
+12404/10876    0.077    0.000    5.883    0.001 site-packages/matplotlib/axis.py:528(_get_tick1line)
+   778592    1.332    0.000    5.866    0.000 site-packages/matplotlib/transforms.py:85(__init__)
+      136    0.003    0.000    5.843    0.043 nilearn/plotting/displays.py:365(add_overlay)
+12404/10876    0.074    0.000    5.772    0.001 site-packages/matplotlib/axis.py:544(_get_tick2line)
+12224/10696    0.079    0.000    5.655    0.001 site-packages/matplotlib/axis.py:389(_get_tick1line)
+12224/10696    0.076    0.000    5.443    0.001 site-packages/matplotlib/axis.py:404(_get_tick2line)
+    22481    0.211    0.000    5.400    0.000 site-packages/matplotlib/artist.py:560(set_clip_path)
+    74226    0.049    0.000    5.366    0.000 site-packages/matplotlib/lines.py:969(set_marker)
+       24    0.003    0.000    5.005    0.209 nilearn/plotting/displays.py:192(__init__)
+       24    0.008    0.000    4.994    0.208 nilearn/plotting/glass_brain.py:139(plot_brain_schematics)
+    74226    0.050    0.000    4.790    0.000 site-packages/matplotlib/lines.py:452(set_fillstyle)
+     1528    0.018    0.000    4.744    0.003 site-packages/matplotlib/axis.py:625(__init__)
+       60    0.024    0.000    4.648    0.077 nilearn/plotting/displays.py:475(_colorbar_show)
+   340879    1.925    0.000    4.619    0.000 site-packages/matplotlib/path.py:199(_update_values)
+   572504    0.656    0.000    4.604    0.000 site-packages/matplotlib/transforms.py:1553(__init__)
+   778592    3.586    0.000    4.534    0.000 weakref.py:47(__init__)
+       17    0.000    0.000    4.399    0.259 nilearn/plotting/img_plotting.py:311(plot_anat)
+114863/46911    0.096    0.000    4.317    0.000 site-packages/matplotlib/axes/_base.py:624(get_yaxis_transform)
+     6231    0.027    0.000    4.161    0.001 site-packages/matplotlib/axes/_base.py:1537(add_patch)
+    28652    0.082    0.000    4.129    0.000 site-packages/matplotlib/patches.py:185(get_transform)
+113243/46011    0.093    0.000    4.026    0.000 site-packages/matplotlib/axes/_base.py:547(get_xaxis_transform)
+    12404    0.111    0.000    3.844    0.000 site-packages/matplotlib/axis.py:559(_get_gridline)
+   144255    0.125    0.000    3.584    0.000 site-packages/matplotlib/transforms.py:1132(__add__)
+    12224    0.110    0.000    3.509    0.000 site-packages/matplotlib/axis.py:420(_get_gridline)
+   144255    0.211    0.000    3.407    0.000 site-packages/matplotlib/transforms.py:2350(composite_transform_factory)
+       12    0.000    0.000    3.347    0.279 nilearn/plotting/img_plotting.py:388(plot_epi)
+     1528    0.009    0.000    3.302    0.002 site-packages/matplotlib/axis.py:858(set_clip_path)
+    22421    0.016    0.000    3.207    0.000 site-packages/matplotlib/patches.py:625(get_patch_transform)
+    22421    0.198    0.000    3.191    0.000 site-packages/matplotlib/patches.py:609(_update_patch_transform)
+   125522    0.369    0.000    3.099    0.000 site-packages/matplotlib/transforms.py:2175(__init__)
+   174511    0.223    0.000    2.944    0.000 site-packages/matplotlib/transforms.py:126(invalidate)
+     6112    0.013    0.000    2.944    0.000 site-packages/matplotlib/axis.py:175(set_clip_path)
+   233198    0.821    0.000    2.738    0.000 site-packages/matplotlib/transforms.py:161(set_children)
+245715/174511    0.801    0.000    2.721    0.000 site-packages/matplotlib/transforms.py:137(_invalidate_internal)
+    99724    0.322    0.000    2.657    0.000 site-packages/matplotlib/transforms.py:1860(scale)
+     6231    0.081    0.000    2.539    0.000 site-packages/matplotlib/axes/_base.py:1555(_update_patch_limits)
+   383922    0.275    0.000    2.326    0.000 {method 'all' of 'numpy.ndarray' objects}
+    12224    0.075    0.000    2.271    0.000 site-packages/matplotlib/axis.py:372(_get_text2)
+   125600    0.278    0.000    2.218    0.000 site-packages/matplotlib/transforms.py:1699(__init__)
+    56311    0.478    0.000    2.108    0.000 site-packages/matplotlib/font_manager.py:654(__init__)
+   383922    0.210    0.000    2.051    0.000 site-packages/numpy/core/_methods.py:40(_all)
+   403669    1.935    0.000    1.935    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   965463    1.868    0.000    1.877    0.000 {numpy.core.multiarray.array}
+   388905    0.544    0.000    1.868    0.000 weakref.py:98(__setitem__)
+    12404    0.083    0.000    1.683    0.000 site-packages/matplotlib/axis.py:497(_get_text1)
+    12224    0.078    0.000    1.653    0.000 site-packages/matplotlib/axis.py:354(_get_text1)
+  2207290    1.608    0.000    1.608    0.000 site-packages/matplotlib/__init__.py:871(__getitem__)
+   265937    0.599    0.000    1.607    0.000 weakref.py:176(itervalues)
+    55831    0.331    0.000    1.533    0.000 site-packages/matplotlib/text.py:160(__init__)
+151007/149780    0.467    0.000    1.498    0.000 site-packages/matplotlib/artist.py:745(update)
+    24970    0.034    0.000    1.421    0.000 site-packages/matplotlib/lines.py:865(get_path)
+    12404    0.079    0.000    1.399    0.000 site-packages/matplotlib/axis.py:513(_get_text2)
+   169372    1.135    0.000    1.393    0.000 site-packages/matplotlib/artist.py:79(__init__)
+    24970    0.378    0.000    1.387    0.000 site-packages/matplotlib/lines.py:566(recache)
+   614013    0.418    0.000    1.348    0.000 site-packages/numpy/core/numeric.py:394(asarray)
+   122269    0.580    0.000    1.345    0.000 site-packages/numpy/core/numeric.py:2125(identity)
+    24448    0.098    0.000    1.320    0.000 site-packages/matplotlib/markers.py:693(_set_tickup)
+    50020    0.153    0.000    1.300    0.000 site-packages/matplotlib/transforms.py:2524(__init__)
+    12224    0.011    0.000    1.242    0.000 site-packages/matplotlib/axis.py:336(_get_text2_transform)
+    12224    0.042    0.000    1.231    0.000 site-packages/matplotlib/axes/_base.py:598(get_xaxis_text2_transform)
+    25288    0.102    0.000    1.207    0.000 site-packages/matplotlib/markers.py:685(_set_tickright)
+     6573    0.051    0.000    1.158    0.000 site-packages/matplotlib/transforms.py:1223(__sub__)
+    22421    0.047    0.000    1.143    0.000 site-packages/matplotlib/transforms.py:1835(rotate_deg_around)
+    25288    0.099    0.000    1.141    0.000 site-packages/matplotlib/markers.py:679(_set_tickleft)
+    24448    0.095    0.000    1.128    0.000 site-packages/matplotlib/markers.py:699(_set_tickdown)
+66072/40122    0.115    0.000    1.032    0.000 site-packages/matplotlib/transforms.py:2225(_iter_break_from_left_to_right)
+      136    0.008    0.000    1.030    0.008 nilearn/plotting/displays.py:430(_map_show)
+```
+","",""

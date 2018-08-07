@@ -1,0 +1,108 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","929","nilearn","nilearn","neurotronix","2016-01-06 18:59:29","Hi everyone,
+
+using nilearn on OSX El Capitan, when executing the example scripts like plot_demo_glass_brain.py no plots will show up. PiP and iPython linked to the same folders, matplotlib alone does show plots. All dependencies are up-to-date and installed. Don't really know how to fix this.
+","start issue","Plots won't show up"
+"issue_closed","929","nilearn","nilearn","lesteve","2016-01-13 12:52:16","","closed issue","Plots won't show up"
+"issue_comment","929","nilearn","nilearn","ogrisel","2016-01-07 21:08:48","Also:
+
+``` python
+sys.platform == 'darwin'
+```
+
+this is the canonical way to detect OSX.
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-06 19:00:17","How do you execute these scripts?
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-06 19:02:02","I tried ""python script_name.py"" and ""ipython script_name.py"", respectively
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-06 19:03:39","OK, ""Python script_name.py"" should work, but it might be an OSX thing, I don't know anything about OSX.
+
+How do you get matplotlib to show plots?
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-06 19:07:05","I just tested trivial things in the ipython environment like:
+
+```
+import matplotlib.pyplot as plt
+plt.plot(range(10), range(10))
+plt.show()
+```
+
+just to test whether matplotlib works properly
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-06 19:08:26","Then just run the example using ""%run filename.py"" in the IPython
+environnement where things work well.
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-06 19:13:39","Ok, didn't try to run it from within python. Now plots show, but I also get following error:
+
+```
+/Users/Stephan/anaconda/lib/python2.7/site-packages/matplotlib/__init__.py:1350: UserWarning:  This call to matplotlib.use() has no effect
+because the backend has already been chosen;
+matplotlib.use() must be called *before* pylab, matplotlib.pyplot,
+or matplotlib.backends is imported for the first time.
+```
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-06 19:16:34","plots only show when I open ipython via `ipython --matplotlib` but then I get the error from above. When I open it with without `--matplotlib` flag, no plots and no error
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-06 19:16:47","Out of curiosity, can you tell use what do the following return in
+python:
+
+<pre>
+import os
+print(os.name)
+print('DISPLAY' in os.environ')
+</pre>
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-06 19:19:04","sure:
+
+```
+In [1]: import os
+
+In [2]: print os.name
+posix
+
+In [4]: print('DISPLAY' in os.environ)
+False
+```
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-06 19:23:08","I am starting to understand better what you are experiencing. Can you
+also give us the output of:
+
+<pre>
+print(os.uname())
+import matplotlib
+print(matplotlib.get_backend())
+</pre>
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-06 19:28:22","cool, thanks for your help man. here is the output:
+
+```
+In [5]: print(os.uname())
+('Darwin', 'KH-Lees-Macbook.local', '15.0.0', 'Darwin Kernel Version 15.0.0: Sat Sep 19 15:53:46 PDT 2015; root:xnu-3247.10.11~1/RELEASE_X86_64', 'x86_64')
+
+In [7]: print(matplotlib.get_backend())
+MacOSX
+```
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-06 19:42:38","OK. You can work in the ""ipython --matplotlib"" environment; it won't be any problem.
+
+The rest are things that we can fix based on your feedback, so that it works seemlessly in all situations. We'll release a fix soon; Thanks!
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-06 19:43:53","Many thanks, have a good day!
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-07 19:06:48","Note for self (I know how to fix this, and will submit a PR soon): sampling of MacOSX installs:
+- os.name is always posix
+- os.uname()[0] is always 'Darwin':
+- ""'DISPLAY' in os.environ"": True 2 out of 3
+- matplotlib.get_backend():
+  - 'TkAgg' (on @ogrisel's computer)
+  -  'MacOSX' on the two others
+","",""
+"issue_comment","929","nilearn","nilearn","GaelVaroquaux","2016-01-07 21:09:59","> sys.platform == 'darwin'
+> 
+> this is the canonical way to detect OSX.
+
+Thanks! I was missing that.
+","",""
+"issue_comment","929","nilearn","nilearn","neurotronix","2016-01-13 16:26:58","@lesteve Looking good so far. Plots now show up when scripts are called from shell. thanks!
+","",""

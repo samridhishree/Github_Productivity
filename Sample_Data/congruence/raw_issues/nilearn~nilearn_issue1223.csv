@@ -1,0 +1,93 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1223","nilearn","nilearn","salma1601","2016-08-08 08:42:59","The connectivity example `plot_inverse_covariance_connectome` demos `sklearn.covariance.GraphLassoCV` on ADHD data with MSDL atlas. The example`plot_multi_subject_connectome` compares the GraphLasso to `nilearn.connectome.GroupSparseCovarianceCV` also for ADHD/MSDL.
+Morevover, we have the same comparison on simulated data in `plot_simulated_connectome` example. I was thinking of:
+1. removing `plot_inverse_covariance_connectome`
+2. renaming (any other suggestions ?)
+
+`plot_multi_subject_connectome` -> `plot_sparse_connectomes`
+`plot_simulated_connectome` -> `plot_simulated_sparse_connectomes`
+3. adding an example `plot_connectome_estimators` to demo the different covariance estimators: EmpiricalCovariance, LedoitWolf and GraphLasso
+","start issue","merge plot_inverse_covariance_connectome and plot_multi_subject_connectome"
+"issue_comment","1223","nilearn","nilearn","GaelVaroquaux","2016-08-11 16:59:00","I'd rather not rename plot_simulated_connectome, as I don't see the need to commit to sparse estimators for the example on simulated connectomes.
+
+With regards to the other examples, agreed that it's a mess. Indeed the didactic values of the 2 examples are not well separated. Also, there is plot_signal_extraction that goes a bit in the same direction, even though it is on a hard parcellation, rather than a probabilistic atlas.
+
+They bring a variety of teaching:
+- How to extract signals on a probabilistic parcellation and build a correlation matrix
+- The importance of defining good confounds (plot_signal_extraction is good for that)
+- The difference between correlation and inverse covariance
+- How to do things at the group level: it's a ""for"" loop, but that tends to be a difficulty for the beginners.
+
+I wonder if it's a good thing to put in the same example the single subject and the group analysis. I would rather merge the one with the probabilistic parcellation and the one with the hard parcellation.
+
+We should rename the multi-subject one to a name that makes it very clear that it's purpose is to illustrate multi-subject. For instance a file name ""plot_multi_subject_connectomes"" and a title ""Computing connectomes on multiple subjects"".
+","",""
+"issue_comment","1223","nilearn","nilearn","GaelVaroquaux","2016-08-12 06:09:30","> What I can do for all examples (except ICA and Dictionary learning, cause
+> I am a stranger to that) is to synthesize in a table what they demo piece
+> by piece, to see usefulness and overlaps.
+
+I think that this would be very useful. First for our internal
+refactoring, but after to help explain better which example should be
+read.
+
+> I also have a question: is there any reason we rely only on ADHD for
+> examples ? for advanced connectomes examples we can rely on COBRE/ABIDE
+> to avoid the signal extraction part
+
+Well, this part is useful to teach to people. I like the idea that we
+always start from 4D fMRI files, as this is what people have.
+
+In order to limit the downloads, I'd like all the examples to rely on the
+same 4D fMRI files, as these are very heavy. However, in the long run, I
+think that I would like to try to have all examples running with the
+cobre data. One of the reasons is that the prediction example would then
+work much better. But I don't know how realistic it would be: would all
+the examples work well, or not? Also, it seems to me that subjects take a
+bit more space with Cobre than with ADHD: 65Mb on average per subject for
+Cobre, and 45Mb for ADHD.
+","",""
+"issue_comment","1223","nilearn","nilearn","GaelVaroquaux","2016-08-12 06:24:33","> You would keep ADHD only to demo signal extraction ?
+
+No: I'd remove fully ADHD. But once again, I am a bit worried that this
+might use too much disk space for the continuous integration server.
+","",""
+"issue_comment","1223","nilearn","nilearn","GaelVaroquaux","2016-08-12 06:30:54","> AFAIK, ADHD dataset is more used than COBRE and there has been a competition on
+> it so people in the field are more likely to know it.
+
+Yes, but it has nothing in it: it's very hard (impossible?) to predict
+anything from it.
+","",""
+"issue_comment","1223","nilearn","nilearn","salma1601","2016-09-11 19:51:50","I did a table with the connectivity examples, except those ICA and dictionary learning related.
+I hope it is useful.
+
+![connectivity_examples_table](https://cloud.githubusercontent.com/assets/7080143/18420045/da503daa-7869-11e6-8321-4e40fad31560.png)
+
+I added a secondary teaching box to group demoed features/explanations that may be additional to the example purpose. I tried to separate nilearn API specific teaching from more general functional connectivity teaching, because some users can be beginners in FC.
+","",""
+"issue_comment","1223","nilearn","nilearn","salma1601","2016-09-12 20:25:46","So from what I read I have some little changes suggestions
+1- consolidate functional connectivity section **3.1. Extracting times series to build a functional connectome**. For me we jump too fast to subtle things sparse inverse related. I suggest 
+- adding a paragraph about preprocessing, explaining that various possibilities exist and are illustrated through the examples.
+- adding a paragraph about the `NiftiSpheresMasker`
+
+2- In section **3.2.Connectome extraction: inverse covariance for direct connections** adding once for all an explanation for the link covariance/correlation/precision/partial correlation.
+
+3- Standardization is a hidden process to use covariance as a correlation. May be we can expose `cov_to_corr` and `prec_to_partial`
+
+4- following previous discussions, decide whether or not `ConnectivityMeasure` is used only for multiple subjects and be consistent
+
+5- fix ADHD changing TR across the examples
+
+6- Why systematically use the first figure in gallery ? For instance for the seed-to-voxel correlations it would be beautiful to see the correlation map, instead of a timeseries.
+
+7- We can merge probabilistic/determinsitic/DMN spheres examples, it would be an example with all the various maskers.
+
+and I have a question: what are the guidelines for examples writing style ? For the moment they are a mix of compact minimalistic phrasing (eg the probabilistic atlas extraction) and more detailed structured examples (eg the seed-to-voxel example).
+","",""
+"issue_comment","1223","nilearn","nilearn","salma1601","2016-08-12 05:32:01","Ok.
+What I can do for all examples (except ICA and Dictionary learning, cause I am a stranger to that) is to synthesize in a _table_ what they demo piece by piece, to see usefulness and overlaps.
+I also have a question: is there any reason we rely only on ADHD for examples ? for advanced connectomes examples we can rely on COBRE/ABIDE to avoid the signal extraction part
+","",""
+"issue_comment","1223","nilearn","nilearn","salma1601","2016-08-12 06:19:18","> However, in the long run, I think that I would like to try to have all examples running with the cobre data.
+
+You would keep ADHD only to demo signal extraction ?
+","",""

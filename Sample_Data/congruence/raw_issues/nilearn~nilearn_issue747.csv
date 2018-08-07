@@ -1,0 +1,34 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","747","nilearn","nilearn","lesteve","2015-08-03 12:41:18","From a side discussion in https://github.com/nilearn/nilearn/pull/738#discussion_r35963547:
+
+> > Side-comment, this _repr_niimgs[:200] is all over the place and I have seen it too often now, not to be annoyed by it. Why not have _repr_niimg which takes an argument like shorten=True ...
+> > 
+> > Or even have _repr_niimgs always returns something more compact if imgs is a list of string (I seem to remember that's the case for which _repr_niimgs returns something which can be very long)
+> 
+> I agree with you on the fact that this is annoying. I think that we should add a shorten=True by default. We could show the long version if verbose is higher than 10 for example.
+> I don't want to do it here because discussions are needed to solve this problem. If it's OK for you, I'll open an issue and we can solve it in another PR.
+
+I just bumped into the fact that we have already _utils.short_repr which is actually not very useful because it truncates at 18 characters ... See for example this snippet
+
+``` python
+from nilearn import _utils
+
+_utils.load_niimg(['/this/is/a/very/long/name/for/a/nifti/file'])
+```
+
+The not so great error message you get:
+
+```
+TypeError: Data given cannot be loaded because it is not compatible with nibabel format:
+[/this/is/a/very/l...
+```
+
+Addition by Alex. Steps to solve it:
+- [ ] Turn the two `repr_niimg` functions into a single one with `short=True` kwarg.
+- [ ] Find a nice way to display the niimgs
+- [ ] Replace all occurencees of `_repr_niimgs[:200]` by the shortened version (maybe the long if verboser is high?).
+","start issue","Harmonise usage of short repr for niimgs"
+"issue_comment","747","nilearn","nilearn","banilo","2015-08-04 17:53:02","Ok, so what's the plan about this?
+","",""
+"issue_comment","747","nilearn","nilearn","AlexandreAbraham","2015-08-05 07:21:04","I added steps in the description.
+","",""

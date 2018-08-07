@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","557","nilearn","nilearn","GaelVaroquaux","2015-04-23 14:25:32","<pre>
+plotting.plot_anat(threshold=0)
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-5-cc5469646d11> in <module>()
+----> 1 plotting.plot_anat(threshold=0)
+
+/volatile/varoquau/dev/nilearn/nilearn/plotting/img_plotting.pyc in plot_anat(anat_img, cut_coords, output_file, display_mode, figure, axes, title, annotate, draw_cross, black_bg, dim, cmap, **kwargs)
+    393                       threshold=None, annotate=annotate,
+    394                       draw_cross=draw_cross, black_bg=black_bg,
+--> 395                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
+    396     return display
+    397
+</pre>
+","start issue","Threshold argument not dealt with properly in plot_anat"
+"issue_closed","557","nilearn","nilearn","GaelVaroquaux","2015-05-11 20:18:44","","closed issue","Threshold argument not dealt with properly in plot_anat"
+"issue_comment","557","nilearn","nilearn","GaelVaroquaux","2015-04-24 09:08:13","> I remove 'threshold' from the docstring in b56dc9f. Do we consider that good
+> enough for now and close this issue?
+
+No, I'd rather have a sane behavior. It's fairly easy to implement.
+","",""
+"issue_comment","557","nilearn","nilearn","GaelVaroquaux","2015-05-11 20:18:44","Fixed by #582
+","",""
+"issue_comment","557","nilearn","nilearn","KamalakerDadi","2015-05-08 12:11:45","As @lesteve was saying, included the optional argument ""threshold=None"" in function plot_anat. It seems to behave normally by trying with three thresholds ""None"", ""auto"", ""0"". 
+
+``` python
+display = plotting.plot_anat()
+display = plotting.plot_anat(threshold=0)
+display = plotting.plot_anat(threshold='auto')
+```
+
+I got the same output as below:
+
+![none](https://cloud.githubusercontent.com/assets/11410385/7536032/08b13fee-f58c-11e4-88ba-91aaa197fd90.png)
+
+are we good enough for a pull request ?
+","",""
+"issue_comment","557","nilearn","nilearn","lesteve","2015-04-23 14:32:51","The most misleading thing is that 'threshold' is listed in the docstring although it is not supposed to be an acceptable parameter of plot_anat.
+","",""
+"issue_comment","557","nilearn","nilearn","lesteve","2015-04-24 09:04:10","I remove 'threshold' from the docstring in b56dc9f. Do we consider that good enough for now and close this issue?
+","",""
+"issue_comment","557","nilearn","nilearn","lesteve","2015-04-24 11:23:11","> No, I'd rather have a sane behavior. It's fairly easy to implement.
+
+I don't know, why would a user pass a threshold parameter if it is not listed as an explicit parameter and not documented?
+
+Maybe the simplest thing to do is actually to go the other way on this one: allow an optional 'threshold' parameter that defaults to None (i.e. not thresholded) in plot_anat ?
+
+My contention with having some kwargs logic is that it is rather brittle. For example should we protect against resampling_interpolation being passed into the kwargs as well? Should we do this only in plot_anat or also in other plot_ functions that set threshold to a fixed value internally?
+","",""

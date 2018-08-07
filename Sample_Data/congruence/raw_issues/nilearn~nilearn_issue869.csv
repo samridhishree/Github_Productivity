@@ -1,0 +1,86 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","869","nilearn","nilearn","aabadie","2015-12-02 12:41:33","While working on #862, I had an issue when running the `../examples/connectivity/plot_canica_resting_state.py`
+
+Here is the full backtrace:
+
+```
+[Memory] Calling nilearn.image.image._compute_mean...
+_compute_mean('/home/ubuntu/nilearn_data/adhd/data/3699991/3699991_rest_tshift_RPI_voreg_mni.nii.gz', target_shape=None, target_affine=None, smooth=1)
+________________________________________________________________________________
+../examples/connectivity/plot_canica_resting_state.py is not compiling:
+Traceback (most recent call last):
+  File ""/home/ubuntu/nilearn/doc/sphinxext/sphinx_gallery/gen_rst.py"", line 427, in execute_script
+    exec(code_block, example_globals)
+  File ""<string>"", line 6, in <module>
+  File ""/home/ubuntu/nilearn/nilearn/decomposition/canica.py"", line 147, in fit
+    MultiPCA.fit(self, imgs, y=y, confounds=confounds)
+  File ""/home/ubuntu/nilearn/nilearn/decomposition/multi_pca.py"", line 275, in fit
+    self.masker_.fit(imgs)
+  File ""/home/ubuntu/nilearn/nilearn/input_data/multi_nifti_masker.py"", line 188, in fit
+    **mask_args)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/memory.py"", line 483, in __call__
+    return self._cached_call(args, kwargs)[0]
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/memory.py"", line 430, in _cached_call
+    out, metadata = self.call(*args, **kwargs)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/memory.py"", line 675, in call
+    output = self.func(*args, **kwargs)
+  File ""/home/ubuntu/nilearn/nilearn/masking.py"", line 363, in compute_multi_epi_mask
+    for epi_img in epi_imgs)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py"", line 804, in __call__
+    while self.dispatch_one_batch(iterator):
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py"", line 662, in dispatch_one_batch
+    self._dispatch(tasks)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py"", line 570, in _dispatch
+    job = ImmediateComputeBatch(batch)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py"", line 183, in __init__
+    self.results = batch()
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py"", line 72, in __call__
+    return [func(*args, **kwargs) for func, args, kwargs in self.items]
+  File ""/home/ubuntu/nilearn/nilearn/masking.py"", line 261, in compute_epi_mask
+    smooth=(1 if opening else False))
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/memory.py"", line 483, in __call__
+    return self._cached_call(args, kwargs)[0]
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/memory.py"", line 430, in _cached_call
+    out, metadata = self.call(*args, **kwargs)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/sklearn/externals/joblib/memory.py"", line 675, in call
+    output = self.func(*args, **kwargs)
+  File ""/home/ubuntu/nilearn/nilearn/image/image.py"", line 374, in _compute_mean
+    mean_data = _safe_get_data(imgs)
+  File ""/home/ubuntu/nilearn/nilearn/_utils/niimg.py"", line 28, in _safe_get_data
+    return img.get_data()
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/nibabel/spatialimages.py"", line 582, in get_data
+    data = np.asanyarray(self._dataobj)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/numpy/core/numeric.py"", line 525, in asanyarray
+    return array(a, dtype, copy=False, order=order, subok=True)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/nibabel/arrayproxy.py"", line 144, in __array__
+    raw_data = self.get_unscaled()
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/nibabel/arrayproxy.py"", line 139, in get_unscaled
+    mmap=self._mmap)
+  File ""/home/ubuntu/virtualenvs/venv-system/local/lib/python2.7/site-packages/nibabel/volumeutils.py"", line 517, in array_from_file
+    n_read = infile.readinto(data_bytes)
+  File ""/usr/lib/python2.7/gzip.py"", line 261, in read
+    self._read(readsize)
+  File ""/usr/lib/python2.7/gzip.py"", line 308, in _read
+    self._read_eof()
+  File ""/usr/lib/python2.7/gzip.py"", line 347, in _read_eof
+    hex(self.crc)))
+IOError: CRC check failed 0x7426164f != 0x9fc750b1L
+```
+
+I bypassed this issue by removing the adhd folder from the `~/nilearn_data` cached directory, forcing another download of this data. I suspect the allowed cache size on circle is not sufficient for the nilearn_data.
+","start issue","crc32 check fails on Circle CI"
+"issue_closed","869","nilearn","nilearn","GaelVaroquaux","2016-01-15 07:07:26","","closed issue","crc32 check fails on Circle CI"
+"issue_comment","869","nilearn","nilearn","GaelVaroquaux","2015-12-02 22:19:38","Looks like we understood this guy (circleci was running out of cache). Hence a check on the file size might help.
+","",""
+"issue_comment","869","nilearn","nilearn","AlexandreAbraham","2015-12-02 13:01:04","The problem is that the fetching is fine. It crashes on file opening so we can't trigger a new downloading of the file automatically.
+","",""
+"issue_comment","869","nilearn","nilearn","AlexandreAbraham","2015-12-02 15:54:20","As suggested by @GaelVaroquaux, I can implement a check of file size at fetching. It would help narrowing down the problem.
+","",""
+"issue_comment","869","nilearn","nilearn","lesteve","2015-12-02 15:36:29","> I suspect the allowed cache size on circle is not sufficient for the nilearn_data.
+
+Do you have some evidence, CircleCI docs or others, to back up that claim?
+","",""
+"issue_comment","869","nilearn","nilearn","lesteve","2015-12-02 16:42:20","By the way you can restart the build with a SSH access with CircleCI, see [this](https://circleci.com/docs/ssh-build). Maybe that could help pinpointing the problem ?
+","",""
+"issue_comment","869","nilearn","nilearn","lesteve","2015-12-02 16:46:53","In particular, if the CircleCI cache is somehow the culprit and corrupts the dataset, I find it slightly weird that the gzip file is valid enough to get to the CRC checks.
+","",""

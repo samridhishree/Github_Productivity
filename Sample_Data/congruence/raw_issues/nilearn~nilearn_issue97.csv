@@ -1,0 +1,16 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","97","nilearn","nilearn","AlexandreAbraham","2013-08-19 07:33:11","When a Nifti1Image is passed to a function, its representation contains a pointer to data in memory and therefore breaks the joblib cache system.
+
+This is not really a joblib issue, nor a nibabel one, this is why I open it here.
+","start issue","Nifti1Image breaks joblib caching system"
+"issue_closed","97","nilearn","nilearn","AlexandreAbraham","2013-08-19 12:18:50","","closed issue","Nifti1Image breaks joblib caching system"
+"issue_comment","97","nilearn","nilearn","GaelVaroquaux","2013-08-19 11:43:15","> When a Nifti1Image is passed to a function, its representation contains a pointer to data in memory and therefore breaks the joblib cache system.
+
+It shouldn't: joblib doesn't use the repr, but an actual hash of the
+data. There must be something more. Do you have a small example to
+reproduce the problem. I'd love to look at it.
+","",""
+"issue_comment","97","nilearn","nilearn","AlexandreAbraham","2013-08-19 11:45:53","I agree with you: after checking manually with the hash function, I have come to the conclusion that this is not related to Nifti1Image hasing. However, I still have a problem. I have no minimal use case for the moment, I'll let you know when I have.
+","",""
+"issue_comment","97","nilearn","nilearn","AlexandreAbraham","2013-08-20 13:40:26","My problem was due to the fact that Nifti1Image hash (and therefore internal state) changes when calling get_data(). Concretely, when loading a Nifti1Image, only the header is loaded, data is loaded when calling get_data(), which break joblib caching. I will make a patch for my usecase (call get_data() on the loaded Nifti1Image in masker if a path is given) and maybe add a note in documentation (this would be a good occasion to start a troubleshooting page).
+","",""

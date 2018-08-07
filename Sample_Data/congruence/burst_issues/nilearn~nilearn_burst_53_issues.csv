@@ -1,0 +1,2435 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,549,nilearn,nilearn,salma1601,2015-04-17 20:02:44,"The behavior of signal.clean with standardize=False is different whether one includes or not confounds. If confounds to remove, the input signal and the confounds are standardized even though standardize=False.
+
+The standard choice for scaling signals within ROIs (e.g. MarsBaR, Conn) is to scale them to their own ROI-specific average BOLD signal and multiply by 100 to get what is commonly called Percent Signal Change units. This allows to put all the ROIs to the same range while maintaining the difference in variances between them. 
+
+Below signals within 2 ROIs from ADHD dataset, note that although region 12 has higher average, it has less variance. But after the regression of one confound (average CSF), the variances are almost the same because of this partial standardization achieved in signal.clean. My expected behavior of cleaning is the bottom subplot.
+
+![demo_psc](https://cloud.githubusercontent.com/assets/7080143/7209880/0574f630-e54d-11e4-883b-7aeb35fd4759.png)
+",start issue,signal.clean with standardize=False
+2,issue_closed,549,nilearn,nilearn,GaelVaroquaux,2015-05-11 09:26:00,,closed issue,signal.clean with standardize=False
+3,issue_comment,549,nilearn,nilearn,GaelVaroquaux,2015-04-20 14:54:02,"I think that we have a bug here: the fact that with confounds, the variance of the signal is forgotten is wrong.
+
+I remember that Philippe divided by the standard variance before removing the confounds to give a better conditioning to the confound regression. What we should do is probably multiply back by the standard deviation after confound removal.
+",,
+4,issue_comment,549,nilearn,nilearn,GaelVaroquaux,2015-04-20 15:13:27,"Hum, thinking more closely about this, I think that the standardization of the signal is not useful to improve conditioning of confound removal, only that of the confounds.
+",,
+5,issue_comment,549,nilearn,nilearn,GaelVaroquaux,2015-04-23 10:03:34,"Hi @salma1601 
+
+Could you have a look at https://github.com/nilearn/nilearn/pull/553 . I think that it should solve your problem.
+",,
+6,issue_comment,549,nilearn,nilearn,salma1601,2015-04-19 08:21:57,"Sorry but the range in the cleaned PSC subplot was incorrect, this is the correct one.
+
+![demo_psc](https://cloud.githubusercontent.com/assets/7080143/7218715/8eef503c-e67d-11e4-8291-32c5334bedcf.png)
+",,
+7,issue_comment,549,nilearn,nilearn,salma1601,2015-04-23 09:52:03,"I agree that standardization does not improve conditioning of confound removal. Also I guess that _standardize must be changed because with detrend=False and normalize=False the signals are not centered ?
+Ok so we get as output of cleaning the raw signal after regressing out the confounds and if one is interested by PSC units he can just get the means from the initial signals and scales the signals.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,553,nilearn,nilearn,GaelVaroquaux,2015-04-20 16:16:22,"Fixes #549
+
+The signals were normlized when confounds were used, for little good
+reason
+",start issue,[MRG] BUG: don't normalize when confounds
+2,issue_closed,553,nilearn,nilearn,GaelVaroquaux,2015-05-11 09:26:00,,closed issue,[MRG] BUG: don't normalize when confounds
+3,pull_request_title,553,nilearn,nilearn,GaelVaroquaux,2015-04-20 16:16:22,"Fixes #549
+
+The signals were normlized when confounds were used, for little good
+reason
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,[MRG] BUG: don't normalize when confounds
+4,pull_request_merged,553,nilearn,nilearn,GaelVaroquaux,2015-05-11 09:26:00,[MRG] BUG: don't normalize when confounds,13aca5bbb5c08bd16fd358c4cbd2acfdf3ef5e54,Pull request merge from GaelVaroquaux/nilearn:std_confounds to nilearn/nilearn:master
+5,issue_comment,553,nilearn,nilearn,GaelVaroquaux,2015-04-24 15:40:18,"Comments addressed. Thanks for the review.
+",,
+6,issue_comment,553,nilearn,nilearn,GaelVaroquaux,2015-05-07 14:07:35,"By looking at the discussion, I think that they is nothing to do on this PR, and that it is mergeable.
+
+Can I haz reviews? To haz merge?
+",,
+7,issue_comment,553,nilearn,nilearn,GaelVaroquaux,2015-05-11 09:25:48,"Okay! Alors je merge ce tantôt. 
+",,
+8,issue_comment,553,nilearn,nilearn,AlexandreAbraham,2015-05-11 09:23:58,"Pouce vers le haut !
+",,
+9,issue_comment,553,nilearn,nilearn,eickenberg,2015-05-11 09:25:50,"> Pouce vers le haut !
+
+Bon pour fusion?
+
+http://www.wordreference.com/enfr/merge
+",,
+10,pull_request_commit_comment,553,nilearn,nilearn,AlexandreAbraham,2015-04-20 20:34:22,"Do we have to put space before colons now?
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+11,pull_request_commit_comment,553,nilearn,nilearn,GaelVaroquaux,2015-04-20 20:35:53,"> Do we have to put space before colons now?
+
+Yes. It's always been like this in the numpy doc standard. But we keep
+forgetting.
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+12,pull_request_commit_comment,553,nilearn,nilearn,AlexandreAbraham,2015-04-20 20:52:58,"Well, I don't keep forgetting, I've been corrected several times when I add them...
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+13,pull_request_commit_comment,553,nilearn,nilearn,GaelVaroquaux,2015-04-20 20:54:24,"> Well, I don't keep forgetting, I've been corrected several times when I add
+> them...
+
+:$
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+14,pull_request_commit_comment,553,nilearn,nilearn,AlexandreAbraham,2015-04-21 08:54:50,"Here is an image of generated doc. For the first parameter, there is no space. For the second one, I put a space. You can see that the extra space shows in the doc. This is, AFAIK, why we decided not to put them (this is the same in scikit-learn). I am not against adding them but we should be consistent and do that in a dedicated PR.
+
+![space](https://cloud.githubusercontent.com/assets/1647301/7248651/a5291bba-e814-11e4-8c76-9ae3ecb2d685.png)
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+15,pull_request_commit_comment,553,nilearn,nilearn,AlexandreAbraham,2015-04-21 08:56:29,"There is no change in the code for that output.
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+16,pull_request_commit_comment,553,nilearn,nilearn,salma1601,2015-04-24 14:02:05,"hi @GaelVaroquaux 
+What's the need for this additionnal output std ? Can't we just not standardize the input signal in the confounds removal if standardize is set to False?
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+17,pull_request_commit_comment,553,nilearn,nilearn,GaelVaroquaux,2015-04-24 15:37:31,"Indeed, thanks for the comment, Alex and Salma. This is a mistake and I
+am correcting it.
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(None, '', u'nilearn/signal.py')"
+18,pull_request_commit_comment,553,nilearn,nilearn,salma1601,2015-04-24 15:55:28,"if detrend is False here, the _standardize will just return a copy of the signals without centering them. May be the function _standardize also has to be changed so that the signal is centered even if both standardize and detrend are False ?
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(13, '', u'nilearn/signal.py')"
+19,pull_request_commit_comment,553,nilearn,nilearn,AlexandreAbraham,2015-04-25 14:30:26,"You mean that you want a constant trend to be removed even if detrend is False?
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(13, '', u'nilearn/signal.py')"
+20,pull_request_commit_comment,553,nilearn,nilearn,salma1601,2015-04-25 17:25:51,"yes that's what I meant but thinking again it is not necessary. In fact I was testing the new code on ADHD removing one unique constant confound and I had a weired result.
+![demo_constant_removal](https://cloud.githubusercontent.com/assets/7080143/7333892/8c628cba-eb7f-11e4-84ad-e151f34f175d.png)
+
+Investigating what is wrong it turns out it is the way the regression of confounds is done. In fact, it relies on a QR decomposition and in case of a unique null confound, the Q matrix is the vector np.array([1, 0, ..., 0]). So the output signal is np.array([0, input[1], ..., input[n]]). 
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/signal.py#L460
+
+I think that the case of a constant confound must be handled precisely. Shall I open another issue for that?
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(13, '', u'nilearn/signal.py')"
+21,pull_request_commit_comment,553,nilearn,nilearn,salma1601,2015-04-26 08:14:57,"I added a new issue for the confounds removal, because I think it is unrelated to standardization.
+https://github.com/nilearn/nilearn/issues/561
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(13, '', u'nilearn/signal.py')"
+22,pull_request_commit_comment,553,nilearn,nilearn,lesteve,2015-05-09 00:26:02,"I feel this has been discussed but I couldn't find it anywhere. How come we need to relax this condition, i.e. somehow that the cleaned_signals and confounds are less orthogonal ?
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(5, '', u'nilearn/tests/test_signal.py')"
+23,pull_request_commit_comment,553,nilearn,nilearn,lesteve,2015-05-09 00:26:48,"Same question as above, do we understand why we need to relax this condition?
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(14, '', u'nilearn/tests/test_signal.py')"
+24,pull_request_commit_comment,553,nilearn,nilearn,GaelVaroquaux,2015-05-09 08:54:41,"I am not sure. I couldn't get this to work.
+
+There are two possible explanations: either the normalizing does indeed improve the numerics, and the results are less orthogonal. I think that it would not be the end of the world given that the precision is still very good.
+
+Or options: the norm of residuals is really related to the norm of what goes in. Relative errors are what it meaningful, not absolute. Thus, it is normal that it goes up.
+
+Anyhow, I couldn't decide which one was true, and chose to move forward: I don't think that this is too bad.
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(5, '', u'nilearn/tests/test_signal.py')"
+25,pull_request_commit_comment,553,nilearn,nilearn,salma1601,2015-05-09 22:41:23,"> Or options: the norm of residuals is really related to the norm of what goes in. Relative errors are what it meaningful, not absolute. Thus, it is normal that it goes up.
+
+for me this is the reason we need to relax both tests. To be convinced, rerun the same tests on the master with standardize=True (which results in a multiplication of the output signal by some factor) and the tests will not work.
+",7dc04275022925c2f8a16e9c5f215890b43c0fa8,"(14, '', u'nilearn/tests/test_signal.py')"
+26,pull_request_commit,553,nilearn,nilearn,GaelVaroquaux,2015-04-20 15:54:36,"BUG: don't normalize when coufounds
+
+Fixes #549
+
+The signals were normlized when confounds were used, for little good
+reason",9c594f2f140c8f21dfb005bf54b66e16ee281c07,
+27,pull_request_commit,553,nilearn,nilearn,GaelVaroquaux,2015-04-24 15:37:33,DOC: fix incorrect documentation,7dc04275022925c2f8a16e9c5f215890b43c0fa8,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,556,nilearn,nilearn,demianw,2015-04-22 13:14:33,"Added an optional Normalizer to the edge colouring of plotted graphs to be able to modulate edge colors.
+",start issue,[MRG+1] Added the possibility to use a Normalize class to modulate edge coloring 
+2,issue_closed,556,nilearn,nilearn,lesteve,2015-04-30 11:51:17,,closed issue,[MRG+1] Added the possibility to use a Normalize class to modulate edge coloring 
+3,pull_request_title,556,nilearn,nilearn,demianw,2015-04-22 13:14:33,"Added an optional Normalizer to the edge colouring of plotted graphs to be able to modulate edge colors.
+",d0aa6205af63171f4fadbe49803fee8331306fe3,[MRG+1] Added the possibility to use a Normalize class to modulate edge coloring 
+4,pull_request_merged,556,nilearn,nilearn,lesteve,2015-04-30 11:51:17,[MRG+1] Added the possibility to use a Normalize class to modulate edge coloring ,6cf01a245da357155e1ce1003cba4162e54c161f,Pull request merge from demianw/nilearn:change_norm_for_connectome_plots to nilearn/nilearn:master
+5,issue_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-22 15:03:34,"I am not very excited about exposing this super technical option to the
+user while we are really striving to target simpler, less technical
+users.
+
+Is there a reason why you cannot process your data, for instance applying a
+log, and then use a standard normalization?
+",,
+6,issue_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-22 15:34:49,"OK, but trying to solve every corner case is going to blow up the
+cyclomatic complexity of nilearn and make the API really hard to
+understand (matplotlib is a good example of this). So we are taking the
+""Steve Jobs"" position on this and only catering to the 99% usecase.
+
+Just to stress that this is not a theoretical argument but a practical
+one, the recent few additions to the colorbar have made our codebase much
+more complex and lead to a buggy release. We don't have the resources to
+address these issues.
+",,
+7,issue_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-22 15:43:29,"> Sounds like an absolutely reasonable criteria. Would you rather I change it for
+> the simpler vmin, vmax?
+
+Yes, such an API is easily understandable by non technical users.
+
+> Nowadays the vmin-vmax behaviour is internally hardcoded and not documented.
+> It's in lines 266-270 of nilearn/plotting/displays.py
+
+I agree that from a design perspective this is not ideal. I think that
+exposing it and documentating it is a clear cut improvement.
+
+Thanks
+",,
+8,issue_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-30 11:24:32,"IMHO, the only remaining item to be done on this PR is the vmin / vmax behavior when the other is none (as discussed in inline comments). The rest is :+1: from me.
+
+I'd love to get this in the 0.1.3 release.
+",,
+9,issue_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-30 11:35:58,"LGTM, :+1: for merge.
+
+Thanks @demianw !
+",,
+10,issue_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-30 11:52:22,"> Merged #556.
+
+Hurry. Thanks again Demian
+",,
+11,issue_comment,556,nilearn,nilearn,lesteve,2015-04-22 14:37:45,"Just curious, what's your use case, making it easier to visually compare different connectome plots by using the same norm for all these plots?
+
+Maybe having `edge_vmin` and `edge_vmax` arguments in plot_connectome would be easier to understand for the user.
+",,
+12,issue_comment,556,nilearn,nilearn,lesteve,2015-04-28 06:24:54,"Sorry I completely missed the fact that you implemented the proposed changes. I'll take a closer look today.
+",,
+13,issue_comment,556,nilearn,nilearn,lesteve,2015-04-30 11:51:15,"Merging, thanks a lot!
+",,
+14,pull_request_commit_comment,556,nilearn,nilearn,banilo,2015-04-28 13:45:51,"Just wondering, does it work if `vmin==vmax`, that is, all all connectivity strengths have the same value?
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+15,pull_request_commit_comment,556,nilearn,nilearn,banilo,2015-04-28 13:47:44,"might not be explicit enough to convey the effect of `edge_vmin/max`on the plot...
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(72, '', u'nilearn/plotting/displays.py')"
+16,pull_request_commit_comment,556,nilearn,nilearn,demianw,2015-04-28 14:02:21,"This is replicates the previous implicit behaviour of the function where vmin and vmax where set. So the functional description still works. If vmin == vmax then all will be the same color which is the current matplotlib behaviour too
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+17,pull_request_commit_comment,556,nilearn,nilearn,demianw,2015-04-28 14:03:46,"I copied the current descritpion style in matplotlib. Do you have concrete suggestions?
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(72, '', u'nilearn/plotting/displays.py')"
+18,pull_request_commit_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-28 17:53:33,"I think that the logic of this code will be surprising when vmin is none but not vmax.
+
+I think that vmax should be set first,  and then vmin set to -vmax if none. 
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+19,pull_request_commit_comment,556,nilearn,nilearn,demianw,2015-04-28 17:56:47,"I agree. This type of clamping is very much an fMRI or co-variance matrix use-case so I rely on your expertise.
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+20,pull_request_commit_comment,556,nilearn,nilearn,demianw,2015-04-28 18:03:56,"However, @GaelVaroquaux , what happens in your case if vmin is positive and vmax is None?
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+21,pull_request_commit_comment,556,nilearn,nilearn,demianw,2015-04-28 18:05:34,"also the case where vmin is None and vmax is None will be quirky.
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+22,pull_request_commit_comment,556,nilearn,nilearn,lesteve,2015-04-29 09:34:55,"> I think that vmax should be set first, and then vmin set to -vmax if none.
+
+Agreed. That means:
+- vmin and vmax are None: current behaviour, `vmax = np.max(np.abs(edge_data))`, `vmin = -vmax`
+- vmin is None, vmax set: `vmin = -vmax`
+- vmin set, vmax is None: `vmax = np.max(np.abs(edge_data))`, leave vmin as provided
+- vmin and vmax set: leave vmax and vmin as provided
+
+> However, @GaelVaroquaux , what happens in your case if vmin is positive and vmax is None?
+
+See above. About these weird edge cases, I would be in favor of not trying to catch them all and just letting the matplotlib code do whatever it does in these cases.
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+23,pull_request_commit_comment,556,nilearn,nilearn,demianw,2015-04-29 09:41:15,"I can do whatever you think is the best case however the lack of symmetry between cases 2 and 3 that you, @lesteve . I would either go with 
+- vmin is None, vmax set: vmin = -vmax (throwing a ValueError if vmin is positive) 
+- vmax is None, vmin set: vmax = -vmin (throwing a ValueError if vmax is negative)
+
+or 
+- vmin set, vmax is None: vmax = np.max(np.abs(edge_data))
+- vmax set, vmin is None: vmin = -np.max(np.abs(edge_data))
+
+But you guys have the last word
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+24,pull_request_commit_comment,556,nilearn,nilearn,GaelVaroquaux,2015-04-29 10:37:12,">   • vmin is None, vmax set: vmin = -vmax (throwing a ValueError if vmin is
+>     positive)
+>   • vmax is None, vmin set: vmax = -vmin (throwing a ValueError if vmax is
+>     negative)
+> 
+> or
+> 
+>   • vmin set, vmax is None: vmax = np.max(np.abs(edge_data))
+>   • vmax set, vmin is None: vmin = -np.max(np.abs(edge_data))
+
+First option is what I would expect.
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+25,pull_request_commit_comment,556,nilearn,nilearn,lesteve,2015-04-29 10:51:14,"> First option is what I would expect.
+
+Makes more sense than what I said indeed.
+",d0aa6205af63171f4fadbe49803fee8331306fe3,"(None, '', u'nilearn/plotting/displays.py')"
+26,pull_request_commit,556,nilearn,nilearn,demianw,2015-04-22 13:12:37,Added the possibility to use a Normalize class to modulate the coloring on graph edges,8bb45f5ae4f697543e07ea16db2021f014a15a27,
+27,pull_request_commit,556,nilearn,nilearn,demianw,2015-04-22 15:58:06,Changed the interface for edge coloring from a Normalizer class to the vmin/vmax parameters,2402ea3cfcc44d1ad429add78469537db3ccebc8,
+28,pull_request_commit,556,nilearn,nilearn,demianw,2015-04-30 11:30:30,Changed the behaviour of vmin/vmax on the connectome plotting function,d0aa6205af63171f4fadbe49803fee8331306fe3,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,546,nilearn,nilearn,lesteve,2015-04-16 09:27:58,"Matplotlib backend is set once and for all in
+`nilearn/plotting/__init__.py`. Agg is used only when DISPLAY is unset. I am happy also always using Agg when running the tests but on my machine the difference for running `nosetests nilearn/plotting/tests` is something like 1.5s.
+
+Failing to import matplotlib is only ok when running the tests. 
+
+Protecting matplotlib imports is not needed anymore anymore in nilearn.plotting submodules.
+",start issue,Simplify matplotlib backend choice and test skipping when matplotlib is not installed
+2,issue_closed,546,nilearn,nilearn,lesteve,2015-04-16 12:29:16,,closed issue,Simplify matplotlib backend choice and test skipping when matplotlib is not installed
+3,pull_request_title,546,nilearn,nilearn,lesteve,2015-04-16 09:27:58,"Matplotlib backend is set once and for all in
+`nilearn/plotting/__init__.py`. Agg is used only when DISPLAY is unset. I am happy also always using Agg when running the tests but on my machine the difference for running `nosetests nilearn/plotting/tests` is something like 1.5s.
+
+Failing to import matplotlib is only ok when running the tests. 
+
+Protecting matplotlib imports is not needed anymore anymore in nilearn.plotting submodules.
+",af234a9dbf60cc6cc40c13938f46909c02b4df2a,Simplify matplotlib backend choice and test skipping when matplotlib is not installed
+4,pull_request_merged,546,nilearn,nilearn,lesteve,2015-04-16 12:29:16,Simplify matplotlib backend choice and test skipping when matplotlib is not installed,5d805d2fda08916cf42810350b21b9f0e2fcb507,Pull request merge from lesteve/nilearn:simplify-matplotlib-backend-choice to nilearn/nilearn:master
+5,issue_comment,546,nilearn,nilearn,GaelVaroquaux,2015-04-16 09:41:47,"Looks good! Minor comment and then +1
+",,
+6,issue_comment,546,nilearn,nilearn,bthirion,2015-04-16 09:53:07,"+1. Thx for the simplification.
+",,
+7,issue_comment,546,nilearn,nilearn,lesteve,2015-04-16 12:29:12,"Moved the imports inside the function as asked, merging.
+",,
+8,pull_request_commit_comment,546,nilearn,nilearn,GaelVaroquaux,2015-04-16 09:33:09,"To avoid polluting the namespace (because that's what the user sees when tab-completing on plotting), I think that we should have the imports inside the relevant function.
+",af234a9dbf60cc6cc40c13938f46909c02b4df2a,"(None, '', u'nilearn/plotting/__init__.py')"
+9,pull_request_commit,546,nilearn,nilearn,lesteve,2015-04-14 09:19:37,"Simplify matplotlib backend choice
+
+and test skipping when matplotlib is not installed.
+
+Matplotlib backend is set once and for all in
+nilearn/plotting/__init__.py. Agg is used only when DISPLAY is unset.
+
+Failing to import matplotlib is only ok when running the
+tests. nose.SkipTest are not needed anymore in nilearn.plotting
+submodules.",260ed215b709de1f4419d9aa2ffc430a58517d41,
+10,pull_request_commit,546,nilearn,nilearn,lesteve,2015-04-16 11:46:15,"Move imports inside function
+
+to avoid polluting the nilearn.plotting namespace",af234a9dbf60cc6cc40c13938f46909c02b4df2a,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,420,nilearn,nilearn,AlexandreAbraham,2015-02-10 10:22:16,"For several people, the caching directory is seen as a big pile of junk that grows without able to clean specific masked datasets (as they are all identified by a hash). We should find a solution to make it clearer for the users.
+",start issue,Caching system is cryptic for some people
+2,issue_closed,420,nilearn,nilearn,AlexandreAbraham,2015-04-08 08:58:52,,closed issue,Caching system is cryptic for some people
+3,issue_comment,420,nilearn,nilearn,GaelVaroquaux,2015-02-10 13:13:28,"> For several people, the caching directory is seen as a big pile of junk that
+> grows without able to clean specific masked datasets (as they are all
+> identified by a hash). We should find a solution to make it clearer for the
+> users.
+
+This has recently come up in joblib. I suggest prepending a very short
+description of the inputs to the hash in the directory name. Make
+the description of the inputs both short and meaningful will not be
+trivial.
+",,
+4,issue_comment,420,nilearn,nilearn,GaelVaroquaux,2015-02-10 13:28:18,"> I think that it's mainly useful for dataset masking. However, we don't
+> know the which dataset is used at masking time. So I think that we
+> should let the user decide of this. Depending on the usage, I'm sure
+> than any user can come up with a unique ID.
+
+OK. Part of the problem will be addressed by a functionning cache
+replacement policy system in joblib.
+
+The other part of the problem is a general provenance/information problem
+that is so far an open problem in software (nobody has solved it in a
+good way).
+
+That said, the relevant information is in the joblib store: in each
+result directory there is a 'metadata.json'
+
+A function to crawl such information and give a good view of the store
+would probably be useful. For instance a 'list' method on the 'memory'
+object, that could take an optional function as an argument (in which
+case it would list only the content of the cache for this function.
+
+I think that this would be useful. Can you open an issue on the joblib
+tracker?
+",,
+5,issue_comment,420,nilearn,nilearn,AlexandreAbraham,2015-02-10 13:20:00,"I think that it's mainly useful for dataset masking. However, we don't know the which dataset is used at masking time. So I think that we should let the user decide of this. Depending on the usage, I'm sure than any user can come up with a unique ID.
+",,
+6,issue_comment,420,nilearn,nilearn,AlexandreAbraham,2015-02-10 13:41:05,"I don't think that people will bother crawling a lot of folders using such a function to clean their directory.
+",,
+7,issue_comment,420,nilearn,nilearn,GaelVaroquaux,2015-02-10 14:23:45,"Then it's a problem we cannot solve.
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Feb 10, 2015, 14:41, at 14:41, Alexandre Abraham notifications@github.com wrote:
+
+> I don't think that people will bother crawling a lot of folders using
+> such a function to clean their directory.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/420#issuecomment-73700197
+",,
+8,issue_comment,420,nilearn,nilearn,AlexandreAbraham,2015-02-10 15:57:18,"I talked with Salma during the coffee break.
+1. In all examples, the maskers have `""nilearn_cache""` as cache directory. We should replace that by `""nilearn_cache/dataset_name""`. Because when users realize this fact, it's already too late and they have a huge cache directory.
+2. The other problem is when you mask a dataset of 200 subjects, and then change a parameter (typically smoothing). Even if the first problem is solved, you will end up will 400 folders with hashed names in your cache. Having a function that reads _metadata.json_ files is not helping because a script is still needed to parse the result and delete only a subset of the files. For this problem, we would need a 2-level cache like this:
+
+```
+nilearn_cache_adhd
+├ hash('filter_and_mask(all_params_but_filepath_smoothing_6)')
+│  ├ hash('filepath_1')
+│  ├ hash('filepath_2')
+│  └ ...
+└ hash('filter_and_mask(all_params_but_filepath_smoothing_8)')
+   ├ hash('filepath_1')
+   ├ hash('filepath_2')
+   └ ...
+```
+
+This is a quick suggestion, I haven't really thought about this.
+",,
+9,issue_comment,420,nilearn,nilearn,GaelVaroquaux,2015-02-10 16:21:21,"> 1. In all examples, the maskers have ""nilearn_cache"" as cache directory. We
+>    should replace that by ""nilearn_cache/dataset_name"". Because when users
+>    realize this fact, it's already too late and they have a huge cache
+>    directory.
+
+Yes and no: there are common things across the different datasets, and
+the benefit of putting everything in the same directory is that these
+common things are not duplicated or recomputed.
+
+> 1. The other problem is when you mask a dataset of 200 subjects, and then
+>    change a parameter (typically smoothing). Even if the first problem is
+>    solved, you will end up will 400 folders with hashed names in your cache.
+>    Having a function that reads metadata.json files is not helping because a
+>    script is still needed to parse the result and delete only a subset of the
+>    files. For this problem, we would need a 2-level cache like this:
+> 
+> nilearn_cache_adhd
+> ├ hash('filter_and_mask(all_params_but_filepath_smoothing_6)')
+> │  ├ hash('filepath_1')
+> │  ├ hash('filepath_2')
+> │  └ ...
+
+That's always going to be custom and never going to scale, because you
+need to know which parameters should go where.
+
+From what I hear, all these problems are problems that we cannot solve.
+
+What we can do, is try to implement a cache replacement policy, and be
+able to limit the disk occupied by caching. This is on my radar.
+",,
+10,issue_comment,420,nilearn,nilearn,AlexandreAbraham,2015-02-10 16:41:30,"> Yes and no: there are common things across the different datasets, and the benefit of putting everything in the same directory is that these common things are not duplicated or recomputed.
+
+Do you have something in mind? Because I can't think of one.
+
+> That's always going to be custom and never going to scale, because you need to know which parameters should go where.
+
+That works for the masker: the first level is everything but the filepath.
+
+> What we can do, is try to implement a cache replacement policy, and be able to limit the disk occupied by caching. This is on my radar.
+
+My guess is that people will get scared if things that used to run smoothly (because cached) become slow (because cache has been invalidated).
+",,
+11,issue_comment,420,nilearn,nilearn,GaelVaroquaux,2015-02-10 16:45:10,"> Do you have something in mind? Because I can't think of one.
+
+Yes. Loading the haxby dataset and applying to it 2 different
+classifiers.
+
+> ```
+> That's always going to be custom and never going to scale, because
+> you need to know which parameters should go where.
+> ```
+> 
+> That works for the masker: the first level is everything but the filepath.
+
+Yes, but it means that you need to hand craft this everywhere, which is
+really what I am trying to avoid.
+
+> ```
+> What we can do, is try to implement a cache replacement policy, and
+> be able to limit the disk occupied by caching. This is on my radar.
+> ```
+> 
+> My guess is that people will get scared if things that used to run smoothly
+> (because cached) become slow (because cache has been invalidated).
+
+People have long stopped understanding how a computer works. There are
+caching mechanisms everywhere in a computer. Some day things are fast.
+Other days they are slow. The world is still a better place with caching
+:).
+",,
+12,issue_comment,420,nilearn,nilearn,AlexandreAbraham,2015-02-10 19:27:19,"> Yes. Loading the haxby dataset and applying to it 2 different classifiers.
+
+I see no problem in changing `nilearn_cache` to `nilearn_cache/haxby` for that particular task.
+
+> Yes, but it means that you need to hand craft this everywhere, which is really what I am trying to avoid.
+
+I was just thinking of the masker for that point.
+
+> People have long stopped understanding how a computer works. There are caching mechanisms everywhere in a computer. Some day things are fast. Other days they are slow. The world is still a better place with caching :).
+
+I have no strong feeling about that. I just had several complaints about a `nilearn_cache` directory growing out of control and people not wanting to delete it by fear of losing all their cache.
+",,
+13,issue_comment,420,nilearn,nilearn,GaelVaroquaux,2015-02-12 07:17:08,"> I see no problem in changing nilearn_cache to nilearn_cache/haxby for that
+> particular task.
+
+OK. Point taken. I agree with you. Sorry, I was being dumb. I would
+welcome a joblib cache per dataset as long as we don't have a cache
+replacement policy.
+
+> I was just thinking of the masker for that point.
+
+I am trying to minimize the amount of code that goes 
+
+> I have no strong feeling about that. I just had several complaints
+> about a nilearn_cache directory growing out of control and people not
+> wanting to delete it by fear of losing all their cache.
+
+That tells me we need cache replacement policy :). That's difficult work,
+but it is feasible, and it will solve many problems at once.
+",,
+14,issue_comment,420,nilearn,nilearn,AlexandreAbraham,2015-02-12 08:47:50,"> OK. Point taken. I agree with you. Sorry, I was being dumb. I would welcome a joblib cache per dataset as long as we don't have a cache replacement policy.
+
+Cool, I'll do a PR to fix that.
+
+> I am trying to minimize the amount of code that goes
+
+I agree. Adding a subdirectory to nilearn_cache is basically the idea of a two level cache but handled at user level ;). I think it can be more useful to sensibilize users to this problem rather than doing everything for them.
+
+> That tells me we need cache replacement policy :). That's difficult work, but it is feasible, and it will solve many problems at once.
+
+I'm not sure that it will solve the general problem, but I guess that it's better than nothing ;).
+",,
+15,issue_comment,420,nilearn,nilearn,banilo,2015-02-12 08:49:52,"Loosly related, how about an explicit caching-related example to make the various flavors and advantages clear in a neuroimaging context?
+",,
+16,issue_comment,420,nilearn,nilearn,GaelVaroquaux,2015-02-12 08:54:30,"I'd rather rework completely the docs, before adding advanced
+documentation and examples. Do you want to take some time to brainstorm
+on reworking the docs? I think that it would be very useful.
+",,
+17,issue_comment,420,nilearn,nilearn,AlexandreAbraham,2015-02-12 09:23:15,":+1:
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,466,nilearn,nilearn,AlexandreAbraham,2015-02-27 09:28:54,"Originally, two functions were created to load niimages:
+- `check_niimg` for 3D images
+- `check_niimgs` for 4D images
+
+However, both have grown to accept the other type of images. `check_niimg(ensure_3d=False)` can load 4D images. `check_niimgs(accept_3d=True)` can load 3D images. This is pertinent in certain cases (eg, some sessions are represented by several 4D nifti with shape `[..., 1]`) but ATM the functions are clearly doing more than they should. Since both functions seem to converge, we may want to consider having only one function.
+
+Issue #463 should be addressed during this refactoring.
+
+Please discuss this matter here but use this wiki page as working document: https://github.com/nilearn/nilearn/wiki/Loading-niimgs
+",start issue,Refactor check_niimg*
+2,issue_closed,466,nilearn,nilearn,AlexandreAbraham,2015-04-08 08:49:05,,closed issue,Refactor check_niimg*
+3,issue_comment,466,nilearn,nilearn,banilo,2015-02-27 12:38:40,"Another related issue appears to be #273 
+
+Is there any hard reason why we cannot merge the two functions into a single `check_niimgs` with the functionality of both, that is:
+- return iterables
+- autoresample
+- (not) accepted 3D niimg-like objects
+- caching
+",,
+4,issue_comment,466,nilearn,nilearn,AlexandreAbraham,2015-02-27 12:50:47,"I suggested that:
+
+> Since both functions seem to converge, we may want to consider having only one function.
+
+I think that having two functions is saner because:
+- the 4D would make call to the 3D function (which is better than having recurrence and `if` statements)
+- some functionalities are exclusive to the 4D function (`return_iterator` for example).
+",,
+5,issue_comment,466,nilearn,nilearn,AlexandreAbraham,2015-04-08 08:49:05,"Fixed
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,538,nilearn,nilearn,banilo,2015-04-12 16:37:08,,start issue,typo
+2,issue_closed,538,nilearn,nilearn,agramfort,2015-04-12 16:40:02,,closed issue,typo
+3,pull_request_title,538,nilearn,nilearn,banilo,2015-04-12 16:37:08,,b9069c3e9d659183af7a83bb138135773d537f99,typo
+4,pull_request_merged,538,nilearn,nilearn,agramfort,2015-04-12 16:40:02,typo,4f408c2a903928547f0ad3ef93600460877332dc,Pull request merge from banilo/nilearn:typo to nilearn/nilearn:master
+5,issue_comment,538,nilearn,nilearn,agramfort,2015-04-12 16:40:04,"thx
+",,
+6,pull_request_commit,538,nilearn,nilearn,banilo,2015-04-12 16:36:12,typo,b9069c3e9d659183af7a83bb138135773d537f99,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,560,nilearn,nilearn,banilo,2015-04-24 13:02:59,"I tried to use NiftiMasker.transform() on a 3600-sample 4d nifti image (~6GB of memory). This does freeze my computer (16GB memory) when trying to apply transform() on the full 4d image, yet does not when transforming individual 3d images of the 4d nifti image successively. Mask and 4d nifti are in the same space (i.e., no resampling). Sorry for the anecdotal evidence.
+
+Might there be a memory issue in NiftiMasker.transform()?
+",start issue,masker.transform() on 4d image crashes computer
+2,issue_closed,560,nilearn,nilearn,AlexandreAbraham,2015-07-29 11:31:13,,closed issue,masker.transform() on 4d image crashes computer
+3,issue_comment,560,nilearn,nilearn,GaelVaroquaux,2015-04-24 15:20:41,"I am sorry. My crystal ball is not working currently. I'll try to call
+the 33 to have it fixed.
+",,
+4,issue_comment,560,nilearn,nilearn,GaelVaroquaux,2015-04-24 15:58:01,"> Until the crystal ball is working again, I could provide a tar ball with the
+> used files to reproduce...
+
+And code
+",,
+5,issue_comment,560,nilearn,nilearn,AlexandreAbraham,2015-06-22 15:39:10,"Should be fixed by #614. Can you try?
+",,
+6,issue_comment,560,nilearn,nilearn,AlexandreAbraham,2015-04-24 13:37:39,"My guess is that NiftiMasker.transform() will force loading of the data in memory instead of using memmapped data, blowing up your memory.
+",,
+7,issue_comment,560,nilearn,nilearn,AlexandreAbraham,2015-07-29 11:31:13,"Superseded by #715. Closing this one as the other has more discussions.
+",,
+8,issue_comment,560,nilearn,nilearn,banilo,2015-04-24 15:54:30,"Until the crystal ball is working again, I could provide a tar ball with the used files to reproduce...
+
+Sent from my iPhone
+
+> On 24 Apr 2015, at 17:20, Gael Varoquaux notifications@github.com wrote:
+> 
+> I am sorry. My crystal ball is not working currently. I'll try to call
+> the 33 to have it fixed.
+> —
+> Reply to this email directly or view it on GitHub.
+",,
+9,issue_comment,560,nilearn,nilearn,banilo,2015-04-27 15:32:10,"Here is code + data.
+
+https://dl.dropboxusercontent.com/u/4403154/mtransform.zip
+
+Hope it helps
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,537,nilearn,nilearn,surchs,2015-04-11 19:52:03,"Hi,
+
+I wanted to use plot_glass_brain to visualize a single binary network mask like so:
+
+```
+plotting.plot_glass_brain(network_mask_path, title='network_mask')
+```
+
+Default behaviour is to return an empty glass brain. I assume that this is because of the way that the colour range is computed from the image. 
+
+If I force the colour bar (to see what these values are), the whole thing crashes with
+
+```
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.py:778: RuntimeWarning: invalid value encountered in double_scalars
+  automin = (y[2] - y[1]) / clen
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.py:779: RuntimeWarning: invalid value encountered in double_scalars
+  automax = (y[-2] - y[-3]) / clen
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/axes/_base.py:2809: UserWarning: Attempting to set identical bottom==top results
+in singular transformations; automatically expanding.
+bottom=0.0, top=0.0
+  'bottom=%s, top=%s') % (bottom, top))
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-48-fb69d14f0879> in <module>()
+----> 1 plotting.plot_glass_brain(nil.image.index_img(temp_path, 2), title='plot_glass_brain', cmap=cm.Greys, colorbar=True)
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in plot_glass_brain(stat_map_img, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, black_bg, cmap, alpha, **kwargs)
+    740                                 display_factory=display_factory,
+    741                                 resampling_interpolation='continuous',
+--> 742                                 **kwargs)
+    743 
+    744     return display
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in _plot_img_with_bg(img, bg_img, cut_coords, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, draw_cross, black_bg, bg_vmin, bg_vmax, interpolation, display_factory, cbar_vmin, cbar_vmax, **kwargs)
+     96         display.add_overlay(nibabel.Nifti1Image(data, affine), 
+     97                             threshold=threshold, interpolation=interpolation,
+---> 98                             colorbar=colorbar, **kwargs)
+     99 
+    100     if annotate:
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in add_overlay(self, img, threshold, colorbar, **kwargs)
+    482 
+    483         if colorbar:
+--> 484             self._colorbar_show(ims[0], threshold)
+    485 
+    486         pl.draw_if_interactive()
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in _colorbar_show(self, im, threshold)
+    591             self._colorbar_ax, ticks=ticks, norm=im.norm,
+    592             orientation='vertical', cmap=our_cmap, boundaries=bounds,
+--> 593             spacing='proportional')
+    594 
+    595         self._colorbar_ax.yaxis.tick_left()
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in __init__(self, ax, cmap, norm, alpha, values, boundaries, orientation, ticklocation, extend, spacing, ticks, format, drawedges, filled, extendfrac, extendrect, label)
+    319         # The rest is in a method so we can recalculate when clim changes.
+    320         self.config_axis()
+--> 321         self.draw_all()
+    322 
+    323     def _extend_lower(self):
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in draw_all(self)
+    344         X, Y = self._mesh()
+    345         C = self._values[:, np.newaxis]
+--> 346         self._config_axes(X, Y)
+    347         if self.filled:
+    348             self._add_solids(X, Y, C)
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in _config_axes(self, X, Y)
+    438         ax.add_artist(self.patch)
+    439 
+--> 440         self.update_ticks()
+    441 
+    442     def _set_label(self):
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in update_ticks(self)
+    369         """"""
+    370         ax = self.ax
+--> 371         ticks, ticklabels, offset_string = self._ticker()
+    372         if self.orientation == 'vertical':
+    373             ax.yaxis.set_ticks(ticks)
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in _ticker(self)
+    589         ticks = ticks[inrange]
+    590         b = b[inrange]
+--> 591         formatter.set_locs(b)
+    592         ticklabels = [formatter(t, i) for i, t in enumerate(b)]
+    593         offset_string = formatter.get_offset()
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/ticker.pyc in set_locs(self, locs)
+    521                 self._set_offset(d)
+    522             self._set_orderOfMagnitude(d)
+--> 523             self._set_format(vmin, vmax)
+    524 
+    525     def _set_offset(self, range):
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/ticker.pyc in _set_format(self, vmin, vmax)
+    582             # We needed the end points only for the loc_range calculation.
+    583             locs = locs[:-2]
+--> 584         loc_range_oom = int(math.floor(math.log10(loc_range)))
+    585         # first estimate:
+    586         sigfigs = max(0, 3 - loc_range_oom)
+
+ValueError: math domain error
+```
+
+Apart from not crashing, it would be nice if there was a way to manually fix the upper and lower bound of the data - or possibly even a upper and lower threshold where everything outside is transparent.
+
+Best,
+Seb
+",start issue,plot_glass_brain doesn't like binary images
+2,issue_closed,537,nilearn,nilearn,AlexandreAbraham,2015-04-15 09:14:44,,closed issue,plot_glass_brain doesn't like binary images
+3,issue_comment,537,nilearn,nilearn,GaelVaroquaux,2015-04-12 20:41:00,"Let's try to do a release!
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Apr 12, 2015, 11:38, at 11:38, ""Loïc Estève"" notifications@github.com wrote:
+
+> FWIW I believe this has been already fixed in master. The stacktrace
+> looks very close to the one in
+> https://github.com/nilearn/nilearn/issues/510
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/537#issuecomment-92098927
+",,
+4,issue_comment,537,nilearn,nilearn,banilo,2015-04-12 16:33:56,"> possibly even a upper and lower threshold where everything outside is transparent
+
+You way want to take a look at the threshold argument as well as at the vmax argument.
+
+> Apart from not crashing
+
+I tried out some binary nifti image (only zeros and ones). I could not reproduce a crash, yet:
+I found that this line actually caused the (binary) data in img not be shown in my case -> that is, the map was empty but normal when this array masking was commented out
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L477
+",,
+5,issue_comment,537,nilearn,nilearn,surchs,2015-04-12 17:32:42,"Thanks a lot! I didn't think about vmax/min as kwargs but this is exactly what I am looking for. And this also fixes the crash. I have to set vmin and vmax manually to correctly display the binary image with a colorbar. Without vmin/max and without colorbar the glassbrain would be empty, without min/max and with a colorbar, I get the crash reported above.
+
+Thanks again for the help!
+",,
+6,issue_comment,537,nilearn,nilearn,lesteve,2015-04-12 18:38:12,"FWIW I believe this has been already fixed in master. The stacktrace looks very close to the one in https://github.com/nilearn/nilearn/issues/510
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,534,nilearn,nilearn,banilo,2015-04-08 14:22:21,"Add how to print a dataset description to the narrative documentation.
+",start issue,add description of datasets in doc
+2,issue_closed,534,nilearn,nilearn,lesteve,2015-04-20 12:33:12,,closed issue,add description of datasets in doc
+3,pull_request_title,534,nilearn,nilearn,banilo,2015-04-08 14:22:21,"Add how to print a dataset description to the narrative documentation.
+",6520ad32600afedf2aa78f14bfbe529a60d77f26,add description of datasets in doc
+4,pull_request_merged,534,nilearn,nilearn,lesteve,2015-04-20 12:33:12,add description of datasets in doc,7ba45c68e8689fd1633126a629006a679092f87f,Pull request merge from banilo/nilearn:descr_in_doc to nilearn/nilearn:master
+5,issue_comment,534,nilearn,nilearn,lesteve,2015-04-20 12:32:12,"Looks good thanks!
+",,
+6,issue_comment,534,nilearn,nilearn,banilo,2015-04-20 12:21:24,"All comments addressed.
+",,
+7,pull_request_commit_comment,534,nilearn,nilearn,lesteve,2015-04-08 14:29:52,"It'd be helpful to at least put the beginning of the description with an ellipsis to give a feeling what the output of this line should be
+",6520ad32600afedf2aa78f14bfbe529a60d77f26,"(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+8,pull_request_commit_comment,534,nilearn,nilearn,lesteve,2015-04-16 07:24:26,"Hmm while you are at it, shouldn't the parenthesis be before the comment, i.e.:
+
+```
+>>> print(haxby_files.func[0])  # doctest: +ELLIPSIS
+```
+
+rather than
+
+```
+>>> print(haxby_files.func[0]  # doctest: +ELLIPSIS)
+```
+
+probably comes from a global search and replace for the Python 3 compatibility ...
+",6520ad32600afedf2aa78f14bfbe529a60d77f26,"(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+9,pull_request_commit_comment,534,nilearn,nilearn,banilo,2015-04-20 12:19:53,"Good catch!
+",6520ad32600afedf2aa78f14bfbe529a60d77f26,"(None, '', u'doc/manipulating_visualizing/manipulating_images.rst')"
+10,pull_request_commit,534,nilearn,nilearn,banilo,2015-04-08 14:20:59,add description of datasets in doc,476126162afc4be329f5de129833283ec42d9326,
+11,pull_request_commit,534,nilearn,nilearn,banilo,2015-04-20 12:20:51,added ellipsis + fix typo,6520ad32600afedf2aa78f14bfbe529a60d77f26,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,490,nilearn,nilearn,AlexandreAbraham,2015-03-05 21:39:39,"As far as I understood, we are dropping the idea of supporting any `niimg-like` object and will rely on `nibabel`. If we do so, I see no reason to keep reimplementing features already coded in nibabel.
+
+Namely:
+- `nilearn.image.resampling.reorder_img` is a duplicate of `nibabel.func.as_closest_canonical`
+- several usage of `nilearn._utils.niimg_conversion.concat_niimgs` are covered by `nibabel.funcs.concat_images`.
+- `nilearn._utils.niimg_conversion._index_niimgs` can be rewritten using `nibabel.funcs.four_to_three`
+
+There may be other modifications that I don't know of.
+",start issue,Remove duplicate code already present in nibabel.
+2,issue_closed,490,nilearn,nilearn,AlexandreAbraham,2015-04-08 08:48:22,,closed issue,Remove duplicate code already present in nibabel.
+3,issue_comment,490,nilearn,nilearn,AlexandreAbraham,2015-03-05 21:48:41,"As a sidenote, we could support SpatialImage type from nibabel (that supersedes Nifti1, Nifti2, Analyze...).
+",,
+4,issue_comment,490,nilearn,nilearn,GaelVaroquaux,2015-03-05 21:49:19,"> As a sidenote, we could support SpatialImage type from nibabel (that
+> supersedes Nifti1, Nifti2, Analyze...).
+
+Yes. Agreed.
+",,
+5,issue_comment,490,nilearn,nilearn,AlexandreAbraham,2015-04-08 08:48:21,"As nibabel functions do not exactly what we do (lazy loading, etc), I close this issue.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,418,nilearn,nilearn,bcipolli,2015-02-08 15:09:03,"I looked at the docstring for the `NiftiMasker` class, and for `detrend` it says:
+
+```
+    detrend : boolean, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+```
+
+I expected that it would have one of the two semantics:
+1. `NiftiMasker` will detrend to compute the mask, then the detrending computed on the mask would be applied to the image passed to `transform`
+2. `NiftiMasker` will detrend to compute the mask, and will not detrend input data.
+
+Instead a third semantic was applied:
+- `NiftiMasker` detrends to compute the mask.  It then detrends any image that it receives (even if that image is 3D), _using the input images only_.
+
+I'm not sure what the designed behavior is (or why), but at the very least a warning would be helpful.  When I passed a 3D image into a masker with `detrend=True`, I got an image  back out that was all zeros.
+
+Note: this probably also applies to standardize.
+",start issue,"Detrending 3D image puts all values to 0 (was Masking with detrend=True has an undocumented, unexpected semantic.)"
+2,issue_closed,418,nilearn,nilearn,GaelVaroquaux,2015-04-20 07:20:32,,closed issue,"Detrending 3D image puts all values to 0 (was Masking with detrend=True has an undocumented, unexpected semantic.)"
+3,issue_comment,418,nilearn,nilearn,bcipolli,2015-02-08 15:15:51,"The use-cases I have in mind are:
+- Combine masks by calling `mask.transform` on another mask's 3D image.
+- Mask a subset of data (calling `mask.transform` on the result of `index_img`.
+
+In this case, I'd prefer that `fit` and `transform` each accept `detrend` (and other parameters).  If they're kept in the constructor, then I'd expect the first semantic: the detrending to be stored and applied to any `transform`ed image.
+
+I'm not sure what makes sense for other designed scenarios.
+",,
+4,issue_comment,418,nilearn,nilearn,eickenberg,2015-02-08 15:37:32,"3D images shouldn't be detrended, because as you say, the result is 0, because it subtracts the mean per voxel. Thanks for spotting this!
+
+Otherwise, the functionality doesn't seem shocking to me: Every 4D image has different temporal trends that need to be removed somewhere in the pipeline. Hence semantic 1 is not useful. Semantic 2 is a possible point for confusion, which may be resolved by renaming the keyword `detrend=` to `detrend_data=`, but I am not sure whether that is necessary. The mask is always computed on undetrended images AFAIK, and both masking strategies employ mean images.
+
+Combining masks can be done using e.g. `nilearn.masking.intersect_masks` or by working on the binary masks directly.
+
+Scikit-learn convention forbids the use of keyword arguments in `fit` and `transform`.
+",,
+5,issue_comment,418,nilearn,nilearn,bcipolli,2015-02-08 15:57:17,"@eickenberg Thanks for the info.  Two additional comment:
+- `detrend_data` doesn't clear up the ambiguity either; which data: the data used to compute the mask (via fit), or the data passed in `transform`?  It's 
+- If I want a mask that is computed from detrended EPI data, but I only want to apply that mask to a subset of my data (e.g. `label == 'face'`), I want the detrending computed across the entire dataset used (not detrending on the subset of images I've passed to the transform).
+
+I still find it odd that detrending to compute the mask, and detrending on the data passed to the transform, are semantically tied.  I'd rather have my image class know how to detrend and standardize, it doesn't seem like a ""Masking"" operation to me.  
+
+I think I'd prefer a `normalize_img` function (that takes `detrend` and `standardize` as parameters), and use Masks for computing and applying spatial masks.
+",,
+6,issue_comment,418,nilearn,nilearn,eickenberg,2015-02-08 16:10:50,"> `detrend_data` doesn't clear up the ambiguity either; which data: the data used to compute the mask (via fit), or the data passed in `transform`
+
+As far as I remember and as far as I can tell by skimming over the code, detrending is not performed to compute the mask, neither for `compute_epi_mask`, nor for `compute_background_mask`. Both are called from [here](https://github.com/nilearn/nilearn/blob/master/nilearn/input_data/nifti_masker.py#L165).
+
+>  I want the detrending computed across the entire dataset 
+
+valid point, especially when you are extracting very few, non-contiguous conditions. The masker should actually do its job before this extraction. Otherwise you need to switch detrending off, which it is by default in order to avoid surprises.
+
+The `NiftiMasker` is supposed to facilitate ""data preparation"" such as masking and optionally smoothing and detrending, which one often gets wrong if one applies them separately (e.g. in the smoothing case forgetting anisotropic voxel sizes)
+
+That said, it is true that it is quite bloated with functionality.
+",,
+7,issue_comment,418,nilearn,nilearn,bthirion,2015-02-08 17:40:33,"Let me just point a detail in the discussion: besides numerical errors, detrending should have no effect on mask estimation. So I don't really get the use case  "" the mask that is computed from detrended EPI data"".
+",,
+8,issue_comment,418,nilearn,nilearn,AlexandreAbraham,2015-02-08 21:02:40,"Like @bthirion said, there is absolutely no reason to detrend data before computing the mask. We can precise that in the doc, but given that the user has absolutely no knowledge of the heuristic used to compute the mask, I don't see why he should take care of that.
+
+> I think I'd prefer a normalize_img function
+
+See the answer of @eickenberg, I agree with him.
+
+> Mask a subset of data (calling mask.transform on the result of index_img.
+
+See PR #291 for that.
+
+I am :+1: to make the documentation more precise, just put that in #355.
+",,
+9,issue_comment,418,nilearn,nilearn,eickenberg,2015-02-08 21:12:02,"3D images transformed by a masker with `detrend=True` or `standardize=True` yielding 0 or crashing should also be mentioned or even prevented.
+",,
+10,issue_comment,418,nilearn,nilearn,AlexandreAbraham,2015-02-08 21:19:40,"Oh yeah, sorry, this one is definitely a bug.
+",,
+11,issue_comment,418,nilearn,nilearn,AlexandreAbraham,2015-02-27 09:08:39,"@eickenberg Do you think that we should crash or juste mask without doing detrending?
+",,
+12,issue_comment,418,nilearn,nilearn,eickenberg,2015-02-27 09:51:37,"crash or warn would be my first reflex. However, somebody masking a 3D image probably just wants a masked 3D image, so from that point of view a little magic from our side should actually be beneficial.
+
+How about this: If `detrend == True or standardize == True` and the masker gets a call to transform a 3D image, we could warn that we are not going to detrend it, making the user aware of the problem, but returning what most users would expect, i.e. a masked image.
+",,
+13,issue_comment,418,nilearn,nilearn,AlexandreAbraham,2015-02-27 10:12:34,":+1:
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,342,nilearn,nilearn,GaelVaroquaux,2015-01-08 16:46:41,"Right now, there is no proper verbosity control in the group_sparse_covariance module, as it relies on the logging module. As a result, the output is too verbose (typically in a IPython notebook as in http://nbviewer.ipython.org/github/GaelVaroquaux/nilearn_course/blob/master/rendered_notebooks/2_signal_extraction_for_connectomes.ipynb ).
+
+This code needs to be adapted to the incremental verbosity policy.
+",start issue,group_sparse_covariance shouldn't be using logging to do progress report
+2,issue_closed,342,nilearn,nilearn,lesteve,2015-04-24 08:44:18,,closed issue,group_sparse_covariance shouldn't be using logging to do progress report
+3,issue_comment,342,nilearn,nilearn,GaelVaroquaux,2015-04-24 15:45:47,"This rocks. Thanks a lot.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,529,nilearn,nilearn,fnielsen,2015-03-31 19:35:49,"There are problems with nilearn.datasets.fetch_harvard_oxford
+
+Documentation indicates that a Nifti1Image object should be returned. But it is a tuple and line 1675 does return a string (the filename), e.g.:
+
+```
+ volume, labels = nilearn.datasets.fetch_harvard_oxford('sub-maxprob-thr25-2mm', symmetric_split=False)
+```
+
+A possible fix is:
+
+```
+   if not symmetric_split:
+        atlas_img = check_niimg(atlas_img)
+        atlas = atlas_img.get_data() 
+        return new_img_like(atlas_img, atlas, atlas_img.get_affine()), names.tolist()
+
+>>> type(labels) == list
+True
+```
+
+(but it is unclear to me whether this output is the intended)
+
+Another problem is line 1689 `for s, _, _ in slices` as elements may be None. It may be triggered with: 
+
+```
+nilearn.datasets.fetch_harvard_oxford('sub-maxprob-thr25-2mm', symmetric_split=True)
+```
+
+Fix: 
+
+```
+crosses_middle = [slice[0].start < middle_ind and slice[0].stop > middle_ind
+                   for slice in slices if slice is not None]
+```
+",start issue,fetch_harvard_oxford return argument and symmetric_split
+2,issue_closed,529,nilearn,nilearn,lesteve,2015-04-14 12:04:44,,closed issue,fetch_harvard_oxford return argument and symmetric_split
+3,issue_comment,529,nilearn,nilearn,AlexandreAbraham,2015-04-07 08:48:20,"> But it is a tuple and line 1675 does return a string (the filename)
+
+This is more a problem of documentation: the function return a Niimage-like object which can be a filepath.
+
+> Another problem is line 1689 for s, _, _ in slices as elements may be None
+
+Good catch!
+",,
+4,issue_comment,529,nilearn,nilearn,lesteve,2015-04-14 12:04:42,"@fnielsen thanks a lot for your bug report! I just pushed a fix in master for the main issue (ndimage.find_objects output containing None elements).
+
+The documentation inconsistency is going to be tackled in #486 so I am going to close this issue.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,559,nilearn,nilearn,Titan-C,2015-04-24 11:39:08,"Sphinx gallery has a dev-release on pypi including the patch that fixes the no plot flag. Fixes #554.
+",start issue,Update to sphinxgallery 0.0.9 dev-release to fix bug on no plot flag
+2,issue_closed,559,nilearn,nilearn,AlexandreAbraham,2015-04-24 11:50:28,,closed issue,Update to sphinxgallery 0.0.9 dev-release to fix bug on no plot flag
+3,pull_request_title,559,nilearn,nilearn,Titan-C,2015-04-24 11:39:08,"Sphinx gallery has a dev-release on pypi including the patch that fixes the no plot flag. Fixes #554.
+",fc8f8c48b034cba42fae4bb5b2b69d8fc0a9541c,Update to sphinxgallery 0.0.9 dev-release to fix bug on no plot flag
+4,pull_request_merged,559,nilearn,nilearn,AlexandreAbraham,2015-04-24 11:50:28,Update to sphinxgallery 0.0.9 dev-release to fix bug on no plot flag,b450196e7b3b3dd75256a6b310e60df29478d21a,Pull request merge from Titan-C/nilearn:noplot_bug to nilearn/nilearn:master
+5,issue_comment,559,nilearn,nilearn,GaelVaroquaux,2015-04-24 11:45:16,"LGTM. :+1: for merge.
+",,
+6,pull_request_commit_comment,559,nilearn,nilearn,GaelVaroquaux,2015-04-24 11:44:55,"Not important for nilearn, but next time you release, you should have in mind to remove the '-dev' tag.
+",fc8f8c48b034cba42fae4bb5b2b69d8fc0a9541c,"(5, '', u'doc/sphinxext/sphinxgallery/__init__.py')"
+7,pull_request_commit_comment,559,nilearn,nilearn,Titan-C,2015-04-24 11:48:41,"I'm new to this release numbering. But the dev tag was on purpose so it shall not conflict with future versions on pypi.
+",fc8f8c48b034cba42fae4bb5b2b69d8fc0a9541c,"(5, '', u'doc/sphinxext/sphinxgallery/__init__.py')"
+8,pull_request_commit,559,nilearn,nilearn,Titan-C,2015-04-24 11:38:09,Update to sphinxgallery 0.0.9 dev-release to fix bug on no plot flag,fc8f8c48b034cba42fae4bb5b2b69d8fc0a9541c,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,548,nilearn,nilearn,f4bry,2015-04-17 09:20:00,"Hi all,
+
+I am trying to plot a map with values going from 0 to 1 (in theory), in a glass brain. 0 should be blue and 1 red. My problem is that the max of this map is 0.8 and it is plotted as maximum, so red. I would like to keep the color range fix and, for example, to plot values equal to 0.8 in orange, even if 1 values doesn't really exist in this particular map. The reason is because I have other maps where I want the 1s appearing in red.
+Is this possible?
+
+Thank you in advance,
+fab 
+",start issue,glassbrain: correspondence between image values and colormap
+2,issue_closed,548,nilearn,nilearn,lesteve,2015-04-18 09:46:12,,closed issue,glassbrain: correspondence between image values and colormap
+3,issue_comment,548,nilearn,nilearn,AlexandreAbraham,2015-04-17 09:26:09,"Try `vmax=1.`. Does that fix your problem?
+",,
+4,issue_comment,548,nilearn,nilearn,f4bry,2015-04-18 03:12:04,"Seems so! Thank you!
+fab
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,428,nilearn,nilearn,GaelVaroquaux,2015-02-13 13:37:37,"The current documentation was built organically as the code grew. I propose a refactor of the structure, to make it easier to understand. Here are the notes and proposed layout from brainstorming with @banilo and @AlexandreAbraham :
+# Introduction: nilearn, how and what for?
+## Nilearn: MVPA and machine learning for neuroimaging
+
+Here: define and relate to other things that people know
+
+Set the problem, use the right words and give our added value
+
+Right words: functional connectivity, parcellation, connectomes, MVPA, decoding, ...
+
+Have a table/list linking sections of the docs to different modalities (VBM, Task, resting state)
+
+Our added value:
+- very simple (a few lines of code) access to advanced methods
+- we scale (fast, memory usage...)
+- we enable easy prototyping for experimentation and method development
+- what we provide in the wider problem of learning on brain images is
+  really feature engineering
+## Installing nilearn
+# Decoding: predicting from brain images
+## An example
+## Advanced methods
+# Functional connectivity and resting state
+## Extracting times series to build a functional connectome
+## Extracting networks: ICA and beyond
+## Clustering: learning a brain parcellation
+# Image manipulation and visualization
+## Plotting brain images
+## Loading images and NiftiMasker
+
+Explain here that the concept of loading images doesn't really exist in nilearn: you can just pass file names to functions. Define what a niimage is
+## ROIs and masks
+## Datasets integrated in nilearn
+- Example datasets
+- Atlases
+# Advanced usage: pipelines and scaling up
+## Example of a hand-crafted analysis pipeline
+## Caching
+## Multi-core: parallel computing
+",start issue,Reorganize documentation
+2,issue_closed,428,nilearn,nilearn,AlexandreAbraham,2015-04-17 07:35:28,,closed issue,Reorganize documentation
+3,issue_comment,428,nilearn,nilearn,GaelVaroquaux,2015-02-28 19:41:00,"I am working on the issue on the branch https://github.com/GaelVaroquaux/nilearn/tree/doc_rework
+",,
+4,issue_comment,428,nilearn,nilearn,AlexandreAbraham,2015-04-17 07:35:28,"Thanks Gael! I close this one as I think that a new rework of the doc should be done in another issue.
+",,
+5,issue_comment,428,nilearn,nilearn,lesteve,2015-02-13 13:48:18,"Before I forget, there are a few URLs in docstrings that will need to be amended if the doc moves around. Off the top of my head:
+- Niimg-like description URL in a lot of docstrings
+- installation instructions URL in the import error message in nilearn/version.py
+
+There may be others, easy enough to git grep for nilearn.github.io.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,551,nilearn,nilearn,AlexandreAbraham,2015-04-20 07:26:07,"Just a complement to Gael's PR #543.
+",start issue,Add warning message when detrending 3D signal
+2,issue_closed,551,nilearn,nilearn,lesteve,2015-04-20 08:24:45,,closed issue,Add warning message when detrending 3D signal
+3,pull_request_title,551,nilearn,nilearn,AlexandreAbraham,2015-04-20 07:26:07,"Just a complement to Gael's PR #543.
+",b91acfe59efff0ef4f5f2d6b3e07a9c6f3ad3134,Add warning message when detrending 3D signal
+4,pull_request_merged,551,nilearn,nilearn,lesteve,2015-04-20 08:24:45,Add warning message when detrending 3D signal,a009590a563a68374a3b4a20b20dc6899c39c4c6,Pull request merge from AlexandreAbraham/nilearn:warning_detrend to nilearn/nilearn:master
+5,issue_comment,551,nilearn,nilearn,GaelVaroquaux,2015-04-20 08:31:07,"Thanks Alex! I needed to do that. It was on my TODO list :$
+",,
+6,issue_comment,551,nilearn,nilearn,lesteve,2015-04-20 08:24:43,"Looks good thanks
+",,
+7,issue_comment,551,nilearn,nilearn,AlexandreAbraham,2015-04-20 08:33:28,"I needed something easy for my Monday morning nilearn PR :P
+",,
+8,pull_request_commit,551,nilearn,nilearn,AlexandreAbraham,2015-04-20 07:23:02,Add warning message when detreending 3D signal,b91acfe59efff0ef4f5f2d6b3e07a9c6f3ad3134,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,501,nilearn,nilearn,satra,2015-03-17 16:25:37,"if i give a list of these images to niftimasker it complains that it received 4d images. i have opened an issue with nibabel asking why it's return the 4th dimension, but i think this is also a case where niftimasker can simply check if the 4th dimension is one for it's image check to know that this is a 3d file.
+
+```
+images[0] = nb.load('cope01.nii.gz')
+images[0].shape
+(91, 109, 91, 1)
+```
+
+```
+--> 176             imgs = _utils.check_niimgs(imgs, accept_3d=True)
+    177             self.mask_img_ = self._cache(compute_mask,
+    178                               func_memory_level=1,
+
+/om/user/satra/envs/testenv/lib/python2.7/site-packages/nilearn/_utils/niimg_conversions.pyc in check_niimgs(niimgs, accept_3d, return_iterator)
+    384                         ""%s%dD image(s), of shape %s. ""
+    385                         ""See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg."" % (
+--> 386                         'list of ' * depth, dim, shape))
+    387 
+    388     # Now, we load data as we know its format
+
+TypeError: Data must be a 4D Niimg-like object. You provided a list of 4D image(s), of shape (91, 109, 91, 1). See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+```
+",start issue,nilearn _check_niimgs called from niftimasker doesn't support current nibabel shape output
+2,issue_closed,501,nilearn,nilearn,GaelVaroquaux,2015-04-15 10:46:26,,closed issue,nilearn _check_niimgs called from niftimasker doesn't support current nibabel shape output
+3,issue_comment,501,nilearn,nilearn,satra,2015-04-15 14:22:28,"@AlexandreAbraham - sorry for the delay - yes this fixed the issue. i also fixed the source of the issue which was in ANTS-ITK
+",,
+4,issue_comment,501,nilearn,nilearn,GaelVaroquaux,2015-03-17 16:58:15,"> but i think this is also a case where niftimasker can simply check if
+> the 4th dimension is one for it's image check to know that this is a 3d
+> file.
+
+Agreed.
+",,
+5,issue_comment,501,nilearn,nilearn,GaelVaroquaux,2015-04-15 10:46:26,"Is this fixed? I think it is, so I am closing the issue. If it's not fixed, @satra, please ping us, and we will reopen the issue.
+",,
+6,issue_comment,501,nilearn,nilearn,GaelVaroquaux,2015-04-15 10:53:16,"> It is fixed but I am not sure that we added a test for that case. I'll take 5
+> minutes to do it.
+
+Cool, thx
+",,
+7,issue_comment,501,nilearn,nilearn,GaelVaroquaux,2015-04-15 14:24:19,"Thanks @satra . Good to have 2 fixes for one issue.
+",,
+8,issue_comment,501,nilearn,nilearn,GaelVaroquaux,2016-08-29 04:51:44,"Yes, this is fixed. I suspect that you are getting a genuine error, due to a mistake that you are doing. For instance, maybe you are not performing 2-class classification with the SVM, but multiclass, and hence getting multiple return weight maps where you expect to be getting only one.
+",,
+9,issue_comment,501,nilearn,nilearn,AlexandreAbraham,2015-03-17 16:54:02,"Hi Satra, thanks for your interest in nilearn. Actually, this bug is known and I already prepared a fix. We are in the process of integraring it as it implies some changes in nilearn's core that are not trivial. I'll let you know when it's ready to use!
+",,
+10,issue_comment,501,nilearn,nilearn,AlexandreAbraham,2015-03-27 08:50:40,"Hi @satra,
+
+Sorry for the long wait. We have just merged a PR that should fix your problem. Could you try again and report us any error?
+
+Thanks!
+",,
+11,issue_comment,501,nilearn,nilearn,AlexandreAbraham,2015-04-15 10:49:17,"It is fixed but I am not sure that we added a test for that case. I'll take 5 minutes to do it.
+",,
+12,issue_comment,501,nilearn,nilearn,AlexandreAbraham,2015-04-15 11:04:27,"OK, I thought that fixing it at check_niimg level would fix it at nifti_masker level but that was not the case. Same as for the colorbar bug: I added a hotfix and the problem itself will be tackled properly in #542.
+",,
+13,issue_comment,501,nilearn,nilearn,Nufas204,2016-08-29 03:02:39,"May I know if this is fixed? I get that similar error in viewing the results to plot the SVM weights for haxby dataset. 
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,554,nilearn,nilearn,AlexandreAbraham,2015-04-21 08:51:18,"Am I the only one?
+
+```
+Exception occurred:
+  File ""/home/aa013911/work/nilearn/doc/sphinxext/sphinxgallery/docs_resolv.py"", line 348, in embed_code_links
+    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
+KeyError: 'gallery_dir'
+The full traceback has been saved in /tmp/sphinx-err-sePU7r.log, if you want to report the issue to the developers.
+Please also report this if it was a user error, so that a better error message can be provided next time.
+```
+",start issue,Doc does not build
+2,issue_closed,554,nilearn,nilearn,AlexandreAbraham,2015-04-24 11:50:43,,closed issue,Doc does not build
+3,issue_comment,554,nilearn,nilearn,GaelVaroquaux,2015-04-24 10:22:21,"I get the same problem. We need to address this fast: currently master is somewhat broken.
+",,
+4,issue_comment,554,nilearn,nilearn,GaelVaroquaux,2015-04-24 11:51:24,"Thanks Oscar!
+",,
+5,issue_comment,554,nilearn,nilearn,AlexandreAbraham,2015-04-21 09:00:53,"I've done a noplot, so no build of examples.
+",,
+6,issue_comment,554,nilearn,nilearn,AlexandreAbraham,2015-04-24 10:57:21,"Is it doable fast enough? Because I am not against a quickfix in our copy of sphinx in the meantime.
+",,
+7,issue_comment,554,nilearn,nilearn,lesteve,2015-04-21 08:58:58,"Just launched a clean doc generation from master, will let you know.
+
+Does your error happens after or before the examples are run ?
+",,
+8,issue_comment,554,nilearn,nilearn,lesteve,2015-04-21 09:06:47,"I get the same error with `cd doc && make html-noplot`
+",,
+9,issue_comment,554,nilearn,nilearn,lesteve,2015-04-21 09:31:16,"Looks like this is a bug related to noplot, app.config.sphinxgallery_conf is not properly updated when plot_gallery is False.
+
+@Titan-C, I think the only thing is to move the `if not plot_gallery: return` after this [line](https://github.com/sphinx-gallery/sphinx-gallery/blob/master/sphinxgallery/gen_gallery.py#L25)
+",,
+10,issue_comment,554,nilearn,nilearn,lesteve,2015-04-24 10:48:44,"This has been fixed in sphinx-gallery master [here](https://github.com/sphinx-gallery/sphinx-gallery/commit/6e944e29e8b23a85025b6bf44ebb6d39907d1875). 
+
+I was thinking we could have a 0.9 sphinx-gallery release to fix this.
+
+cc @Titan-C.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,550,nilearn,nilearn,bthirion,2015-04-19 19:48:24,"reduced verbosity of group sparse covariance. i) The default is 0. ii) the verbosity is decremented when other objects/functions are called.
+
+Adresses #342.
+",start issue,MRG: Addresses #342
+2,issue_closed,550,nilearn,nilearn,lesteve,2015-04-24 08:43:25,,closed issue,MRG: Addresses #342
+3,pull_request_title,550,nilearn,nilearn,bthirion,2015-04-19 19:48:24,"reduced verbosity of group sparse covariance. i) The default is 0. ii) the verbosity is decremented when other objects/functions are called.
+
+Adresses #342.
+",8d07b48f26d2d32bfe1f89cbc6305e7ee7d1ad5d,MRG: Addresses #342
+4,pull_request_merged,550,nilearn,nilearn,lesteve,2015-04-24 08:43:24,MRG: Addresses #342,f495af6347869a24f394d28975ae020a75858f46,Pull request merge from bthirion/nilearn:gsc-verbosity to nilearn/nilearn:master
+5,issue_comment,550,nilearn,nilearn,lesteve,2015-04-20 11:42:23,"I fetched this PR branch and it does look like this addresses the main concerns of #342 in terms of unnecessary verbosity.
+",,
+6,issue_comment,550,nilearn,nilearn,lesteve,2015-04-24 08:43:23,"Merging this one, thanks.
+",,
+7,pull_request_commit,550,nilearn,nilearn,bthirion,2015-04-18 19:30:16,reduced verbosity of group sparse covariance. i) The default is 0. ii) the verbosity is decremented when other objects/functions are called,8d07b48f26d2d32bfe1f89cbc6305e7ee7d1ad5d,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,540,nilearn,nilearn,lesteve,2015-04-14 08:04:18,"Two quirks I just spottted:
+- it does not return a Bunch in contrary to all the other fetch_ functions but a tuple
+- it does not use the standard nilearn_data location to fetch the data but the current working directory instead
+",start issue,Fix datasets.fetch_harvard_oxford quirks
+2,issue_closed,540,nilearn,nilearn,AlexandreAbraham,2015-04-14 09:24:00,,closed issue,Fix datasets.fetch_harvard_oxford quirks
+3,issue_comment,540,nilearn,nilearn,GaelVaroquaux,2015-04-14 08:34:57,">   • it does not return a Bunch in contrary to all the other fetch_ functions
+>     but a tuple
+
+I agree that this should be changed.
+",,
+4,issue_comment,540,nilearn,nilearn,AlexandreAbraham,2015-04-14 08:26:13,"> it does not return a Bunch in contrary to all the other fetch_ functions but a tuple
+
+Yes, I've seen that already
+
+> it does not use the standard nilearn_data location to fetch the data but the current working directory instead
+
+Works for me. It may be due to your environment configuration. Can you download with verbosity enabled so that we can have more information?
+",,
+5,issue_comment,540,nilearn,nilearn,AlexandreAbraham,2015-04-14 09:24:00,"Please refer to #486 for further comments on this.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,541,nilearn,nilearn,fabianp,2015-04-14 14:25:44,"The manual iteration on the cross validation loop seems overly complicated and error prone to me. Am I missing something ?
+",start issue,Honor `simple` in plot_haxby_simple
+2,issue_closed,541,nilearn,nilearn,fabianp,2015-04-14 14:37:32,,closed issue,Honor `simple` in plot_haxby_simple
+3,pull_request_title,541,nilearn,nilearn,fabianp,2015-04-14 14:25:44,"The manual iteration on the cross validation loop seems overly complicated and error prone to me. Am I missing something ?
+",367516822f538965368b936704a5346199331457,Honor `simple` in plot_haxby_simple
+4,issue_comment,541,nilearn,nilearn,GaelVaroquaux,2015-04-14 14:29:27,"For many users this is easier to understand than ""cross_val_score"": cross_val_score seems magic to them.
+",,
+5,issue_comment,541,nilearn,nilearn,GaelVaroquaux,2015-04-14 14:35:28,"> and btw cross_val_score is extensively used in other examples, so not very
+> consistent either
+
+This one is the simple :)
+",,
+6,issue_comment,541,nilearn,nilearn,fabianp,2015-04-14 14:32:03,"I think that manually iterating on the cross-validation is very error prone ... so not a good example ... but well if this was meant on purpose then nevermind.
+",,
+7,issue_comment,541,nilearn,nilearn,fabianp,2015-04-14 14:32:56,"and btw cross_val_score is extensively used in other examples, so not very consistent either
+",,
+8,pull_request_commit,541,nilearn,nilearn,fabianp,2015-04-14 14:20:04,Honor `simple` in plot_haxby_simple :-),367516822f538965368b936704a5346199331457,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,558,nilearn,nilearn,salma1601,2015-04-23 14:57:56,"input signal is standardized only if standardize=True
+",start issue,fix standardization for confounds removal  #549
+2,issue_closed,558,nilearn,nilearn,lesteve,2015-04-24 08:42:37,,closed issue,fix standardization for confounds removal  #549
+3,pull_request_title,558,nilearn,nilearn,salma1601,2015-04-23 14:57:56,"input signal is standardized only if standardize=True
+",6bbd9900f64f65162c79ee2e4ab3362b9565a331,fix standardization for confounds removal  #549
+4,issue_comment,558,nilearn,nilearn,GaelVaroquaux,2015-04-23 15:00:03,"I've done a PR to tackle this: https://github.com/nilearn/nilearn/pull/553
+",,
+5,pull_request_commit,558,nilearn,nilearn,sb238920@is223297.intra.cea.fr,2015-04-23 14:47:21,fix standardization for confounds removal  #549,6bbd9900f64f65162c79ee2e4ab3362b9565a331,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,555,nilearn,nilearn,AlexandreAbraham,2015-04-21 09:41:53,"A while ago, I implemented in matplotlib perceptually improved colormaps from this website: https://mycarta.wordpress.com/color-palettes/
+
+I find some of them quite useful. Do you think it would be interesting to add them in nilearn?
+
+(Here they are with they lightness represented in grayscale below)
+
+![cubicl](https://cloud.githubusercontent.com/assets/1647301/7249542/53ac1420-e81b-11e4-84d6-c2b34c2b949c.png)
+![cubicyf](https://cloud.githubusercontent.com/assets/1647301/7249546/53ccd5ac-e81b-11e4-8fab-9e76d54bd90c.png)
+![isoaz](https://cloud.githubusercontent.com/assets/1647301/7249547/53cce150-e81b-11e4-9196-32f1ac07c661.png)
+![isoaz180](https://cloud.githubusercontent.com/assets/1647301/7249548/53cd3434-e81b-11e4-9683-11ace5fdedcf.png)
+![isol](https://cloud.githubusercontent.com/assets/1647301/7249544/53ca3cf2-e81b-11e4-8f78-5099013637bd.png)
+![linearl](https://cloud.githubusercontent.com/assets/1647301/7249545/53ccc0e4-e81b-11e4-9105-f19051c1d7d3.png)
+![linlhot](https://cloud.githubusercontent.com/assets/1647301/7249543/53bdbf7c-e81b-11e4-9ded-c8f779726755.png)
+![swtth](https://cloud.githubusercontent.com/assets/1647301/7249549/53cf2f14-e81b-11e4-9eea-a6b387e5e06d.png)
+",start issue,Perceptually improved colormap
+2,issue_closed,555,nilearn,nilearn,AlexandreAbraham,2015-04-23 14:38:45,,closed issue,Perceptually improved colormap
+3,issue_comment,555,nilearn,nilearn,GaelVaroquaux,2015-04-23 14:24:24,"I think that this should be addressed in matplotlib, and not in nilearn.
+The only reason that we have colormaps in nilearn is because we needed bivalued colormaps with black in the center. Maybe we should ask matplotlib if they are interested in having these, and we could move them upstream.
+",,
+4,issue_comment,555,nilearn,nilearn,GaelVaroquaux,2015-04-23 14:27:57,"> Those look nice :)
+
+Yes, but feature creep.
+",,
+5,issue_comment,555,nilearn,nilearn,AlexandreAbraham,2015-04-23 14:38:45,"OK, closing!
+",,
+6,issue_comment,555,nilearn,nilearn,banilo,2015-04-23 14:26:26,"Those look nice :)
+",,
+7,issue_comment,555,nilearn,nilearn,banilo,2015-04-23 14:28:35,"> feature creep
+
+Cool, I did not know this expression.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,401,nilearn,nilearn,AlexandreAbraham,2015-02-05 14:33:28,"In `fetch_harvard_oxford`, we look for a path in `FSL_DIR`. We should also look into defautl fixed paths for all systems (eg /usr/share/fsl/data).
+",start issue,Explore system paths in fetch_harvard_oxford
+2,issue_closed,401,nilearn,nilearn,AlexandreAbraham,2015-04-17 07:37:30,,closed issue,Explore system paths in fetch_harvard_oxford
+3,issue_comment,401,nilearn,nilearn,banilo,2015-02-27 13:05:30,"Have we not addressed this issue in
+https://github.com/nilearn/nilearn/blame/master/nilearn/datasets.py#L1569
+?
+",,
+4,issue_comment,401,nilearn,nilearn,AlexandreAbraham,2015-02-27 13:14:05,"No because FSL_DIR is not set by default on most setup. Thus we should explore some hardcoded absolute paths.
+",,
+5,issue_comment,401,nilearn,nilearn,AlexandreAbraham,2015-04-17 07:37:30,"Closing in favor of #486.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,525,nilearn,nilearn,surchs,2015-03-27 21:13:12,"Hey,
+
+I have encountered a bit of a weird bug.
+Running
+`from nilearn import plotting`
+triggers
+
+```
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-1-35cd2f5e057b> in <module>()
+----> 1 from nilearn import plotting
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/__init__.py in <module>()
+     31 
+     32 from . import cm
+---> 33 from .img_plotting import plot_img, plot_anat, plot_epi, \
+     34     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome
+     35 from .find_cuts import find_xyz_cut_coords
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/img_plotting.py in <module>()
+    308               output_file=None, display_mode='ortho', figure=None,
+    309               axes=None, title=None, annotate=True, draw_cross=True,
+--> 310               black_bg='auto', dim=False, cmap=pl.cm.gray, **kwargs):
+    311     """""" Plot cuts of an anatomical image (by default 3 cuts:
+    312         Frontal, Axial, and Lateral)
+
+NameError: name 'pl' is not defined
+```
+
+Not sure what is happening, since pl is defined right at the start. However, if I run the same command again in the same shell, I get a different error:
+
+```
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+<ipython-input-2-35cd2f5e057b> in <module>()
+----> 1 from nilearn import plotting
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/__init__.py in <module>()
+     30 ###############################################################################
+     31 
+---> 32 from . import cm
+     33 from .img_plotting import plot_img, plot_anat, plot_epi, \
+     34     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome
+
+ImportError: cannot import name cm
+```
+
+So far, I have tried updating nilearn and matplotlib but still have the same error. Any ideas?
+",start issue,Pylab import undefined in img_plotting with Enthought
+2,issue_closed,525,nilearn,nilearn,AlexandreAbraham,2015-04-08 22:39:47,,closed issue,Pylab import undefined in img_plotting with Enthought
+3,issue_comment,525,nilearn,nilearn,AlexandreAbraham,2015-03-27 23:45:49,"Hi,
+Could you run that in a terminal: `python -c 'import pylab'`. My guess is that you don't have pylab installed. The problem is that we are not supposed to depend on pylab but matplotlib only. @lesteve do you know why we have pylab stuff here?
+",,
+4,issue_comment,525,nilearn,nilearn,surchs,2015-03-28 01:16:06,"Yes, there is definitely something wrong
+
+```
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/pylab.py"", line 1, in <module>
+    from matplotlib.pylab import *
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/pylab.py"", line 274, in <module>
+    from matplotlib.pyplot import *
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/pyplot.py"", line 109, in <module>
+    _backend_mod, new_figure_manager, draw_if_interactive, _show = pylab_setup()
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/backends/__init__.py"", line 32, in pylab_setup
+    globals(),locals(),[backend_name],0)
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/backends/backend_wxagg.py"", line 10, in <module>
+    from . import backend_wx    # already uses wxversion.ensureMinimal('2.8')
+  File ""/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/backends/backend_wx.py"", line 76, in <module>
+    raise ImportError(missingwx)
+ImportError: Matplotlib backend_wx and backend_wxagg require wxPython >=2.8
+```
+",,
+5,issue_comment,525,nilearn,nilearn,AlexandreAbraham,2015-03-28 01:26:05,"This is very weird... Does pylab in Canopy uses wxagg backend by default? @lesteve @GaelVaroquaux, we may have to add a canopy build in Travis if they have a special default matplotlib configuration.
+",,
+6,issue_comment,525,nilearn,nilearn,surchs,2015-03-29 03:46:39,"I don't know but I found [this thing](https://support.enthought.com/hc/en-us/articles/204469930-wxPython-2-8-and-2-9) which seems to adress my specific issue. I will see if that fixes it.
+",,
+7,issue_comment,525,nilearn,nilearn,surchs,2015-03-29 04:01:15,"Ok, I imagine this is what you referred to but [changing my default backend to qt](http://matplotlib.org/users/customizing.html#matplotlibrc-sample) fixed my problem - it seems that there are some issues with wxpython and Canopy.
+",,
+8,issue_comment,525,nilearn,nilearn,lesteve,2015-03-29 19:02:21,"> @lesteve do you know why we have pylab stuff here?
+
+No reason other than historical ones I reckon, it'd be good to change `import pylab` by `import matplotlib.pyplot as plt` which is probably recommended anyway.
+",,
+9,issue_comment,525,nilearn,nilearn,AlexandreAbraham,2015-04-08 22:39:47,"Pylab has been removed.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,539,nilearn,nilearn,Leoniela,2015-04-13 17:49:17,"Hi, 
+
+I have binary lesionfiles of the brain in MNI space and some are not plotted in plt_anat and others are plotted weirdly with plt_roi.
+
+To visualize I put it in NBviewer:
+http://nbviewer.ipython.org/gist/Leoniela/c475985613e456950a30
+
+Does anyone have an idea why that is? Is something weird with the files?
+
+Thank you, Leonie
+",start issue,Issues with the plotting.plot_anat() and plot_roi() function
+2,issue_closed,539,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:20:49,,closed issue,Issues with the plotting.plot_anat() and plot_roi() function
+3,issue_comment,539,nilearn,nilearn,GaelVaroquaux,2015-04-14 05:56:42,"Hi Leonie,
+
+You have multiple problems. One is a bug in our code: that plot_stat_maps
+does nto like binary maps. This is fixed in our development version, and
+we will release soon. The other is that you are using maps that are not
+normalized in MNI space. Thus the plot_roi is giving you a strange
+background.
+
+I am closing this issue to avoid poluting our issue tracker, but we must
+really make a release. Once we have done a release (give us a week or
+so), you will be able to update by running ""pip install -U --user
+nilearn"".
+",,
+4,issue_comment,539,nilearn,nilearn,banilo,2015-04-13 19:29:30,"Appears to be related to #473 and #537 
+",,
+5,issue_comment,539,nilearn,nilearn,bthirion,2015-04-13 20:03:16,"On 13/04/2015 19:49, Leonie Lmape wrote:
+
+> Hi,
+> 
+> I have binary lesionfiles of the brain in MNI space and some are not 
+> plotted in plt_anat and others are plotted weirdly with plt_roi.
+> 
+> To visualize I put it in NBviewer:
+> http://nbviewer.ipython.org/gist/Leoniela/c475985613e456950a30
+> 
+> Does anyone have an idea why that is? Is something weird with the files?
+> 
+> I guess that the main issue comes from data type.
+> Also, as far as I can see, the images do not seem to be in MNI space (or 
+> written with a wrong affine), which explains the weird display with 
+> plot_rois.
+> If you can share a couple of images, we might give you better indications.
+> Best,
+
+Bertrand
+",,
+6,issue_comment,539,nilearn,nilearn,Leoniela,2015-04-14 08:32:39,"Thank you for you answers!
+Concerning my maps and MNI space - The MNI template I have registered it to was reoriented. So the files basically are in MNI space just with different orientation. 
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,399,nilearn,nilearn,Titan-C,2015-02-05 14:13:09,"This pull request uses the today published sphinx-gallery-0.0.5 in pypi to generate the gallery.
+It also updates some examples to a python3 compatible syntax, so they can be executed within sphinx-gallery. As sphinx-gallery already imports from future print and division
+
+I'm listening to comments and bugs.
+the old gen_rst.py shall be deleted before merge.
+",start issue,Sphinx-gallery into nilearn 
+2,issue_closed,399,nilearn,nilearn,lesteve,2015-04-14 07:50:31,,closed issue,Sphinx-gallery into nilearn 
+3,pull_request_title,399,nilearn,nilearn,Titan-C,2015-02-05 14:13:09,"This pull request uses the today published sphinx-gallery-0.0.5 in pypi to generate the gallery.
+It also updates some examples to a python3 compatible syntax, so they can be executed within sphinx-gallery. As sphinx-gallery already imports from future print and division
+
+I'm listening to comments and bugs.
+the old gen_rst.py shall be deleted before merge.
+",f733ad2b1521f4474d050a00c89004509f775441,Sphinx-gallery into nilearn 
+4,pull_request_merged,399,nilearn,nilearn,lesteve,2015-04-14 07:50:31,Sphinx-gallery into nilearn ,ad0d4672dd8f4972b22421d047b293d0f84c0f33,Pull request merge from Titan-C/nilearn:sphinxgallery to nilearn/nilearn:master
+5,issue_comment,399,nilearn,nilearn,GaelVaroquaux,2015-02-12 14:04:16,"> Also I think what @GaelVaroquaux had in mind was shipping a version of
+> sphinx-gallery in nilearn/doc/sphinxext rather than requiring to do pip
+> install sphinx-gallery.
+
+Yes.
+",,
+6,issue_comment,399,nilearn,nilearn,GaelVaroquaux,2015-02-13 08:38:20,"> If one keeps a local version of the sphinx-gallery extension, and
+> probably every project will keep its own local copy. What was the aim
+> of keeping the centralized extension? wont all versions end up
+> branching again?
+
+Keeping a local version doesn't mean that we will branch. The idea is to
+have a synchronization script that copies exactly the sphinx-gallery code
+in the projects that use it. In these projects it should never be
+modified. One example of this pattern is how joblib is integrated in
+scikit-learn, in sklearn/externals.
+
+> Isn't it better to use the git version installed in develop mode more
+> practical?
+
+More practical for you. It raises two problems. One is of technicality.
+It's one more thing to learn and master for a contributor. These things
+pile up and make it harder and harder to contribute to a project. The
+second problem is that it means that any backword incompatible change or
+bug introduce in sphinx-gallery will break the projects using it.
+Decoupling is a good thing.
+",,
+7,issue_comment,399,nilearn,nilearn,GaelVaroquaux,2015-02-16 12:23:17,"> Tiny comment: I am wondering whether the joblib import in doc_resolv.py should
+> not try to import it from sklearn.externals as a fall-back if joblib is not
+> installed.
+
+:+1:. We cannot have a joblib dependency.
+
+I would actually favor not using joblib but a simple shelve, and a test
+to see if the URL is already in the shelve.
+
+Here is some pseudo code to implement what I have in mind:
+
+<pre>
+import shelve
+mem = shelve.open('foo')
+if not url in mem:
+    data = get_url(url)
+    mem[url] = data
+    mem.sync()
+else:
+    data = mem[url]
+</pre>
+",,
+8,issue_comment,399,nilearn,nilearn,GaelVaroquaux,2015-02-16 16:41:46,"> I would be inclined to say let's just use the joblib +
+> sklearn.externals.joblib fall-back for now so that we can merge this
+> PR.
+
+I'd rather not. Creeping dependencies are a problem, and we must tackle
+them. The pseudo code that I have given demonstrates how easy it is to
+use shelve.
+
+> As far as I know, the two projects that are closer to start using
+> sphinx-gallery are nilearn and scikit-learn anyway.
+
+Well, as Oscar is mentionning, it's already posing problems for CI.
+
+But anyhow, let us foster adoption by having little dependencies.
+",,
+9,issue_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 05:59:36,"> There are examples missing, because documentation calls them.
+
+Good catch. Could you add an issue listing all the problems that you have
+found in the documentation. We can address it separately.
+",,
+10,issue_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:50:24,"Almost there: only a few cosmetic comments. After these are addressed, we are ready to merge.
+
+Congratulations, this is great!
+",,
+11,issue_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 07:36:49,"I agree. Oscar, could you please either address these comments inside sphinx gallery,  or copy them as an issue,  so that they don't get lost. 
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Apr 14, 2015, 08:58, at 08:58, ""Loïc Estève"" notifications@github.com wrote:
+
+> > Almost there: only a few cosmetic comments. After these are
+> > addressed, we are ready to merge.
+> > 
+> > Congratulations, this is great!
+> 
+> I think your comments are related to sphinx-gallery and not nilearn. I
+> reckon we should merge this PR. The alternative is for your comments to
+> be addressed in sphinx-gallery and a new sphinx-gallery release to be
+> made before we can merge this PR. This seems a little bit too much
+> overhead for what it is worth IMHO.
+> 
+> Just for clarity we'll try to keep the sphinx-gallery copy inside
+> nilearn in sync with the latest sphinx-gallery release going forward,
+> which means that if your comments get addressed in sphinx-gallery they
+> will eventually reach the nilearn sphinx-gallery copy.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/pull/399#issuecomment-92657390
+",,
+12,issue_comment,399,nilearn,nilearn,lesteve,2015-02-12 10:08:57,"@Titan-C you have a tiny merge conflict in one of the examples. Would you mind rebasing on master and fixing it?
+",,
+13,issue_comment,399,nilearn,nilearn,lesteve,2015-02-12 10:26:36,"Also there is a new example examples/manipulating/visualizing/plot_atlas.py that needs parentheses around its print statement.
+",,
+14,issue_comment,399,nilearn,nilearn,Titan-C,2015-02-12 13:01:54,"Done
+",,
+15,issue_comment,399,nilearn,nilearn,lesteve,2015-02-12 14:01:27,"Thanks I think you should remove the old gallery generating code, for example gen_rst.py and related css.
+
+Also I think what @GaelVaroquaux had in mind was shipping a version of sphinx-gallery in nilearn/doc/sphinxext rather than requiring to do `pip install sphinx-gallery`.
+",,
+16,issue_comment,399,nilearn,nilearn,Titan-C,2015-02-12 22:34:26,"I was also wondering about that. If one keeps a local version of the sphinx-gallery extension, and probably every project will keep its own local copy. What was the aim of keeping the centralized extension? wont all versions end up branching again? Isn't it better to use the git version installed in `develop` mode more practical?
+I was having a look at the scikit-learn externals. It is a static set of code that gets updated manually, why? and why the extra install scripts within that module?
+",,
+17,issue_comment,399,nilearn,nilearn,lesteve,2015-02-13 08:24:05,"> I was also wondering about that. If one keeps a local version of the sphinx-gallery extension, and probably every project will keep its own local copy. What was the aim of keeping the centralized extension? wont all versions end up branching again? Isn't it better to use the git version installed in develop mode more practical?
+
+I guess it's up to each project to make a choice whether they want to ship sphinx-gallery or not. The main point of doing so is pure convenience for people generating the doc.
+
+About sphinx-gallery evolving separately in different projects, there is an implicit agreement that only released versions of sphinx-gallery should be used and that potential changes should be propagated upstream.
+
+> I was having a look at the scikit-learn externals. It is a static set of code that gets updated manually, why? and why the extra install scripts within that module?
+
+I guess convenience again is the main reason. Users are spared having to install a few packages in order to use scikit-learn. I think the technical term is vendorizing, you may want to see what the internet has to say about it. I didn't know about the extra install scripts in external so I can't help on this one.
+",,
+18,issue_comment,399,nilearn,nilearn,Titan-C,2015-03-17 23:38:34,"This includes the shelve and is rebased to the current master. There are more examples than in the current nilearn website. In my computer there seems to be 2 examples that don't get executed. I can't figure out why? On the rest it does work.
+",,
+19,issue_comment,399,nilearn,nilearn,lesteve,2015-03-18 07:31:24,"Thanks a lot for rebasing on master! The nilearn website hasn't been updated since the latest release so that would explain why it doesn't feature examples that have been added recently.
+
+Ideally what we want is to make a sphinx-gallery release and use it in nilearn. Do you think this is feasible?
+",,
+20,issue_comment,399,nilearn,nilearn,Titan-C,2015-03-18 08:24:54,"> Ideally what we want is to make a sphinx-gallery release and use it in nilearn. Do you think this is feasible?
+
+Publishing sphinx-gallery as 0.0.7 with the shelve is straight forward, can upload to pypi now. But I wouldn't launch it yet as a stable release. As some to do from @GaelVaroquaux are still missing. https://github.com/sphinx-gallery/sphinx-gallery/issues/20
+Moreover I want to test a bit longer on the configuration dictionary key naming, test the nametuple as well. Since after a stable release one shall not change the user interphase.
+",,
+21,issue_comment,399,nilearn,nilearn,lesteve,2015-03-18 09:10:21,"> As some to do from @GaelVaroquaux are still missing. sphinx-gallery/sphinx-gallery#20
+
+They could be tackled in a further release.
+
+> Moreover I want to test a bit longer on the configuration dictionary key naming, test the nametuple as well. Since after a stable release one shall not change the user interphase.
+
+Fair enough, how long do you need roughly to be reasonably confident there is no major issues?
+
+Because sphinx-gallery is not used massively at the moment backward-incompatible changes are not such a big deal I would say.
+",,
+22,issue_comment,399,nilearn,nilearn,lesteve,2015-04-13 09:09:57,"@Titan-C any news on this front? We may do a release of nilearn soonish, it'd be great to start using sphinx-gallery!
+
+I think the main things we need is:
+- a sphinx-gallery release with the shelve functionality (maybe it has already happened I haven't checked)
+- a script to update the nilearn sphinx-gallery copy similary to what is done for joblib in scikit-learn. TBH, it would be fine to have a simple copy as a first step and work on this script in a separate PR.
+",,
+23,issue_comment,399,nilearn,nilearn,Titan-C,2015-04-13 09:25:50,"Yes, few days ago I updated to version 0.0.7 which includes the shelve and the dictionary configuration. Then the quick release of 0.0.8 is because I get a bug with CSS as it conflicts with some of the Sphinx themes. The update script is already there and it worked for the last 2 updates.
+- You can run this branch. There are some examples that in my computer don't work, as I claimed before. 
+",,
+24,issue_comment,399,nilearn,nilearn,Titan-C,2015-04-13 10:04:07,"> ~~You can run this branch. There are some examples that in my computer don't work, as I claimed before.~~
+- I merged locally master into this to test. All examples work!
+- But now one has to rename all images in the documentation, as now they are numbered with 3 digits (001). So the carousel it the star page can't find the image as neither other places in the documentation
+",,
+25,issue_comment,399,nilearn,nilearn,lesteve,2015-04-13 10:46:03,"> Yes, few days ago I updated to version 0.0.7 which includes the shelve and the dictionary configuration. Then the quick release of 0.0.8 is because I get a bug with CSS as it conflicts with some of the Sphinx themes. The update script is already there and it worked for the last 2 updates.
+
+Great stuff, I'll take a closer look this afternoon!
+
+ Don't hesitate to add a comment when you push commits into your PR branch and you think things are in a good shape. This way we get notifications and it's easier to get a feeling what is going on with the project.
+",,
+26,issue_comment,399,nilearn,nilearn,lesteve,2015-04-13 12:29:59,"@Titan-C, I did some quick and dirty renaming of the pngs in https://github.com/lesteve/nilearn/commit/e00ca5006febccd9928b22b4ea04af862b73e1f9. You should be able to cherry-pick it easily into your PR branch.
+
+I did a few sanity checks and it seems fine but it'd be great if you could double-check too. A good comparison would be the documentation that Gaël generated for one of his course: http://gaelvaroquaux.github.io since nilearn.github.io is trailing a lot behind master atm.
+",,
+27,issue_comment,399,nilearn,nilearn,Titan-C,2015-04-13 20:12:48,"It doesn't work in my home computer. Certainly this needs a new issue. But I can't get 2 examples to work at home. 
+- plot_probabilistic_atlas_extraction.py
+- plot_inverse_covariance_connectome.py
+  https://gist.github.com/Titan-C/7eab460917461adc61a4
+  there seems like the data has changes, but has not been updated. How to do it?
+
+Apart from this, and everything that links to this images, I don't see much any difference.
+",,
+28,issue_comment,399,nilearn,nilearn,lesteve,2015-04-13 20:39:27,"Hmmm works for me, try `rm ~/nilearn_data/msdl_atlas/ -rf` and rerunning the examples which are failing.
+",,
+29,issue_comment,399,nilearn,nilearn,Titan-C,2015-04-13 22:20:30,"OK it works ! all examples execute!
+
+There are examples missing, because documentation calls them.
+- connectivity/plot_connect_comparison.py removed in 25bce1f1d9a0a722faa099d95dcce8c478f21b39
+  called from connectivity/connectome_extraction.rst
+  I fixed one reference in this file, the other I'm not completely sure which is re replacement file.
+
+This I don't if is related to this PR
+- I don't get the user guide for Image manipulation and visualization and Advanced usage: manual pipelines and scaling up. So 2 complete chapters are missing.
+- And also I have some missing links appear in manipulating_visualizing/plotting.rst. They are missing in Gael's version too.
+",,
+30,issue_comment,399,nilearn,nilearn,lesteve,2015-04-14 06:58:29,"> Almost there: only a few cosmetic comments. After these are addressed, we are ready to merge.
+> 
+> Congratulations, this is great!
+
+I think your comments are related to sphinx-gallery and not nilearn. I reckon we should merge this PR. The alternative is for your comments to be addressed in sphinx-gallery and a new sphinx-gallery release to be made before we can merge this PR. This seems a little bit too much overhead for what it is worth IMHO.
+
+Just for clarity we'll try to keep the sphinx-gallery copy inside nilearn in sync with the latest sphinx-gallery release going forward, which means that if your comments get addressed in sphinx-gallery they will eventually reach the nilearn sphinx-gallery copy.
+",,
+31,issue_comment,399,nilearn,nilearn,AlexandreAbraham,2015-04-14 07:37:10,":+1: for merging as-is and address comments in sphinx-gallery repo.
+",,
+32,issue_comment,399,nilearn,nilearn,lesteve,2015-04-14 07:50:36,"OK merging then, thanks a lot for this and hurray for nilearn officially starting to use sphinx-gallery !
+",,
+33,issue_comment,399,nilearn,nilearn,lesteve,2015-02-13 12:39:58,"Something I didn't spot right away. We added some additional text at the top of the examples gallery and this was added directly in gen_rst.py
+
+![nilearn_examples_header](https://cloud.githubusercontent.com/assets/1680079/6187300/344c09de-b385-11e4-8809-23f5a6321177.png)
+
+For now a work-around would be to move this text to examples/README.rst.
+",,
+34,issue_comment,399,nilearn,nilearn,lesteve,2015-02-16 10:29:51,"Great job, this looks pretty close to me! I am regenerating the doc and I'll have a closer look later this afternoon.
+",,
+35,issue_comment,399,nilearn,nilearn,lesteve,2015-02-16 12:17:17,"Tiny comment: I am wondering whether the joblib import in doc_resolv.py should not try to import it from sklearn.externals as a fall-back if joblib is not installed.
+
+The good: no extra package to install to generate the doc for nilearn, scikit-learn, and other packages users that have scikit-learn installed.
+
+The not that great: a tiny bit of scikit-learn specific code for projects that are potentially unrelated. 
+
+I was thinking something along those lines (but with a better error message):
+
+``` python
+try:
+    import joblib
+except ImportError as exc_joblib:
+    try:
+        from sklearn.externals import joblib
+    except ImportError as exc_sklearn_joblib:
+        exc_sklearn_joblib.args += ('joblib or scikit-learn needs to be installed',)
+        raise
+```
+",,
+36,issue_comment,399,nilearn,nilearn,lesteve,2015-02-16 13:30:30,"I don't know the code very well so it's hard for me to estimate how easy the shelve solution is and whether it would take some time to get right.
+
+I would be inclined to say let's just use the joblib + sklearn.externals.joblib fall-back for now so that we can merge this PR.
+
+As far as I know, the two projects that are closer to start using sphinx-gallery are nilearn and scikit-learn anyway.
+",,
+37,issue_comment,399,nilearn,nilearn,lesteve,2015-02-16 16:57:06,"> Well, as Oscar is mentionning, it's already posing problems for CI. 
+
+Fair point, let's go for the shelve way then.
+",,
+38,issue_comment,399,nilearn,nilearn,lesteve,2015-02-16 17:02:04,"> > Well, as Oscar is mentionning, it's already posing problems for CI. 
+> 
+> Fair point, let's go for the shelve way then.
+
+Actually not such a fair point, since the import joblib would work for the sphinx-gallery CI but I agree the shelve solution doesn't seem so hard and is the right way to do it.
+",,
+39,pull_request_commit_comment,399,nilearn,nilearn,lesteve,2015-03-18 07:34:02,"I think this file should be kept unchanged because this changes are not really related to this PR or are they?
+",f733ad2b1521f4474d050a00c89004509f775441,"(1, '', u'examples/decoding/plot_simulated_data.py')"
+40,pull_request_commit_comment,399,nilearn,nilearn,Titan-C,2015-03-18 08:16:49,"This is the only remaining part of the py2 py3 compatibility, as all print functions disapeared on rebase. This is needed because sphinx-gallery imports from future division, so it really requires integers as keys it crashes otherwise.
+",f733ad2b1521f4474d050a00c89004509f775441,"(1, '', u'examples/decoding/plot_simulated_data.py')"
+41,pull_request_commit_comment,399,nilearn,nilearn,lesteve,2015-03-18 10:31:43,"I can run this example in master with python 3 so I don't think this change is absolutely needed.
+
+Using float as numpy array indices is deprecated indeed as the following snippet shows so feel free to open a separate PR with this change
+
+``` python
+import warnings
+import numpy as np
+warnings.simplefilter('always', DeprecationWarning)
+
+arr = np.arange(10)
+print(arr[2.3:5.9])
+```
+",f733ad2b1521f4474d050a00c89004509f775441,"(1, '', u'examples/decoding/plot_simulated_data.py')"
+42,pull_request_commit_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:46:19,"PEP8: you should have spaces before and after the ""+"" operator. 
+
+In addition, it would be better if you used os.path.join, rather than string concatenation (it avoid hard coding the ""/"", which varies across OS).
+",f733ad2b1521f4474d050a00c89004509f775441,"(8, '', u'doc/sphinxext/sphinxgallery/__init__.py')"
+43,pull_request_commit_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:46:55,"Maybe some white space: ""}"" on new lines and empty lines between blocks.
+",f733ad2b1521f4474d050a00c89004509f775441,"(12, '', u'doc/sphinxext/sphinxgallery/_static/gallery.css')"
+44,pull_request_commit_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:47:13,"It seems to me that these blocks are not indented correctly.
+",f733ad2b1521f4474d050a00c89004509f775441,"(23, '', u'doc/sphinxext/sphinxgallery/_static/gallery.css')"
+45,pull_request_commit_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:48:24,"PEP8: isn't this line too long (more than 79 characters)?
+",f733ad2b1521f4474d050a00c89004509f775441,"(51, '', u'doc/sphinxext/sphinxgallery/gen_gallery.py')"
+46,pull_request_commit_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:48:49,"PEP8: two empty lines should separate top-level definitions.
+",f733ad2b1521f4474d050a00c89004509f775441,"(92, '', u'doc/sphinxext/sphinxgallery/gen_gallery.py')"
+47,pull_request_commit_comment,399,nilearn,nilearn,GaelVaroquaux,2015-04-14 06:49:20,"PEP8: too many empty lines: there should be only 2.
+",f733ad2b1521f4474d050a00c89004509f775441,"(174, '', u'doc/sphinxext/sphinxgallery/gen_rst.py')"
+48,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-02-05 10:07:52,Config on sphinxgallery,59e23f84e374b5f812fdf5a4999bd6282ecf664d,
+49,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-02-05 10:08:25,Remove gallery specific css,6c2e004c8877193b623397e25f067d5ea04c61a0,
+50,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-02-05 12:47:07,Modify examples to be compatible with sphinx-gallery python3 syntax,3e22845630545cd47ee581925b460364c4b07c3b,
+51,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-02-05 16:43:09,Nilearn configuration for sphinx gallery out of default,b4f8f293625c1c99d9f0ab290e5e7c61ae3c311c,
+52,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-02-15 12:06:16,Local sources of sphinxgallery 0.0.6,aca637208dc967a433598d7080458d3e327d38a7,
+53,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-02-15 13:39:34,Print function for new example,a1ebff9cac20549ca0d8cbf11aafec21c4ff27e5,
+54,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-03-17 22:34:39,"Update of sphinxgallery, use shelve drop joblib",c5fde838c8ef4ae7b37352057c1f8cbd55e4b30d,
+55,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-03-17 23:34:37,"In future updates of sphinx gallery there is an update script
+to download from the pypi published version. This update that
+includes shelve is already beyond the current pypi version",19ef39ebdad608a1a849bd7c2b931ba4940728dc,
+56,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-04-10 09:31:41,Update through automatic script into sphinx-gallery 0.0.7,b3a5bafaf3f1a103b432a15b602c4063bfc48d2e,
+57,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-04-10 09:31:52,Sphinx-gallery 0.0.7 configuration,56225d4e09320985e5ef38dfae760cb4e468204e,
+58,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-04-11 11:36:31,Sphinx-gallery 0.0.8 update for css div selector enforcement,601991ce1f92a927a56c3eda3beef190de4f3c23,
+59,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-04-11 13:46:25,Merge branch 'master' into sphinxgallery,e74da384843865e5b6c8f382761cf1ef4f1d09c5,
+60,pull_request_commit,399,nilearn,nilearn,lesteve,2015-04-13 12:26:12,"DOC: rename png targets
+
+since sphinx-gallery automatic figure naming now has fixed width of 3.",7dd40db0cb6979c573edeef782ecf99cbc7d83a8,
+61,pull_request_commit,399,nilearn,nilearn,Titan-C,2015-04-13 22:14:17,fix a link,f733ad2b1521f4474d050a00c89004509f775441,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,542,nilearn,nilearn,AlexandreAbraham,2015-04-15 08:34:17,"Supersedes #536.
+
+@banilo: This is still WIP but I have fixed some stuff. You can take over the branch again if you want ;)
+",start issue,Rely on a common iterator for check_niimg* and concat_niimg.
+2,issue_closed,542,nilearn,nilearn,lesteve,2015-04-30 08:20:08,,closed issue,Rely on a common iterator for check_niimg* and concat_niimg.
+3,pull_request_title,542,nilearn,nilearn,AlexandreAbraham,2015-04-15 08:34:17,"Supersedes #536.
+
+@banilo: This is still WIP but I have fixed some stuff. You can take over the branch again if you want ;)
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,Rely on a common iterator for check_niimg* and concat_niimg.
+4,pull_request_merged,542,nilearn,nilearn,lesteve,2015-04-30 08:20:08,Rely on a common iterator for check_niimg* and concat_niimg.,90adb38723eabd59a2ea87f89111d8a2ba10d22d,Pull request merge from AlexandreAbraham/nilearn:danilo_fix to nilearn/nilearn:master
+5,issue_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-16 15:10:05,"@lesteve: it's all green, ready to review :)
+",,
+6,issue_comment,542,nilearn,nilearn,lesteve,2015-04-17 11:13:38,"There still seems to be this bug from #463, is this PR supposed to fix it?
+
+``` python
+import numpy as np
+from nibabel import Nifti1Image
+
+from nilearn import _utils
+
+affine = np.eye(4)
+img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+
+input_iterator = iter([img_3d, img_3d])
+img_4d = _utils.check_niimg_4d(input_iterator)
+img_4d.shape  # (10, 10, 10, 1) instead of (10, 10, 10, 2)
+
+input_iterator = iter([img_3d, img_3d])
+img_4d = _utils.check_niimg(input_iterator)
+img_4d.shape  # (10, 10, 10, 1) instead of (10, 10, 10, 2)
+```
+",,
+7,issue_comment,542,nilearn,nilearn,lesteve,2015-04-17 11:16:32,"Forget what I said I was on master rather than on your branch, sorry for the noise !
+",,
+8,issue_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-21 09:03:40,"@lesteve ""Meeeerge meeeeee""
+",,
+9,issue_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-27 08:54:23,"Yeah, good catch! It is fixed, I'm adding a test. I must admit that I did not improve check_niimg tests, I just added some related to new features.
+",,
+10,issue_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-30 09:02:32,"Nah, no pb. You can put your comments here and I will address them ;).
+",,
+11,issue_comment,542,nilearn,nilearn,lesteve,2015-04-27 08:43:41,"Something unintutive I bumped into, check_niimg_3d accepts a list of 3d images and concatenates them:
+
+``` python
+import numpy as np
+import nibabel as nib
+from nilearn import _utils
+img_3d = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+_utils.check_niimg_3d([img_3d, img_3d]).shape  # (10, 10, 10, 2)
+```
+",,
+12,issue_comment,542,nilearn,nilearn,lesteve,2015-04-27 08:46:43,"> Something unintutive I bumped into, check_niimg_3d accepts a list of 3d images and concatenates them.
+
+That kind of shows the coverage of check_niimg\* is not great at the moment. Given this is one of the nilearn cornerstones for input checking, it'd be great if that could be improved. Maybe not in this PR though.
+",,
+13,issue_comment,542,nilearn,nilearn,lesteve,2015-04-30 08:20:04,"All right let's do this, merging. Thanks a lot for the refactoring effort!
+",,
+14,issue_comment,542,nilearn,nilearn,lesteve,2015-04-30 09:00:46,"@banilo you are aware that the PR has been merged right? Feel free to open another PR if you feel strongly about any of your points!
+",,
+15,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 08:33:11,"Pfff...
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(4, '', u'nilearn/_utils/__init__.py')"
+16,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 08:47:08,":bow:
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(4, '', u'nilearn/_utils/__init__.py')"
+17,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 08:47:45,"Error message update due to code factorization in one function.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(5, '', u'nilearn/tests/test_region.py')"
+18,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 11:47:39,"`niimg` is a Image object, so I guess the function should be called `_index_img` and the variable `img`.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+19,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 11:52:13,"what about calling it ndim_minus_one?
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+20,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 11:57:04,"maybe put ""Must be 3 or 4"" in the docstring instead:
+
+ndim: integer {3, 4}, optional
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+21,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 11:57:27,"Fixed.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+22,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 11:58:27,"Fixed.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+23,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 12:03:35,"assert_equal provides better error when it fails
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+24,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 12:07:03,"could we have a more explicit message checking that 'image' while you are at it ?
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+25,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 12:26:03,"Any reason why you removed the caching params from concat_niimgs?
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+26,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 12:29:25,"Good question, the answer is yes since you added a test so we can remove this last line from the comment.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+27,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 12:32:04,"unnecessary parentheses around the isinstance call
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+28,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 12:32:26,"unnecessary parentheses around the isinstance call
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+29,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 12:40:48,"accept_4d is not used in this function !
+
+Not sure what you mean with this docstring. Isn't it just that you can concatenate 4D niimg-like images together along the 4th dimension.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+30,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 12:41:43,"I think danilo did it and I didn't put it back...
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+31,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 12:42:54,"Removed. It was never used.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+32,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 13:34:10,"I think 'iterable' is the right word here
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+33,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 13:34:47,"another one of these parentheses ...
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+34,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-17 14:00:46,"`inspect.isgenerator` has some weird corner cases:
+
+``` python
+import inspect
+import itertools
+inspect.isgenerator(itertools.chain('a', 'bc'))  # return False
+```
+
+I reckon we should either use:
+
+``` python
+if hasattr(niimgs, '__iter__') and not hasattr(niimgs, '__len__')
+```
+
+or 
+
+``` python
+isinstance(niimgs, collections.Iterator)
+```
+
+haven't investigated in detail about this is too many details, TBH.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+35,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 14:34:44,"``` python
+inspect.isgenerator(itertools.chain('a', 'bc'))  # return False
+```
+
+Well, I see no problem here.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+36,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-20 07:43:18,"``` python
+import itertools
+
+import numpy as np
+from nibabel import Nifti1Image
+
+from nilearn import _utils
+
+affine = np.eye(4)
+img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+
+input_iterator = itertools.chain([img_3d], [img_3d])
+img_4d = _utils.check_niimg_4d(input_iterator)
+print(img_4d.shape)  # (10, 10, 10, 2) which is correct
+print(img_4d.get_data())  # uninitialised data rather than ones
+```
+
+This happens because the first loop to compute the shape works fine but the second loop to set the data never gets run because the iterator has already been consumed in the first one.
+
+All I am trying to say is that the check should be whether `niimgs` is an iterator rather than a generator.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+37,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-20 08:38:00,"Do you think we should fallback on case 2 for iterator or use tee?
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+38,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-20 09:16:00,"I think the simplest thing to do is to check whether `niimg` is an iterator since this is a single-line change and the rest of the code stays the same.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+39,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-20 09:34:57,"Using tee is also a single line change...
+![your-argument-is-invalid-meme-dumpaday-10](https://cloud.githubusercontent.com/assets/1647301/7227475/443ca6be-e751-11e4-9916-6f1e5e10a5e5.jpg)
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+40,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-21 09:39:46,"In some small tests I did itertools.tee seems to work fine with generators so I don't really see the point of having two code paths anymore.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+41,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-21 09:45:27,"`tee` can yield a signficant memory overhead and, if somebody uses a generator for NiftiImages (well, I see no reason to do that but it may happen), they may not want to deal with that. I see no point in saving memory by pre-allocating memory if we lose it in the copy of the generator.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+42,pull_request_commit_comment,542,nilearn,nilearn,GaelVaroquaux,2015-04-21 10:55:09,"If niimgs is a string, there will be an incomprehensible error further down (as the line above will work).
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+43,pull_request_commit_comment,542,nilearn,nilearn,GaelVaroquaux,2015-04-21 10:56:14,"It would be good to have the filename in the error message ('%r"" % niimg).
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+44,pull_request_commit_comment,542,nilearn,nilearn,GaelVaroquaux,2015-04-21 10:58:01,"Isn't this argument redundant with ndim.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(104, '', u'nilearn/_utils/niimg_conversions.py')"
+45,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-21 11:22:11,"This function is meant to iterate over a list of niimg. It is never called with a filename.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+46,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-21 11:29:20,"Agreed.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+47,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-21 11:37:03,"Then I guess niimg should not be used. Maybe `_iter_check_imgs(imgs, ...)` would be better. A short docstring would be great as well.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+48,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-21 11:41:25,"No because we iterate on a list of niimg. I'll add a docstring.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+49,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-21 11:53:34,"Oops sorry for the noise.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+50,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-21 12:03:25,"Not really. ndim is a stronger limitation, atleast_4d is more smooth. ndim = 4 will fail if 3d images is provided.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(104, '', u'nilearn/_utils/niimg_conversions.py')"
+51,pull_request_commit_comment,542,nilearn,nilearn,GaelVaroquaux,2015-04-22 05:47:33,"> Not really. ndim is a stronger limitation, atleast_4d is more smooth. ndim = 4
+> will fail if 3d images is provided.
+
+I think that the docstring and the name of the argument should be changed
+to make this more explicit. How about ""enforce_ndim"", and ""coerce_4d""?
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(104, '', u'nilearn/_utils/niimg_conversions.py')"
+52,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-24 09:05:19,"I would be more in favor of ""ensure_ndim"". And no specific objection for ""coerce_4d"".
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(104, '', u'nilearn/_utils/niimg_conversions.py')"
+53,pull_request_commit_comment,542,nilearn,nilearn,banilo,2015-04-30 08:42:47,"a little convoluted
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(51, '', u'nilearn/_utils/niimg_conversions.py')"
+54,pull_request_commit_comment,542,nilearn,nilearn,banilo,2015-04-30 08:48:11,"I still think a Is4D() function might be useful. We do this test a number of times across the code.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(126, '', u'nilearn/_utils/niimg_conversions.py')"
+55,pull_request_commit_comment,542,nilearn,nilearn,banilo,2015-04-30 08:50:09,"perhaps return niimgs argument in the error message?
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(238, '', u'nilearn/_utils/niimg_conversions.py')"
+56,pull_request_commit_comment,542,nilearn,nilearn,banilo,2015-04-30 08:57:29,"`nifti_generator()` for consistency?
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(90, '', u'nilearn/tests/test_niimg_conversions.py')"
+57,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-30 09:06:50,"Feel free to propose something else! When I put a 2-line condition, people tell that it's a one-liner ;)
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(51, '', u'nilearn/_utils/niimg_conversions.py')"
+58,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-30 09:08:28,"I tried to grep it and got only one occurence.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(126, '', u'nilearn/_utils/niimg_conversions.py')"
+59,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-30 09:11:08,"I'm not sure. We do not displayed it because it would be either ""[]"" or nothing (in the case of a functional iterator). So I don't think that it is very useful.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(238, '', u'nilearn/_utils/niimg_conversions.py')"
+60,pull_request_commit_comment,542,nilearn,nilearn,AlexandreAbraham,2015-04-30 09:12:06,"Fixed.
+",bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,"(90, '', u'nilearn/tests/test_niimg_conversions.py')"
+61,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-08 14:07:31,"Refactor check_niimg (again, more final version)",057ce85932ea16e86f85fba1e837fa7b50d43584,
+62,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-08 14:14:12,Move code,b113bb84518b0c9332743520657551975f8b4a6d,
+63,pull_request_commit,542,nilearn,nilearn,banilo,2015-04-10 16:59:32,concat_niimgs uses iterator,b3a89a78bb2a6402db49a100ee3e365063f5f094,
+64,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-15 08:31:42,Fix part of iterator problems in concat_niimgs,1adf6bb44e1897757464394bcf7502de30278b16,
+65,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-15 11:09:36,FIx P3 compat,6cb367aae453bde72579dfe6d7e0d758735d0ac9,
+66,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-16 09:03:08,Finalize code,a65b1cfd38e96dbb27491546199e9a15e7254c0e,
+67,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-16 13:59:23,Add iterator / generator test,a160fd432b6c1a7270a545acc5a01d2f46f9a885,
+68,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-16 14:01:17,Better tests,47d7eb881d358574ca2c829532c40a7401ac77ee,
+69,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-16 14:55:33,Fix P3,7583a682e156ca0225f8101e59c885e19ead5f8e,
+70,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 11:58:54,Fix Loic comments,828c5136c00b008ed10a2f52e19ac96b2df5fa13,
+71,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 12:04:18,Fix docstring,c8b350ac5d2a3af94e93b847459274b551634acc,
+72,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 12:06:41,Use assert_euqal in tests,92b4a9d6264039aaf4fc3d03905656be85e5a29d,
+73,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 12:18:13,Richer regexp in tests,f7600758f9f56e189d191130f268def0717cf796,
+74,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 12:46:28,Bring memory back,8c2ffbedb94da8b1b702776148615233de8d2179,
+75,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 13:37:41,Fix doc,4cdbb3589b2bd17c2082b9afaaf270a5672fdc56,
+76,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-17 13:40:24,Remove spurious parenthesis,2cb7cf3d62202ea6d9d5b8393b561df3cc58bf84,
+77,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-20 12:35:21,Fix iterator bug,a81baffdf52a8e09f138d303668b40d85c2b5149,
+78,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-20 13:18:35,Use tee to solve problem,a360ed7a2518900b1b1e01eb0823d42e53ae9c5c,
+79,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-24 10:55:10,Simplify concat_niimg using tee only,1bf365581ecd61975c42d5bd335b9b8313c30a2f,
+80,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-24 10:57:49,Remove spurious import,4f52cbf1dfc26510dbd995ce91a5d3108b42bb1a,
+81,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-27 07:34:20,Naming,a8306b43ae8c764b7c2f057d4346d09ff8c89988,
+82,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-27 09:12:17,Fix bug and add test,b079c0bc9976cfa6bc62216ee617092a71a5eefe,
+83,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-29 12:41:48,Fix error message,6dd6fa2a022458aa495fc89c7203a63793775907,
+84,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-29 13:56:40,Lesteve.,d643f9f4bf90799b0beb288e610ef175a326af10,
+85,pull_request_commit,542,nilearn,nilearn,AlexandreAbraham,2015-04-29 14:25:37,Better error message thanks to the wonderful lesteve.,bf94ae7612bdb3a140c8e3d74b90fe0d0e0064ac,
+86,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-29 14:01:22,"a list -> an iterable
+
+Maybe put the type of the argument for a better error message if we deem that the average user might be confused by the 'iterable' wording.
+",6dd6fa2a022458aa495fc89c7203a63793775907,"(6, 142, u'nilearn/_utils/niimg_conversions.py')"
+87,pull_request_commit_comment,542,nilearn,nilearn,lesteve,2015-04-29 14:01:29,"`ensure_ndim is not None` not necessary
+",6dd6fa2a022458aa495fc89c7203a63793775907,"(4, 140, u'nilearn/_utils/niimg_conversions.py')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,396,nilearn,nilearn,dohmatob,2015-02-05 13:00:34,"OK, at times you just want to test the build of a particular example script , see how it integrates with the doc pages, and then move on with your life. This is not possible at present ...
+
+I've made a one-line patch to the `gen_rst.py` which offers this feature. The default behaviour is as before.
+
+Use like so: 
+`DEMO_REGEXP=""plot_(?:haxby_simple|haxby_space_net|nilearn_101|poldrack_space_net)"" make doc`
+
+If this is useful for someone else, then I'll PR it.
+",start issue,make doc: Tell gen_rst.py which examples to build
+2,issue_closed,396,nilearn,nilearn,AlexandreAbraham,2015-04-17 07:38:00,,closed issue,make doc: Tell gen_rst.py which examples to build
+3,issue_comment,396,nilearn,nilearn,GaelVaroquaux,2015-02-05 13:34:01,"This should probably go in sphinx_gallery, where it should be documented.
+",,
+4,issue_comment,396,nilearn,nilearn,GaelVaroquaux,2015-02-05 16:32:35,"The PR should go to the sphinx-gallery project that will be integrated to
+nilearn
+",,
+5,issue_comment,396,nilearn,nilearn,AlexandreAbraham,2015-04-17 07:38:00,"Not a nilearn problem, so I close it.
+",,
+6,issue_comment,396,nilearn,nilearn,salma1601,2015-02-05 16:28:16,"I have the same problem, will be interested by that
++1 for PR
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,536,nilearn,nilearn,banilo,2015-04-10 17:01:06,,start issue,[WIP] Use iterators for check_niimg* and concat_niimgs
+2,issue_closed,536,nilearn,nilearn,AlexandreAbraham,2015-04-15 08:34:32,,closed issue,[WIP] Use iterators for check_niimg* and concat_niimgs
+3,pull_request_title,536,nilearn,nilearn,banilo,2015-04-10 17:01:06,,54d9e71c8b29d23f7df6e6b14a5b9d16420aad44,[WIP] Use iterators for check_niimg* and concat_niimgs
+4,issue_comment,536,nilearn,nilearn,AlexandreAbraham,2015-04-13 08:35:52,"@banilo, the behavior should be like this:
+- if data is not loaded (ie filenames), then we browse the list and get the lengths of the files (it is costless because we only read the header of the file). Then we preallocate a big numpy array: this saves memory and is faster.
+- if the data is loaded, then we can also browse and get the length since it's already in memory.
+- if the data given is a generator (meaning that we can browse it only once), then we should put the images in a list and concatenate them afterwards.
+
+Does that answer your question? I can see in the code that you removed all the logic of memory pre-allocation. This is not what we want.
+",,
+5,issue_comment,536,nilearn,nilearn,AlexandreAbraham,2015-04-15 08:34:32,"Replaced by #542.
+",,
+6,pull_request_commit,536,nilearn,nilearn,AlexandreAbraham,2015-04-08 14:07:31,"Refactor check_niimg (again, more final version)",416453dba7e811e333f2269091fb89c829f9cfdd,
+7,pull_request_commit,536,nilearn,nilearn,AlexandreAbraham,2015-04-08 14:14:12,Move code,f4a67b9578dec932ba117fb9493c1dafaa1ae515,
+8,pull_request_commit,536,nilearn,nilearn,banilo,2015-04-10 16:59:32,concat_niimgs uses iterator,54d9e71c8b29d23f7df6e6b14a5b9d16420aad44,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,552,nilearn,nilearn,lesteve,2015-04-20 13:05:41,"and add test.
+
+This can happen when `edge_threshold` is too high or the adjacency matrix is diagonal for example:
+
+``` python
+import numpy as np
+
+from nilearn.plotting import plot_connectome
+
+regions = [(10, 10, 10), (0, 0, 0)]
+covariance = np.eye(2)
+
+plot_connectome(covariance, regions)
+```
+",start issue,Fix plot_connectome without any edge to draw
+2,issue_closed,552,nilearn,nilearn,lesteve,2015-04-20 14:35:31,,closed issue,Fix plot_connectome without any edge to draw
+3,pull_request_title,552,nilearn,nilearn,lesteve,2015-04-20 13:05:41,"and add test.
+
+This can happen when `edge_threshold` is too high or the adjacency matrix is diagonal for example:
+
+``` python
+import numpy as np
+
+from nilearn.plotting import plot_connectome
+
+regions = [(10, 10, 10), (0, 0, 0)]
+covariance = np.eye(2)
+
+plot_connectome(covariance, regions)
+```
+",003e9c6e84b20fc609e68ea6420c9847f206e27b,Fix plot_connectome without any edge to draw
+4,pull_request_merged,552,nilearn,nilearn,lesteve,2015-04-20 14:35:31,Fix plot_connectome without any edge to draw,583b8b8f436089d1f4870f02da8a80906deaa6a5,Pull request merge from lesteve/nilearn:fix-plot-connectome-with-no-edge to nilearn/nilearn:master
+5,issue_comment,552,nilearn,nilearn,GaelVaroquaux,2015-04-20 14:26:39,"LGTM. :+1: for merge.
+",,
+6,issue_comment,552,nilearn,nilearn,lesteve,2015-04-20 13:07:36,"For completeness, this was following @mrahim report. In his case he wanted to abuse plot_connectome to only plot region nodes and no edge ... This was still a valid bug though.
+",,
+7,pull_request_commit_comment,552,nilearn,nilearn,banilo,2015-04-20 13:09:52,"Using the implicit booleanness of the empty list is quite pythonic
+",003e9c6e84b20fc609e68ea6420c9847f206e27b,"(6, '', u'nilearn/plotting/displays.py')"
+8,pull_request_commit,552,nilearn,nilearn,lesteve,2015-04-20 13:01:45,"FIX plot_connectome without any edge to draw
+
+and add test.",003e9c6e84b20fc609e68ea6420c9847f206e27b,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,530,nilearn,nilearn,bthirion,2015-04-03 11:34:28,"My use case is the following: I would like to plot an image with both positive and negative values as a glass brain. Currently, the abs. value is plotted, but this obviously loses the effect sign.
+I feel the APi does simply not allow me to do keep the sign information, as the abs value seems to be implemented in relatively deep layers of viz vode (diaply.py module).
+Wouldn't it make sense to give at lest support for signed rendering, where positive and negative regions would be displayed differently ?
+",start issue,Symmetric versus signed rending with glass brain
+2,issue_closed,530,nilearn,nilearn,AlexandreAbraham,2015-04-08 09:29:45,,closed issue,Symmetric versus signed rending with glass brain
+3,issue_comment,530,nilearn,nilearn,GaelVaroquaux,2015-04-03 12:22:45,":) You are the one who pushed for using max intensity projection, in
+which case the sign looses sense.
+
+One thing that would be possible with the current code would be to
+threshold the map that you have to keep only the negative valuen, plot it
+using the current glass brain and a blueish colormap. Than plot the
+positive values only using the add_overlay method of the display returned
+by plot_glass_brain.
+
+If this solution ends up being a good solution that reliably plots good
+visualization, we could include it in plot_glass_brain with a switch to
+turn it on.
+",,
+4,issue_comment,530,nilearn,nilearn,bthirion,2015-04-03 16:35:24,"If this were MIP, that would be fine, but this is not the case:  the problem is that it the code takes the max of the absolute value. Now, when I put the two opposite maps, I get the same result. This is clearly misleading.
+",,
+5,issue_comment,530,nilearn,nilearn,AlexandreAbraham,2015-04-08 09:29:11,"OK, my solution does not work because `add_overlay` seems broken for `plot_glass_brain`.
+
+Code snippet:
+
+```
+from nilearn.datasets import fetch_localizer_contrasts
+from nilearn.plotting import plot_glass_brain
+from nilearn._utils import new_img_like, check_niimg_3d
+import pylab as pl
+
+
+map_img = fetch_localizer_contrasts(['checkerboard'], n_subjects=1).cmaps[0]
+map_img = check_niimg_3d(map_img)
+
+pos_map = map_img.get_data().copy()
+pos_map[pos_map < 0.] = 0.
+
+neg_map = map_img.get_data().copy()
+neg_map[neg_map > 0.] = 0.
+
+pos_map_img = new_img_like(map_img, pos_map, map_img.get_affine())
+neg_map_img = new_img_like(map_img, neg_map, map_img.get_affine())
+plot_glass_brain(pos_map_img, threshold=10, colorbar=True)
+plot_glass_brain(neg_map_img, threshold=3, colorbar=True)
+
+# Mix both
+p = plot_glass_brain(pos_map_img, threshold=10)
+p.add_overlay(neg_map_img, threshold=3, cmap='bone')
+
+pl.show()
+```
+",,
+6,issue_comment,530,nilearn,nilearn,AlexandreAbraham,2015-04-08 09:29:45,"I close this one as duplicate of #455. Please continue the discussion in the other issue.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,31,nilearn,nilearn,AlexandreAbraham,2012-11-13 13:25:21,"I have noticed that sometimes 3D images are stored as 4D images with 1 frame. We should handle this kind of data.
+",start issue,Consider 1 frame 4D image as a 3D image
+2,issue_closed,31,nilearn,nilearn,AlexandreAbraham,2015-04-08 22:41:53,,closed issue,Consider 1 frame 4D image as a 3D image
+3,issue_comment,31,nilearn,nilearn,AlexandreAbraham,2015-04-08 22:41:53,"This has been fixed.
+",,
+4,issue_comment,31,nilearn,nilearn,pgervais,2013-05-28 14:48:07,"region.signal_to_img_maps() does not handle this case properly (maps_img parameter), for example.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,543,nilearn,nilearn,GaelVaroquaux,2015-04-15 15:03:20,"Added plenty of tests :)
+
+I written while listening to stupid conf calls...
+",start issue,Detrend 3d img
+2,issue_closed,543,nilearn,nilearn,AlexandreAbraham,2015-04-20 07:20:31,,closed issue,Detrend 3d img
+3,pull_request_title,543,nilearn,nilearn,GaelVaroquaux,2015-04-15 15:03:20,"Added plenty of tests :)
+
+I written while listening to stupid conf calls...
+",da71107ca928f6a7997e6c7affdae16a8183f62e,Detrend 3d img
+4,pull_request_merged,543,nilearn,nilearn,AlexandreAbraham,2015-04-20 07:20:31,Detrend 3d img,6972b6ff233ddfd328dba9ee92879ac8fd480c3e,Pull request merge from GaelVaroquaux/nilearn:detrend_3d_img to nilearn/nilearn:master
+5,issue_comment,543,nilearn,nilearn,AlexandreAbraham,2015-04-15 15:24:50,":+1:
+Given that detrending is explicitely asked by the user, shouldn't we issue a little warning?
+",,
+6,issue_comment,543,nilearn,nilearn,lesteve,2015-04-16 07:19:50,"> Given that detrending is explicitely asked by the user, shouldn't we issue a little warning?
+
+A warning would be great.
+",,
+7,pull_request_commit,543,nilearn,nilearn,GaelVaroquaux,2015-04-15 11:16:06,COSMIT: remove redundant lines of code,fdae163d89bd273be707e90fd1155146a65fae9f,
+8,pull_request_commit,543,nilearn,nilearn,GaelVaroquaux,2015-04-15 15:00:21,"BUG: Detrending 3D images gives nonsense.
+
+Fixes #418",da71107ca928f6a7997e6c7affdae16a8183f62e,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,528,nilearn,nilearn,ogrisel,2015-03-30 16:56:48,"Here is a plot with some negative and positive random data:
+
+``` python
+import numpy as np
+from nilearn.plotting import plot_stat_map
+from nibabel import Nifti1Image
+
+data = np.random.RandomState(0).randn(53, 63, 46)
+plot_stat_map(Nifti1Image(data, np.eye(4)))
+```
+
+![pos_neg_plot_stat_map](https://cloud.githubusercontent.com/assets/89061/6901532/2caaf7c4-d70e-11e4-8ac4-56fcde308e30.png)
+
+The colormap has values centered around zeros, so it could be correct. Let's now do the same plot on the absolute value of the previous data to get only positive values:
+
+``` python
+plot_stat_map(Nifti1Image(np.abs(data), np.eye(4)))
+```
+
+![pos_only_plot_stat_map](https://cloud.githubusercontent.com/assets/89061/6901547/502ace68-d70e-11e4-8fc5-e383643920c1.png)
+
+One can observe that the data region has a lot of dark red pixels that should be negative values based on the legend of the colorbar. This is not correct as we only have positive values in this image.
+",start issue,plot_stat_map colorbar values do not match the data
+2,issue_closed,528,nilearn,nilearn,lesteve,2015-04-15 18:06:50,,closed issue,plot_stat_map colorbar values do not match the data
+3,issue_comment,528,nilearn,nilearn,ogrisel,2015-04-16 04:44:59,"Thanks!
+",,
+4,issue_comment,528,nilearn,nilearn,GaelVaroquaux,2015-03-30 17:35:03,"> Fortunately it looks like this bug is only in master and not in the latest
+> released version, i.e. 0.1.2.
+
+Good, it means that we can bisect!
+",,
+5,issue_comment,528,nilearn,nilearn,GaelVaroquaux,2015-04-15 09:29:29,"> No need to bisect. I remembered taking a look a it a while ago and Loïc
+> did too. By talking about what we found, we realized that the colorbar
+> is defined at some point, and re-hacked afterward, which is very messy.
+> The origin of this problem may be that the plotting code is very
+> (overly?) complicated and hard to understand. I think that we should
+> take a step back and reorganize the whole thing.
+
+:$. We have had feature creep.
+
+But concretely we need to release soon, because our users have bugs and
+that's a problem.
+",,
+6,issue_comment,528,nilearn,nilearn,GaelVaroquaux,2015-04-15 09:32:41,"> I started looking at this bug with the release in mind indeed.
+
+Let's talk about this at lunch.
+",,
+7,issue_comment,528,nilearn,nilearn,GaelVaroquaux,2015-04-16 06:28:26,"> Closed #528 via 96902a5.
+
+Cool. Would you mind creating an issue to clean up the colorbar code that
+we assign to later?
+",,
+8,issue_comment,528,nilearn,nilearn,GaelVaroquaux,2015-04-16 06:45:07,"Thx!
+",,
+9,issue_comment,528,nilearn,nilearn,banilo,2015-03-30 16:57:47,"Good catch, Olivier!
+
+2015-03-30 18:56 GMT+02:00 Olivier Grisel notifications@github.com:
+
+> Here is a plot with some negative and positive random data:
+> 
+> import numpy as npfrom nilearn.plotting import plot_stat_mapfrom nibabel import Nifti1Image
+> 
+> data = np.random.RandomState(0).randn(53, 63, 46)
+> plot_stat_map(Nifti1Image(data, np.eye(4)))
+> 
+> [image: pos_neg_plot_stat_map]
+> https://cloud.githubusercontent.com/assets/89061/6901532/2caaf7c4-d70e-11e4-8ac4-56fcde308e30.png
+> 
+> The colormap has values centered around zeros, so it could be correct.
+> Let's now do the same plot on the absolute value of the previous data to
+> get only positive values:
+> 
+> plot_stat_map(Nifti1Image(np.abs(data), np.eye(4)))
+> 
+> [image: pos_only_plot_stat_map]
+> https://cloud.githubusercontent.com/assets/89061/6901547/502ace68-d70e-11e4-8fc5-e383643920c1.png
+> 
+> One can observe that the data region has a lot of red-ish pixels that
+> should be negative values based on the legend of the colorbar. This is not
+> correct as we only have positive values in this image.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/528.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+10,issue_comment,528,nilearn,nilearn,AlexandreAbraham,2015-03-30 17:00:43,"This is a problem of colorbar, not plotting itself.
+",,
+11,issue_comment,528,nilearn,nilearn,lesteve,2015-03-30 17:33:16,"Fortunately it looks like this bug is only in master and not in the latest released version, i.e. 0.1.2.
+",,
+12,issue_comment,528,nilearn,nilearn,AlexandreAbraham,2015-04-15 09:21:02,"> Good, it means that we can bisect!
+
+No need to bisect. I remembered taking a look a it a while ago and Loïc did too. By talking about what we found, we realized that the colorbar is defined at some point, and re-hacked afterward, which is very messy. Plus the original behavior of matplotlib is completely overridden. The origin of this problem may be that the plotting code is very (overly?) complicated and hard to understand. I think that we should take a step back and reorganize the whole thing.
+",,
+13,issue_comment,528,nilearn,nilearn,lesteve,2015-04-15 09:30:33,"> No need to bisect.
+
+I actually did bisect mostly just for the fun of it. The first ""bad"" commit is 2bc3593e632876ee7bf1573aabc7d81e55540b89 but as Alex was saying the underlying issue is more linked to the general level of hackiness than to a particuliar commit.
+",,
+14,issue_comment,528,nilearn,nilearn,lesteve,2015-04-15 09:31:27,"> But concretely we need to release soon, because our users have bugs and that's a problem.
+
+I started looking at this bug with the release in mind indeed.
+",,
+15,issue_comment,528,nilearn,nilearn,lesteve,2015-04-16 06:43:59,"> Cool. Would you mind creating an issue to clean up the colorbar code that we assign to later?
+
+see #545.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,531,nilearn,nilearn,banilo,2015-04-04 18:31:31,"Newcommers to nilearn (not seldomly: and to python) have expressed difficulty in understanding the format in which the datasets are represented.
+
+It would therefore be helpful to
+- show in the code that bunches are minor modifications of dictionaries
+- print where the (fetched/located) files are actually located on the disk
+- show how to access the important dataset parts right after first access
+",start issue,Add explicit explications/prints for bunches in the nilearn examples
+2,issue_closed,531,nilearn,nilearn,lesteve,2015-04-24 08:38:38,,closed issue,Add explicit explications/prints for bunches in the nilearn examples
+3,pull_request_title,531,nilearn,nilearn,banilo,2015-04-04 18:31:31,"Newcommers to nilearn (not seldomly: and to python) have expressed difficulty in understanding the format in which the datasets are represented.
+
+It would therefore be helpful to
+- show in the code that bunches are minor modifications of dictionaries
+- print where the (fetched/located) files are actually located on the disk
+- show how to access the important dataset parts right after first access
+",f2616623704309fc5c8728f19882834f6c0ee9f4,Add explicit explications/prints for bunches in the nilearn examples
+4,pull_request_merged,531,nilearn,nilearn,lesteve,2015-04-24 08:38:38,Add explicit explications/prints for bunches in the nilearn examples,606cde99b7fdf54e5180cd6601c5b606f5b7faca,Pull request merge from banilo/nilearn:explicit_ex_bunches to nilearn/nilearn:master
+5,issue_comment,531,nilearn,nilearn,lesteve,2015-04-08 07:51:35,"The description is rather verbose generally so I am not sure it helps printing that much information when running the example.
+
+I'd be in favour of updating the documentation [here](http://nilearn.github.io/building_blocks/manipulating_mr_images.html#datasets) to at the very least mention the ""description"" field.
+",,
+6,issue_comment,531,nilearn,nilearn,banilo,2015-04-08 07:58:52,"I honestly believe that (a little more) output related to the Bunches would help a lot of users Looking at the ones first examples, the Bunches (instead of an ordinary dictionary) are a major hurdle. In particular, for users that may be new to both Python and nilearn.
+
+Autobiographical note: I found the fetch/bunches mechanisms wierd myself, not long ago. Now it appears obvious.
+",,
+7,issue_comment,531,nilearn,nilearn,banilo,2015-04-08 07:59:53,"Compromise:
+- leave out the description print (I agree it is verbose)
+- leave in the printing of the filenames -> makes clear that there are actual files, with actual locations, that are the result of an actual download
+",,
+8,issue_comment,531,nilearn,nilearn,AlexandreAbraham,2015-04-08 08:47:26,":+1:
+",,
+9,issue_comment,531,nilearn,nilearn,lesteve,2015-04-08 08:52:46,"Why not have a separate example like ""how to use nilearn datasets fetcher"" rather than clogging existing ones?
+",,
+10,issue_comment,531,nilearn,nilearn,AlexandreAbraham,2015-04-08 08:54:58,"Because a lot of people asked for the specific path to the datasets after running examples. I tried to underline that in the dataset fetcher but it may not be enough.
+",,
+11,issue_comment,531,nilearn,nilearn,banilo,2015-04-08 08:55:18,"..for pragmatic reasons. If a new user downloads nilearn and wants to use
+to it for example specifically to do a ""searchlight"". He/she will mostly
+likely find the example on searchlight at some point. At the first lines
+there is the bunch thing. Most likely that person will not have the hunch
+""oh, perhaps there is another example relevant to me right now, that I
+should look at first, because there is some special structure for datasets"".
+
+That's why those few lines that print the data decomplexify the first
+contact.
+
+2015-04-08 10:52 GMT+02:00 Loïc Estève notifications@github.com:
+
+> Why not have a separate example like ""how to use nilearn datasets fetcher""
+> rather than clogging existing ones?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/531#issuecomment-90847315.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+12,issue_comment,531,nilearn,nilearn,lesteve,2015-04-08 09:07:09,"Fair enough, does that mean that we want to add these kind of lines to every single example going forward?
+",,
+13,issue_comment,531,nilearn,nilearn,banilo,2015-04-08 09:08:33,"That would be my suggestions, yes (print only the data file paths) - as now
+in the PR.
+
+We can cut the description, however, agreed.
+
+2015-04-08 11:07 GMT+02:00 Loïc Estève notifications@github.com:
+
+> Fair enough, does that mean that we want to add these kind of lines to
+> every single example going forward?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/531#issuecomment-90854965.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+14,issue_comment,531,nilearn,nilearn,lesteve,2015-04-08 09:31:21,"OK, remove the print(description) squash your commits and this is good to go.
+
+Still think it'd be great to tackle my earlier comment in a separate PR while you are on this topic:
+
+> I'd be in favour of updating the documentation [here](http://nilearn.github.io/building_blocks/manipulating_mr_images.html#datasets) to at the very least mention the ""description"" field.
+",,
+15,issue_comment,531,nilearn,nilearn,banilo,2015-04-08 09:34:00,"+1
+
+Yes, I will do both this afternoon.
+
+2015-04-08 11:31 GMT+02:00 Loïc Estève notifications@github.com:
+
+> OK, remove the print(description) squash your commits and this is good to
+> go.
+> 
+> Still think it'd be great to tackle my earlier comment in a separate PR
+> while you are on this topic:
+> 
+> I'd be in favour of updating the documentation here
+> http://nilearn.github.io/building_blocks/manipulating_mr_images.html#datasets
+> to at the very least mention the ""description"" field.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/531#issuecomment-90860673.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+16,issue_comment,531,nilearn,nilearn,banilo,2015-04-08 13:46:24,"Cleaned + squashed!
+",,
+17,issue_comment,531,nilearn,nilearn,banilo,2015-04-09 12:09:05,"Updated this one. I tried to put more pedagogic emphasis on the difference between a) number of nifti images and b) whether those contain one or more images.
+
+I imagine this is particularly confusing (on top of the bunches).
+",,
+18,issue_comment,531,nilearn,nilearn,banilo,2015-04-15 05:19:14,"Ok, how about now?
+",,
+19,issue_comment,531,nilearn,nilearn,banilo,2015-04-15 10:12:03,"datasets.fetch_haxby() appears to be broken for some reason (.anat is empty and .func also). Ideas?
+",,
+20,issue_comment,531,nilearn,nilearn,lesteve,2015-04-15 11:32:55,"> datasets.fetch_haxby() appears to be broken for some reason (.anat is empty and .func also). Ideas?
+
+Hmmm seems to work fine for me. I even tried deleting ~/nilearn_data/haxby2001{,_simple} to make sure that wasn't one of the usual problems that you only get when you haven't downloaded the dataset yet.
+",,
+21,issue_comment,531,nilearn,nilearn,banilo,2015-04-15 14:11:19,"> seems to work fine for me
+
+Ok, I think I found the culprit. The Bunches does not appear to be filled out correctly if the fetch_simuli option is used
+
+`haxby_dataset = datasets.fetch_haxby(n_subjects=1, fetch_stimuli=True)`
+",,
+22,issue_comment,531,nilearn,nilearn,banilo,2015-04-15 14:57:57,".func is actually overwritten, if fetch_stimuli is used, and the imaging data is not in the output bunch anymore:
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/datasets.py#L1226
+
+Is this the expected behavior?
+",,
+23,issue_comment,531,nilearn,nilearn,AlexandreAbraham,2015-04-15 15:17:25,"No. Good catch !
+",,
+24,issue_comment,531,nilearn,nilearn,lesteve,2015-04-15 19:03:39,"> No. Good catch !
+
+created https://github.com/nilearn/nilearn/issues/544
+",,
+25,issue_comment,531,nilearn,nilearn,lesteve,2015-04-24 08:38:34,"Looks fine, consistency in messages could be improved but let's leave that for another PR.
+",,
+26,issue_comment,531,nilearn,nilearn,banilo,2015-04-20 12:56:35,"Ok, this PR should be good now, too.
+",,
+27,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-08 14:10:22,"I would use ""First functional nifti image is at: "" otherwise this is a bit misleading.
+
+Other examples would need to be harmonised in a similar fashion.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/connectivity/plot_canica_resting_state.py')"
+28,pull_request_commit_comment,531,nilearn,nilearn,bthirion,2015-04-08 21:21:29,"Indeed, this would give a more accurate information. 
+LGTM otherwise.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/connectivity/plot_canica_resting_state.py')"
+29,pull_request_commit_comment,531,nilearn,nilearn,banilo,2015-04-08 22:13:27,"+1
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/connectivity/plot_canica_resting_state.py')"
+30,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-13 08:05:34,"I don't think it should say first here since the list is of size 1, maybe something like 'Functional 4D image is at: '
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(6, '', u'examples/connectivity/plot_canica_resting_state.py')"
+31,pull_request_commit_comment,531,nilearn,nilearn,banilo,2015-04-13 08:22:31,"I hate to disagree, yet `datasets.fetch_adhd()` returns a list if 40 niftis in the 'func' dictionary entry on my machine.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(6, '', u'examples/connectivity/plot_canica_resting_state.py')"
+32,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-13 08:35:55,"You are right indeed this comment does apply to nyu_dataset below though.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(6, '', u'examples/connectivity/plot_canica_resting_state.py')"
+33,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-13 08:36:43,"> I don't think it should say first here since the list is of size 1, maybe something like 'Functional 4D image is at: '
+
+This is where my earlier comment was supposed to end up.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/connectivity/plot_ica_resting_state.py')"
+34,pull_request_commit_comment,531,nilearn,nilearn,banilo,2015-04-13 08:46:47,"You are right, but it depends on 'n_subjects' argument above. To also make
+the datasets clearer I would therefore suggest to leave the printings as
+they are and increase the #subjects to 2 instead. The aim is educational.
+
+2015-04-13 10:36 GMT+02:00 Loïc Estève notifications@github.com:
+
+> In examples/connectivity/plot_ica_resting_state.py
+> https://github.com/nilearn/nilearn/pull/531#discussion_r28221872:
+> 
+> > @@ -13,6 +13,11 @@
+> >  nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
+> >  func_filename = nyu_dataset.func[0]
+> > 
+> > +# print basic information on the dataset
+> > +print('First anatomical nifti image (3D) is at: %s' % nyu_dataset.anat_anon[0])
+> > +print('First functional nifti image (4D) is at: %s' %
+> > -      nyu_dataset.func[0])  # 4D data
+> 
+>  I don't think it should say first here since the list is of size 1,
+> maybe something like 'Functional 4D image is at: '
+> 
+> This is where my earlier comment was supposed to end up.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/531/files#r28221872.
+
+## 
+
+Viele Grüße,
+Danilo
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/connectivity/plot_ica_resting_state.py')"
+35,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-13 09:13:58,"Just write something like 'First subject functional nifti image (4D) is at: '
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/connectivity/plot_ica_resting_state.py')"
+36,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-13 09:16:27,"Downloading the 2nd subject dataset if you are not using it doesn't qualify as educational to me, unless you think waiting for 15 minutes without any good reason is an educational experience ;-).
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/connectivity/plot_ica_resting_state.py')"
+37,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-15 06:26:22,"Any good reason why this was changed to 2 ?
+
+I guess you want to be consistent and use something like ""First subject functional ..."" in your print statement below and all the other haxby examples.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/decoding/plot_haxby_different_estimators.py')"
+38,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-15 06:45:48,"For fetch_haxby_simple, `haxby_dataset.func` is a string. Can you make sure all the examples run fine to get rid for other mistakes like this ?
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/decoding/plot_haxby_grid_search.py')"
+39,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-16 07:26:31,"No good reason to use 2 subjects I reckon.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/plot_nifti_simple.py')"
+40,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-20 14:08:30,"why this change?
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/decoding/plot_oasis_vbm.py')"
+41,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-20 14:13:48,"This example only uses the stimuli data, I don't think there is any point downloading the data for one subject.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/decoding/plot_haxby_stimuli.py')"
+42,pull_request_commit_comment,531,nilearn,nilearn,lesteve,2015-04-20 14:32:34,"Given that this example is broken, it'd be nice if you could fix it and make sure that all the other examples run.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/decoding/plot_haxby_stimuli.py')"
+43,pull_request_commit_comment,531,nilearn,nilearn,banilo,2015-04-20 17:12:17,"> Given that this example is broken, it'd be nice if you could fix it
+
+You are the one who fixed it - it was the fetch_stimulus-issue.
+
+> that all the other examples run.
+
+All work until printing the new descriptions.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/decoding/plot_haxby_stimuli.py')"
+44,pull_request_commit_comment,531,nilearn,nilearn,banilo,2015-04-22 13:34:35,"Ok, changed it back.
+",f2616623704309fc5c8728f19882834f6c0ee9f4,"(None, '', u'examples/decoding/plot_oasis_vbm.py')"
+45,pull_request_commit,531,nilearn,nilearn,banilo,2015-04-08 13:45:56,make bunches explicit in examples,8191eb1c8914eabe60911c8ef9c5579400b128b3,
+46,pull_request_commit,531,nilearn,nilearn,banilo,2015-04-20 12:55:10,distinguish 3d/4d dataset files,6d33de90a5d3816a642f95ad25696ab215c62329,
+47,pull_request_commit,531,nilearn,nilearn,banilo,2015-04-22 13:53:35,change back to original,f2616623704309fc5c8728f19882834f6c0ee9f4,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,557,nilearn,nilearn,GaelVaroquaux,2015-04-23 14:25:32,"<pre>
+plotting.plot_anat(threshold=0)
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-5-cc5469646d11> in <module>()
+----> 1 plotting.plot_anat(threshold=0)
+
+/volatile/varoquau/dev/nilearn/nilearn/plotting/img_plotting.pyc in plot_anat(anat_img, cut_coords, output_file, display_mode, figure, axes, title, annotate, draw_cross, black_bg, dim, cmap, **kwargs)
+    393                       threshold=None, annotate=annotate,
+    394                       draw_cross=draw_cross, black_bg=black_bg,
+--> 395                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
+    396     return display
+    397
+</pre>
+",start issue,Threshold argument not dealt with properly in plot_anat
+2,issue_closed,557,nilearn,nilearn,GaelVaroquaux,2015-05-11 20:18:44,,closed issue,Threshold argument not dealt with properly in plot_anat
+3,issue_comment,557,nilearn,nilearn,GaelVaroquaux,2015-04-24 09:08:13,"> I remove 'threshold' from the docstring in b56dc9f. Do we consider that good
+> enough for now and close this issue?
+
+No, I'd rather have a sane behavior. It's fairly easy to implement.
+",,
+4,issue_comment,557,nilearn,nilearn,GaelVaroquaux,2015-05-11 20:18:44,"Fixed by #582
+",,
+5,issue_comment,557,nilearn,nilearn,KamalakerDadi,2015-05-08 12:11:45,"As @lesteve was saying, included the optional argument ""threshold=None"" in function plot_anat. It seems to behave normally by trying with three thresholds ""None"", ""auto"", ""0"". 
+
+``` python
+display = plotting.plot_anat()
+display = plotting.plot_anat(threshold=0)
+display = plotting.plot_anat(threshold='auto')
+```
+
+I got the same output as below:
+
+![none](https://cloud.githubusercontent.com/assets/11410385/7536032/08b13fee-f58c-11e4-88ba-91aaa197fd90.png)
+
+are we good enough for a pull request ?
+",,
+6,issue_comment,557,nilearn,nilearn,lesteve,2015-04-23 14:32:51,"The most misleading thing is that 'threshold' is listed in the docstring although it is not supposed to be an acceptable parameter of plot_anat.
+",,
+7,issue_comment,557,nilearn,nilearn,lesteve,2015-04-24 09:04:10,"I remove 'threshold' from the docstring in b56dc9f. Do we consider that good enough for now and close this issue?
+",,
+8,issue_comment,557,nilearn,nilearn,lesteve,2015-04-24 11:23:11,"> No, I'd rather have a sane behavior. It's fairly easy to implement.
+
+I don't know, why would a user pass a threshold parameter if it is not listed as an explicit parameter and not documented?
+
+Maybe the simplest thing to do is actually to go the other way on this one: allow an optional 'threshold' parameter that defaults to None (i.e. not thresholded) in plot_anat ?
+
+My contention with having some kwargs logic is that it is rather brittle. For example should we protect against resampling_interpolation being passed into the kwargs as well? Should we do this only in plot_anat or also in other plot_ functions that set threshold to a fixed value internally?
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,544,nilearn,nilearn,lesteve,2015-04-15 19:02:49,"The `.func` should be the same whichever value you set `fetch_stimuli` to
+
+``` python
+from nilearn import datasets
+datasets.fetch_haxby(n_subjects=1, fetch_stimuli=False).func
+datasets.fetch_haxby(n_subjects=1, fetch_stimuli=True).func
+```
+
+```
+In [1]: from nilearn import datasets
+
+In [2]: datasets.fetch_haxby(n_subjects=1, fetch_stimuli=False).func
+Out[2]: ['/home/lesteve/nilearn_data/haxby2001/subj1/bold.nii.gz']
+
+In [3]: datasets.fetch_haxby(n_subjects=1, fetch_stimuli=True).func
+Out[3]: 
+[('stimuli/README',
+  'http://data.pymvpa.org/datasets/haxby2001/stimuli-2010.01.14.tar.gz',
+  {'uncompress': True})]
+```
+",start issue,datasets.fetch_haxby func broken with fetch_stimuli=True
+2,issue_closed,544,nilearn,nilearn,lesteve,2015-04-16 13:16:28,,closed issue,datasets.fetch_haxby func broken with fetch_stimuli=True

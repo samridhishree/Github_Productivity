@@ -1,0 +1,111 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","528","nilearn","nilearn","ogrisel","2015-03-30 16:56:48","Here is a plot with some negative and positive random data:
+
+``` python
+import numpy as np
+from nilearn.plotting import plot_stat_map
+from nibabel import Nifti1Image
+
+data = np.random.RandomState(0).randn(53, 63, 46)
+plot_stat_map(Nifti1Image(data, np.eye(4)))
+```
+
+![pos_neg_plot_stat_map](https://cloud.githubusercontent.com/assets/89061/6901532/2caaf7c4-d70e-11e4-8ac4-56fcde308e30.png)
+
+The colormap has values centered around zeros, so it could be correct. Let's now do the same plot on the absolute value of the previous data to get only positive values:
+
+``` python
+plot_stat_map(Nifti1Image(np.abs(data), np.eye(4)))
+```
+
+![pos_only_plot_stat_map](https://cloud.githubusercontent.com/assets/89061/6901547/502ace68-d70e-11e4-8fc5-e383643920c1.png)
+
+One can observe that the data region has a lot of dark red pixels that should be negative values based on the legend of the colorbar. This is not correct as we only have positive values in this image.
+","start issue","plot_stat_map colorbar values do not match the data"
+"issue_closed","528","nilearn","nilearn","lesteve","2015-04-15 18:06:50","","closed issue","plot_stat_map colorbar values do not match the data"
+"issue_comment","528","nilearn","nilearn","ogrisel","2015-04-16 04:44:59","Thanks!
+","",""
+"issue_comment","528","nilearn","nilearn","GaelVaroquaux","2015-03-30 17:35:03","> Fortunately it looks like this bug is only in master and not in the latest
+> released version, i.e. 0.1.2.
+
+Good, it means that we can bisect!
+","",""
+"issue_comment","528","nilearn","nilearn","GaelVaroquaux","2015-04-15 09:29:29","> No need to bisect. I remembered taking a look a it a while ago and Loïc
+> did too. By talking about what we found, we realized that the colorbar
+> is defined at some point, and re-hacked afterward, which is very messy.
+> The origin of this problem may be that the plotting code is very
+> (overly?) complicated and hard to understand. I think that we should
+> take a step back and reorganize the whole thing.
+
+:$. We have had feature creep.
+
+But concretely we need to release soon, because our users have bugs and
+that's a problem.
+","",""
+"issue_comment","528","nilearn","nilearn","GaelVaroquaux","2015-04-15 09:32:41","> I started looking at this bug with the release in mind indeed.
+
+Let's talk about this at lunch.
+","",""
+"issue_comment","528","nilearn","nilearn","GaelVaroquaux","2015-04-16 06:28:26","> Closed #528 via 96902a5.
+
+Cool. Would you mind creating an issue to clean up the colorbar code that
+we assign to later?
+","",""
+"issue_comment","528","nilearn","nilearn","GaelVaroquaux","2015-04-16 06:45:07","Thx!
+","",""
+"issue_comment","528","nilearn","nilearn","banilo","2015-03-30 16:57:47","Good catch, Olivier!
+
+2015-03-30 18:56 GMT+02:00 Olivier Grisel notifications@github.com:
+
+> Here is a plot with some negative and positive random data:
+> 
+> import numpy as npfrom nilearn.plotting import plot_stat_mapfrom nibabel import Nifti1Image
+> 
+> data = np.random.RandomState(0).randn(53, 63, 46)
+> plot_stat_map(Nifti1Image(data, np.eye(4)))
+> 
+> [image: pos_neg_plot_stat_map]
+> https://cloud.githubusercontent.com/assets/89061/6901532/2caaf7c4-d70e-11e4-8ac4-56fcde308e30.png
+> 
+> The colormap has values centered around zeros, so it could be correct.
+> Let's now do the same plot on the absolute value of the previous data to
+> get only positive values:
+> 
+> plot_stat_map(Nifti1Image(np.abs(data), np.eye(4)))
+> 
+> [image: pos_only_plot_stat_map]
+> https://cloud.githubusercontent.com/assets/89061/6901547/502ace68-d70e-11e4-8fc5-e383643920c1.png
+> 
+> One can observe that the data region has a lot of red-ish pixels that
+> should be negative values based on the legend of the colorbar. This is not
+> correct as we only have positive values in this image.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/528.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","528","nilearn","nilearn","AlexandreAbraham","2015-03-30 17:00:43","This is a problem of colorbar, not plotting itself.
+","",""
+"issue_comment","528","nilearn","nilearn","lesteve","2015-03-30 17:33:16","Fortunately it looks like this bug is only in master and not in the latest released version, i.e. 0.1.2.
+","",""
+"issue_comment","528","nilearn","nilearn","AlexandreAbraham","2015-04-15 09:21:02","> Good, it means that we can bisect!
+
+No need to bisect. I remembered taking a look a it a while ago and Loïc did too. By talking about what we found, we realized that the colorbar is defined at some point, and re-hacked afterward, which is very messy. Plus the original behavior of matplotlib is completely overridden. The origin of this problem may be that the plotting code is very (overly?) complicated and hard to understand. I think that we should take a step back and reorganize the whole thing.
+","",""
+"issue_comment","528","nilearn","nilearn","lesteve","2015-04-15 09:30:33","> No need to bisect.
+
+I actually did bisect mostly just for the fun of it. The first ""bad"" commit is 2bc3593e632876ee7bf1573aabc7d81e55540b89 but as Alex was saying the underlying issue is more linked to the general level of hackiness than to a particuliar commit.
+","",""
+"issue_comment","528","nilearn","nilearn","lesteve","2015-04-15 09:31:27","> But concretely we need to release soon, because our users have bugs and that's a problem.
+
+I started looking at this bug with the release in mind indeed.
+","",""
+"issue_comment","528","nilearn","nilearn","lesteve","2015-04-16 06:43:59","> Cool. Would you mind creating an issue to clean up the colorbar code that we assign to later?
+
+see #545.
+","",""

@@ -1,0 +1,173 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","59","nilearn","nilearn","pgervais","2013-05-22 08:42:50","Resampling has been integrated into NiftiMapsMasker, and an example demonstrating this new feature has been added (plot_msdl_covariance_advanced.py). 
+
+Before integrating resampling into NiftiLabelsMasker, I'd like to get some feedback on the API.
+","start issue","Regions resampling"
+"issue_closed","59","nilearn","nilearn","pgervais","2013-05-27 15:55:05","","closed issue","Regions resampling"
+"pull_request_title","59","nilearn","nilearn","pgervais","2013-05-22 08:42:50","Resampling has been integrated into NiftiMapsMasker, and an example demonstrating this new feature has been added (plot_msdl_covariance_advanced.py). 
+
+Before integrating resampling into NiftiLabelsMasker, I'd like to get some feedback on the API.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","Regions resampling"
+"pull_request_merged","59","nilearn","nilearn","pgervais","2013-05-27 15:55:05","Regions resampling","711389359157ca84a88c5c38c353fc4ff6303474","Pull request merge from pgervais/nilearn:regions_resampling to nilearn/nilearn:master"
+"issue_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:47:43","Done with my review! :)
+","",""
+"issue_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 11:40:38","> What do you think? Is this feature useful?
+
+The question is: how does resampling_target affect the output of
+inverse_transform?
+","",""
+"issue_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 11:44:30","> For the moment, inverse_transform returns an image with the shape/affine given
+> by resampling_target.
+
+That's what I thought. In this case, we need the option to have 'image'
+as resampling_target, I believe.
+","",""
+"issue_comment","59","nilearn","nilearn","pgervais","2013-05-22 11:39:12","I'd like to have your opinion on the resampling API. Currently, the resampling target could be only the maps or the mask, but not in any case the images themselves. In other words there is no way to resample both the maps and the mask to the shape of the images. While technically feasible, this would probably cause confusion in the API. Example of use case of resampling_target=""images"":
+
+```
+masker = NiftiMapsMasker(maps_img, mask_img=mask_img, resampling_target=""images"")
+masker.fit(images)  # requires images just for shape and affine. Resample maps and mask here.
+signals = masker.transform(images)
+```
+
+or 
+
+```
+masker = NiftiMapsMasker(maps_img, mask_img=mask_img, resampling_target=images)  # pass images here.
+masker.fit()  # Resample maps and mask
+signals = masker.transform(images)
+```
+
+What do you think? Is this feature useful?
+","",""
+"issue_comment","59","nilearn","nilearn","pgervais","2013-05-22 11:41:25","For the moment, inverse_transform returns an image with the shape/affine given by resampling_target.
+","",""
+"issue_comment","59","nilearn","nilearn","pgervais","2013-05-22 11:50:57","Then, which API is the best?
+","",""
+"issue_comment","59","nilearn","nilearn","pgervais","2013-05-23 08:22:14","I added resampling to NiftiLabelsMasker, mostly the same way I did for NiftiMapsMasker.
+
+Since giving fmri images as the resampling target seems to need some more discussion (it's useful, but choosing a proper behaviour may take a while), I let it aside.
+
+From my point of view, this PR is good to merge.
+","",""
+"issue_comment","59","nilearn","nilearn","pgervais","2013-05-23 16:25:22","Some more changes.
+
+The img_to_signals_*() functions now always output as many signals as regions. Having a array size known in advance will make downstream code simpler to write.
+
+I added some debugging messages to both Nifti(Maps|Labels)Masker object, putting at least something behind the ""verbose"" option. I created a mixin just for this, comments welcome, as usual. 
+
+I still didn't change the default for resampling_target, because I still think that setting ""labels"" or ""maps"" as a default will be harmful in most cases, because the voxel number in labels or maps images may be much higher than in images (in fMRI at least), and it will fill the memory very quickly. Imho, the safest choice would be to use fMRI images as target, but this option is still not implemented.
+","",""
+"issue_comment","59","nilearn","nilearn","pgervais","2013-05-27 09:37:11","Rebased the branch on master for the sake of having a linear history.
+","",""
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:27:47","I had left 'smooth' on purpose here, because I felt that in the context of ""apply_mask"", or a Masker object, ""fwhm"" had no meaning. Maybe we could have ""smoothing_fwhm"", but I think that I prefer ""smooth"".
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/base_masker.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:28:19","I hadn't realized, but the docstring should specify that it is a FWHM.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/nifti_masker.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:32:40","We need a more explicit name. Maybe ""resampling_target"".
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/nifti_region.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 09:37:19","For me, ""smooth"" hints at a boolean flag. I definitely prefer smoothing_fwhm, even if it's longer. 
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/base_masker.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:37:52","I wonder if it is worth define 3 different variables (affine1, affine2, and affine3), if we set them all equal. I am just trying to make the test shorter and thus more readable.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/tests/test_nifti_region.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 09:38:46","A more correct version can be found in NiftiMapsMasker docstring. I'll fix this one.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/nifti_masker.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 09:40:09","I considered for a moment ""target_img"", because it was consistent with target_shape and target_affine. resampling_target sounds good to me.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/nifti_region.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:40:50","fwhm_sigma is somewhat a misnomer as it is a sigma (as in the formula of the Gaussian), not an FWHM. This is why I had left the original name.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 09:41:11","I'll clean this, it was initially a copy-paste of test_nifti_maps_masker().
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/tests/test_nifti_region.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:42:29","> For me, ""smooth"" hints at a boolean flag. I definitely prefer smoothing_fwhm,
+> even if it's longer.
+
+That's fine with me.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/io/base_masker.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 09:43:34","You're right. I'll rename this into ""sigma"".
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'nisl/masking.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:44:03","We should always use 'nisl_cache' across the examples, to have only one cache directory.
+
+Also, all our caching procedures should be able to take a string. This way we don't have to explain to the user where to import the Memory object, and what it is.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:45:04","OK, I see where mem is needed... I guess we need an explanation for the user who does not know joblib.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 09:45:48","Usage of Memory is temporary in this case: not a single example makes use of joblib right now. This wil be removed before merging.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:46:06","I would say: just do the simple version. It will make it easier to understand for the user.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 09:46:51","Hum, actually, compcorr should be in the ADHD sets of confounds, I believe, so you don't need this.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 11:17:02","This is temporary, again. The goal was to compare both results. 
+
+However, we need a way to show new users how to use the ""low-level"" API. What we did previously with plot_regions_covariance.py was to add another script, containing the ""advanced"" version. In the long run this is not a good idea, since it will basically mean duplicating every example file. 
+
+So the question is: where do we put ""advanced"" examples?
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 11:19:50","We'll do different advanced examples that do not reproduce exactly the
+same thing. The idea being that we need less advanced examples, because
+they are for advanced users ( :$). Also, the advanced API is there to do
+things that are not possible with the simple API, as it is more flexible.
+We'll have to look for such usecases.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 14:42:19","To be precise, high_variance_confounds() is applied in this example to the whole image, including the space around the brain, which is probably not the case for the compcorr provided with the adhd dataset.
+
+I removed the call to high_variance_confounds() from **plot_region_covariance.py**. I tested that the result is almost unchanged. However, if I do the same in **plot_msdl_covariance_advanced.py**, the graph lasso does not converge, even if the result is really close to what it was before. We're not using the same regions (MSDL / Harvard-Oxford.)
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 14:44:25","Then I can as well drop this example completely, because it's very similar to plot_region_covariance.py. The main differences are: different regions (maps instead of labels), and resampling.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","pgervais","2013-05-22 14:47:26","I should do the other way: keep plot_msdl_covariance.py and drop plot_regions_covariance.py, because the MSDL atlas can be downloaded from the internet, whereas Harvard-Oxford's needs a separate FSL installation.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit_comment","59","nilearn","nilearn","GaelVaroquaux","2013-05-22 15:46:07","> I should do the other way: keep plot_msdl_covariance.py and drop
+> plot_regions_covariance.py, because the MSDL atlas can be downloaded from the
+> internet, whereas Harvard-Oxford's needs a separate FSL installation.
+
+I agree.
+","1b2d20e79576efec7de15ad61031643cfbe5da60","(None, '', u'plot_msdl_covariance_advanced.py')"
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-21 16:45:46","Added resampling to NiftiMapsMasker
+
+Resampling is performed on maps or mask and images, depending on the ""target""
+parameter, which gives the image whose shape/affine is the reference. Two
+targets have been implemented so far: ""maps"" and ""mask"".
+
+Tests have been written, they only check for correct shape/affine, not for
+the content.","530e3ca9148a36982c110007c081a571eff660e1",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-22 07:31:02","Renamed ""smooth"" parameters to ""fwhm""
+
+Everywhere ""smooth"" was used as a parameter, is was renamed in ""fwhm"", to
+be consistent with image.smooth().","dbd02da78779a3c2966cae0b274bac01daa5790b",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-22 08:36:14","Add an example using MSDL atlas
+
+plot_msdl_covariance_advanced.py demonstrates usage of an atlas without
+the same shape/affine as the data. Two different methods are implemented
+(with/without NiftiMapsMasker).","7585a4822855825391b247d1bc9106f1c2f04514",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-22 11:29:04","""smooth"" renamed in ""smoothing_fwhm""
+
+The ""smooth"" parameter has been renamed in ""smoothing_fwhm"" for clarity.
+The original name has been kept in _smooth_array() and image.smooth().
+
+Some minor fixes have been performed as well.","013e96566dd4cf2fce4c40d010a5eff76395959b",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-22 11:50:06","Renamed ""target"" into ""resampling_target""","78c48ae3b9055002930e021328e069dc5cf7570a",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-22 15:04:23","Simplified examples.","81b0de298504db68483e626b6c4fb548dfb8dc29",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-22 16:13:25","Added resampling to NiftiLabelsMasker
+
+resampling_target parameter has been added to NiftiLabelsMasker. Only one
+target has been implemented: labels, because resampling labels is considered
+dangerous right now.
+
+Corrected a bug in NiftiMapsMasker: the interpolation method used for ""maps""
+and ""mask"" targets were swapped.","dc30d1f385bb6fc231880605e7b35afd56d64c6d",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-23 08:17:54","Renamed example, remove duplicate.","2e0d0b08021b871710fa372aa6724cc66ddc0769",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-23 15:07:57","Changed output of region signal extracting functions
+
+img_to_signals_labels() and img_to_signals_maps() now always return a
+number of signals equal to the number of regions passed as parameter. In
+the previous state, only regions not fully outside the mask were
+considered, the number of output signals thus could vary. This is not
+the case anymore.
+
+Tests have been adapted.","921e25e46e323c89b17dfe62ad3b1b5b2f38ed51",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-23 16:01:43","Added user messages to Nifti*Masker
+
+Renamed plot_msdl_covariance.py co plot_adhd_covariance.py.","b0821f1a92aeef39f35120509e52d651498523fb",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-23 16:16:49","Documentation fixes","e774f1fe277e4849837987af02048c1bac31fa9c",""
+"pull_request_commit","59","nilearn","nilearn","pgervais","2013-05-24 09:01:58","Changed default value for resampling_target","1b2d20e79576efec7de15ad61031643cfbe5da60",""

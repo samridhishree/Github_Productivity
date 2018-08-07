@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","843","nilearn","nilearn","bcipolli","2015-11-14 19:33:37","See https://github.com/nipy/nibabel/issues/209 for more info. This property seems to have been removed in Python 3.5, so read performance likely will revert to the unacceptably slow speed.
+
+in https://github.com/nilearn/nilearn/blob/master/nilearn/__init__.py#L48 :
+
+```
+# Monkey-patch gzip to have faster reads on large gzip files
+if hasattr(gzip.GzipFile, 'max_read_chunk'):
+    gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024  # 100Mb
+```
+","start issue","gzipGzipFile.max_read_chunk does not exist in Python 3.5"
+"issue_comment","843","nilearn","nilearn","GaelVaroquaux","2015-11-15 10:34:15","Indeed, we have observed very slow I/O at the lab.
+
+That explains it.
+
+We'll need to find a solution (I have no idea which one, though :$), because something like the human brain project becomes untractable.
+","",""
+"issue_comment","843","nilearn","nilearn","GaelVaroquaux","2015-12-02 08:09:08","Has this been fixed? It has in nibabel, but how about our monkey patching?
+","",""
+"issue_comment","843","nilearn","nilearn","lesteve","2015-11-16 09:00:57","> Indeed, we have observed very slow I/O at the lab.
+> 
+> That explains it.
+
+:confused: Is any one using Python 3.5 for research at the lab?
+","",""
+"issue_comment","843","nilearn","nilearn","lesteve","2015-11-16 10:58:08","For the record, the commit removing max_read_chunk is: python/cpython@845155b. Haven't tried to look into it more than that.
+","",""

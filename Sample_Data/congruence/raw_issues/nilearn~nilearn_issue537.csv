@@ -1,0 +1,145 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","537","nilearn","nilearn","surchs","2015-04-11 19:52:03","Hi,
+
+I wanted to use plot_glass_brain to visualize a single binary network mask like so:
+
+```
+plotting.plot_glass_brain(network_mask_path, title='network_mask')
+```
+
+Default behaviour is to return an empty glass brain. I assume that this is because of the way that the colour range is computed from the image. 
+
+If I force the colour bar (to see what these values are), the whole thing crashes with
+
+```
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.py:778: RuntimeWarning: invalid value encountered in double_scalars
+  automin = (y[2] - y[1]) / clen
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.py:779: RuntimeWarning: invalid value encountered in double_scalars
+  automax = (y[-2] - y[-3]) / clen
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/axes/_base.py:2809: UserWarning: Attempting to set identical bottom==top results
+in singular transformations; automatically expanding.
+bottom=0.0, top=0.0
+  'bottom=%s, top=%s') % (bottom, top))
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-48-fb69d14f0879> in <module>()
+----> 1 plotting.plot_glass_brain(nil.image.index_img(temp_path, 2), title='plot_glass_brain', cmap=cm.Greys, colorbar=True)
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in plot_glass_brain(stat_map_img, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, black_bg, cmap, alpha, **kwargs)
+    740                                 display_factory=display_factory,
+    741                                 resampling_interpolation='continuous',
+--> 742                                 **kwargs)
+    743 
+    744     return display
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/img_plotting.pyc in _plot_img_with_bg(img, bg_img, cut_coords, output_file, display_mode, colorbar, figure, axes, title, threshold, annotate, draw_cross, black_bg, bg_vmin, bg_vmax, interpolation, display_factory, cbar_vmin, cbar_vmax, **kwargs)
+     96         display.add_overlay(nibabel.Nifti1Image(data, affine), 
+     97                             threshold=threshold, interpolation=interpolation,
+---> 98                             colorbar=colorbar, **kwargs)
+     99 
+    100     if annotate:
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in add_overlay(self, img, threshold, colorbar, **kwargs)
+    482 
+    483         if colorbar:
+--> 484             self._colorbar_show(ims[0], threshold)
+    485 
+    486         pl.draw_if_interactive()
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/nilearn/plotting/displays.pyc in _colorbar_show(self, im, threshold)
+    591             self._colorbar_ax, ticks=ticks, norm=im.norm,
+    592             orientation='vertical', cmap=our_cmap, boundaries=bounds,
+--> 593             spacing='proportional')
+    594 
+    595         self._colorbar_ax.yaxis.tick_left()
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in __init__(self, ax, cmap, norm, alpha, values, boundaries, orientation, ticklocation, extend, spacing, ticks, format, drawedges, filled, extendfrac, extendrect, label)
+    319         # The rest is in a method so we can recalculate when clim changes.
+    320         self.config_axis()
+--> 321         self.draw_all()
+    322 
+    323     def _extend_lower(self):
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in draw_all(self)
+    344         X, Y = self._mesh()
+    345         C = self._values[:, np.newaxis]
+--> 346         self._config_axes(X, Y)
+    347         if self.filled:
+    348             self._add_solids(X, Y, C)
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in _config_axes(self, X, Y)
+    438         ax.add_artist(self.patch)
+    439 
+--> 440         self.update_ticks()
+    441 
+    442     def _set_label(self):
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in update_ticks(self)
+    369         """"""
+    370         ax = self.ax
+--> 371         ticks, ticklabels, offset_string = self._ticker()
+    372         if self.orientation == 'vertical':
+    373             ax.yaxis.set_ticks(ticks)
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/colorbar.pyc in _ticker(self)
+    589         ticks = ticks[inrange]
+    590         b = b[inrange]
+--> 591         formatter.set_locs(b)
+    592         ticklabels = [formatter(t, i) for i, t in enumerate(b)]
+    593         offset_string = formatter.get_offset()
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/ticker.pyc in set_locs(self, locs)
+    521                 self._set_offset(d)
+    522             self._set_orderOfMagnitude(d)
+--> 523             self._set_format(vmin, vmax)
+    524 
+    525     def _set_offset(self, range):
+
+/home/surchs/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/matplotlib/ticker.pyc in _set_format(self, vmin, vmax)
+    582             # We needed the end points only for the loc_range calculation.
+    583             locs = locs[:-2]
+--> 584         loc_range_oom = int(math.floor(math.log10(loc_range)))
+    585         # first estimate:
+    586         sigfigs = max(0, 3 - loc_range_oom)
+
+ValueError: math domain error
+```
+
+Apart from not crashing, it would be nice if there was a way to manually fix the upper and lower bound of the data - or possibly even a upper and lower threshold where everything outside is transparent.
+
+Best,
+Seb
+","start issue","plot_glass_brain doesn't like binary images"
+"issue_closed","537","nilearn","nilearn","AlexandreAbraham","2015-04-15 09:14:44","","closed issue","plot_glass_brain doesn't like binary images"
+"issue_comment","537","nilearn","nilearn","GaelVaroquaux","2015-04-12 20:41:00","Let's try to do a release!
+
+Sent from my phone. Please forgive brevity and mis spelling
+
+On Apr 12, 2015, 11:38, at 11:38, ""Loïc Estève"" notifications@github.com wrote:
+
+> FWIW I believe this has been already fixed in master. The stacktrace
+> looks very close to the one in
+> https://github.com/nilearn/nilearn/issues/510
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/nilearn/nilearn/issues/537#issuecomment-92098927
+","",""
+"issue_comment","537","nilearn","nilearn","banilo","2015-04-12 16:33:56","> possibly even a upper and lower threshold where everything outside is transparent
+
+You way want to take a look at the threshold argument as well as at the vmax argument.
+
+> Apart from not crashing
+
+I tried out some binary nifti image (only zeros and ones). I could not reproduce a crash, yet:
+I found that this line actually caused the (binary) data in img not be shown in my case -> that is, the map was empty but normal when this array masking was commented out
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L477
+","",""
+"issue_comment","537","nilearn","nilearn","surchs","2015-04-12 17:32:42","Thanks a lot! I didn't think about vmax/min as kwargs but this is exactly what I am looking for. And this also fixes the crash. I have to set vmin and vmax manually to correctly display the binary image with a colorbar. Without vmin/max and without colorbar the glassbrain would be empty, without min/max and with a colorbar, I get the crash reported above.
+
+Thanks again for the help!
+","",""
+"issue_comment","537","nilearn","nilearn","lesteve","2015-04-12 18:38:12","FWIW I believe this has been already fixed in master. The stacktrace looks very close to the one in https://github.com/nilearn/nilearn/issues/510
+","",""

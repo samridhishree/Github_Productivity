@@ -1,0 +1,126 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1244","nilearn","nilearn","Stef-aap","2016-08-15 20:08:14","hello,
+
+Probably I'm doing something wrong (different versions or so ?):
+
+I'm investigating what I can do with Jupyter notebooks and came across some very nice looking notebooks from NiLearn, As I'm both new to Jupyter en NiLearn, this combination seems to be too difficult.
+
+Already in the second code window< i ran into a bug: I had to change the last line
+
+from nilearn import datasets, plotting
+atlas_img = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+# plotting.plot_roi ( atlas_img)
+
+plotting.plot_roi ( atlas_img.maps )
+
+The third code block contains at leat 2 erros, the first (masker=..), I solved but the second I'm lost (because indeed I can't find any file ""Background"".
+
+from nilearn.input_data import NiftiLabelsMasker
+# masker = NiftiLabelsMasker(labels_img=atlas_img)
+
+masker = NiftiLabelsMasker(labels_img=atlas_img.labels )
+# Now get the ADHD data
+
+data = datasets.fetch_adhd(n_subjects=1)
+# And apply the masker to the functional data
+
+time_series = masker.fit_transform(data.func[0])
+
+---
+
+ValueError                                Traceback (most recent call last)
+<ipython-input-31-8c203e687a00> in <module>()
+      7 
+      8 # And apply the masker to the functional data
+----> 9 time_series = masker.fit_transform(data.func[0])
+     10 data.func
+
+C:\Users\StefM\AppData\Roaming\Python\Python35\site-packages\nilearn\input_data\nifti_labels_masker.py in fit_transform(self, imgs, confounds)
+    189         """""" Prepare and perform signal extraction from regions.
+    190         """"""
+--> 191         return self.fit().transform(imgs, confounds=confounds)
+    192 
+    193     def _check_fitted(self):
+
+C:\Users\StefM\AppData\Roaming\Python\Python35\site-packages\nilearn\input_data\nifti_labels_masker.py in fit(self, X, y)
+    143                    _utils._repr_niimgs(self.labels_img)[:200],
+    144                    verbose=self.verbose)
+--> 145         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+    146         if self.mask_img is not None:
+    147             logger.log(""loading data from %s"" %
+
+C:\Users\StefM\AppData\Roaming\Python\Python35\site-packages\nilearn_utils\niimg_conversions.py in check_niimg_3d(niimg, dtype)
+    320     Its application is idempotent.
+    321     """"""
+--> 322     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
+    323 
+    324 
+
+C:\Users\StefM\AppData\Roaming\Python\Python35\site-packages\nilearn_utils\niimg_conversions.py in check_niimg(niimg, ensure_ndim, atleast_4d, dtype, return_iterator, wildcards)
+    266             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
+    267                                      dtype=dtype)
+--> 268         return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
+    269 
+    270     # Otherwise, it should be a filename or a SpatialImage, we load it
+
+C:\Users\StefM\AppData\Roaming\Python\Python35\site-packages\nilearn_utils\niimg_conversions.py in concat_niimgs(niimgs, dtype, ensure_ndim, memory, memory_level, auto_resample, verbose)
+    426     iterator, literator = itertools.tee(iter(niimgs))
+    427     try:
+--> 428         first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
+    429     except StopIteration:
+    430         raise TypeError('Cannot concatenate empty objects')
+
+C:\Users\StefM\AppData\Roaming\Python\Python35\site-packages\nilearn_utils\niimg_conversions.py in check_niimg(niimg, ensure_ndim, atleast_4d, dtype, return_iterator, wildcards)
+    257                 raise ValueError(message)
+    258             else:
+--> 259                 raise ValueError(""File not found: '%s'"" % niimg)
+    260         elif not os.path.exists(niimg):
+    261             raise ValueError(""File not found: '%s'"" % niimg)
+
+ValueError: File not found: 'Background'
+","start issue","nilearn, 2_signal_extraction_for_connectomes, doesn't run smoothly ..."
+"issue_closed","1244","nilearn","nilearn","GaelVaroquaux","2016-08-16 05:47:08","","closed issue","nilearn, 2_signal_extraction_for_connectomes, doesn't run smoothly ..."
+"issue_comment","1244","nilearn","nilearn","GaelVaroquaux","2016-08-15 20:12:37","Where did you get these notebooks? Can you point to where you downloaded them? The official place to download them would be on the nilearn website, in the examples pages.
+","",""
+"issue_comment","1244","nilearn","nilearn","GaelVaroquaux","2016-08-15 20:36:13","> I think it this one: https://github.com/GaelVaroquaux/nilearn_course/blob/master/notebooks/2_signal_extraction_for_connectomes.ipynb
+
+Looks like I need to delete this repo :).
+
+This is why I don't like any tutorial not in our continuous integration
+:).
+
+@Stef-aap: please use the notebooks shipped on the nilearn website. They
+are tested.
+","",""
+"issue_comment","1244","nilearn","nilearn","GaelVaroquaux","2016-08-16 05:47:07","I delete the old repo. Thanks @Stef-aap for pointing it out.
+
+I am closing this issue.
+","",""
+"issue_comment","1244","nilearn","nilearn","Stef-aap","2016-08-15 20:35:11","thanks for the fast response Gael.
+
+it took me some time to find the source:
+https://github.com/GaelVaroquaux/nilearn_course/blob/master/notebooks/2_signal_extraction_for_connectomes.ipynb
+
+And I found that through:
+https://github.com/ipython/ipython/wiki/A-gallery-of-interesting-IPython-Notebooks
+
+ok, I now found:
+http://nilearn.github.io/auto_examples/index.html
+those examples seems to work.
+
+thanks,
+Stef
+
+On 15-Aug-16 22:12, Gael Varoquaux wrote:
+
+> Where did you get these notebooks? Can you point to where you 
+> downloaded them? The official place to download them would be on the 
+> nilearn website, in the examples pages.
+> 
+> —
+> You are receiving this because you authored the thread.
+> Reply to this email directly, view it on GitHub 
+> https://github.com/nilearn/nilearn/issues/1244#issuecomment-239914710, 
+> or mute the thread 
+> https://github.com/notifications/unsubscribe-auth/AHMXrRlEt--VoCY249woSxmBVeNJZuR4ks5qgMg3gaJpZM4JkuPQ.
+","",""

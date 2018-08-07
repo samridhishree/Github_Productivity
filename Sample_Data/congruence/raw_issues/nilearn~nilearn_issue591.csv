@@ -1,0 +1,129 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","591","nilearn","nilearn","jlhanson5","2015-05-19 13:50:07","Hello all, 
+
+I was having an issue installing nilearn (potentially related to my python or OS version?). When initially trying to install nilearn with pip, I got the following output (with a few warnings)...
+
+```
+MNI-Space:Desktop jamielarshanson$ sudo pip install -U --user nilearn
+Password:
+The directory '/Users/jamielarshanson/Library/Logs/pip' or its parent directory is not owned by the current user and the debug log has been disabled. Please check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
+The directory '/Users/jamielarshanson/Library/Caches/pip/http' or its parent directory is not owned by the current user and the cache has been disabled. Please check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
+The directory '/Users/jamielarshanson/Library/Caches/pip/http' or its parent directory is not owned by the current user and the cache has been disabled. Please check the permissions and owner of that directory. If executing pip with sudo, you may want sudo's -H flag.
+/Library/Python/2.7/site-packages/pip-6.1.1-py2.7.egg/pip/_vendor/requests/packages/urllib3/util/ssl_.py:79: InsecurePlatformWarning: A true SSLContext object is not available. This prevents urllib3 from configuring SSL appropriately and may cause certain SSL connections to fail. For more information, see https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning.
+  InsecurePlatformWarning
+Requirement already up-to-date: nilearn in /Users/jamielarshanson/Library/Python/2.7/lib/python/site-packages
+Requirement already up-to-date: nibabel>=1.1.0 in /Users/jamielarshanson/Library/Python/2.7/lib/python/site-packages (from nilearn)
+```
+
+I re-ran with sudo with a -H flag and got the following output (again some warnings)...
+
+```
+MNI-Space:Desktop jamielarshanson$ sudo -H pip install -U --user nilearn
+Password:
+/Library/Python/2.7/site-packages/pip-6.1.1-py2.7.egg/pip/_vendor/requests/packages/urllib3/util/ssl_.py:79: InsecurePlatformWarning: A true SSLContext object is not available. This prevents urllib3 from configuring SSL appropriately and may cause certain SSL connections to fail. For more information, see https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning.
+  InsecurePlatformWarning
+Collecting nilearn
+/Library/Python/2.7/site-packages/pip-6.1.1-py2.7.egg/pip/_vendor/requests/packages/urllib3/util/ssl_.py:79: InsecurePlatformWarning: A true SSLContext object is not available. This prevents urllib3 from configuring SSL appropriately and may cause certain SSL connections to fail. For more information, see https://urllib3.readthedocs.org/en/latest/security.html#insecureplatformwarning.
+  InsecurePlatformWarning
+  Downloading nilearn-0.1.3-py2-none-any.whl (684kB)
+    100% |████████████████████████████████| 688kB 598kB/s 
+Collecting nibabel>=1.1.0 (from nilearn)
+  Downloading nibabel-2.0.0-py2-none-any.whl (2.5MB)
+    100% |████████████████████████████████| 2.5MB 192kB/s 
+Installing collected packages: nibabel, nilearn
+Successfully installed nibabel nilearn
+```
+
+I wasn't sure how important the SSL warnings were? 
+Next, when I try to import nilearn in ipython, it isn't found....
+
+```
+MNI-Space:Desktop jamielarshanson$ ipython
+Python 2.7.6 (default, Sep  9 2014, 15:04:36) 
+Type ""copyright"", ""credits"" or ""license"" for more information.
+
+IPython 3.1.0 -- An enhanced Interactive Python.
+?         -> Introduction and overview of IPython's features.
+%quickref -> Quick reference.
+help      -> Python's own help system.
+object?   -> Details about 'object', use 'object??' for extra details.
+
+In [1]: import nilearn
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+<ipython-input-1-35686bafc626> in <module>()
+----> 1 import nilearn
+
+ImportError: No module named nilearn
+```
+
+I'm rather new to python and wasn't sure how to troubleshoot. I had nilearn working previously, but that was a few months ago. Any thoughts are greatly appreciated! 
+","start issue","Install issue using Mac Yosemite (10.10.3) and Python 2.7.6"
+"issue_closed","591","nilearn","nilearn","AlexandreAbraham","2015-06-01 07:26:30","","closed issue","Install issue using Mac Yosemite (10.10.3) and Python 2.7.6"
+"issue_comment","591","nilearn","nilearn","AlexandreAbraham","2015-05-19 14:04:20","> sudo pip install -U --user nilearn
+
+This is a pip related problem because root doesn't own the current directory. Doing `cd /tmp && sudo pip install -U --user nilearn` fixes the problem.
+
+> I re-ran with sudo with a -H flag and got the following output (again some warnings)...
+
+Obviously it works because `-H` changes your `$HOME` variable and thus pip ends up installing in root's home, which is owned by root. Note that updating pip should also fix the issue.
+
+> I wasn't sure how important the SSL warnings were? 
+
+Not important when it comes to downloading software.
+
+> Next, when I try to import nilearn in ipython, it isn't found....
+
+Seems like a configuration problem to me.
+Can you try:
+- `import nibabel`
+- `import sys; print sys.path`
+- `which pip` (in the terminal, not in ipython)
+","",""
+"issue_comment","591","nilearn","nilearn","jlhanson5","2015-05-19 17:42:56","OK, I think I'm getting closer...
+
+I can import nibabel, but am still having trouble with nilearn (various output below). Further thoughts?
+
+```
+MNI-Space:nibabel-master jamielarshanson$ python
+Python 2.7.6 (default, Sep  9 2014, 15:04:36) 
+[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.39)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> import nibabel
+>>> import sys; print sys.path
+['',
+ '/Library/Python/2.7/site-packages/pip-6.1.1-py2.7.egg',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python27.zip',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/plat-darwin',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/plat-mac',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/plat-mac/lib-scriptpackages',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/lib-tk',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/lib-old',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/lib-dynload',
+ '/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/PyObjC',
+ '/Library/Python/2.7/site-packages']
+>>> exit()
+```
+
+```
+MNI-Space:nibabel-master jamielarshanson$ which pip 
+/usr/local/bin/pip
+```
+
+```
+MNI-Space:nibabel-master jamielarshanson$ python 
+Python 2.7.6 (default, Sep  9 2014, 15:04:36) 
+[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.39)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> import nilearn
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+ImportError: No module named nilearn
+```
+","",""
+"issue_comment","591","nilearn","nilearn","lesteve","2015-05-27 07:18:18","Have you managed to get it working eventually?
+","",""
+"issue_comment","591","nilearn","nilearn","AlexandreAbraham","2015-06-01 07:26:30","Closing as non reproducible and because we have no news. Please reopen if the problem is not solved.
+","",""

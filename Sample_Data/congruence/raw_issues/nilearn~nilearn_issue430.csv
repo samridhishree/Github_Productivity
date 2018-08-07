@@ -1,0 +1,738 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 17:59:01","Addresses #353.
+
+What is left to do:
+- [x] Improve code coverage if possible
+- [x] Decide what to do if seed is outside of fov (ATM, it will select the closest voxel, meaning one valid voxel on the edge). Suggested behavior: if the seed is too far from the edge, raise an error.
+- [x] Edit: add mask handling. If some voxels are in a ball but outside of the mask, they shouldn't be considered.
+- [x] Decide what to do in case of duplicate in the seeds (this can be an unwanted behavior if two seeds are close and the resolution of the data is low)
+- [x] Open issue about documentation
+- [x] Add example
+","start issue","[MRG] Nifti spheres masker"
+"issue_closed","430","nilearn","nilearn","lesteve","2015-06-08 12:50:02","","closed issue","[MRG] Nifti spheres masker"
+"pull_request_title","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 17:59:01","Addresses #353.
+
+What is left to do:
+- [x] Improve code coverage if possible
+- [x] Decide what to do if seed is outside of fov (ATM, it will select the closest voxel, meaning one valid voxel on the edge). Suggested behavior: if the seed is too far from the edge, raise an error.
+- [x] Edit: add mask handling. If some voxels are in a ball but outside of the mask, they shouldn't be considered.
+- [x] Decide what to do in case of duplicate in the seeds (this can be an unwanted behavior if two seeds are close and the resolution of the data is low)
+- [x] Open issue about documentation
+- [x] Add example
+","3114db43146906d7c09df5c98b8a1b212ff9866d","[MRG] Nifti spheres masker"
+"pull_request_merged","430","nilearn","nilearn","lesteve","2015-06-08 12:50:02","[MRG] Nifti spheres masker","c5192cce95b5c43ba45d2479e38d59c30ac00bea","Pull request merge from AlexandreAbraham/nilearn:nifti_spheres_masker to nilearn/nilearn:master"
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-25 20:10:20","I just started to try and work with this, and I found it has a very limited function.  It would be much more useful to me (and perhaps others?) if the masker accepted a transformation function.  You extract the voxels within the sphere and you pass them to me; I have a function to create a value from it.
+
+Is it something to consider here, in #353, or to open a new issue about?
+Edit: Here's my code for having a generic `xfer_fn`: https://github.com/bcipolli/nilearn/commit/d085fcd934a48bc65ffb2557c388c0788ecb1e58
+
+Edit: Turns out, the algorithm is fixed to loop over seeds (vs. image slices).  I actually want the latter.  Since this is a bigger generalization of the idea, I'll open up a new issue for this to discuss.
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-25 21:50:33","How about an `inverse_transform` method, that outputs the vector values at each seed location?  At the very least it's good for visualization.
+
+Edit: this would require a `seeds_img`.  Allowing input of a `seeds_img` instead of `seeds` in the constructor would be a nice feature as well.
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-26 00:17:37","Since I needed both of these suggestions today, I did my best to do them myself.
+- Allow a user-defined transform function: https://github.com/bcipolli/nilearn/commit/deea263ad72419dc407339b3aa2ccf2e508c5ef3
+- Allow seed specification via a mask image, and implement `inverse_transform`: https://github.com/bcipolli/nilearn/commit/9f17287f48db575400cd339adcde78cf6a6e8bb8
+
+I didn't add tests for either, as I'm in a rush and not sure if y'all will like the above.  Either way, here's a sample script (yes, I know it does some things unnecessarily.. it's my base script for playing :) ):
+
+``` python
+import matplotlib.pyplot as plt
+
+import nibabel
+
+from nilearn import datasets
+from nilearn.input_data import NiftiSpheresMasker
+from nilearn.plotting import plot_stat_map, plot_roi
+from nilearn.image import index_img
+
+# Defs
+subj_idx = 0
+cut_coords = (28, -34, -22)
+
+# Get data
+print(""Loading data..."")
+haxby_dataset = datasets.fetch_haxby(n_subjects=subj_idx + 1)
+func_img = index_img(nibabel.load(haxby_dataset.func[subj_idx]),
+                     range(100))  # remove most slices for speed
+mask_img = nibabel.load(haxby_dataset.mask_vt[subj_idx])
+
+
+def my_xform(sphere_data):
+    return sphere_data.mean(axis=0)
+
+# Create mask
+print(""Fit the SphereMasker..."")
+sphere_masker = NiftiSpheresMasker(seeds=mask_img, radius=5,
+                                   xform_fn=my_xform,
+                                   mask_img=mask_img,
+                                   memory=None, memory_level=10,
+                                   verbose=10)
+sphere_masker.fit()
+plot_roi(sphere_masker.seeds_img_, title='seed img', cut_coords=cut_coords)
+plot_roi(sphere_masker.mask_img_, title='mask img', cut_coords=cut_coords)
+
+# Compute the mean image.
+print(""Transforming the image..."")
+vecs = sphere_masker.transform(func_img)
+mean_img = sphere_masker.inverse_transform(vecs)
+plot_stat_map(index_img(mean_img, 0), cut_coords=cut_coords)
+
+plt.show()
+```
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 01:21:41","The initial implementation contained `mask_img` but I removed it after discussions.
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-26 03:36:44","@AlexandreAbraham OK, well, you have my vote for it being essential. :)
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 10:21:41","> @AlexandreAbraham OK, well, you have my vote for it being essential. :)
+
+Do you have a usecase? We removed it precisely because we couldn't find anybody using a seed mask and there is no available atlas available online to my knowledge.
+
+> Allow a user-defined transform function: bcipolli@deea263
+
+What function do you want to use apart from `mean`? We don't offer that choice either in NiftiLabelsMasker. We could add it but I want to check that it's not YAGNI.
+
+> How about an inverse_transform method, that outputs the vector values at each seed location? At the very least it's good for visualization.
+> Edit: this would require a seeds_img. Allowing input of a seeds_img instead of seeds in the constructor would be a nice feature as well.
+
+An `inverse_transform` would rise a lot of other problems, like the shape to use. Plus, I don't see why anybody would want to visualize that. We definitely need visualization for seed based experiences but correlation matrix plot is much more fit than brains in that specific case.
+","",""
+"issue_comment","430","nilearn","nilearn","eickenberg","2015-02-26 10:35:56","> What function do you want to use apart from mean?
+
+I have seen `mean`, `std`, `min` and `max` used. Cannot judge on whether that is advisable or not.
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 11:51:44","I suggest that we focus on simple behavior for the moment. Since this question is common to spheres and labels masker, we can open an issue about that and discuss it. How does it sound?
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-26 15:26:02","> > @AlexandreAbraham OK, well, you have my vote for it being essential. :)
+> > Do you have a usecase? We removed it precisely because we couldn't find anybody using a seed mask and there is no available atlas available online to my knowledge.
+
+For my analysis, I have a mask of ventral-temporal (VT) cortex.  For each voxel in that mask, I want a ball of nearby voxels.  I will use them to compute something (right now, a similarity matrix... but could be mean, std, etc.) that I then store as the value at that voxel position. I need to do that for every voxel in that VT mask.
+
+> > Allow a user-defined transform function: bcipolli@deea263
+> > What function do you want to use apart from mean? We don't offer that choice either in NiftiLabelsMasker. We could add it but I want to check that it's not YAGNI.
+
+It is very powerful to have a vector of voxels for each slice simultaneously.  Again, this is exactly what I need for RSA, but if you have a callback function, you can do whatever you want (using global variables).  It's very powerful.
+
+> > How about an inverse_transform method, that outputs the vector values at each seed location? At the very least it's good for visualization.
+> > An inverse_transform would rise a lot of other problems, like the shape to use. Plus, I don't see why anybody would want to visualize that. We definitely need visualization for seed based experiences but correlation matrix plot is much more fit than brains in that specific case.
+
+My seeds are very dense.  I want to visualize the values coming out in brain space. 
+
+As far as the input, I also don't want to have to specify seed locations in template space, but rather through voxel indices.  Otherwise, I'll have to do the `np.tensordot` logic myself, and that is not simple at all.
+
+> I suggest that we focus on simple behavior for the moment. Since this question is common to spheres and labels masker, we can open an issue about that and discuss it. How does it sound?
+
+I'm absolutely all for that, in all of these cases. :)  I think there are two things to discuss (allow specification of an `xform_fn`, allow specifying a `seed_img` as input / inverse_transform on output), would be glad to open two issues.  
+
+Note that in my RSA project, I'm already using both of the above.  For me, it's just a question of whether it's potentially useful to others, to in `nilearn`.
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 15:39:19","> For my analysis [...]
+
+Sounds like your usage corresponds more to SearchLight than NiftiSpheresMasker. Both are very close and I was thinking of sharing some code between the two. Could you take a look at SearchLight and tell me if you can achieve what you want by changing the estimator?
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-26 17:20:28","> Sounds like your usage corresponds more to SearchLight than NiftiSpheresMasker. Both are very close and I was thinking of sharing some code between the two. Could you take a look at SearchLight and tell me if you can achieve what you want by changing the estimator?
+
+I'm not sure, I'm having a tough time understanding the code well, or how to use the more complex features.  I don't want to stop things here at all, so let's discuss in a new issue (and when I'm not on a deadline, like today :) )
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-28 18:42:00","After using this class for a poster I just presented (on RSA searchlight) and then reviewing the documentation, I wonder if this class isn't better implemented as a `Transformer` built on top of a more generalized `Masker`?
+
+From my understanding, a masker is for selecting subsets of voxels.
+http://nilearn.github.io/building_blocks/pipeline_introduction.html#masking
+I believe this fits how all the current maskers work.
+
+Transformers are about filtering and/or modifying the data:
+http://scikit-learn.org/stable/developers/#apis-of-scikit-learn-objects
+
+I would expect a `NiftiSpheresMasker` to mask the data without transforming it, while a `NiftiSpheresTransformer` to mask the data, then transform it.
+
+Generalizing the `NiftiSpheresMasker` could form the basis of the searchlight procedure, the `NiftiSpheresTransformer`, and could easily be the basis of my RSA searchlight code (which is different from the classification-focused searchlight code).
+
+Alternately, keeping this class as implemented, but changing the name to `NiftiSpheresTransformer`, would match the existing `nilearn` and `scikit-learn` object model schema better (and make future refactoring, if needed, avoid renaming objects).
+","",""
+"issue_comment","430","nilearn","nilearn","GaelVaroquaux","2015-02-28 18:48:48","From a user perspectice, the 99% usecases of this class are going to be
+extracting signals for an ROI analysis. I can see that from a coding
+perspective there is a very interesting link to RSA. However, it is
+important to have a very simple story to tell to the user on what this
+class is doing and what it is for, so I fear that making it more general,
+or changing its name is dangerous.
+
+That said, I agree that there could be value, in a later PR, to extract
+part of the logic of this class in a set of reusable functions, that
+could be later combined in a different class, eg for RSA, relying on
+similar operations. From a software design principle, the idea would be
+that the high-level classes exposed to the user are different, to give a
+simple picture of the package to the user, but they share some underlying
+code. That's one of the strong values of externalizing the core
+numerical functionality in functions rather than classes.
+
+What do you think?
+","",""
+"issue_comment","430","nilearn","nilearn","banilo","2015-02-28 18:54:59","Agreed.
+
+> Generalizing the NiftiSpheresMasker could form the basis of the searchlight procedure, the NiftiSpheresTransformer, and could easily be the basis of my RSA searchlight code (which is different from the classification-focused searchlight code).
+
+In general, once the NiftiSpheresMasker is merged, one could simply derive new, more targeted classes from it.
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-28 19:02:39","> I can see that from a coding perspective there is a very interesting link to RSA. However, it is
+> important to have a very simple story to tell to the user on what this class is doing and what it is for, so I fear that making it more general, or changing its name is dangerous.
+
+I should probably have separated it into two parts.  One is that I think calling this a `Masker` is confusing for users; it doesn't fit with the other maskers (it transforms data, not just extracting it).   The other is about how to go about doing the abstractions.
+
+> In general, once the NiftiSpheresMasker is merged, one could simply derive new, more targeted classes from it.
+
+I agree, but I think it's really a `Transformer`, not a `Masker`.  I think it's best to get names right first, so good to discuss before merging.  So to repeat: I think making it a pure masker, or calling it something else (my suggestion was `NiftiSpheresTransformer`) would fit the schema of what masks are, what transforms are, and therefore much clearer for users.
+","",""
+"issue_comment","430","nilearn","nilearn","GaelVaroquaux","2015-02-28 19:09:32","> I agree, but I think it's really a Transformer, not a Masker.
+
+All maskers are transformers (I feel that this sentence feel like it has
+a deep meaning and should be said with the voice of Mr Spock :} ).
+
+> I think it's best to get names right first, so good to discuss before
+> merging.
+
+OK. But I do claim that this object belong to the same family of concepts
+as our other ""masker"" objects, it is very close to the NiftiLabelsMasker
+of the NiftiMapsMasker.
+
+Maybe all the ""Masker"" objects should be renamed to ""Loader"" objects.
+That said, I don't see something horribly wrong with using the names
+""masker"" for what we doing with them. But I admit that I can be convinced
+otherwise.
+","",""
+"issue_comment","430","nilearn","nilearn","eickenberg","2015-02-28 19:17:57","On Sat, Feb 28, 2015 at 8:09 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > I agree, but I think it's really a Transformer, not a Masker.
+> 
+> All maskers are transformers (I feel that this sentence feel like it has
+> a deep meaning and should be said with the voice of Mr Spock :} ).
+
++1
+
+> > I think it's best to get names right first, so good to discuss before
+> > merging.
+> 
+> OK. But I do claim that this object belong to the same family of concepts
+> as our other ""masker"" objects, it is very close to the NiftiLabelsMasker
+> of the NiftiMapsMasker.
+> 
+> +1
+> 
+> Maybe all the ""Masker"" objects should be renamed to ""Loader"" objects.
+
+-1
+
+> That said, I don't see something horribly wrong with using the names
+> ""masker"" for what we doing with them. But I admit that I can be convinced
+> otherwise.
+> 
+> I understand Ben's distinction in that a masker is perceived to extract,
+> but not change, data and that a transformer necessarily applies some
+> non-trivial change to the data.
+
+The name ""Transformer"" comes from the nomenclature of scikit-learn, by
+which any object is one if it exposes the method ""transform"" and thus can
+be used as a pipeline step. Evidently such an informatics concept may not
+overlap 1000% with the intuitions of users, but: a) The maskers DO change
+the data, e.g. by detrending/standardizing and b) you can see them as the
+beginning of a pipeline even if the way it acts upon data is not always
+compatible with the checks performed in the scikit-learn pipeline object.
+
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/430#issuecomment-76540627.
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-02-28 19:25:30","I think I'm understanding this better, thanks for the feedback.  I think my intuitions come from the naming and documentation of `NiftiMasker`, which does more extraction/filtering than recombination.  I expected similar things from other maskers, as the naming is so similar (`NiftiXXMasker`) and the documentation from `NiftiMasker` implied to me that it represents all `Masker` objects.
+http://nilearn.github.io/building_blocks/pipeline_introduction.html#masking
+
+I will open an issue for discussion of those ideas (suggesting tweaking the docs, asking about the naming) as they're separate from my question related to this PR (whether this is best called `NiftiSpheresTransformer`).  
+
+Thanks again! 
+","",""
+"issue_comment","430","nilearn","nilearn","GaelVaroquaux","2015-02-28 19:41:07","> the documentation from NiftiMasker implied to me that it represents all
+> Masker objects.
+> http://nilearn.github.io/building_blocks/pipeline_introduction.html#masking
+
+Yes, the documentation is crap. I am working on a massive rewrite in the
+branch
+https://github.com/GaelVaroquaux/nilearn/tree/doc_rework
+
+The corresponding issue is https://github.com/nilearn/nilearn/issues/428
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-03-01 10:07:41","We all agree that there is a common logic behind Nifti{Labels,Maps,Speheres}Masker, and Searchlight. So, I have a proposition. What if I finish up the work on this one as-is and merge it. Then, we refactor the code to use a ""magic"" iterator behind the scenes, for all these classes. Something like:
+`_mask_iter_img(niimgs, iter_element, mask_img=none)`
+where `iter_element` is to be defined (I have ideas, but I don't want to explain all of this here as I'm not yet sure it will be feasible).
+
+After that, advanced users like @bcipolli could directly import the iterator for their advanced code. This would factorize the code inside and the masker, and provide a useful object for methods people. However, this magic iterator being private, we don't guarantee any backward compatibility, which should not be a problem as it will only be used by advanced people (well, only by Ben and maybe Mehdi in our team I think ;)). An inspiration could be `numpy.nditer`.
+
+Does that sound reasonable?
+","",""
+"issue_comment","430","nilearn","nilearn","eickenberg","2015-03-01 10:24:23","definitely advancing here
+
++1 for finishing this up.
+
+Looking forward to a proposal for `_mask_iter_img` by advanced persons for advanced persons. Not sure if it is a good idea if it has to be kept private due to conceptual fragility, though.
+","",""
+"issue_comment","430","nilearn","nilearn","GaelVaroquaux","2015-03-01 10:52:52","> Then, we refactor the code to use a ""magic""
+> iterator behind the scenes,
+
+""magic"" in software is never a good thing :)
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-03-01 15:16:02","+1 for merging and discussing further as well.  My concerns have been addressed, and I'll look forward to  hearing your ideas @AlexandreAbraham !
+","",""
+"issue_comment","430","nilearn","nilearn","bthirion","2015-03-01 20:36:20","LGTM otherwise
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-03-12 08:50:14","Sidenote: doc must be updated but I will do that after @GaelVaroquaux's #483 has been merged.
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 09:05:07","Tests are passing on my box but not on Travis :(.
+Can anybody reproduce?
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 09:20:23","The example is very basic but shows hwo to use the spheres masker.
+","",""
+"issue_comment","430","nilearn","nilearn","banilo","2015-05-13 09:33:53","> Can anybody reproduce?
+
+tests pass on my machine
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:43:16","Figures generated by the example:
+
+[obsolete]
+","",""
+"issue_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:44:55","I don't understand the second figure: the timeseries seem very short to me.
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:03:02","New figures:
+
+[obsolete]
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:15:05","Latest figures:
+
+![dmn_conn](https://cloud.githubusercontent.com/assets/1647301/7610102/722c14b6-f97a-11e4-93fc-567d3ce97135.png)
+![dmn_ts](https://cloud.githubusercontent.com/assets/1647301/7610103/722c85d6-f97a-11e4-8a28-88321341d50d.png)
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-18 08:34:36","Ping @lesteve @GaelVaroquaux. Sorry to push you a little bit but some people are strongly asking for this feature. Do you have some time to review it?
+","",""
+"issue_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-29 12:22:47","@lesteve Could you do a pass on this one?
+","",""
+"issue_comment","430","nilearn","nilearn","bcipolli","2015-06-08 16:02:30","Good work @AlexandreAbraham ! :+1: 
+","",""
+"issue_comment","430","nilearn","nilearn","banilo","2015-06-08 16:03:21","+1 +1 +1
+
+2015-06-08 18:02 GMT+02:00 Ben Cipollini notifications@github.com:
+
+> Good work @AlexandreAbraham https://github.com/AlexandreAbraham ! [image:
+> :+1:]
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/430#issuecomment-110053581.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","430","nilearn","nilearn","eickenberg","2015-02-15 18:19:52","fyi I did some benchmarks and `tensordot` is just fine. Compared to my proposed alternatives it is also readable.
+","",""
+"issue_comment","430","nilearn","nilearn","banilo","2015-02-19 04:34:25","My naive view would be: If the goal is really spheres, and spheres only, then We can restrain ourselves to coordinates as input. Special overlapping or non-overlapping cases can be handled by NiftiMapsMasker and NiftiLabelsMasker.
+
+Sent from my iPhone
+
+> On 19 Feb 2015, at 00:29, Alexandre Abraham notifications@github.com wrote:
+> 
+> Absolutely no problem. I was just trying to consider all the edge cases. I thought of this particular case because depending on the post treatment applied to the data, it may be a problem to have identical features.
+> 
+> —
+> Reply to this email directly or view it on GitHub.
+","",""
+"pull_request_commit_comment","430","nilearn","nilearn","eickenberg","2015-02-15 18:14:27","Maybe: the seeds are taken to be the locations indicated by all voxels with non-zero values
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","eickenberg","2015-02-15 18:14:36","for
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","eickenberg","2015-02-15 18:15:22","set to 0
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","eickenberg","2015-02-15 18:15:48",".
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 18:27:52","I like it!
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 18:29:02","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 18:31:10","This part was taken from the doc NiftiLabelsMasker. We should propagate the fix to other classes (I won't do it here given that a modification is pending in PR #426).
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","eickenberg","2015-02-15 18:32:45","Don't worry - ``put'' is  not wrong, my comment is purely cosmetic
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 20:43:00","Might not strike as a crisp description. Perhaps ""Mask nifti images by spherical volumes for seed-region analyses""
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(2, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 20:52:09","Rather throw NotImplemented exception?
+
+Regarding the message: would it not be a seed's time series data, the user would, if existing, pass o to inverse_transform()? -> If yes, ""Inverse transformation does not make sense for seed-derived data.""?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 20:52:37","""images"" -> ""Nifti-like objects""
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 21:17:10","From experience with coordinate-based meta-analysis: many people appear to get confused about when TAL versus MNI coordinates make a difference. Perhaps include something related here.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 21:44:34","Same as
+
+``` python
+mask = np.zeros((3, 3, 3), dtype=np.bool)
+mask[1, :, 1] = True
+```
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/tests/test_nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 21:49:33","The nature of the seed nifti is not verified (many zero, and a few non-zero indicator voxels).
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 21:52:25","Nift1Image.get_data() automatically makes sure that time dimension comes last. Not sure the related part in the imgs-explanation is necessary.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(220, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 22:05:31","in ""voxel space""
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 22:07:41","Why do we actually not have an `is_niimg` function?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:18:28","Actually, I was waiting for your PR to be finalized and merged to have a common description across all maskers ;).
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(2, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:19:29","Because finding out if an object is a niimg is the same as loading it.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-15 22:20:04","Good to mention that, I was wondering about the optimal order of masker-related merges.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:20:40","fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:22:26","It seems obvious to me that the given coordinates must ""live"" in the same space as the images. What do you suggest?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-02-15 22:30:00","Is there a strong usecase for that type of input? I am a bit bit weary of functions that are very polymorphous in their inputs. They can make errors hard to track.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:31:16","No. Do you think that using `masking._load_mask_img` is enough or should we specifically count the number of seeds and raise an error if there are too many?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-02-15 22:31:22","I'd rather have the method simply not present. That way it is possible to test if an object implements inverse_transform or not using hasattr.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:33:43","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:34:54","This part comes from NiftiLabelsMasker.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(220, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 22:35:47","Yes, I prefer Gael's option, I didn't think of `hasattr`.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 23:06:59","There is not and I will remove it. In fact, by writing the tests, I realized that there is no simple way to specify the order in which the voxels must be loaded. I think that it's better to rely on coordinates.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-17 21:26:17","I wanted to keep explicit matrices to be clearer but maybe I was wrong.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/tests/test_nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-02-25 15:36:48","points at end of explanation missing here and in some subsequent arguments.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","bcipolli","2015-02-25 23:03:28","`coords` is 4d; worth mentioning that fact, and the 4th (constant) dimension here?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","bcipolli","2015-02-26 03:39:07","This looks highly parallelizable; perhaps create a nested function of the code in this loop and parallelize it?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 06:49:19","This is indeed but it would require more memory. For maskers, I prefer to lower memory consumption as much as possible since this usually is the bottleneck here. Also people usually mask once and then use cached data so the time overhead only happens once.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 10:22:58","I don't get your remark. Can you elaborate?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 10:23:30","This has been copied from NiftiLabelsMasker, we should open another issue about that and fix it afterward.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","bcipolli","2015-02-26 15:28:47","The comment `Create an array of shape (3, array.shape)` is above the definition of `coords`.  `Coords` actually has a 4th row of all ones, so the comment isn't strictly true.  I thought it might be worth mentioning that 4th (constant) row in the comment.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-02-26 15:40:37","OK. My comment describes the two lines below, not the first one, but I'll make it clearer ;).
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","bthirion","2015-03-01 20:32:22","Shouldn't this be elsewhere ?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-03-01 20:36:34","> Shouldn't this be elsewhere ?
+
+We have moved compose_err_msg() to _utils/logger.py. This probably happened in parallel to this PR.
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/_utils/logger.py#L76
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-03-01 20:37:02","Indeed, this code was replicated in NiftiLabelsMasker and NiftiMapsMasker. @banilo moved it in the utils. I will fix that when I'll rebase.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-03-13 15:22:41","typo in ""store"" it appears
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-03-13 15:32:22","Suggestions: ""List of coordinate triplets...""
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(90, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-03-13 15:33:58","2 inconsistencies in this docstring
+a) point at the end of variable type
+b) point at the end of variable description
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 09:35:47","As you are delaying the imports to where they are relevant (which I think is great), I think that you could move these two down to the plotting part.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 09:36:00","Comment not valid.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 09:37:21","Sorry: my remark is incomprehensible.
+
+I think that, to make the example simple, we should not use a group sparse covariance, by something simpler: GraphLasso maybe.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 09:39:03","Those two lines above are not needed (which will lead to removing more lines further above).
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 09:40:15","Tell use (in a comment) what these coordinates mean.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 10:46:02","Honestly, I just copied an existing example and modified it to ake it simpler and use the spheres masker.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 10:47:43","> Honestly, I just copied an existing example and modified it to ake it simpler
+> and use the spheres masker.
+
+I noticed :). And I thought that it could be more focused/simplified.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:45:42","Title is wrong. On top of this, I wouldn't mention ADHD in the title. I would focus on the fact that this is about extracting time series on a set of spheres.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:46:43","Can't you make the example simpler by not specifying colors and letting matplotlib choose some?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:47:45","You're probably missing a transpose on the 'time_series'.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:48:23","I think that I would prefer to have a 'fit_transform' a bit further down. This fit looks stranger.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:49:31","Does the connectome look any different without the high variance confounds?
+
+I would rather not put it, and point people to the corresponding part of the docs on extracting time series for connectome in the documentation.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:50:19","This print is wrong.
+
+On top of this, I am not sure that we need it at all.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:50:54","I don't think that we need this print.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 11:51:18","I would move this guy at the bottom, next to the 'show'
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:53:32","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:55:54","Moved as down as possible.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:56:52","I don't know why but verbose is activated for maskers in all examples. If we don't put this print, the user will see weird caching prints after a ""fetching dataset"" message, which may seem weird to him.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:57:15","If I don't specify colors, I can't put the same colors in the time-series plot and in the connectome.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:58:09","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:59:05","They are the same. Removing.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:59:21","Yes, I fixed that after uploading the figures ;).
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:59:57","Removed all prints.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 12:00:39","> I don't know why but verbose is activated for maskers in all examples.
+
+Let's change that for this example. It makes sense for examples with many
+subjects, but with only one subject it does not make sense.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 12:01:29","> If I don't specify colors, I can't put the same colors in the time-series plot
+> and in the connectome.
+
+Which you are already not doing, I believe. Anyhow, I wouldn't bother: we
+want a very simple example showing how to use the sphere masker, not much
+more.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 12:05:49","Before telling us this, tell us that it extract signals on sphere specified by there position in MNI space. That's the goal of the example in terms of learning experience.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 12:06:19","You don't need memory anymore. You can just give a path to the masker.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 12:06:38","Do you still need image?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-13 12:08:56","If we low pass a bit, what does the connectome look like? I find that the link between the PCC and the ACC is weak.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:10:09","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:10:16","Removed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:10:52","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:13:19","Looks much better. I also replaced precision matrix by covariance since it makes more sense in that example.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","salma1601","2015-05-19 11:42:54","a bit of repetition here, may be you don't need to specify you are focusing on the DMN
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(7, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","salma1601","2015-05-19 11:43:57","a comment on what you are doing would be nice
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","salma1601","2015-05-19 11:45:44","Some people don't know what are precision matrices nor LedoitWolf estimator. Why not use np.corrcoef ?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","salma1601","2015-05-19 11:48:52","rather timestep or TR or volumes
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","bthirion","2015-05-20 19:54:37","Isn't there any more readable way to perform nearest neighbor assignment (maybe not, I'm just asking) ?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","bthirion","2015-05-20 19:57:03","Make clear that ""prior knowledge"" here refers to MNI (?) coordinates.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(86, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:17:15","Well, redundancy is on purpose and I don't understand why we shouldn't say what we are doing in the example. Can we have another opinion?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(7, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:20:09","I was asked to remove them...
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:21:22","Because covariance estimators works better. I think it's more important to show people things they don't know, rather than showing simple stuff that gives poor results.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:21:50","Fixed. I put 'TR'.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:22:43","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(2, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:24:01","There is one now. It's a function that allows to compute it without declaring a NearestNeighbors object. But it doesn't exist in previous versions of sklearn so I would have to make switch here, which would be less readable.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:24:54","Oops, edit: it refers to ROIs that were computed elsewhere.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(86, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:29:02","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(90, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:30:13","> a) point at the end of variable type
+
+It's an error, fixed.
+
+> b) point at the end of variable description
+
+There is no clear rule in all nilearn doc.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","bthirion","2015-05-21 06:40:10","Hm, sorry, not TR
+TR is the time it takes to acquire one volume, typically 2s.
+Please use 'scan number' or 'repetition'
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-21 08:18:50","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-05-21 11:46:16","there is only one dataset that is fetched
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-05-21 12:38:19","Should the pooling function be an optional parameter of the NiftiSpheresMasker class?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(76, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-05-21 12:39:34","nice way to comment here in `__init__`
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(149, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-21 12:47:41","Yes! But for further work, for several reasons:
+- people will argue about what aggregation functions should be offered by default, wording, doc, etc...
+- I don't have an example showing the interest of using another aggregation function.
+
+But I definitely want to do a PR in that sense after this one.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(76, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","banilo","2015-05-21 12:54:50","why is there no parameter check before calling clean, similar to smoothing_fwhm?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(252, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-21 13:44:36","Because there are 6 parameters and `clean` is equivalent to `id` if all of them are None.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(252, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-21 19:17:43","That said, the comment is still incorrect :).
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-05-22 07:28:30","Fixed!
+
+On Thu, May 21, 2015 at 9:17 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> In examples/connectivity/plot_adhd_spheres.py
+> https://github.com/nilearn/nilearn/pull/430#discussion_r30837045:
+> 
+> > +]
+> > +
+> > +masker = input_data.NiftiSpheresMasker(
+> > -    dmn_coords, radius=8,
+> > -    detrend=True, standardize=True,
+> > -    low_pass=0.1, high_pass=0.01, t_r=2.5,
+> > -    memory='nilearn_cache', memory_level=1, verbose=2)
+> >   +
+> >   +func_filename = adhd_dataset.func[0]
+> >   +confound_filename = adhd_dataset.confounds[0]
+> >   +
+> >   +time_series = masker.fit_transform(func_filename,
+> > -                             confounds=[confound_filename])
+> >   +
+> >   +
+> >   +# Computing group-sparse precision matrices ###################################
+> 
+> That said, the comment is still incorrect :).
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/430/files#r30837045.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'examples/connectivity/plot_adhd_spheres.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","GaelVaroquaux","2015-05-22 07:59:49","> Should the pooling function be an optional parameter of the NiftiSpheresMasker
+> class?
+
+I don't think so.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(76, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-03 14:01:53","`list(seed)` ?
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-03 14:07:10","Why not:
+
+``` python
+for seed in self.seeds:
+    if len(seed) != 3:
+        raise ValueError('Seeds must be a list of triplets ...')
+```
+
+bonus points if you add the non conforming seed in the error
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-06-03 14:09:47","No.
+
+Seeds[i] is a triplet but mask_coords elements are lists. So, for the `index` function to work, a conversion to list type is needed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-03 14:29:13","Maybe it'd be good to be sure and improve the comment ...
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-06-03 14:40:54","My version is ugly, I admit, but it catches a lot of bad values. Your version implies that `seeds` is iterable for example.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-04 05:12:35",":confused: I was just proposing to replace `seeds[i]` by `seed`
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-04 05:17:52","Any reason this `seeds` check can not be moved to `__init__`, in order to fail as fast as possible?
+
+> My version is ugly, I admit, but it catches a lot of bad values. Your version implies that seeds is iterable for example.
+
+Then just check isinstance(self._seeds, collections.Iterable) or something equivalent.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-06-04 07:29:27","My bad, you're totally right ! I misread your comment.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-06-04 07:34:12","> Any reason this seeds check can not be moved to **init**, in order to fail as fast as possible?
+
+Apart from the fact that we don't do any check in init, there is not. In all other functions, checks are always done in the fit.
+
+> Then just check isinstance(self._seeds, collections.Iterable) or something equivalent.
+
+So you don't like my lazy solutions :(
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-06-04 08:02:56","Fixed.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-08 09:41:33","You could have the switching logic in _utils/fixes. That wouldn't impair readability and make it easier to remove when the minimum scikit-learn version is bumped up enough.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-08 09:41:52","Still a valid comment.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-06-08 11:48:58","Sorry I missed this one. Improved.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit_comment","430","nilearn","nilearn","AlexandreAbraham","2015-06-08 11:56:18","I was mistaken. There is a function available outside of the object but it is less optimized as it computes the whole distance matrix, not just for the seeds.
+","3114db43146906d7c09df5c98b8a1b212ff9866d","(None, '', u'nilearn/input_data/nifti_spheres_masker.py')"
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 15:18:39","Add the NiftiSeedsMasker.","75c67bdd56d2f254fac9d61a1dc03ad5ea3ac426",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 15:18:39","Add the NiftiSeedsMasker.","c14428e2351ef1838e7eb58f3faf6f3eb391518a",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 16:35:59","Add test file. Minor fixes.","6ecfe53d12d3f577412336f219e6059fddc10b8b",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 16:35:59","Add test file. Minor fixes.","3913c622d9509af83c87d98efdfbb2d857eeacf3",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 17:19:42","Add tests. Minor fixes.","4fa7330b2c5c0c267e7182784e18498767cbe24d",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 17:50:08","Add test. Minor fixes.","b13f7a9c928fdbb6fe433ffd0714a106235b53fb",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 18:42:41","Address Michael's comments.","424bab2f31904abd2e3450f43f8bcfb97b05633d",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 23:01:57","Address banilo and Gael's comments.","c834d7b92116fe5dad3fc12cc949a31113cc5f14",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 23:13:26","Do not take nifti as seeds anymore.","6f4141589af793f029c195b6436445300a2ee061",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-17 21:18:44","Add mask handling","6710ad4074cfc8db5a668da2f0c3365aece9f8f0",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-17 21:35:18","Add test with mask_img","4b50eb041ce3a84e9ffdc37232a99f91133dbd2c",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-17 22:35:26","Add more test for mask_img in nifti_spheres_masker.","d61db54392b0fe65333142268c3e2db3757324f7",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-03-06 00:29:50","Remove obsolete code","4cca55393df6a75178da56a690c2092520010d97",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-03-07 10:05:10","Add a warning if spheres are overlapping","9d21f34b5768d4d0fa380f9ba0bfca7f8c042fbc",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-04-22 12:47:39","Start migrating to Searchlight sphere iterator","83c8ae3ff46bd15e2fadade1be96ef0f7eb1dff7",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 07:53:18","Select faster iterator","6fe2463410e7f01ee61173a2665524c6cea8a480",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 08:49:11","Fix bug in sphere iterator.","71e08b446e989b2f0b9f2c0cc6a0327e1826eba7",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 09:32:12","Fix minor bug","2af73aa967b93dcad2063600634bcae45794f0e1",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 15:18:39","Add the NiftiSeedsMasker.","e4ca4e9f3f3ee1c8586f7aab079dfb9abe224ad9",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 15:18:39","Add the NiftiSeedsMasker.","53df02fe33ec8ab63fcaeab5d4681b64d575a14f",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 16:35:59","Add test file. Minor fixes.","5bbc59dcbab7aac152224ff710ec3fa22bd2ea27",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 17:19:42","Add tests. Minor fixes.","8ec3d7669130e4aabb845d0d57e806f843a12422",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 17:50:08","Add test. Minor fixes.","1cdcd29662be9747929cc30c723cfddd7b3162d1",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 18:42:41","Address Michael's comments.","5f334bf91f9396ab88e6cd28b03e14f87365ffdd",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 23:01:57","Address banilo and Gael's comments.","433f7ed94bcc5ed8ee2502f1812dce96dbbf69cb",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 23:13:26","Do not take nifti as seeds anymore.","93379a302b78cfffde01057a89b2c2e357f09d96",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-17 21:18:44","Add mask handling","baf68c13f63c0743174df15241f8b60526b5dade",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-17 21:35:18","Add test with mask_img","958eeaaa462b1c7f8f98dea8ba2cec5cf6ab32d8",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-17 22:35:26","Add more test for mask_img in nifti_spheres_masker.","9fd91029445d9a10c92da0c53a31bdf38ffcde89",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-02-15 16:35:59","Add test file. Minor fixes.","946495cfc00b83d4e59f56e7fad320291794ab8b",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-03-06 00:29:50","Remove obsolete code","379da8383a21672c4f78e3918f70204442de04e1",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-03-07 10:05:10","Add a warning if spheres are overlapping","a5892851bc9855a99cbfe13d0c82df7df026a1ee",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-04-22 12:47:39","Start migrating to Searchlight sphere iterator","22fdfdf421de1898a0651a4bfce04a138b07161b",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 07:53:18","Select faster iterator","d145bd4b2f1a1555b7d58acaccf448d7144ea1e2",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 08:49:11","Fix bug in sphere iterator.","ddcc6a92e07ae55f30745db60313d46e4aed5909",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 09:32:12","Fix minor bug","4bd65b8a6a8fb1aca6e7538c65bcbf93d5246348",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-07 12:01:22","Fix P3 compat","da9a7f12eb47ea066fe58d5e156c6d1e89c12fc2",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 09:15:48","Add example","a4d856cda3ef0ed76fc1231eeaad7b37eda2d95a",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:39:12","Simplify example","3c73d54c600b8722bf15a4771fdaba940c06d2e1",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:53:23","Fix bug in example","64a8f0062cbb1b1b4d2d1b046ca6ced4b222884c",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:55:40","More fixes in example","713c1696532959cec55ff83e3c018fae5167a597",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 11:58:13","Fit_transform","9cdf84d0c15e8fdc0d833d307324449d663090dc",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:00:13","Cosmit on example","ff22d5819e288e872704b01959720306a9be4ccb",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:09:35","FIx example description","f2a4c9496a34a17cc6c002c212607c0a41ba6bb3",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-13 12:12:48","Added low pass filter","e75633db1076394ec1048ca7eb5419ccad4427ad",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:25:56","Address examples comments","09963cc318978344bd57c425afb24f3be9d52955",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-20 21:31:13","Address code comments","7813339ceccfaec042efdef65258c0ba79960cc0",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-21 08:18:20","Replace TR by scan number","66bbed165d8f8c633dc437b90045627c776ea5cf",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-21 11:52:36","Address comments","dabb597150caf462b00fecc8495d4940252565df",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-05-22 07:26:26","Fix comment","728d5e8742953018a781c3f7a4b52fc58de33876",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-06-04 07:31:33","Merge branch 'nifti_spheres_masker' of https://github.com/AlexandreAbraham/nilearn into nifti_spheres_masker
+
+Conflicts:
+	nilearn/input_data/nifti_spheres_masker.py","544a2926bcc36e46aa9b0513ecc2cc501b1d1036",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-06-04 07:51:07","Better error handling","1671ea3164bbee2121971602c79d4c64251f4358",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-06-08 09:51:32","Enhance comment","baaadae478c2cbac5320511d1d73062e7969639f",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-06-08 12:03:15","Merge branch 'nifti_spheres_masker' of https://github.com/AlexandreAbraham/tutorial into nifti_spheres_masker","08aee7ff3c70ebbd37247b05ea3b468444fc8d7c",""
+"pull_request_commit","430","nilearn","nilearn","AlexandreAbraham","2015-06-08 12:27:53","Address comments","3114db43146906d7c09df5c98b8a1b212ff9866d",""
+"pull_request_commit_comment","430","nilearn","nilearn","lesteve","2015-06-08 12:10:52","Sorry to be a pain but you might as well use the link to the issue for more context:
+https://github.com/scikit-learn/scikit-learn/issues/4072.
+`https://github.com/scikit-learn/scikit-learn/issues/4072` is the full URL (can't figure out how to prevent github to shorten the URL)
+","baaadae478c2cbac5320511d1d73062e7969639f","(25, 45, u'nilearn/input_data/nifti_spheres_masker.py')"

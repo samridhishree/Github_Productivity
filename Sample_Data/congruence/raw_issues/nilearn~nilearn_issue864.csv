@@ -1,0 +1,88 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","864","nilearn","nilearn","lesteve","2015-12-01 10:31:39","Add this as a separate entry in the Travis build matrix. For now this
+entry is marked as ""allowed_failures"".
+- add flake8_diff.sh that finds the common ancestor between the branch
+  and upstream/master (or origin/master) and flake8 the diff with respect
+  to this common ancestor
+- general .travis.yml refactor to follow more closely the Travis-CI docs.
+- move each build step into its own script
+- additional SKIP_TESTS environment variable to be able to skip the
+  tests. This is useful when you only want to do the flake8 --diff part
+- Ignore 'module level import not at top of file' in setup.cfg, because
+  we have plenty of those in our examples.
+","start issue","[MRG] Flake8 diff in pull requests"
+"issue_closed","864","nilearn","nilearn","lesteve","2016-01-11 09:46:02","","closed issue","[MRG] Flake8 diff in pull requests"
+"pull_request_title","864","nilearn","nilearn","lesteve","2015-12-01 10:31:39","Add this as a separate entry in the Travis build matrix. For now this
+entry is marked as ""allowed_failures"".
+- add flake8_diff.sh that finds the common ancestor between the branch
+  and upstream/master (or origin/master) and flake8 the diff with respect
+  to this common ancestor
+- general .travis.yml refactor to follow more closely the Travis-CI docs.
+- move each build step into its own script
+- additional SKIP_TESTS environment variable to be able to skip the
+  tests. This is useful when you only want to do the flake8 --diff part
+- Ignore 'module level import not at top of file' in setup.cfg, because
+  we have plenty of those in our examples.
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","[MRG] Flake8 diff in pull requests"
+"pull_request_merged","864","nilearn","nilearn","lesteve","2016-01-11 09:46:02","[MRG] Flake8 diff in pull requests","259685606eea0eff2db7a608031627a18980085e","Pull request merge from lesteve/nilearn:flake8-diff to nilearn/nilearn:master"
+"issue_comment","864","nilearn","nilearn","ogrisel","2016-01-08 14:28:01","LGTM
+","",""
+"issue_comment","864","nilearn","nilearn","GaelVaroquaux","2015-12-02 08:35:06","@ogrisel: can you review this PR? We are somewhat thinking of it as a POC for something that could go in scikit-learn.
+","",""
+"issue_comment","864","nilearn","nilearn","lesteve","2016-01-08 14:12:29","Does someone want to review this one in more details ?
+
+The additional build is allowed to fail in Travis so there won't be any impact on build status and we can refine the flake8 checking after having learned how useful it is.
+","",""
+"issue_comment","864","nilearn","nilearn","lesteve","2015-12-16 15:09:23","> Coverage decreased (-0.8%) to 92.767% 
+
+Interesting glitch in coveralls given that I haven't touched a python file in this PR. Will relaunch to see whether it is just temporary.
+","",""
+"issue_comment","864","nilearn","nilearn","lesteve","2016-01-11 09:46:00","I am going to merge this one and try to monitor the allowed failures in Travis to learn more about how to refine it.
+","",""
+"pull_request_commit_comment","864","nilearn","nilearn","lesteve","2015-12-01 10:34:55","Someone with more git-fu than me may know this. I couldn't figure out a way to get the equivalent on $REMOTE/master without checking a branch locally ...
+The problem comes from the fact that Travis checks out a single branch like this:
+
+```
+git clone --depth=50 --branch=test https://github.com/lesteve/nilearn.git lesteve/nilearn
+```
+
+So even doing `git fetch origin` upstream/master, origin/master is not going to show up in `git branch -r`.
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","(None, '', u'continuous_integration/flake8_diff.sh')"
+"pull_request_commit_comment","864","nilearn","nilearn","ogrisel","2015-12-16 09:43:15","Maybe try: `remotes/upstream/master` instead?
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","(None, '', u'continuous_integration/flake8_diff.sh')"
+"pull_request_commit_comment","864","nilearn","nilearn","ogrisel","2016-01-08 14:23:48","Do you have an idea of this performance impact of a full fetch on a project like nilearn and on a large project like scikit-learn?
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","(8, '', u'continuous_integration/flake8_diff.sh')"
+"pull_request_commit_comment","864","nilearn","nilearn","ogrisel","2016-01-08 14:27:07","Maybe add a comment to explain which error it is and why it needs to be ignored in the context of flake8_diff.
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","(None, '', u'setup.cfg')"
+"pull_request_commit_comment","864","nilearn","nilearn","lesteve","2016-01-08 14:38:48","I haven't tried yet. The thing to bear in mind is that the Travis build that does the flake8 checks doesn't run tests so I would expect the unshallowing not to matter that much in practice. Also note that if you run this script locally the unshallowing won't need to happen (at least in most cases).
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","(8, '', u'continuous_integration/flake8_diff.sh')"
+"pull_request_commit_comment","864","nilearn","nilearn","lesteve","2016-01-08 14:58:13","For completeness here are some very rough timings compared for the time `git clone --depth 50` (which is what Travis does at the time of writing) and `git fetch --unshallow`:
+
+|  | git clone depth 50 | git unshallowing |
+| --- | --- | --- |
+| scikit-learn | 10s | 40s |
+| joblib | 1-2s | 2-3s |
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","(8, '', u'continuous_integration/flake8_diff.sh')"
+"pull_request_commit_comment","864","nilearn","nilearn","ogrisel","2016-01-08 15:00:36","> The thing to bear in mind is that the Travis build that does the flake8 checks doesn't run tests so I would expect the unshallowing not to matter that much in practice.
+
+Alright then!
+","5ff76db267e2b7d25784842fcd1fad9caeddaa1b","(8, '', u'continuous_integration/flake8_diff.sh')"
+"pull_request_commit","864","nilearn","nilearn","lesteve","2015-12-01 10:21:01","TRAVIS: flake8 diff in pull requests
+
+Add this as a separate entry in the Travis build matrix. For now this
+entry is marked as ""allowed_failures"".
+
+* add flake8_diff.sh that finds the common ancestor between the branch
+and upstream/master (or origin/master) and flake8 the diff with respect
+to this common ancestor
+* general .travis.yml refactor to follow more closely the Travis-CI docs.
+* move each build step into its own script
+* additional SKIP_TESTS environment variable to be able to skip the
+  tests. This is useful when you only want to do the flake8 --diff part
+* Ignore 'module level import not at top of file' in setup.cfg, because
+  we have plenty of those in our examples.","aae508cda795d6e2587b6ffc525af9e6c0447152",""
+"pull_request_commit","864","nilearn","nilearn","lesteve","2015-12-16 12:38:12","Make sure that $REMOTE/master exists
+
+rather than fetching $REMOTE/master into local branch.
+Also some improvement on the script output to separate the flake8 output","64719c661c30673e8cda16cab15d24082b75f48b",""
+"pull_request_commit","864","nilearn","nilearn","lesteve","2016-01-08 15:55:26","Add comment about ignored PEP8 error messages in setup.cfg","5ff76db267e2b7d25784842fcd1fad9caeddaa1b",""

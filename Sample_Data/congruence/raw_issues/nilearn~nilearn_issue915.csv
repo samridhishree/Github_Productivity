@@ -1,0 +1,122 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","915","nilearn","nilearn","GaelVaroquaux","2015-12-16 11:58:32","We should add a downloader for the COBRE dataset:
+https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+
+Via @pbellec, who might be able to answer questions about this data.
+","start issue","Downloader for COBRE"
+"issue_closed","915","nilearn","nilearn","AlexandreAbraham","2016-02-17 14:37:07","","closed issue","Downloader for COBRE"
+"issue_comment","915","nilearn","nilearn","AlexandreAbraham","2015-12-18 10:22:42","I think that there is no need to mirror it. However, somebody should dig into the mat files to see if there is any useful information in there.
+","",""
+"issue_comment","915","nilearn","nilearn","AlexandreAbraham","2016-01-23 20:02:41","But the data ils already in nifti... There is no need for conversion.
+","",""
+"issue_comment","915","nilearn","nilearn","AlexandreAbraham","2016-01-25 09:38:49","@pbellec, On the website, I see Nifti and .mat files. Aren't the covariates stored in the .mat? In that case, there is no need for conversion, they are readable in Python.
+
+If you have an hdf5 file, can you share it? I already have scripts to convert them to other formats. Maybe I can help.
+","",""
+"issue_comment","915","nilearn","nilearn","AlexandreAbraham","2016-01-25 13:17:43","Oh, OK! Now I get it.
+","",""
+"issue_comment","915","nilearn","nilearn","AlexandreAbraham","2016-02-11 12:19:36","@GaelVaroquaux Should we make an option to download part of the dataset? This dataset will only be used for analysis so I think that people will tend to download the whole stuff and not single subjects.
+","",""
+"issue_comment","915","nilearn","nilearn","AlexandreAbraham","2016-02-17 14:37:07","Fixed in #989.
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2015-12-17 13:15:46","> This is the one: nilearn/nilearn_sandbox#1
+
+Yup, the link which @GaelVaroquaux provided has direct downloading of data without in need of asking for password. So, may be adapt code to this weblink or may download data and group upload them in nitrc ? @AlexandreAbraham 
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2015-12-18 15:04:01","The mat files contain all the covariates that have been regressed out of the data (motion parameters, mean CSF signal, etc). It also contains a list of time frames that have been removed from the time series by censoring for high motion. This means there are missing time points, which is not a problem for correlation, partial correlation, etc but needs to be taken into account as soon as you model the dynamics. 
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2015-12-18 15:05:52","There is also a csv file with the demographic and clinical variables, as well as a measure of frame displacement (à la power), which is the average FD for all time frames left after censoring. 
+","",""
+"issue_comment","915","nilearn","nilearn","GaelVaroquaux","2015-12-18 19:36:40","> It also contains a list of time frames that have been removed from the
+> time series by censoring for high motion. This means there are missing
+> time points
+
+That's nasty! It means that the data cannot be time-filtered. We
+absolutely need to warn people clearly about this in the description of
+the data, as they will overlook this fact, and apply eg time filtering.
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2015-12-19 01:03:39","I see. These data originate for a publication and have already been filtered smoothed etc (check the README.md file for full details by the way). Thinking about it, for the purpose of integration in nilearn, it may be better to have unsmooth data with minimal denoising applied. I could of course package the motion parameters, FD measures, CSF WM signal etc for people to regress out (or censor) if they want, but not enforce these choices on the user. Do you think this would be more useful? If you guys think it's worth it, I'd just make a separate ""minimally preprocessed"" release. 
+","",""
+"issue_comment","915","nilearn","nilearn","GaelVaroquaux","2015-12-19 10:12:34","> Thinking about it, for the purpose of integration in nilearn, it may be
+> better to have unsmooth data with minimal denoising applied. I could of
+> course package the motion parameters, FD measures, CSF WM signal etc
+> for people to regress out (or censor) if they want, but not enforce
+> these choices on the user.
+
+That would be awesome. We could easily have a switch in the downloader
+that would download one or the other. We could also demonstrate in an
+example how the NiftiMasker can be used to retrieve the full preprocessed
+from the minimally preprocessed.
+","",""
+"issue_comment","915","nilearn","nilearn","banilo","2015-12-19 22:35:13","> by censoring for high motion
+
+Isn't this what they call ""scrubbing""?
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2015-12-20 04:47:48","@GaelVaroquaux Then I'll work on that asap. 
+@banilo you're right, the approach applied here is the (Power et al. Neuroimage 2012) scrubbing method, based on their FD measure. Power et al. (Neuroimage 2014) have investigated the idea of replacing the ""bad"" time points by values extrapolated from the ""good"" time points in the regression, and further started using the term censoring. But in this release the bad time points have simply been eliminated. 
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2016-01-18 15:45:48","@pbellec Is there any source where I could download all datasets ? At the moment, I can download only data together of size https://ndownloader.figshare.com/articles/1160600/versions/15 1GB. Am I missing something here ?
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2016-01-23 09:41:04","Any opinion regarding the format of the data? hdf5 ? 
+question received from @pbellec 
+","",""
+"issue_comment","915","nilearn","nilearn","GaelVaroquaux","2016-01-23 11:06:24","> Any opinion regarding the format of the data? hdf5 ? question received from @pbellec
+
+hdf5 is not an option as it would be bringing in externel dependencies.
+
+We should abide by http://bids.neuroimaging.io/ Which means that we
+should probably be using tab separated files. We can compress them in a
+gz file.
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2016-01-12 03:07:53","Sorry for the delay. Working on it. 
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2016-01-23 20:32:07","@AlexandreAbraham it's for the covariates that come with the images (motion parameters, average WM and CSF signals, global signal, etc). Currently they are stored in a hdf5 file. I am going to try to format them in tsv files, taking inspiration from bids as @GaelVaroquaux suggests, and I'll see how it goes.   
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2016-02-10 09:30:48","OK so this turned out to be [much more work](https://github.com/SIMEXP/niak/issues/122) than I had expected, as it forced me to separate the generation of confounds from their actual regression in the niak preprocessing pipeline. But hopefully this will help make the outputs much more re-usable so it's all good. Here is my proposition. 
+
+There will be a file `<subject>_<session>_<run>_n.nii.gz` per subject. The _n suffix is for ""spatially normalized"", a la SPM. Actual processing steps will include: 
+1.  Slice timing correction.
+2.  Motion estimation (within- and between-run for each label).
+3.  Linear and non-linear spatial normalization of the anatomical image.
+4.  Coregistration of the anatomical volume with the target volume of 
+5.  Concatenation of the T2-to-T1 and T1-to-stereotaxic-nl
+6.  Resampling of the functional data in the stereotaxic space.
+
+No regression of confounds, no smoothing. For each dataset, there will be a file `<subject>_<session>_<run>_confounds.tsv.gz`. It is a compressed file of tabulation-separated-values. See an example [here](https://drive.google.com/file/d/0B3fQhLcXWtDRb084YmczQ1lrRDA/view?usp=sharing). Each column is a confound, and the first row is a label. 
+
+The labels will be explained in a separate json file, called [niak_confounds.json](https://drive.google.com/file/d/0B3fQhLcXWtDRNXpfeThTN3Q2eEE/view?usp=sharing). Note that some labels may be used multiple times: there are several covariates for slow time drift for example. I didn't want to include the frequency in the labels, because I did not want the labels to change from one dataset to the other. 
+
+Hopefully, with that type of preprocessed data it will be easy to try alternative regression paths / smoothing directly from nilearn. Please let me know what you think. 
+
+@chrisfilo I have tried to follow the spirit of BIDS here. Please let me know if you think this could be further improved in that direction. 
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2016-02-11 03:50:50","Not sure how much of a problem this is. Definitely not suitable for a quick tutorial, but this resource opens up possibilities for real data exploration. Would seem reasonable to have an option to download only a portion of the data. Another work-around would be to get time series on, say, 1000 or 3000 brain parcels. @GaelVaroquaux did not seem too keen on this option last time we talked. One last option would be to stick with 4D datasets but go down to a 4 or even 5 mm isotropic resolution. 
+","",""
+"issue_comment","915","nilearn","nilearn","pbellec","2016-02-12 00:52:49","Alright, I'll try downsampling, and upload on zenodo. I'll check how fast is the download. I assume you are fine with the new format. Chris has started a document to formalize a BIDS preproc organization, but this is going to take a while so I'll move on with the current format. Will keep you posted. 
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2016-02-10 14:17:51","So, an impediment here:
+
+I am writing a fetcher for https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600  named as ""fully preprocessed"" and download time seems to be more than 1 hour fetching data from link ""Download all"". 
+
+So, question? Any suggestions how to overcome this ? may be if we want to restrict downloading limited subjects ? Ping @GaelVaroquaux @AlexandreAbraham 
+","",""
+"issue_comment","915","nilearn","nilearn","GaelVaroquaux","2016-02-11 12:24:30","Unlike @pbellec, I disagree that an hour download is not a problem. It's
+a huge one.
+
+However, I think that we should move on. The figshare interface makes it
+hard to write code that does partial downloads. Figshare is also clearly
+bandwidth limited: the download speed is limited on their side. What I
+have in mind is that, in a latter PR, we will create a mirror of the data
+on Nitrc, which has a fast download and makes it easier to organize
+partial downloads.
+","",""
+"issue_comment","915","nilearn","nilearn","banilo","2016-01-12 22:35:44","I am also working with COBRE data...
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2015-12-16 22:19:26","I think there is a PR in nilearn sandbox to get started and can be ported here. I guess.
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2016-01-11 16:32:07","@pbellec Could you let us know if you have released the package suitable for integration in nilearn ? 
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2016-01-23 11:32:22","@GaelVaroquaux Thank you. I will post this opinion to brain hack group.
+","",""
+"issue_comment","915","nilearn","nilearn","KamalakerDadi","2016-01-25 09:45:27","I think the format we are discussing about is for new release with minimal preprocessed version.
+","",""

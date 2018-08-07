@@ -1,0 +1,475 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,277,nilearn,nilearn,banilo,2014-11-11 14:33:26,"tries to address #183
+",start issue,added concat_img() in nilearn.image
+2,issue_closed,277,nilearn,nilearn,lesteve,2015-01-14 09:32:34,,closed issue,added concat_img() in nilearn.image
+3,pull_request_title,277,nilearn,nilearn,banilo,2014-11-11 14:33:26,"tries to address #183
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,added concat_img() in nilearn.image
+4,pull_request_merged,277,nilearn,nilearn,lesteve,2015-01-14 09:32:34,added concat_img() in nilearn.image,13ef131a0440459232f64e7a71021687ab7ae3c2,Pull request merge from banilo/nilearn:new_concat to nilearn/nilearn:master
+5,issue_comment,277,nilearn,nilearn,banilo,2014-11-16 22:46:34,"Thanks for the advice, I tried to remedy accordingly.
+",,
+6,issue_comment,277,nilearn,nilearn,banilo,2014-11-19 08:19:37,"Here's a use case: some time ago, we wanted to run summary analyses on the top of a bunch of previous quantitative meta-analyses published by different laboratories (project related to cognitive primitives). That is, there were niftis in different shapes as well as data in different representations (3D/4D), since everybody simply sent there data in the form they have the habit of processing it at their respective labs.
+
+In this particular case, it would have been nice to rapidly get an overview of all the heterogeneous data by first getting everything into one 4D image in the same space to begin with.
+More generally, I see the gain of concat_img in being able to collect niftis from heterogeneous origins/data processing cultures, including NeuroVault- or OpenfMRI-like sources.
+",,
+7,issue_comment,277,nilearn,nilearn,lesteve,2014-11-19 14:45:45,"OK I just realised now that @banilo took the code of _utils.concat_niimgs with some slight modifications so that most of my comments applied mostly to the former.
+
+Also I do believe we should think of a better way to share code to add this auto_resample functionality.
+",,
+8,issue_comment,277,nilearn,nilearn,banilo,2014-11-22 13:31:45,"So, how about refactoring the code like this:
+
+Take the functionality from the private _utils.concat_niimgs to the public image.concat_img, including the arguments auto_resample (currently image.concat_img) and accept_4d (currently _utils.concat_niimgs). 
+
+This combined public function could then be called in check_niimgs and related functions.
+
+Additionally, the ""_img"" suffix appears to be more prevalent than ""_niimg"" in nilearn, in general.
+",,
+9,issue_comment,277,nilearn,nilearn,lesteve,2014-11-24 08:18:18,"> Take the functionality from the private _utils.concat_niimgs to the public image.concat_img, including the arguments auto_resample (currently image.concat_img) and accept_4d (currently _utils.concat_niimgs).
+> 
+> This combined public function could then be called in check_niimgs and related functions.
+
+I would say this is the wrong way around: _utils should be used by user-facing modules otherwise you'll increase your risk creating circular depencies. Maybe the simplest is to add the functionality to _utils and then just do `from _utils import concat_img` in image.py so that it is exposed to the user.
+
+> Additionally, the ""_img"" suffix appears to be more prevalent than ""_niimg"" in nilearn, in general.
+
+I agree on this one.
+",,
+10,issue_comment,277,nilearn,nilearn,banilo,2014-11-24 08:23:37,"So, I understand...
+1) we just update _utils.concat_niimgs with the new auto_resample option
+2) we rename this function into ""concat_img"" and change all calls in nilearn accordingly?
+",,
+11,issue_comment,277,nilearn,nilearn,lesteve,2014-11-24 08:26:08,"> So, I understand...
+> 1) we just update _utils.concat_niimgs with the new auto_resample option
+> 2) we rename this function into ""concat_img"" and change all calls in nilearn accordingly?
+
+I think so and if we want a user-facing concat_img we just import it in nilearn.image something like:
+`from .._utils import concat_img` this way it will be accessible as `nilearn.image.concat_img`
+",,
+12,issue_comment,277,nilearn,nilearn,banilo,2014-11-24 08:27:31,"Good idea!, ok, I will do this in the afternoon.
+",,
+13,issue_comment,277,nilearn,nilearn,banilo,2014-11-27 08:41:04,"Private function _concat_niimg updated accordingly.
+",,
+14,issue_comment,277,nilearn,nilearn,lesteve,2014-12-17 14:43:22,"@banilo still a merge conflict on this one, have you checked where it is coming from?
+",,
+15,issue_comment,277,nilearn,nilearn,banilo,2014-12-18 13:48:37,"...merge conflicts resolved.
+",,
+16,issue_comment,277,nilearn,nilearn,banilo,2014-12-23 14:09:58,"Last comments integrated.
+
+Pushing of a commit that only restores trailing white spaces does actually not work reliably for me :( This is why I made random changes in the local neighbor hood...
+",,
+17,issue_comment,277,nilearn,nilearn,bthirion,2014-12-23 15:53:31,"Besides the test aspect,  the PR looks good to me.
+",,
+18,issue_comment,277,nilearn,nilearn,lesteve,2015-01-05 15:39:55,"An additional thing is that the promise of this PR is not fulfilled: you have not added concat_img to nilearn.image ...
+
+I think the idea was just to do something along the lines of:
+`from _utils.niimg_conversions import concat_niimg as concat_img`
+in `nilearn/image/__init__.py`. A test using nilearn.image.concat_img would be good.
+",,
+19,issue_comment,277,nilearn,nilearn,AlexandreAbraham,2015-01-07 11:48:08,"Is there a usecase where we want to concat 3D and 4D images ? I would expect to concat only 3D or 4D images, mixing 3D and 4D images should raise an error, or at least a warning.
+",,
+20,issue_comment,277,nilearn,nilearn,banilo,2015-01-07 09:41:59,"All aspects should have been addressed now.
+",,
+21,issue_comment,277,nilearn,nilearn,banilo,2015-01-14 09:06:40,"As @lesteve said, this PR does not relate to the behavior you are talking about. This aspect remains unchanged.
+",,
+22,issue_comment,277,nilearn,nilearn,banilo,2015-01-14 09:34:46,":beer: 
+",,
+23,pull_request_commit_comment,277,nilearn,nilearn,AlexandreAbraham,2014-11-11 22:11:48,"`array_equal` may not be the best function to use with float values.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+24,pull_request_commit_comment,277,nilearn,nilearn,AlexandreAbraham,2014-11-11 22:12:54,"Do you really have a use case where this parameter is useful?
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+25,pull_request_commit_comment,277,nilearn,nilearn,banilo,2014-11-12 08:10:30,"I was inspired by how the affines are compared in niimg_conversion.py. What should I use instead?
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+26,pull_request_commit_comment,277,nilearn,nilearn,banilo,2014-11-13 08:01:27,"Gael added this function and auto_resample option to the 0.1 milestone (cf. #183)
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+27,pull_request_commit_comment,277,nilearn,nilearn,bthirion,2014-11-16 21:46:02,"You probably need to explain a bit more the logic of the function here since your image concatenation can do really fancy stuff.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+28,pull_request_commit_comment,277,nilearn,nilearn,bthirion,2014-11-16 21:54:32,"the `sizes` naming  (and size in the for loop below) is not good because this is not consistent with what is called a size in numpy.  This probably fits better with the concept of len.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+29,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-11-19 10:46:06,"This could be a assert_array_equal, right?
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/tests/test_image.py')"
+30,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-11-19 10:46:44,"PEP8 misalignment I think, it's probably worth spending some time setting up PEP8 warnings in your editor of choice.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/tests/test_image.py')"
+31,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-11-19 10:50:22,"You can decorate the test function with nose.with_setup decorator which is quite handy for this kind of setup, teardown stuff. An example [here](https://github.com/nilearn/nilearn/blob/master/nilearn/tests/test_datasets.py#L61).
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/tests/test_image.py')"
+32,pull_request_commit_comment,277,nilearn,nilearn,GaelVaroquaux,2014-11-19 10:54:59,"> Do you really have a use case where this parameter is useful?
+
+Bunch of data acquired on different subjects. The data having been
+realigned using rigid transformation, thus only the affine has been
+modified. As a result, they have different affines.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+33,pull_request_commit_comment,277,nilearn,nilearn,banilo,2014-11-19 11:57:59,"practical use case:
+download z-maps from Neurovault that came from different laboratories / preprocessing pipelines -> we want to run third-level analyses across those, without resampling each image by hand first
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+34,pull_request_commit_comment,277,nilearn,nilearn,GaelVaroquaux,2014-11-19 11:58:59,"> download z-maps from Neurovault that came from different laboratories /
+> preprocessing pipelines -> we want to run third-level analyses across
+> those, without resampling each image by hand first
+
+Great example!
+
+Although I would use a NiftiMasker to do that :)
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+35,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-11-19 12:13:07,"I believe the `verbose` argument is generally an int rather than a boolean in nilearn.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+36,pull_request_commit_comment,277,nilearn,nilearn,GaelVaroquaux,2014-11-19 12:22:00,"> I believe the verbose argument is generally an int rather than a boolean in
+> nilearn.
+
+Both work, as False is equivalent to 0 and True to 1.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+37,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-11-19 12:29:24,"You are not using `index` in this loop.
+
+Probably related the comment in the line below doesn't make sense any more.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+38,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-11-19 12:36:07,"> Both work, as False is equivalent to 0 and True to 1.
+
+Sure, but I meant more as a general convention. It seems most of the code I have seen in nilearn does `verbose=0` by default and does a ""greater than"" comparison for printing debug information.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+39,pull_request_commit_comment,277,nilearn,nilearn,GaelVaroquaux,2014-11-19 12:42:54,"> Sure, but I meant more as a general convention. It seems most of the code I
+> have seen in nilearn does verbose=0 by default and does a greater than
+> comparison for printing debug information.
+
+The greater than will also work with ints. I have no preference.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+40,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-11-19 12:47:52,"You can use `%r` in your string template to avoid having to use repr (not sure what gain you expect by using repr btw)
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/image.py')"
+41,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-12-19 08:28:09,"You have to use `from nilearn._utils.testing import assert_raises_regexp` so that it works with Python 2.6
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+42,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2014-12-19 09:18:23,"Shouldn't there be a 's', i.e. length**s**?
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+43,pull_request_commit_comment,277,nilearn,nilearn,bthirion,2014-12-23 15:52:56,"Nosetest tells me that lines 290-297 are not tested. If it is the case, could you add a test ?
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+44,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2015-01-12 16:36:27,"You could do something like this that would test that they are actually the exact same function
+
+``` python
+# in the imports
+from ..._utils import niimg_conversions
+
+# in the tests
+def test_concat_imgs():
+    image.concat_imgs is niimg_conversions.concat_niimgs
+```
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/tests/test_image.py')"
+45,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2015-01-12 16:39:58,"I don't understand what you mean by ""parse"" here and also a few times in the lines below. Also I am not sure what useful piece of information this comments bring.
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/_utils/niimg_conversions.py')"
+46,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2015-01-12 16:47:52,"Sorry there is a missing assert_true in the previous comment:
+
+``` python
+# in the tests
+def test_concat_imgs():
+    assert_true(image.concat_imgs is niimg_conversions.concat_niimgs)
+```
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/tests/test_image.py')"
+47,pull_request_commit_comment,277,nilearn,nilearn,lesteve,2015-01-13 10:48:50,"I guess you don't need this test any more, i.e. all the testing is done in the _utils.niimg_conversions test
+",4102d5190f84d0f48e3cdde7bca5891db7c97aab,"(None, '', u'nilearn/image/tests/test_image.py')"
+48,pull_request_commit,277,nilearn,nilearn,banilo,2015-01-13 10:27:35,added auto_resample to concat_niimgs(),55cffe5607a7f079bb2bf3612a3bb44bfe93851a,
+49,pull_request_commit,277,nilearn,nilearn,banilo,2015-01-14 07:41:42,removed unnecessary test,4102d5190f84d0f48e3cdde7bca5891db7c97aab,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,279,nilearn,nilearn,lesteve,2014-11-12 08:56:42,"Fixes #275.
+",start issue,Workaround for ndimage.affine_transform endianness bug
+2,issue_closed,279,nilearn,nilearn,lesteve,2014-11-13 12:48:33,,closed issue,Workaround for ndimage.affine_transform endianness bug
+3,pull_request_title,279,nilearn,nilearn,lesteve,2014-11-12 08:56:42,"Fixes #275.
+",bdbeca0f63204e3eef67f87b2a327e56ba6bec2a,Workaround for ndimage.affine_transform endianness bug
+4,pull_request_merged,279,nilearn,nilearn,lesteve,2014-11-13 12:48:33,Workaround for ndimage.affine_transform endianness bug,7fd5377b80f5b22d06fb043165862a5c3ae0f219,Pull request merge from lesteve/nilearn:resample-img-non-native-endianness to nilearn/nilearn:master
+5,issue_comment,279,nilearn,nilearn,banilo,2014-11-12 22:26:28,":+1: 
+",,
+6,issue_comment,279,nilearn,nilearn,GaelVaroquaux,2014-11-13 06:24:18,"LGTM appart from the remark above.
+",,
+7,issue_comment,279,nilearn,nilearn,lesteve,2014-11-13 08:14:11,"> Perhaps add to comment:
+> 
+> dtypes '>f4' or '>f8' might appear due to image manipulation using SPM matlab scripts
+
+I added this to the original issue, which seems more like the right place to me.
+",,
+8,pull_request_commit_comment,279,nilearn,nilearn,GaelVaroquaux,2014-11-13 06:22:44,"Here you are byteswapping in place. Just to check, has the data been copied before this happens? Elsewhere the function will have a side effect, which we need to avoid.
+",bdbeca0f63204e3eef67f87b2a327e56ba6bec2a,"(18, '', u'nilearn/image/resampling.py')"
+9,pull_request_commit_comment,279,nilearn,nilearn,lesteve,2014-11-13 07:34:08,"I may be missing something but the `out` parameter is passed into the function to be modified. 
+
+Another thing I thought of is that we probably want to do some scipy version check if the scipy bug gets fixed in the future.
+",bdbeca0f63204e3eef67f87b2a327e56ba6bec2a,"(18, '', u'nilearn/image/resampling.py')"
+10,pull_request_commit_comment,279,nilearn,nilearn,GaelVaroquaux,2014-11-13 12:15:38,"> I may be missing something but the out parameter is passed into the function to
+> be modified.
+
+Sure, my bad. Please ignore my previous comment.
+
+> Another thing I thought of is that we probably want to do some scipy version
+> check if the scipy bug gets fixed in the future.
+
+Let's not worry with this.
+
+:+1: for merge!
+",bdbeca0f63204e3eef67f87b2a327e56ba6bec2a,"(18, '', u'nilearn/image/resampling.py')"
+11,pull_request_commit,279,nilearn,nilearn,lesteve,2014-11-12 08:55:01,"Workaround for ndimage.affine_transform endianness bug
+
+Need to swap the bytes of the output array when its endianness is not native.
+Added test.",bdbeca0f63204e3eef67f87b2a327e56ba6bec2a,
+12,pull_request_commit_comment,279,nilearn,nilearn,banilo,2014-11-13 07:59:30,"Perhaps add to comment:
+
+dtypes '>f4' or '>f8' might appear due to image manipulation using SPM matlab scripts
+",bdbeca0f63204e3eef67f87b2a327e56ba6bec2a,"(15, 244, u'nilearn/image/resampling.py')"
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,244,nilearn,nilearn,lesteve,2014-09-24 11:23:05,"Copied and pasted from different emails with minor tweaks.
+# The problem
+
+People often complain about nilearn data storage policy: by default datasets are stored in a ""nilearn_data"" folder created in the current directory. People are sometimes puzzled by the fact that, when they change directory, some examples download an already-downloaded dataset.
+# Caveats
+1. The number one problem is of disk space running out. In the home, it can have horrible consequences, because it tends to freeze many things. For example you may have a quota on your home folder that is easily overwhelmed by the size, roughly 5-10 GB, of the datasets.
+2. Warnings, configuration options, ... are mostly useless, because the non-advanced users don't read/use them
+# Proposed solution
+- Use $HOME/nilearn_data by default
+- In all the data downloaders:
+  - capture the I/O errors that pop up when writing a file and that
+      the disk is full
+  - erase a bit of that half-written file (or all of it) to avoid
+      leaving the disk full
+  - raise an error clearly identifying the problem (disk full or
+      quota blown) and suggesting solutions (the NILEARN_DATA
+      variable + talk to your sysadmin).
+",start issue,Change default dataset download directory 
+2,issue_closed,244,nilearn,nilearn,lesteve,2014-11-12 17:37:38,,closed issue,Change default dataset download directory 
+3,issue_comment,244,nilearn,nilearn,lesteve,2014-11-12 10:35:29,"The error message part of this has been tackled in #262.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,278,nilearn,nilearn,banilo,2014-11-11 16:48:06,"in response to #203
+
+@AlexandreAbraham: Does this make any sense and is it approximately what you guys had in mind?
+",start issue,[ENH] Shelving option for NiftiMasker
+2,issue_closed,278,nilearn,nilearn,lesteve,2014-11-19 08:08:52,,closed issue,[ENH] Shelving option for NiftiMasker
+3,pull_request_title,278,nilearn,nilearn,banilo,2014-11-11 16:48:06,"in response to #203
+
+@AlexandreAbraham: Does this make any sense and is it approximately what you guys had in mind?
+",31969337e86e3d6dff5568d08c2911096bf0333c,[ENH] Shelving option for NiftiMasker
+4,issue_comment,278,nilearn,nilearn,banilo,2014-11-11 16:58:49,"Units tests fail for CanICA although I didn't change anything there??
+
+# 
+
+## FAIL: nilearn.decomposition.tests.test_canica.test_canica_square_img
+
+Traceback (most recent call last):
+  File ""/Users/admin/anaconda/lib/python2.7/site-packages/nose/case.py"", line 197, in runTest
+    self.test(*self.arg)
+  File ""/git/nilearn/nilearn/decomposition/tests/test_canica.py"", line 60, in test_canica_square_img
+    assert_true(np.sum(K_abs > .9) == 4)
+AssertionError: False is not true
+    'False is not true' = self._formatMessage('False is not true', ""%s is not true"" % safe_repr(False))
+
+> >  raise self.failureException('False is not true')
+",,
+5,issue_comment,278,nilearn,nilearn,AlexandreAbraham,2014-11-11 22:00:47,"The CanICA test can fail randomly, don't worry about that.
+",,
+6,issue_comment,278,nilearn,nilearn,AlexandreAbraham,2014-11-11 22:07:30,"I already have code to add this feature so you don't need to do it yourself. BTW, you should not use MemorizedFunc directly, nor use a temporary directory (shelving has no sense if the results is lost after reboot).
+
+This issue has not been resolved yet because the problem is not in adding shelving support in MultiNiftiMasker. This is the easy part. The question is: how do we handle shelved data in the rest of the library? What if a user wants to use a scikit-learn algorithm on shelved data? We have no answer for these questions. I think this should be discussed with the whole nilearn team.
+",,
+7,pull_request_commit,278,nilearn,nilearn,banilo,2014-11-11 16:45:41,experimenting naively with Shelving,31969337e86e3d6dff5568d08c2911096bf0333c,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,280,nilearn,nilearn,lesteve,2014-11-12 10:04:32,"Otherwise the MNI template is missing when installing nilearn with setup.py.
+",start issue,Add nilearn/data as a data dir in setup.py
+2,issue_closed,280,nilearn,nilearn,GaelVaroquaux,2014-11-13 19:58:22,,closed issue,Add nilearn/data as a data dir in setup.py
+3,pull_request_title,280,nilearn,nilearn,lesteve,2014-11-12 10:04:32,"Otherwise the MNI template is missing when installing nilearn with setup.py.
+",f67cb7188fc83ef7da66aea2f9bbfc72a34ae32a,Add nilearn/data as a data dir in setup.py
+4,pull_request_merged,280,nilearn,nilearn,GaelVaroquaux,2014-11-13 19:58:22,Add nilearn/data as a data dir in setup.py,6cf5f431ed5c819f00a75543500b42db872057b6,Pull request merge from lesteve/nilearn:add-data-to-setup-py to nilearn/nilearn:master
+5,issue_comment,280,nilearn,nilearn,GaelVaroquaux,2014-11-13 19:58:12,"LGTM. Merging.
+",,
+6,pull_request_commit,280,nilearn,nilearn,lesteve,2014-11-12 10:03:36,"Add nilearn/data as a data dir
+
+Otherwise the MNI template is missing when installing nilearn with setup.py",f67cb7188fc83ef7da66aea2f9bbfc72a34ae32a,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,274,nilearn,nilearn,dohmatob,2014-11-04 09:47:25,"De facto, I don't care about python3. Are there plans to support python3 ? In which case there are a few non-python3 things to fix here and there.
+",start issue,Provide support for python3 ?
+2,issue_closed,274,nilearn,nilearn,lesteve,2014-11-12 11:59:19,,closed issue,Provide support for python3 ?
+3,issue_comment,274,nilearn,nilearn,lesteve,2014-11-12 10:32:34,"Given the interest so far I would guess that's not a priority at the moment...
+",,
+4,issue_comment,274,nilearn,nilearn,GaelVaroquaux,2014-11-12 11:02:23,"+1
+
+-------- Original message --------
+From: Loïc Estève notifications@github.com 
+Date:12/11/2014  11:32  (GMT+01:00) 
+To: nilearn/nilearn nilearn@noreply.github.com 
+Subject: Re: [nilearn] Provide support for python3 ? (#274) 
+
+Given the interest, so far I would guess that's not a priority at the moment...
+
+—
+Reply to this email directly or view it on GitHub.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,283,nilearn,nilearn,lesteve,2014-11-14 12:13:15,"No need to use 'fwhm' on both sides of the = sign and the comment about
+not using /= with numpy scalar wasn't entirely helping.
+",start issue,[MRG] Minor clean-up of the FWHM to sigma conversion
+2,issue_closed,283,nilearn,nilearn,lesteve,2014-11-14 12:25:01,,closed issue,[MRG] Minor clean-up of the FWHM to sigma conversion
+3,pull_request_title,283,nilearn,nilearn,lesteve,2014-11-14 12:13:15,"No need to use 'fwhm' on both sides of the = sign and the comment about
+not using /= with numpy scalar wasn't entirely helping.
+",d9398571a14293c320490de601374f6812682b34,[MRG] Minor clean-up of the FWHM to sigma conversion
+4,pull_request_merged,283,nilearn,nilearn,lesteve,2014-11-14 12:25:01,[MRG] Minor clean-up of the FWHM to sigma conversion,7cfd2f41868415d15a0dfeb0a1bad94dc2b3b49c,Pull request merge from lesteve/nilearn:fwhm-to-sigma-conversion-tweak to nilearn/nilearn:master
+5,issue_comment,283,nilearn,nilearn,GaelVaroquaux,2014-11-14 12:19:32,":+1: : Merge!
+",,
+6,pull_request_commit,283,nilearn,nilearn,lesteve,2014-11-14 10:57:43,"Minor clean-up of the FWHM to sigma conversion
+
+No need to use 'fwhm' on both sides of the = sign and the comment about
+not using /= with numpy scalar wasn't entirely helping.",d9398571a14293c320490de601374f6812682b34,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,281,nilearn,nilearn,lesteve,2014-11-12 10:39:51,"Fixes #244.
+",start issue,Change the default dataset download directory to ~/nilearn_data
+2,issue_closed,281,nilearn,nilearn,lesteve,2014-11-12 17:37:39,,closed issue,Change the default dataset download directory to ~/nilearn_data
+3,pull_request_title,281,nilearn,nilearn,lesteve,2014-11-12 10:39:51,"Fixes #244.
+",c05e8dbe7ccd8321e42a768e8aa5835191bca2dc,Change the default dataset download directory to ~/nilearn_data
+4,pull_request_merged,281,nilearn,nilearn,lesteve,2014-11-12 17:37:38,Change the default dataset download directory to ~/nilearn_data,be9023aeb6b4a1f306503ce6f52ce4fb0d3fcc91,Pull request merge from lesteve/nilearn:default-nilearn-data-in-home to nilearn/nilearn:master
+5,issue_comment,281,nilearn,nilearn,GaelVaroquaux,2014-11-12 11:09:25,"LGTM +1 for merge
+",,
+6,issue_comment,281,nilearn,nilearn,AlexandreAbraham,2014-11-12 17:17:30,"+1
+",,
+7,issue_comment,281,nilearn,nilearn,lesteve,2014-11-12 17:37:45,"Merged.
+",,
+8,pull_request_commit,281,nilearn,nilearn,lesteve,2014-11-12 10:35:59,"Change the default dataset download directory to ~/nilearn_data
+
+* Tweak the tests to use absolute paths and put the temporary data in
+  tmpdir so that it gets cleaned up during teardwon. Also remove PEP8
+  warnings.
+* Update doc mentionning nilearn_data",c05e8dbe7ccd8321e42a768e8aa5835191bca2dc,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,275,nilearn,nilearn,banilo,2014-11-04 19:46:54,"Using continuous resampling on a standard nifti (without NaNs) turned the image on the left into the one on the right. I encountered this problem several times. It might have something to the with the dtype of the input data.
+
+![resample_thing](https://cloud.githubusercontent.com/assets/3907396/4906673/fe989eca-645a-11e4-87ed-3b79da3d9963.png)
+
+**Edit**: the Nifti files @banilo was looking had been written in big-endian with SPM (probably due to the platform they were generated on?)
+",start issue,Bug in nilearn.image.resample_img when using non native endianness
+2,issue_closed,275,nilearn,nilearn,lesteve,2014-11-13 12:48:33,,closed issue,Bug in nilearn.image.resample_img when using non native endianness
+3,issue_comment,275,nilearn,nilearn,AlexandreAbraham,2014-11-05 04:47:02,"Can you provide a minimal use case?
+",,
+4,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 06:02:22,"I can send you .nii and code that reproduces the above?
+",,
+5,issue_comment,275,nilearn,nilearn,AlexandreAbraham,2014-11-05 07:09:44,"Yes, that would be awesome :). Can you also send me the nii post-reampling? Just in case the result is different on my machine.
+
+If you suspect a dtype problem, you can diagnose it yourself: just do `img.astype(float)` and see if the resampling does the same. If you give an integer image to resampling in 'continuous' mode, it is in fact known to fail because of the integer rounding.
+",,
+6,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 08:37:09,"I will sent you script + niftis.
+
+Apart from that, why not add a check for float types in resample_img()?
+",,
+7,issue_comment,275,nilearn,nilearn,lesteve,2014-11-05 08:56:21,"IMHO, a code snippet is way better than words for us to understand what you are doing. It does seem related to #270 as @AlexandreAbraham was hinting. If you are using resample_img directly, why not use interpolation='nearest'?
+",,
+8,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 09:15:58,"Because both interpolations are relvant for different situations.
+interpolation='nearest' <- I usually use this for atlases, so that the labels are not corrupted
+interpolation='continuous' <- is what I usually use for Z-map-like activation data
+
+Shouldn't resample_img() work with any nifti using interpolation='interpolation'?
+",,
+9,issue_comment,275,nilearn,nilearn,lesteve,2014-11-05 09:48:29,"Quickly looking at the picture you showed, I wrongly assumed you were using labels, my bad.
+",,
+10,issue_comment,275,nilearn,nilearn,lesteve,2014-11-05 10:22:58,"As a aside, if your problem is too complex to be reduced to a code snippet, one way you can share data (assuming is isn't less than 100MB in size) + scripts is using [gists](https://help.github.com/articles/about-gists/).
+",,
+11,issue_comment,275,nilearn,nilearn,banilo,2014-11-05 11:31:04,"Thanks for the reminder!!
+
+2014-11-05 11:22 GMT+01:00 Loïc Estève notifications@github.com:
+
+> As a anside, if your problem is too complex to be reduced to a code
+> snippet, one way you can share data (assuming is isn't less than 100MB in
+> size) + scripts is using gists
+> https://help.github.com/articles/about-gists/.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/275#issuecomment-61786741.
+
+## 
+
+Viele Grüße,
+Danilo
+",,
+12,issue_comment,275,nilearn,nilearn,banilo,2014-11-06 12:19:17,"Little update: it seems to have something to do with big/little Indian encoding. Enforcing dtype='>f8' reproduces the bug, while dtype='<f8' makes the bug dissappear. Some lower-level C/Cython problem in numpy?
+",,
+13,issue_comment,275,nilearn,nilearn,lesteve,2014-11-06 13:05:25,"For completeness, here is a snippet that reproduces the problem:
+
+``` python
+
+import math
+
+import numpy as np
+
+import pandas as pd
+
+from nilearn.image import resample_img
+from nilearn import plotting
+
+import nibabel as nib
+
+
+def make_test_img(dtype):
+    data = np.ones((10, 10, 10), dtype=dtype)
+    data[3:7, 3:7, 3:7] = 2
+
+    affine = np.eye(4)
+    img = nib.Nifti1Image(data, affine)
+    return img
+
+
+def my_resample_img(img):
+    theta = math.pi / 6
+    c = math.cos(theta)
+    s = math.sin(theta)
+
+    affine = np.array([[1, 0, 0, 0],
+                       [0, c, -s, 0],
+                       [0, s, c, 0],
+                       [0, 0, 0, 1]])
+
+    tweaked_img = nib.Nifti1Image(img.get_data(), affine)
+    resampled_img = resample_img(tweaked_img, target_affine=np.eye(4))
+    return resampled_img
+
+
+def my_test(dtype):
+    cut_coords = (5, 5, 5)
+    img = make_test_img(dtype)
+    plotting.plot_img(img, cut_coords=cut_coords)
+    resampled_img = my_resample_img(img)
+    plotting.plot_img(resampled_img, cut_coords=cut_coords)
+    print 'img data dtype: {}\n{}'.format(
+        dtype,
+        pd.Series(resampled_img.get_data().ravel()).describe())
+
+my_test('<f8')
+my_test('>f8')
+
+```
+",,
+14,issue_comment,275,nilearn,nilearn,lesteve,2014-11-06 13:10:06,"I haven't looked into it more, but somehow in the big endian case, we end up with NaN and values of order 10^300...
+",,
+15,issue_comment,275,nilearn,nilearn,GaelVaroquaux,2014-11-06 14:18:13,"Thanks to everybody involved for reporting/digging in the problem. Fixing
+these issues is critical for nilearn!
+",,
+16,issue_comment,275,nilearn,nilearn,lesteve,2014-11-06 15:40:10,"It seems like the culprit is scipy.ndimage.affine_transform. As small example reproducing the issue:
+
+``` python
+import numpy as np
+from scipy import ndimage
+
+data = np.ones((2, 2, 2))
+out = np.empty_like(data, dtype='>f8')
+ndimage.affine_transform(data, np.eye(3), output=out)
+out
+```
+
+The output:
+
+```
+array([[[ -5.48612407e+303,  -8.37116099e+298],
+        [ -8.37116099e+298,  -5.48612407e+303]],
+
+       [[ -8.37116099e+298,  -5.48612407e+303],
+        [ -5.48612407e+303,  -8.37116099e+298]]])
+```
+",,
+17,issue_comment,275,nilearn,nilearn,GaelVaroquaux,2014-11-06 15:41:16,"> It seems like the culprit is scipy.ndimage.affine_transform. As small example
+> reproducing the issue:
+
+OK then I suggest:
+- To submit a bug to the scipy tracker (with the script attached)
+- To cast our data to the right endianess
+",,
+18,issue_comment,275,nilearn,nilearn,AlexandreAbraham,2014-11-07 05:55:06,"+1
+",,
+19,issue_comment,275,nilearn,nilearn,lesteve,2014-11-07 14:46:44,"FYI, I just opened https://github.com/scipy/scipy/issues/4127
+",,
+20,issue_comment,275,nilearn,nilearn,dohmatob,2014-11-07 15:03:15,"+1
+",,

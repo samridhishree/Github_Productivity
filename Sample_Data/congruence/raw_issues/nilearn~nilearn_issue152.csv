@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","152","nilearn","nilearn","rphlypo","2014-01-24 11:10:14","- full_matrices = `False` causes `numpy.linalg.svd` call
+- lapack_lite is called and causes an error in `lapack_lite.dgesdd`
+
+using `%debug` mode in IPython and calling `scipy.linalg.svd` on this same array does not cause this error.
+
+ipython --pylab output:
+
+``` python
+In [9]: import nilearn.image
+
+In [10]: hv_confounds = nilearn.image.high_variance_confounds(filename)
+---------------------------------------------------------------------------
+LapackError                               Traceback (most recent call last)
+/neurospin/grip/protocols/MRI/Resting_state_Victor/Python/scripts/<ipython-input-10-05abe6cc6e18> in <module>()
+----> 1 hv_confounds = nilearn.image.high_variance_confounds(filename)
+
+/home/vd239549/.local/lib/python2.7/site-packages/nilearn/image/image.pyc in high_variance_confounds(***failed resolving arguments***)
+     75     return signal.high_variance_confounds(sigs, n_confounds=n_confounds,
+     76                                            percentile=percentile,
+---> 77                                            detrend=detrend)
+     78 
+     79 
+
+/home/vd239549/.local/lib/python2.7/site-packages/nilearn/signal.pyc in high_variance_confounds(series, n_confounds, percentile, detrend)
+    289     series = series[:, var > var_thr]  # extract columns (i.e. features)
+    290     # Return the singular vectors with largest singular values
+
+--> 291     u, _, _ = linalg.svd(series, full_matrices=False)
+    292     u = u[:, :n_confounds].copy()
+    293     return u
+
+/usr/lib/python2.7/dist-packages/scipy/linalg/decomp_svd.pyc in svd(a, full_matrices, compute_uv, overwrite_a)
+     69     if full_matrices == 0:
+     70         import numpy.linalg
+---> 71         return numpy.linalg.svd(a, full_matrices=0, compute_uv=compute_uv)
+     72     a1 = asarray_chkfinite(a)
+     73     if len(a1.shape) != 2:
+
+/usr/lib/python2.7/dist-packages/numpy/linalg/linalg.pyc in svd(a, full_matrices, compute_uv)
+   1313         work = zeros((lwork,), t)
+   1314         results = lapack_routine(option, m, n, a, m, s, u, m, vt, nvt,
+-> 1315                                  work, -1, iwork, 0)
+   1316         lwork = int(work[0])
+   1317         work = zeros((lwork,), t)
+
+LapackError: Parameter a has non-native byte order in lapack_lite.dgesdd
+```
+","start issue","using the `numpy.linalg.svd` in `signal.high_variance_confounds` causes error with matlab created .nii"
+"issue_closed","152","nilearn","nilearn","GaelVaroquaux","2014-02-03 11:49:34","","closed issue","using the `numpy.linalg.svd` in `signal.high_variance_confounds` causes error with matlab created .nii"
+"issue_comment","152","nilearn","nilearn","GaelVaroquaux","2014-01-24 17:27:12","As discussed orally, I am favorable of replacing the svd by a call to
+eigsh. I think it will make things more robust and faster.
+","",""
+"issue_comment","152","nilearn","nilearn","rphlypo","2014-01-24 19:54:17","Will do that.
+","",""
+"issue_comment","152","nilearn","nilearn","GaelVaroquaux","2014-02-03 11:49:33","That's fixed. Thanks
+","",""

@@ -1,0 +1,243 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 19:19:02","Attempts to Fix #860. Any reviews are welcome.
+","start issue","[MRG] [ENH] Haxby datasets accepting list of subjects"
+"issue_closed","1227","nilearn","nilearn","GaelVaroquaux","2016-09-01 15:02:46","","closed issue","[MRG] [ENH] Haxby datasets accepting list of subjects"
+"pull_request_title","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 19:19:02","Attempts to Fix #860. Any reviews are welcome.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","[MRG] [ENH] Haxby datasets accepting list of subjects"
+"pull_request_merged","1227","nilearn","nilearn","GaelVaroquaux","2016-09-01 15:02:46","[MRG] [ENH] Haxby datasets accepting list of subjects","ce9e69b96bb452572b2afa7549ab38e51921b2fd","Pull request merge from KamalakerDadi/nilearn:haxby_n_subjects_to_list to nilearn/nilearn:master"
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:23:18",">   • Idea 1 remove n_subjects, force subjects to be a list, possibly allowing subjects='all'
+
+I don't mind having to force people to type ""subject=range(5)"" because
+it's the kind of things that is not typed by deginers: beginers only
+download one subject for example.
+
+But, I don't think that I want to break backward compatibility, so we
+should keep as a temporary solution n_subjects.
+
+>   • Idea 2: mixed api with n_subjects and subjects, defaulting to 1 and [2]. I don't like it because in many cases one argument would have to override the other and the user has to figure out the logic.
+
+We need to do this for a couple of releases, to avoid breaking people's
+code.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-11 19:59:51","> To summarize, I will keep both n_subjects (int) and subjects (list).
+
+Yes
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-12 05:41:47","> Lot of examples I see need a bit of tweaking to adapt to results obtained with
+> default 2nd subject.
+
+Interesting. What is it? The position of the cut_coords should be
+changed?
+
+> I can change if there are any particular examples or all need to be run
+> on 2nd subject ?
+
+I'd like all to run on the 2nd subject, that way we avoid downloading
+other ones on the doc-building server and during the tutorials.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-12 13:17:55","> Some results may vary of what we currently have now for example,
+> plot_haxby_different_estimators.
+
+Well, that's life. Those examples weren't to be trusted too much anyhow.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 08:56:59","Looks good in general.
+
+With regards to the examples, maybe some still need to be updated.
+
+In particular in https://1990-1235740-gh.circle-artifacts.com/0//home/ubuntu/nilearn/doc/_build/html/auto_examples/02_decoding/plot_haxby_searchlight.html#sphx-glr-auto-examples-02-decoding-plot-haxby-searchlight-py
+I think that you need to change the cut coordinate, to cut in a place where it makes more sense. It might be that cutting at z=-5 is the right option: https://1990-1235740-gh.circle-artifacts.com/0//home/ubuntu/nilearn/doc/_build/html/auto_examples/02_decoding/plot_haxby_space_net.html#sphx-glr-auto-examples-02-decoding-plot-haxby-space-net-py
+
+Also, I have the impression that at least one example is still using subject 1:
+https://1990-1235740-gh.circle-artifacts.com/0//home/ubuntu/nilearn/doc/_build/html/auto_examples/02_decoding/plot_haxby_searchlight.html#sphx-glr-auto-examples-02-decoding-plot-haxby-searchlight-py
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 09:33:25","> ```
+> Also, I have the impression that at least one example is still using
+> subject 1
+> ```
+> 
+> examples/05_advanced/plot_haxby_mass_univariate.py since I hardly found voxels
+> activated with 2nd subject.
+
+Hum. But we can't do that: it increases our download, which is a major
+problem on the continuous integration.
+
+> Do you have any suggestions to tweak any of the steps or parameters ?
+
+How about smoothing a little bit (say 4mm?) in the NiftiMasker?
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 10:25:25","> Can you see example plot_haxby_space_net.py is good to keep same cut_coords or should I change ?
+
+Yes, plot_haxby_space_net looks good.
+
+For plot_haxby_searchlight, the problem is that we use a ""process_mask"",
+which is hand-tuned on the ""right"" region. That region has changed when
+we changed subject. I've played with the example, and I am sending you a
+PR with changes to it.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 11:44:09","Why do you say that? The diff looks OK to me at a cursory glance.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 11:52:04","Indeed.
+
+Do you want to attempt a rebase on master?
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 11:54:22","> Yes, What is the simplest way to remove those ? Should I make new PR ?
+
+How about first you rebase. If that helps, I can call you, but I have a
+meeting in 5mn.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 11:58:12","> No problem. I will see it.
+
+I would try (on the branch of your PR): ""git rebase master"" followed by
+""git push your_fork_on_github -f""
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-25 11:04:26","I addressed this in
+https://github.com/KamalakerDadi/nilearn/pull/4
+
+I think that it should finish up this PR and make it mergeable.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-25 13:31:45","OK, that's because the new nibabel has been released, and it deprecates ""get_affine()"". Let me see if I can address this in a PR to master.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-25 13:44:16","> This would completely break backward compatibility. The best option is to
+> define a ""get_affine"" function in the compat module that will call either
+> get_affine or affine depending on nibabel version.
+
++1. I think that that the cut-off should be nibabel version < 2.
+
+And +1 for doing this in a separate PR.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-25 13:57:08","In the docs and examples, thought, directly use ""affine"", and not
+""get_affine"", and put a note in
+""doc/manipulating_images/input_output.rst"" about older versions of
+nibabel.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-25 14:00:46","With regards to this PR, ie changing the Haxby dataset, it however seems
+that we are now set: all the examples look right.
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-09-01 11:04:12","Can you merge or rebase with master so that we have integration tests that run, and we merge?
+","",""
+"issue_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-09-01 15:02:44","LGTM. Merging. Thanks!
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-10 07:57:23","Addressed your comments @AlexandreAbraham @bthirion. Any more reviews ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-10 11:27:26","> Well, I am still convinced that having to do fetch_haxby(subjects=[1, 2, 3, 4, 5, 6]) to get the whole dataset is counter intuitive.
+
+We should also keep n_subjects for bunch of subjects selection and not to deprecate ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-11 19:58:08","Ok, I will address your comments.
+To summarize, I will keep both n_subjects (int) and subjects (list).
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-11 21:37:01","Lot of examples I see need a bit of tweaking to adapt to results obtained with default 2nd subject. I can change if there are any particular examples or all need to be run on 2nd subject ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-12 07:49:00","> Interesting. What is it? The position of the cut_coords should be changed?
+
+Mostly and also spacenet examples if I remember correctly. Some results may vary of what we currently have now for example, plot_haxby_different_estimators.
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 08:39:04","Is it good to merge ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 09:18:57","> I think that you need to change the cut coordinate, to cut in a place where it makes more sense. It might be that cutting at z=-5 is the right option
+
+In `plot_haxby_space_net` or `plot_haxby_searchlight` ? I found z=-18 is the only slice to show some meaningful results in `plot_haxby_searchlight`. 
+
+> Also, I have the impression that at least one example is still using subject 1
+
+`examples/05_advanced/plot_haxby_mass_univariate.py` since I hardly found voxels activated with 2nd subject. Do you have any suggestions to tweak any of the steps or parameters ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 09:36:54","> How about smoothing a little bit (say 4mm?) in the NiftiMasker?
+
+Thank you. Will let you know.
+
+Can you see example `plot_haxby_space_net.py` is good to keep same cut_coords or should I change ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 09:51:17","> How about smoothing a little bit (say 4mm?) in the NiftiMasker?
+
+Nope, zero detections again. May be threshold ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 11:17:30","Ok. As expected :) I think I messed up again.
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 11:47:03","By seeing the number of commits and number of files changed. They are not related to my PR. That's why I said. Am I wrong ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 11:53:22","> Do you want to attempt a rebase on master?
+
+Yes, What is the simplest way to remove those ? Should I make new PR ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 11:55:14","> If that helps, I can call you, but I have a meeting in 5mn.
+
+No problem. I will see it.
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 12:57:39","Thank you @GaelVaroquaux I hope it is fine now.
+
+In whats_new doc there appears two times my new changes. I will address that.
+`plot_haxby_mass_univariate` needs to be addressed.
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 16:36:37","I still didn't find a way to make plot_haxby_mass_univariate example happy with 2nd subject.
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-25 12:36:05","Travis fails because of excessive warnings ?
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-25 13:35:49","> OK, that's because the new nibabel has been released, and it deprecates ""get_affine()"". Let me see if I can address this in a PR to master.
+
+Ok, I am right then. Do you want me to do new PR replacing img.get_affine() with img.affine() 
+","",""
+"issue_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-25 13:48:01","> This would completely break backward compatibility. The best option is to
+>  define a ""get_affine"" function in the compat module that will call either
+>  get_affine or affine depending on nibabel version.
+> +1. I think that that the cut-off should be nibabel version < 2.
+> 
+> And +1 for doing this in a separate PR.
+
+Ok.
+","",""
+"pull_request_commit_comment","1227","nilearn","nilearn","bthirion","2016-08-08 19:58:16","I am -1 on leaving the possibility to specify subjects as int: people will be surprised. I would leave only the possibility of a list.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 20:01:26","You mean n_subjects should accept only int and subjects accept only list ?
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","bthirion","2016-08-08 20:13:17","No, n_subjects is removed, while subjects accepts lists only. 
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","AlexandreAbraham","2016-08-08 20:26:08","+1 for accepting list only.
+However, n_subjects is still usefull for people that do not care about the subject ID.
+Also, in the few fetchers that allows subject selection, we usually use subject_ids or sub_ids.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","AlexandreAbraham","2016-08-08 20:26:46","So `None` means `all` but `[]` means no data?
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 20:28:59","I didn't get your comment/question ?
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","AlexandreAbraham","2016-08-08 20:29:08","Next version is 0.2.6 and deprecation will probably happen in 0.2.7.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","AlexandreAbraham","2016-08-08 20:31:03","If I put `subjects=None`, I will get all the subjects but, to get no data at all, I have to put `subjects=[]`.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 20:31:21","You mean 0.2.5.1 -> 0.2.6 and 0.3 -> 0.2.7 ?
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 20:32:12","You can put subjects=0
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","KamalakerDadi","2016-08-09 18:59:53","To clarify myself, only subjects should there ? and it should accept only list otherwise raise Error or warning and then convert to list ? ping @AlexandreAbraham @bthirion 
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","bthirion","2016-08-09 20:28:42","I thinks so.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:29:11","How about we simply leave out the argument from this part of the documentation. It's an example that doesn't need that much detail.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'doc/manipulating_images/input_output.rst')"
+"pull_request_commit_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:29:35","Same thing here: let's simplify this even more and leave out this argument.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'doc/manipulating_images/input_output.rst')"
+"pull_request_commit_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:30:12","Let's use subject 2 here (or simply use the default, and hence leave out the argument).
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'examples/01_plotting/plot_demo_more_plotting.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:30:51","Let's try to always use subject 2, to limit download (and probably simply always use the default, to simplify the code).
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'examples/01_plotting/plot_demo_plotting.py')"
+"pull_request_commit_comment","1227","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:33:38","Maybe we should remove it in 0.3 only. I worry about breakage in our users.
+","eaabc6629e3f07a054a1ced74ed2caad2e4922aa","(None, '', u'nilearn/datasets/func.py')"
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 19:10:35","[ENH] Haxby datasets accepting list of subjects","5695a610bdb38ea672441044ed212b2c1c13d4b8",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-08 19:10:35","[ENH] Haxby datasets accepting list of subjects","4533106d197a658a36c9a2d7044075285fe84ddf",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-09 22:04:21","Addressed:subjects accpts only list, changed version, robust check in subjects input","222f95af663664173626b646ea869b83d2a6dd95",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-09 22:04:21","Addressed:subjects accpts only list, changed version, robust check in subjects input","19904b0ce53a90f484ff43bff5c475d2d8c85583",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-11 21:29:03","n_subjects to int and removing arguments wherever required","9ba6071e94f3f9b03e0cf2d2a60a0e69e26a44a8",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-11 21:29:03","n_subjects to int and removing arguments wherever required","1192e2d183557d84eda529c32edf04c0ec7ee28c",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-12 19:04:54","Removed argument subjects to take default 2nd subject in examples","be205150e1a525e6dae7929d2333a19738a3c39f",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-12 19:04:54","Removed argument subjects to take default 2nd subject in examples","a427bceab7bb0b7309126023aef5b2e8c563d768",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-12 19:49:03","Added 2nd subject plot_haxby_masks example","9f99725de4f05dce8f0cbe5ebea96ba7edfc1903",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-12 19:49:03","Added 2nd subject plot_haxby_masks example","d582794abc69f006e2140596c473d24c86b80ec8",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-14 19:37:52","doc space correction in whats_new","90d49c134e50341d7341b298df09b6fddc7a72d6",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-14 19:37:52","doc space correction in whats_new","4add30c981c3356acbdd9464c38e79fd2abedb54",""
+"pull_request_commit","1227","nilearn","nilearn","GaelVaroquaux","2016-08-19 10:26:18","EXMPL: Adapt process mask to 2nd subject
+
+The searchlight example uses a process_mask, focused on the interesting
+parts, to speed computation. It was tuned for subject 1, but not subject
+2.","656a3af8ec94fee9bf7ba1c2815195f0b0d1df26",""
+"pull_request_commit","1227","nilearn","nilearn","KamalakerDadi","2016-08-19 16:30:47","Some minor tweaks and update of examples","b0324a0223fd187778764e76b330a5c4c15077d6",""
+"pull_request_commit","1227","nilearn","nilearn","GaelVaroquaux","2016-08-25 11:01:31","ENH: plot_haxby_mass_univariate on subject 2","eaabc6629e3f07a054a1ced74ed2caad2e4922aa",""

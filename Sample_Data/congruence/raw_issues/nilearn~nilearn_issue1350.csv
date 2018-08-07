@@ -1,0 +1,104 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1350","nilearn","nilearn","rlinus","2016-12-20 21:57:02","_utils\fixes\sklearn_validation.py line 81 creates a 3 dimensional array (instead of a 2d array) from a list of 1xn arrays which then raises an error on line 86.","start issue","decoding.SpaceNetClassifier.fit(X,y) throws error for list of .nii files"
+"issue_closed","1350","nilearn","nilearn","mrahim","2017-03-02 15:12:10","","closed issue","decoding.SpaceNetClassifier.fit(X,y) throws error for list of .nii files"
+"issue_comment","1350","nilearn","nilearn","rlinus","2016-12-21 00:06:12","```phyton
+from nilearn import input_data
+from nilearn import decoding
+import interface as ic
+
+n_train_samples = 278
+train_fns = [ 'p3/data/set_train/train_{}.nii'.format(i+1) for i in range(n_train_samples)]
+cache_dir = 'p3/data/cache/'
+
+y_train = ic.load_targets(which=range(n_train_samples))
+
+mask = input_data.MultiNiftiMasker(smoothing_fwhm=None, low_pass=None, high_pass=None, mask_strategy='background', mask_args=None, memory=cache_dir, memory_level=1, n_jobs=-1, verbose=1)
+
+clf_gender = decoding.SpaceNetClassifier(penalty='tv-l1', loss='logistic', l1_ratios=0.5, alphas=None, n_alphas=10, mask=mask, max_iter=1000, tol=0.0001, memory=cache_dir, memory_level=1, verbose=1, n_jobs=-1, eps=0.001, cv=5, fit_intercept=True, screening_percentile=20.0, debias=False)
+
+clf_gender.fit(train_fns,y_train[:,0])
+```
+
+error message:
+```
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-2-b52814655b73> in <module>()
+     18                                          cv=5, fit_intercept=True, screening_percentile=20.0, debias=False)
+     19 
+---> 20 clf_gender.fit(train_fns,y_train[:,0])
+
+C:\Program Files\Anaconda3\lib\site-packages\nilearn\decoding\space_net.py in fit(self, X, y)
+    778 
+    779         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+--> 780                          multi_output=True, y_numeric=True)
+    781 
+    782         # misc
+
+C:\Program Files\Anaconda3\lib\site-packages\nilearn\_utils\fixes\sklearn_validation.py in check_X_y(X, y, accept_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, multi_output, ensure_min_samples, ensure_min_features, y_numeric, warn_on_dtype, estimator)
+    204     X = check_array(X, accept_sparse, dtype, order, copy, force_all_finite,
+    205                     ensure_2d, allow_nd, ensure_min_samples,
+--> 206                     ensure_min_features)
+    207 
+    208     if multi_output:
+
+C:\Program Files\Anaconda3\lib\site-packages\nilearn\_utils\fixes\sklearn_validation.py in check_array(array, accept_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, ensure_min_samples, ensure_min_features)
+     96         if not allow_nd and array.ndim >= 3:
+     97             raise ValueError(""Found array with dim %d. Expected <= 2"" %
+---> 98                              array.ndim)
+     99         if force_all_finite:
+    100             _assert_all_finite(array)
+
+ValueError: Found array with dim 3. Expected <= 2
+```","",""
+"issue_comment","1350","nilearn","nilearn","rlinus","2016-12-21 01:08:57","Well, I first did do that (same error), but then I noticed that the SpaceNetClassifier.fit() function does refit the masker regardless if it has been fitted yet. See space_net.py line 777:
+
+```
+    def fit(self, X, y):
+        """"""Fit the learner
+
+        Parameters
+        ----------
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : array or list of length n_samples
+            The dependent variable (age, sex, QI, etc.).
+
+        Notes
+        -----
+        self : `SpaceNet` object
+            Model selection is via cross-validation with bagging.
+        """"""
+        # misc
+        self.check_params()
+        if self.memory is None or isinstance(self.memory, _basestring):
+            self.memory_ = Memory(self.memory,
+                                  verbose=max(0, self.verbose - 1))
+        else:
+            self.memory_ = self.memory
+        if self.verbose:
+            tic = time.time()
+
+        # nifti masking
+        if isinstance(self.mask, NiftiMasker):
+            self.masker_ = clone(self.mask)
+        else:
+            self.masker_ = NiftiMasker(mask_img=self.mask,
+                                       target_affine=self.target_affine,
+                                       target_shape=self.target_shape,
+                                       standardize=self.standardize,
+                                       low_pass=self.low_pass,
+                                       high_pass=self.high_pass,
+                                       mask_strategy='epi', t_r=self.t_r,
+                                       memory=self.memory_)
+        X = self.masker_.fit_transform(X) #<-- fit masker 
+
+        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+                         multi_output=True, y_numeric=True) #<-- throws reported error
+
+        ...
+```","",""
+"issue_comment","1350","nilearn","nilearn","rlinus","2016-12-21 01:36:25","ok, thanks!","",""

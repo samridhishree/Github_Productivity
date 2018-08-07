@@ -1,0 +1,155 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1313,nilearn,nilearn,Joaoloula,2016-10-17 18:39:07,"The docstring says the `subjects` argument in `fetch_haxby` is a list containing the subjects to be fetched, but it actually also accepts an int as argument, in which case it behaves as the deprecated `n_subjects`. This is problematic because in this case an unaware user can pass an int n as the argument and run  `haxby_dataset.func[0]`, which will return data for subject 1 instead of subject n. It seems to me that we should either:
+- Make this use case explicit in the docstring or;
+- Throw an error when `subjects` is an int.
+",start issue,Unexpected behavior from 'subject' argument on haxby fetcher
+2,issue_closed,1313,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:04:19,,closed issue,Unexpected behavior from 'subject' argument on haxby fetcher
+3,issue_comment,1313,nilearn,nilearn,AlexandreAbraham,2016-10-19 09:00:35,"> my preference was two have two different arguments: `subjects` and `n_subjects` 
+
++1
+",,
+4,issue_comment,1313,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:05:06,"@bthirion I merged the PR of Joao because it makes doc better. Do you want me to open an issue about the two different args?
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1312,nilearn,nilearn,KamalakerDadi,2016-10-16 12:48:16,"Attempts to Fix #1307 
+",start issue,[MRG] Fixing the 'origin' of download link for smith atlas fetcher.
+2,issue_closed,1312,nilearn,nilearn,GaelVaroquaux,2016-10-20 21:55:00,,closed issue,[MRG] Fixing the 'origin' of download link for smith atlas fetcher.
+3,pull_request_title,1312,nilearn,nilearn,KamalakerDadi,2016-10-16 12:48:16,"Attempts to Fix #1307 
+",a61f9e58cb00e9599d46ad09b79a9bc5351f6d3a,[MRG] Fixing the 'origin' of download link for smith atlas fetcher.
+4,pull_request_merged,1312,nilearn,nilearn,GaelVaroquaux,2016-10-20 21:55:00,[MRG] Fixing the 'origin' of download link for smith atlas fetcher.,a1f3a4dabcd020199c293e70f778c72653bd963d,Pull request merge from KamalakerDadi/nilearn:fix_fetcher_smith_atlas to nilearn/nilearn:master
+5,pull_request_commit,1312,nilearn,nilearn,KamalakerDadi,2016-10-16 12:44:33,Fixing the 'origin' of download link for smith atlas fetcher.,a61f9e58cb00e9599d46ad09b79a9bc5351f6d3a,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1314,nilearn,nilearn,KamalakerDadi,2016-10-20 11:10:50,"``` python
+In [1]: from nilearn import datasets
+
+In [2]: abide = datasets.fetch_abide_pcp()
+Downloading data from https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz ...
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-2-1f1f31175720> in <module>()
+
+AttributeError: can't set attribute
+```
+
+Can somebody reproduce it ?'
+Seems like download link from amazon is changed. Replacing fcp-indi -> fcp-indi-new in the fetcher download link will work.
+",start issue,ABIDE fetcher download link needs to be renamed
+2,issue_closed,1314,nilearn,nilearn,AlexandreAbraham,2016-10-31 13:45:31,,closed issue,ABIDE fetcher download link needs to be renamed
+3,issue_comment,1314,nilearn,nilearn,AlexandreAbraham,2016-10-31 13:45:31,"As @jpellman explained to Joao and me, the fcp-indi-new bucket was a temporary one and we should point to it. Full answer:
+
+> We recently migrated to a new AWS account.  As part of this migration, the data from the 'fcp-indi' bucket was synced to a temporary bucket ('fcp-indi-new') belonging to our new account.  After the migration of our data to the new account, our old account was deleted, and along with it the old 'fcp-indi' bucket.  In order to preserve the S3 paths that we had been using under the old account, we re-created the 'fcp-indi' bucket under our new account and began syncing all of the data in 'fcp-indi-new' to it.  At this time, I changed the URLs in our documentation to ensure that interested researchers could still access our data from the temporary bucket while it was syncing to the new 'fcp-indi' bucket.  Presently, the file sync is finished and the only reason that the temporary bucket ('fcp-indi-new') is still referred to in the documentation is that we also had to change permissions for all the files in 'fcp-indi' using a script so that they were publicly readable.  This script has finished executing, however, and I am reverting the documentation to refer to the 'fcp-indi' bucket now.
+> 
+> So to answer your question, the data is the same in 'fcp-indi-new' and 'fcp-indi', but you shouldn't need to change your code.  In fact, you should use 'fcp-indi', since we are going to remove the 'fcp-indi-new' bucket now that our migration is finished.
+> 
+> ```
+> ```
+",,
+4,issue_comment,1314,nilearn,nilearn,mrahim,2016-10-20 11:19:43,"Same thing here.
+Looks like the link has changed ([see here](http://preprocessed-connectomes-project.org/abide/download.html)):
+https://s3.amazonaws.com/fcp-indi-new/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz
+
+was
+https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1307,nilearn,nilearn,AkiNikolaidis,2016-10-10 22:52:04,"Hi Nilearn Experts,
+
+Working through the Tutorials currently on: 8.1.3. 3D and 4D niimgs: handling and visualizing. Seems like the line:
+
+rsn = datasets.fetch_atlas_smith_2009()['rsn10']
+
+Is not downloading the correct file- this download resulted in a 3KB file that cannot be opened in FSLview instead of a larger 4D file.
+
+Upon later calling rsn with this command: print(image.load_img(rsn).shape) I receive the error below.
+
+Thanks,
+Aki
+
+---
+
+ImageFileError                            Traceback (most recent call last)
+<ipython-input-61-869ff9e7d33e> in <module>()
+      1 #!pwd
+----> 2 print(image.load_img(rsn).shape)
+      3 #nib.load(rsn).get_data().shape
+      4 #hello = 2
+      5 #print(hello)
+
+/Users/Aki/.local/lib/python2.7/site-packages/nilearn/image/image.pyc in load_img(img, wildcards, dtype)
+    899         that the returned object has get_data() and get_affine() methods.
+    900     """"""
+--> 901     return check_niimg(img, wildcards=wildcards, dtype=dtype)
+
+/Users/Aki/.local/lib/python2.7/site-packages/nilearn/_utils/niimg_conversions.pyc in check_niimg(niimg, ensure_ndim, atleast_4d, dtype, return_iterator, wildcards)
+    269 
+    270     # Otherwise, it should be a filename or a SpatialImage, we load it
+--> 271     niimg = load_niimg(niimg, dtype=dtype)
+    272 
+    273     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
+
+/Users/Aki/.local/lib/python2.7/site-packages/nilearn/_utils/niimg.pyc in load_niimg(niimg, dtype)
+     98     if isinstance(niimg, _basestring):
+     99         # data is a filename, we load it
+--> 100         niimg = nibabel.load(niimg)
+    101     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
+    102         raise TypeError(""Data given cannot be loaded because it is""
+
+/Users/Aki/.local/lib/python2.7/site-packages/nibabel/loadsave.pyc in load(filename, **kwargs)
+     46 
+     47     raise ImageFileError('Cannot work out file type of ""%s""' %
+---> 48                          filename)
+     49 
+     50 
+
+ImageFileError: Cannot work out file type of ""/Users/Aki/nilearn_data/smith_2009/PNAS_Smith09_rsn10.nii.gz""
+",start issue,Dataset Error with Nilearn Tutorial:  8.1.3. 3D and 4D niimgs: handling and visualizing
+2,issue_closed,1307,nilearn,nilearn,GaelVaroquaux,2016-10-20 21:55:00,,closed issue,Dataset Error with Nilearn Tutorial:  8.1.3. 3D and 4D niimgs: handling and visualizing
+3,issue_comment,1307,nilearn,nilearn,GaelVaroquaux,2016-10-11 13:44:49,"+1
+
+On Tue, Oct 11, 2016 at 06:23:48AM -0700, KamalakerDadi wrote:
+
+> May be we should fetch from nitrc mirror='nitrc' ?
+> 
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly, view it on GitHub, or mute the thread.*
+
+## 
+
+```
+Gael Varoquaux
+Researcher, INRIA Parietal
+NeuroSpin/CEA Saclay , Bat 145, 91191 Gif-sur-Yvette France
+Phone:  ++ 33-1-69-08-79-68
+http://gael-varoquaux.info            http://twitter.com/GaelVaroquaux
+```
+",,
+4,issue_comment,1307,nilearn,nilearn,AlexandreAbraham,2016-10-11 05:18:28,"Hey Aki,
+
+Most of the time, this error is due to the fact that the file was downloaded on a website that requires authentication. So, what is downloaded is the login page of the network. You can check that by opening the file with your favorite text editor.
+
+Let me know if it is the case. If so, I will add a check in Nilearn to circumvent it.
+",,
+5,issue_comment,1307,nilearn,nilearn,AlexandreAbraham,2016-10-11 05:19:23,"s/website/network/ (I cannot edit comment on my phone)
+",,
+6,issue_comment,1307,nilearn,nilearn,AkiNikolaidis,2016-10-11 22:16:30,"Thanks Alex,
+
+You're right- Looks like it downloaded the webpage- first few lines are pasted below-
+
+Thanks,
+Aki
+
+<!DOCTYPE html PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN"" ""http://www.w3.org/TR/html4/loose.dtd"">
+<HTML><HEAD><meta http-equiv=""Content-Type"" content=""text/html;charset=utf-8"">
+<TITLE>BrainMap + RSNs</TITLE></HEAD><BODY>
+
+<STYLE TYPE=""text/css"">BODY { background: white ; font-family: 'Arial'}</STYLE>
+
+<br><hr>
+<img align=right width=""30%"" src=""bm.jpg"" /> 
+
+<H2>Correspondence between BrainMap and Resting-FMRI ICA components</H2>
+
+A collaboration between FMRIB, Oxford and RIC, San Antonio<br>
+",,

@@ -1,0 +1,92 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","362","nilearn","nilearn","bcipolli","2015-01-22 05:49:48","Right now, each time a Memory object is created, a path must be given to a cache location.  The safest path to specify is one relative to the script location.  This is inconvenient:
+- Cache files are distributed in multiple locations and therefore hard to clear.
+- Searching the source tree becomes slow (as some search programs search all files for text)
+- If the cache location isn't already in the `.gitignore`, then git workflow can become messy (for example, using `git gui`).
+
+I would like cache location to work like nilearn download/data location--to have a set of fallbacks for the Memory cache location:
+- First, check for any explicit argument.
+- If none, then use an environment variable value (e.g. `NILEARN_CACHE`).
+- If none, then don't cache.
+
+This is impairing my workflow enough that I'd like to investigate this solution a bit more.  I welcome alternate solutions / ideas / thoughts / objections :)
+","start issue","Feature request: default cache location"
+"issue_closed","362","nilearn","nilearn","lesteve","2015-01-26 09:53:00","","closed issue","Feature request: default cache location"
+"issue_comment","362","nilearn","nilearn","GaelVaroquaux","2015-01-22 09:33:56","I agree with Alex's comments: its easier for the end user if the caches
+are separated, because it makes it clear what cache belong to what
+processing.
+
+Ideally, in the long run, I had in mind to have the cache and the reports
+next one to another. That way the user really understand that they go one
+with the other, ie that the cache are intermediate files to create the
+report. In the case of multiple runs of the same processing pipeline, we
+could have the same cache and sub-reports. This is a bit the way FSL
+organizes the storage on disk.
+","",""
+"issue_comment","362","nilearn","nilearn","GaelVaroquaux","2015-01-22 17:07:08","> None of the existing behavior changes (nothing is cached by default,
+> and you can specify whatever Memory location you want); it just allows
+> another capability (to cache by default to a common location, if you
+> add an environment variable) that I am finding useful for myself.
+
+I wonder if it's not something that we should worry about later.
+
+Right now, my priority is to be able to teach a course on decoding and
+functional connectivity to cognitive neuroscientist and that it flows
+without any problem. Once we have this, we can iterate on providing more
+value to user, including advanced user.
+
+This is a general strategy for me: first grow the user base by getting
+the API right and solving the easy problems. Then try to turn some of
+these users in developers. Then start including more advanced features.
+","",""
+"issue_comment","362","nilearn","nilearn","GaelVaroquaux","2015-01-22 18:39:59","> I do small, inessential features like this (but also sometimes more
+> core ones, like Python 2.6 support) as I learn a software package.
+
+Absolutely. It's a great way of doing it. However we have to be careful
+not to put all our pet peaves in nilearn.
+","",""
+"issue_comment","362","nilearn","nilearn","lesteve","2015-01-22 08:02:48","I have been annoyed on occasions by this too and I thought the same, i.e. ""why is it not more like nilearn_data?"".
+
+The Memory object is coming from joblib (shipped with scikit-learn) so I am not sure we want to change Memory directly. We could use a nilearn-specific thin wrapper around it that has the logic you mention. I would probably add a bullet point to your list in 3rd position: ~/nilearn_cache or something like this if there is no explicit argument and NILEARN_CACHE is not defined.
+","",""
+"issue_comment","362","nilearn","nilearn","bcipolli","2015-01-22 08:10:49",":+1: for the thin wrapper!
+
+I didn't add that third bullet, because if we did that it would change the default behavior (which is not to cache results).  It would be easy to do either way.
+
+So what I'm thinking is to have a thin wrapper around `joblib.Memory`, and all `nilearn` functions that receive `joblib.Memory` objects will simply default to the `nilearn` default (say, `nilearn._utils.cache_mixin.Memory`, or `nilearn._utils.cache_mixin.DefaultMemory`, rather than `Memory(cachedir=None)`
+
+At this point, I also think the `nilearn._utils.cache_mixin` module is a bit overloaded; it's already used not just for the Mixin, but caching functions.  I would suggest to rename it simply to `nilearn._utils.cache` or `nilearn._utils.caching` when this change is made.
+","",""
+"issue_comment","362","nilearn","nilearn","lesteve","2015-01-22 08:24:21","Sounds good to me but I would wait for @GaelVaroquaux and @AlexandreAbraham inputs before spending too much time on this. The cache location has been like this for quite a while, so maybe they have use cases where the default cache location wouldn't be practical.
+","",""
+"issue_comment","362","nilearn","nilearn","AlexandreAbraham","2015-01-22 08:52:24","> Cache files are distributed in multiple locations and therefore hard to clear.
+
+I think that this highly depends on your usage of nilearn. The most useful caching feature, I think, is in the masker (because masking can be long). If you put all cache into one single folder, it will be simply impossible to clear. If you mask 10 datasets, you won't be able to clear the data for one dataset only.
+
+> - Searching the source tree becomes slow (as some search programs search all files for text)
+> - If the cache location isn't already in the .gitignore, then git workflow can become messy (for example, using git gui).
+
+Those are developers' concern, not really users'.
+
+I am not fundamentally against having a `NILEARN_CACHE` directory. However, we need to find a solution to compartmentalize cache from different scripts. Otherwise I know what will happen: people will use this system, the folder will grow until it fills the hard drive, and then people will have to delete the whole thing and will lose everything.
+
+> ~/nilearn_cache or something like this if there is no explicit argument and NILEARN_CACHE is not defined
+
+What if I don't want to cache?
+","",""
+"issue_comment","362","nilearn","nilearn","bcipolli","2015-01-22 10:02:59","@AlexandreAbraham, @GaelVaroquaux that makes sense.  This doesn't affect the ability to set the cache exactly as you do already.  What this enables is caching when you haven't explicitly set the cache--perhaps during script development and also nilearn testing--things that you would gladly have cached, and delete later.
+
+None of the existing behavior changes (nothing is cached by default, and you can specify whatever Memory location you want); it just allows another capability (to cache by default to a common location, if you add an environment variable) that I am finding useful for myself.
+","",""
+"issue_comment","362","nilearn","nilearn","bcipolli","2015-01-22 17:22:16","@GaelVaroquaux Understood.  For me, I do small, inessential features like this (but also sometimes more core ones, like Python 2.6 support) as I learn a software package.  I figured this out and implemented it locally as part of understanding what the cache is (and working with it as best I could).
+
+So, it's implemented on my machine, it's just a question of whether y'all also find it useful and want to include it in the codebase. :)  Either way is fine by me!
+","",""
+"issue_comment","362","nilearn","nilearn","bcipolli","2015-01-24 13:51:05","Let me know if this is something to move forward with.  Otherwise, I suggest we close it as wontfix.
+
+For me, this is a nice alternative to explicitly hard-coding behavior across the app (`Memory(cachedir=none)`), where we can control that behavior with a single change in the future.  The file name change from `cache_mixin.py` to `cache.py` also seems like an improvement.  And the code is done.
+
+Either way is fine by me, just wanting to get some clarity.  Thanks!
+","",""
+"issue_comment","362","nilearn","nilearn","lesteve","2015-01-26 09:53:00","It looks like there is no strong agreement on this one, so closing this a won't fix for now.
+","",""

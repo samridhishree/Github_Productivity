@@ -1,0 +1,58 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1228","nilearn","nilearn","salma1601","2016-08-08 21:30:03","fixes #1213.
+For the moment I am keeping direct fitting of sklearn GraphLasso in `plot_simulated_connectome` because of `alpha_` parameter use, and will do another PR for this example.
+","start issue","use ConnectivityMeasure for GraphLasso"
+"pull_request_title","1228","nilearn","nilearn","salma1601","2016-08-08 21:30:03","fixes #1213.
+For the moment I am keeping direct fitting of sklearn GraphLasso in `plot_simulated_connectome` because of `alpha_` parameter use, and will do another PR for this example.
+","2f6430a49accb43bf26eccae4ff9e41581bf9818","use ConnectivityMeasure for GraphLasso"
+"issue_comment","1228","nilearn","nilearn","GaelVaroquaux","2016-08-09 16:51:00","> What I don't like is that the ConnectivityMeasure object has already a
+> covariance estimator in it, and then in examples we never benefit from this
+> estimator and do things manually.
+> I don't mean to insist I am rather a humble user but I don't like when 2
+> objects do the same thing: it puzzles me and I become hesitating on what to use
+> when. This for me is more important than the number of lines.
+
+We should add a note in the examples that use the raw covariance
+estimators. However, I've been teaching yesterday, and it seems to me
+that the simplicity is the most important thing.
+
+> Also, I want to do another PR removing all the precision/covariances and using
+> their normalized versions, and this is easier to do with ConnectivityMeasure.
+> @GaelVaroquaux May be I can do one unique PR to solve this + #1214 + #1223 so
+> that you have a more global picture and then decide to merge or not ?
+
+Normalizing is indeed a benefit. I am however still a bit worried by the
+complexity. It's not only the number of the lines, it's that we juggle
+between lists and single-subject elements, it's that we import from
+multiple packages (imports confuse beginners)... 
+","",""
+"issue_comment","1228","nilearn","nilearn","salma1601","2016-08-09 11:28:33","What I don't like is that the `ConnectivityMeasure` object has already a covariance estimator in it, and then in examples we never benefit from this estimator and do things manually.
+I don't mean to insist I am rather a humble user but I don't like when 2 objects do the same thing: it puzzles me and I become hesitating on what to use when. This for me is more important than the number of lines.
+
+Also, I want to do another PR removing all the precision/covariances and using their normalized versions, and this is easier to do with `ConnectivityMeasure`.
+@GaelVaroquaux  May be I can do one unique PR to solve this + #1214 + #1223 so that you have a more global picture and then decide to merge or not ?
+","",""
+"issue_comment","1228","nilearn","nilearn","salma1601","2016-08-09 17:42:31","Sorry, but I am going to insist, because I am still not convinced :)
+
+> we juggle between lists and single-subject elements
+
+A bit similarly as when `np.concatenate(subject_time_series)` is used. Note that with `ConnectivityMeasure` we can do this without concatenating the subjects.
+
+> we import from multiple packages
+
+We can add a bit of narration when we import from sklearn, saying that we rely on its covariance estimators.
+
+> I've been teaching yesterday, and it seems to me that the simplicity is the most important thing.
+
+Yes I agree, and the lazy nilearn user that I am does not know that much about sklearn API :$.
+It can be a goal to push people to go to sklearn covariance estimators and understand their methods and attributes. Personally I prefer they understand how the `ConnectivityMeasure` works, that it fits multiple subjects at once, and that it hides a covariance estimator object that we can just not care about.
+
+> Normalizing is indeed a benefit
+
+Yes, and many people have never ever heard about precision matrix, but know partial correlations, what they model, and how to do statistical tests on them. I would love to just throw away that precision matrix!
+","",""
+"pull_request_commit_comment","1228","nilearn","nilearn","GaelVaroquaux","2016-08-09 05:21:35","That example just got much more complex. I am not too excited about that.
+","2f6430a49accb43bf26eccae4ff9e41581bf9818","(13, '', u'examples/03_connectivity/plot_inverse_covariance_connectome.py')"
+"pull_request_commit_comment","1228","nilearn","nilearn","GaelVaroquaux","2016-08-09 05:24:06","This is also adding a lot of lines. I am a bit worried that it actually makes all this harder to explain / learn.
+","2f6430a49accb43bf26eccae4ff9e41581bf9818","(18, '', u'examples/03_connectivity/plot_multi_subject_connectome.py')"
+"pull_request_commit","1228","nilearn","nilearn","salma1601","2016-08-08 15:14:46","use ConnectivityMeasure for GraphLasso","2f6430a49accb43bf26eccae4ff9e41581bf9818",""

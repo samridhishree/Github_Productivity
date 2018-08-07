@@ -1,0 +1,58 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","310","nilearn","nilearn","lesteve","2014-12-11 13:42:15","Some tweaking to the way `__version__` works was needed because dependencies are checked at `import nilearn` time. That meant that setup.py couldn't run unless the dependencies were installed.
+","start issue","Add nibabel dependency to setup.py"
+"issue_closed","310","nilearn","nilearn","lesteve","2014-12-15 10:22:20","","closed issue","Add nibabel dependency to setup.py"
+"pull_request_title","310","nilearn","nilearn","lesteve","2014-12-11 13:42:15","Some tweaking to the way `__version__` works was needed because dependencies are checked at `import nilearn` time. That meant that setup.py couldn't run unless the dependencies were installed.
+","e0c665f500ed8c28fe99260de1b926238ae37541","Add nibabel dependency to setup.py"
+"pull_request_merged","310","nilearn","nilearn","lesteve","2014-12-15 10:22:20","Add nibabel dependency to setup.py","c9265ff9e731dd4f0be09fa9ae45d950c46eb94d","Pull request merge from lesteve/nilearn:add-nibabel-dependency-to-setup-py to nilearn/nilearn:master"
+"issue_comment","310","nilearn","nilearn","lesteve","2014-12-12 10:48:12","I implemented the proposed changes. I am not going to claim I understand why exactly but:
+
+### with numpy installed
+- pip install works fine. Note that the `-U` flag in the install instructions will cause nibabel to be upgraded to the latest version but not numpy.
+- python setup.py install works fine
+
+### without numpy installed
+- pip install works fine
+- python setup.py install will try to pip install numpy which is what we were trying to avoid.
+","",""
+"pull_request_commit_comment","310","nilearn","nilearn","GaelVaroquaux","2014-12-11 13:44:33","I would prefer tackling this problem the same way than in scikit-learn (check how the setup.py and **init**.py work).
+","e0c665f500ed8c28fe99260de1b926238ae37541","(None, '', u'setup.py')"
+"pull_request_commit_comment","310","nilearn","nilearn","lesteve","2014-12-11 14:20:27","OK I have looked at how it is done in scikit-learn but if I am completely honest it feels more obscure than the proposed solution.
+
+FWIW one of the place I took some inspiration is [here](https://github.com/audreyr/cookiecutter-pypackage/issues/1).
+","e0c665f500ed8c28fe99260de1b926238ae37541","(None, '', u'setup.py')"
+"pull_request_commit_comment","310","nilearn","nilearn","GaelVaroquaux","2014-12-11 14:42:32","> OK I have looked at how it is done in scikit-learn but if I am completely
+> honest it feels more obscure than the proposed solution.
+
+We feel it's more robust (by passing the import mechanism of Python is
+dangerous). Please discuss this with @ogrisel. I'll trust whatever
+conclusion you come up with.
+","e0c665f500ed8c28fe99260de1b926238ae37541","(None, '', u'setup.py')"
+"pull_request_commit_comment","310","nilearn","nilearn","ogrisel","2014-12-11 14:45:28","I prefer the `exec(open('nilearn/version.py').read())` solution. It's Python 2 & 3 compat and breaks any possible cyclic import dependencies.
+
+I wanted to do it in sklearn but failed to do so.
+","e0c665f500ed8c28fe99260de1b926238ae37541","(None, '', u'setup.py')"
+"pull_request_commit_comment","310","nilearn","nilearn","GaelVaroquaux","2014-12-11 14:49:35","> I prefer the exec(open('nilearn/version.py').read()) solution. It's Python 2 &
+> 3 compat and breaks any possible cyclic import dependencies.
+
+OK for the general idea, but I'd rather avoid injecting variable in the
+global/local namespaces. It's bad practice.
+
+I'd rather have somethig like (adapted from
+http://stackoverflow.com/a/437857/413856):
+
+version_dict = {}
+exec(open('nilearn/version.py').read(), version_dict, version_dict)
+
+and then fish the version variable from version_dict.
+","e0c665f500ed8c28fe99260de1b926238ae37541","(None, '', u'setup.py')"
+"pull_request_commit_comment","310","nilearn","nilearn","ogrisel","2014-12-11 15:12:46","Good.
+","e0c665f500ed8c28fe99260de1b926238ae37541","(None, '', u'setup.py')"
+"pull_request_commit","310","nilearn","nilearn","lesteve","2014-12-11 13:29:19","Add nibabel dependency to setup.py
+
+Needed to change the way __version__ works because dependencies are checked in nilearn/__init__.py
+so that setup.py could not be executed when nibabel was not installed","fb73a64a0e65c924b95596e621da8ce9962ec87f",""
+"pull_request_commit","310","nilearn","nilearn","lesteve","2014-12-11 13:38:19","Remove nibabel section from the install instructions
+
+now that nibabel is an explicit dependency in setup.py","77efd3a16279109db20d7f0862b6b7ba1e1637ae",""
+"pull_request_commit","310","nilearn","nilearn","lesteve","2014-12-12 10:24:28","Use exec instead of deprecated im.load_source","e0c665f500ed8c28fe99260de1b926238ae37541",""

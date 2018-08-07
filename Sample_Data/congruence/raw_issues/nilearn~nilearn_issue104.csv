@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","104","nilearn","nilearn","pgervais","2013-09-05 15:31:26","It the current state, computing and regressing out high-variance confounds using Nifti*Masker requires an extra lines, like:
+
+```
+confound_file = dataset[""confounds""]
+hv_confounds = nilearn.image.high_variance_confounds(filename)
+
+masker = nilearn.input_data.NiftiLabelsMasker(
+    atlas[""maps""], resampling_target=""labels"", detrend=True,
+    low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+    memory=mem, memory_level=1, verbose=1)
+masker.fit(filename, confounds=[hv_confounds, confound_file])
+```
+
+It could be handy to add a `high_variance_confounds` keyword to Nifti maskers, to avoid these extra lines and options. One would write instead:
+
+```
+confound_file = dataset[""confounds""]
+
+masker = nilearn.input_data.NiftiLabelsMasker(
+    atlas[""maps""], resampling_target=""labels"", 
+    detrend=True, high_variance_confounds=True,
+    low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+    memory=mem, memory_level=1, verbose=1)
+masker.fit(filename, confounds=confound_file)
+```
+","start issue","Add computation of high-variance confounds to Nifti maskers"

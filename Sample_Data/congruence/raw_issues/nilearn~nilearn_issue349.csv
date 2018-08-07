@@ -1,0 +1,46 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","349","nilearn","nilearn","AlexandreAbraham","2015-01-14 08:06:54","The documentation states that a Niimg is `any object exposing get_data() and get_affine() methods, for instance a Nifti1Image from nibabel`. This is false as some parts of the code were made with Nifti1Image in mind. For example, using an object exposing the right methods but also `__iter__()` will make `check_niimg` fail.
+
+Example iterable object:
+
+``` python
+import numpy as np
+from nilearn._utils.niimg_conversions import check_niimg
+
+
+class Niimg(object):
+
+    def get_data(self):
+        return np.ones((10, 10, 10, 5))
+
+    def get_affine(self):
+        return np.eye(4)
+
+    def __iter__(self):
+        for i in range(5):
+            yield np.ones((10, 10, 10))
+
+check_niimg(Niimg())
+```
+
+Commenting this code in niimg_conversions makes it work. In fact, we can't make assumptions on the data based on the presence of an `__iter__` method.
+
+``` python
+    if hasattr(niimg, ""__iter__""):
+        pass
+        #if ensure_3d:
+        #    raise TypeError(""A 3D image is expected, but an iterable was""
+        #        "" given: %s"" % short_repr(niimg))
+        #if hasattr(niimg, ""__len__"") and len(niimg) == 0:
+        #    raise TypeError('An empty object - %r - was passed instead of an '
+        #                    'image or a list of images' % niimg)
+        #return concat_niimgs(niimg)
+```
+
+This code has to be replaced by proper checks, and we should maybe make a pass on the code to be sure that it does not happen elsewhere.
+","start issue","Custom iterable Niimg not handled"
+"issue_closed","349","nilearn","nilearn","AlexandreAbraham","2015-02-03 23:36:46","","closed issue","Custom iterable Niimg not handled"
+"issue_comment","349","nilearn","nilearn","AlexandreAbraham","2015-01-14 09:59:45","I have my custom type that I use in my scripts that supports indexing and iterating. However, I never tried to feed it to nilearn objects (as nilearn objects return most of the time Nifti1Image, I prefer to feed them filepath and then convert to my own type afterward).
+","",""
+"issue_comment","349","nilearn","nilearn","AlexandreAbraham","2015-02-03 23:36:46","Closed by #380 : we won't support custom types for the moment.
+","",""

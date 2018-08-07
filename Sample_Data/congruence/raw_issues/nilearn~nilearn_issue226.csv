@@ -1,0 +1,104 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","226","nilearn","nilearn","lesteve","2014-07-15 15:18:33","At the moment you get an error message printed at the top  and a stacktrace with a slightly confusing UnboundLocalError. Maybe a personal bias, but when I got the error initially, I completely missed the former and only saw the latter.
+
+Before the change:
+
+```
+nibabel could not be found, please install it properly to use nilearn.
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+  File ""nilearn/__init__.py"", line 71, in <module>
+    _check_dependencies()
+  File ""nilearn/__init__.py"", line 64, in _check_dependencies
+    if not LooseVersion(nibabel.__version__) >= LooseVersion('1.1.0'):
+UnboundLocalError: local variable 'nibabel' referenced before assignment
+```
+
+After the change:
+
+```
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+  File ""nilearn/__init__.py"", line 71, in <module>
+    _check_dependencies()
+  File ""nilearn/__init__.py"", line 51, in _check_dependencies
+    raise ImportError('nibabel could not be found,'
+ImportError: nibabel could not be found, please install it properly to use nilearn.
+```
+
+Not sure how likely it is that python has been built without gzip and whether in this (rare?) case we just want a warning saying that reading nii.gz files will not be supported rather than an exception .
+","start issue","Clearer import errors when dependencies are not installed"
+"issue_closed","226","nilearn","nilearn","GaelVaroquaux","2014-07-17 09:53:58","","closed issue","Clearer import errors when dependencies are not installed"
+"pull_request_title","226","nilearn","nilearn","lesteve","2014-07-15 15:18:33","At the moment you get an error message printed at the top  and a stacktrace with a slightly confusing UnboundLocalError. Maybe a personal bias, but when I got the error initially, I completely missed the former and only saw the latter.
+
+Before the change:
+
+```
+nibabel could not be found, please install it properly to use nilearn.
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+  File ""nilearn/__init__.py"", line 71, in <module>
+    _check_dependencies()
+  File ""nilearn/__init__.py"", line 64, in _check_dependencies
+    if not LooseVersion(nibabel.__version__) >= LooseVersion('1.1.0'):
+UnboundLocalError: local variable 'nibabel' referenced before assignment
+```
+
+After the change:
+
+```
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+  File ""nilearn/__init__.py"", line 71, in <module>
+    _check_dependencies()
+  File ""nilearn/__init__.py"", line 51, in _check_dependencies
+    raise ImportError('nibabel could not be found,'
+ImportError: nibabel could not be found, please install it properly to use nilearn.
+```
+
+Not sure how likely it is that python has been built without gzip and whether in this (rare?) case we just want a warning saying that reading nii.gz files will not be supported rather than an exception .
+","64f3215321b4e445b83e171754a27cc7f36cb8f9","Clearer import errors when dependencies are not installed"
+"pull_request_merged","226","nilearn","nilearn","GaelVaroquaux","2014-07-17 09:53:58","Clearer import errors when dependencies are not installed","c45bd1d1e2a7a060b8d4ea04b9f8c3d740fe5f85","Pull request merge from lesteve/nilearn:clearer-import-errors to nilearn/nilearn:master"
+"issue_comment","226","nilearn","nilearn","GaelVaroquaux","2014-07-15 15:23:05","The problem with this approach is that you are not raising the original Exception, which means that it is hard to debug the original problem (import errors may be messy, for instance when they are due to linking errors).
+
+What you could trying doing it modifying the error message of the original exception (adding line returns to make things clearer is an option) and reraising it.
+","",""
+"issue_comment","226","nilearn","nilearn","lesteve","2014-07-16 09:45:44","Alternatively, what about just letting the original ImportError go through? I.e. how much should we insist about adding some kind of user-friendly line when the import fails?
+","",""
+"issue_comment","226","nilearn","nilearn","GaelVaroquaux","2014-07-16 09:49:05","> Alternatively, what about just letting the original ImportError go through?
+> I.e. how much should we insist about adding some kind of user-friendly line
+> when the import fails?
+
+It's a cost-to-benefit ratio. If we can make things better with little
+cost, we'll take it, but if it ends up giving us a lot of lines of
+code...
+","",""
+"issue_comment","226","nilearn","nilearn","lesteve","2014-07-16 12:00:20","Just for completeness, that's how the error looks like now with the user-friendly bit as the last element of the exc.args tuple:
+
+```
+Traceback (most recent call last):
+  File ""<string>"", line 1, in <module>
+  File ""nilearn/__init__.py"", line 67, in <module>
+    _check_dependencies()
+  File ""nilearn/__init__.py"", line 55, in _check_dependencies
+    _import_module_with_version_check(module_name, minimum_version)
+  File ""nilearn/__init__.py"", line 21, in _import_module_with_version_check
+    module = __import__(module_name)
+ImportError: ('No module named nibabel', 'nibabel could not be found, please install it properly to use nilearn')
+```
+","",""
+"issue_comment","226","nilearn","nilearn","GaelVaroquaux","2014-07-16 12:02:00","I think that this is good. I like it!
+","",""
+"issue_comment","226","nilearn","nilearn","AlexandreAbraham","2014-07-16 12:13:09",":+1: 
+","",""
+"issue_comment","226","nilearn","nilearn","bthirion","2014-07-17 09:53:08","This looks great, thanks !
+
+B
+","",""
+"issue_comment","226","nilearn","nilearn","GaelVaroquaux","2014-07-17 09:54:04","Merging! Thanks.
+","",""
+"pull_request_commit","226","nilearn","nilearn","lesteve","2014-07-15 15:06:07","Clearer import errors when dependencies are not installed
+At the moment you get an error message printed at the top and a stacktrace with a not so clear UnboundLocalError","b6dd5a8243ecae4b137788b7f7dd61df254ff15d",""
+"pull_request_commit","226","nilearn","nilearn","lesteve","2014-07-16 11:51:07","Modify exception.args and reraise the exception for easier debugging when a python dependency is not installed.
+Add _import_module_with_version_check function to share the import + version checks","3d53143678cf70ed79772f1b6e384fa33abb55cf",""
+"pull_request_commit","226","nilearn","nilearn","lesteve","2014-07-16 12:32:47","Follow the same exception reraising pattern for gzip as for the other imports","64f3215321b4e445b83e171754a27cc7f36cb8f9",""

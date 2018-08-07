@@ -1,0 +1,112 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1411","nilearn","nilearn","akshayah3","2017-03-07 19:22:20","#1181 
+I just had a go at a single function. If this gets a nod then I will implement the same for others as well.","start issue","Decoding Phenotypic data"
+"pull_request_title","1411","nilearn","nilearn","akshayah3","2017-03-07 19:22:20","#1181 
+I just had a go at a single function. If this gets a nod then I will implement the same for others as well.","31e5c7b38f3914868bad5405ef7c6354be21553a","Decoding Phenotypic data"
+"issue_comment","1411","nilearn","nilearn","GaelVaroquaux","2017-03-08 22:49:01","Looks good! It will definitely be an improvement for users. Thank you!
+
+Could you add a test, for instance, an ""isinstance(phenotypes, _basestring), with _basestring coming from nilearn._utils.compat.
+
+If you have the courage of going through all the loaders and doing the same thing, it would be awesome.","",""
+"issue_comment","1411","nilearn","nilearn","GaelVaroquaux","2017-03-21 10:52:38","> ping @GaelVaroquaux Do you agree with this idea ?
+
+Yes, I think that it's a great idea.
+","",""
+"issue_comment","1411","nilearn","nilearn","GaelVaroquaux","2017-03-22 06:02:31","Minor problem: your code does not run on Python 3, because you are using ""xrange"". You should be using ""range"" instead.","",""
+"issue_comment","1411","nilearn","nilearn","GaelVaroquaux","2017-03-22 23:10:42","> @GaelVaroquaux I had to use a for loop as the data for different loaders does not seem to be consistent.
+
+But you should be able to test the dtype of the array to know where you
+need to apply the decode.
+","",""
+"issue_comment","1411","nilearn","nilearn","akshayah3","2017-03-10 06:10:28","@GaelVaroquaux I have made the changes to the fetchers.","",""
+"issue_comment","1411","nilearn","nilearn","akshayah3","2017-03-16 19:26:08",">I am testing your changes in Python 3, seems like still I return output in byte strings. The problem might be to decode on each column rather than whole numpy array. Since whole array should also contain other variables which are not strings.
+
+ Could you post the script by which you are testing for python 3.
+
+>There are some loaders which are missed to edit. Example in atlas module. ""destrieux_2009"", ""msdl"", ""dosenbach_2010"", ""surf_destrieux"". (I haven't checked in struct module).
+
+Yes, even struct module needs changes.
+
+","",""
+"issue_comment","1411","nilearn","nilearn","akshayah3","2017-03-16 23:00:39","@KamalakerDadi  You are right. We have to decode each column as there might be some other variables other than strings. I think that should return the decoded strings. But the solution seems to be a little tricky because I am not sure of the type of data we are trying to decode. I have written this snippet in the case of array having columns and otherwise.
+
+```
+if len(phenotypic.shape) == 2:`
+    for i in xrange(phenotypic.shape[1] - 1):
+        if phenotypic[:,i].dtype.char == 'S':
+            phenotypic[:,i] = np.char.decode(phenotypic[:,i])
+else:
+    for i in xrange(len(phenotypic)):
+        if phenotypic[i].dtype.char == 'S':
+            phenotypic[i] = np.char.decode(phenotypic[i])
+```","",""
+"issue_comment","1411","nilearn","nilearn","akshayah3","2017-03-20 22:45:30",">I would be in favour of adding a function out of this in datasets.utils and using it in a loader where ever applicable.
+>
+I agree. I have looked into the types of data we are decoding and it looks like we can decode all of them by writing a common utility function.","",""
+"issue_comment","1411","nilearn","nilearn","akshayah3","2017-03-23 07:26:35","@GaelVaroquaux The data is such that some part of it doesn't seem to have a dtype, so we cannot generalise the type of data using dtype. As a result we have to loop through the data and check if its a string and then decode it.","",""
+"issue_comment","1411","nilearn","nilearn","KamalakerDadi","2017-03-16 15:48:48","Tell me if I miss something here.
+
+* I am testing your changes in Python 3, seems like still I return output in byte strings. The problem might be to decode on each column rather than whole numpy array. Since whole array should also contain other variables which are not strings.
+
+* There are some loaders which are missed to edit. Example in atlas module. ""destrieux_2009"", ""msdl"", ""dosenbach_2010"", ""surf_destrieux"". (I haven't checked in struct module).
+
+* I think it would be better if we had tests for each fetcher so get to see whether its decoded also increase code coverage.
+
+Thanks for working on this issue.","",""
+"issue_comment","1411","nilearn","nilearn","KamalakerDadi","2017-03-16 19:28:07",">Could you post the script by which you are testing for python 3.
+
+Fetched your PR. Opened a Python 3 environment and ran one of the loader localizer from nilearn for instance. There is no script I have used.","",""
+"issue_comment","1411","nilearn","nilearn","KamalakerDadi","2017-03-16 20:30:42","@akshayah3 Are you able to return decoded strings in Python 3 ?","",""
+"issue_comment","1411","nilearn","nilearn","KamalakerDadi","2017-03-17 06:09:12","I would be in favour of adding a function out of this in datasets.utils and using it in a loader where ever applicable. First, let's take opinion on this from @AlexandreAbraham @GaelVaroquaux @bthirion  ","",""
+"issue_comment","1411","nilearn","nilearn","KamalakerDadi","2017-03-21 10:50:05",">I would be in favour of adding a function out of this in datasets.utils and using it in a loader where ever applicable.
+
+>I agree. I have looked into the types of data we are decoding and it looks like we can decode all of them by writing a common utility function.
+
+ping @GaelVaroquaux Do you agree with this idea ?","",""
+"issue_comment","1411","nilearn","nilearn","KamalakerDadi","2017-03-30 20:19:54","@akshayah3 You should be able to get names of the columns from phenotypic data in ```numpy.ndarray```, then use these names to test the ```dtype``` on these column based arrays. Like this you should be able to use ```np.char.decode``` to decode them. I guess this is what @GaelVaroquaux was suggesting if I am not wrong.","",""
+"issue_comment","1411","nilearn","nilearn","KamalakerDadi","2017-04-05 15:51:38","May I know status. Any updates on this ?","",""
+"issue_comment","1411","nilearn","nilearn","codecov[bot]","2017-03-09 20:33:17","# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1411?src=pr&el=h1) Report
+> Merging [#1411](https://codecov.io/gh/nilearn/nilearn/pull/1411?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/18c09716c8a07657681ccd1c58aa4884eb76abf0?src=pr&el=desc) will **increase** coverage by `<.01%`.
+> The diff coverage is `100%`.
+
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1411      +/-   ##
+==========================================
++ Coverage   94.51%   94.51%   +<.01%     
+==========================================
+  Files         118      118              
+  Lines       13470    13484      +14     
+==========================================
++ Hits        12731    12745      +14     
+  Misses        739      739
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1411?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/datasets/atlas.py](https://codecov.io/gh/nilearn/nilearn/compare/18c09716c8a07657681ccd1c58aa4884eb76abf0...c06aabbc64b3cf2a9807fa8f8da82e2e60620fcb?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9hdGxhcy5weQ==) | `96.2% <100%> (+0.01%)` | :arrow_up: |
+| [nilearn/datasets/func.py](https://codecov.io/gh/nilearn/nilearn/compare/18c09716c8a07657681ccd1c58aa4884eb76abf0...c06aabbc64b3cf2a9807fa8f8da82e2e60620fcb?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9mdW5jLnB5) | `89.11% <100%> (+0.09%)` | :arrow_up: |
+| [nilearn/datasets/utils.py](https://codecov.io/gh/nilearn/nilearn/compare/18c09716c8a07657681ccd1c58aa4884eb76abf0...c06aabbc64b3cf2a9807fa8f8da82e2e60620fcb?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy91dGlscy5weQ==) | `80.54% <100%> (+0.43%)` | :arrow_up: |
+| [nilearn/datasets/struct.py](https://codecov.io/gh/nilearn/nilearn/compare/18c09716c8a07657681ccd1c58aa4884eb76abf0...c06aabbc64b3cf2a9807fa8f8da82e2e60620fcb?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9zdHJ1Y3QucHk=) | `90.99% <100%> (+0.08%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1411?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1411?src=pr&el=footer). Last update [18c0971...31e5c7b](https://codecov.io/gh/nilearn/nilearn/compare/18c09716c8a07657681ccd1c58aa4884eb76abf0...31e5c7b38f3914868bad5405ef7c6354be21553a?el=footer&src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).","",""
+"pull_request_commit_comment","1411","nilearn","nilearn","GaelVaroquaux","2017-03-22 06:03:42","I think that I would call this ""char_array_decode"", or something like this, rather than a reference to phenotypes, which is not clear out of context.","31e5c7b38f3914868bad5405ef7c6354be21553a","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","1411","nilearn","nilearn","GaelVaroquaux","2017-03-22 06:04:53","Rather than a for loop, you should be using ""np.char.decode"" that you can apply on an array (eg a column of consistent type).","31e5c7b38f3914868bad5405ef7c6354be21553a","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","1411","nilearn","nilearn","akshayah3","2017-03-22 23:09:00","@GaelVaroquaux I had to use a for loop as the data for different loaders does not seem to be consistent.","31e5c7b38f3914868bad5405ef7c6354be21553a","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-07 19:18:06","Decoding Phenotypic data","c0514302000ab19d8fdde98b0f2894e1a66762ae",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-08 19:34:50","Update func.py","88d78c6cd11d1552f6096d2bff0c85d407890745",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-09 20:32:48","Added changes to functions","b6ff108a18ca319303f81d2ff68bc4fd7200c70c",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-09 20:34:19","Test case","48d46974ef80cdf9759458df97fbfb55f12c1fb6",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-21 21:07:59","Added utility function","2007e90d039c6505098e4f44bc4210626a524202",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-21 21:10:56","removed whitespace","97ba2859e3362e0ae0c5a6f73c58634b44c1ccd0",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-21 22:21:30","small change to Utility function","92b9064dc9355532c0a3ebdab28fd81b5fc0203c",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-22 05:49:44","small fix","e7b370e3b7966e293b1a79a1c17b528a83619830",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-22 21:44:57","Changed function name","c06aabbc64b3cf2a9807fa8f8da82e2e60620fcb",""
+"pull_request_commit","1411","nilearn","nilearn","akshayah3","2017-03-22 21:59:39","Revert changes","31e5c7b38f3914868bad5405ef7c6354be21553a",""

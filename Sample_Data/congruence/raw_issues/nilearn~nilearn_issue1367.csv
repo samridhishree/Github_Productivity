@@ -1,0 +1,101 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1367","nilearn","nilearn","ant1hu8","2017-01-25 15:51:10","Hi guys, I have a problem with the part in which we prepare the fMRI file in exercice 8.3.7 (http://nilearn.github.io/auto_examples/02_decoding/plot_haxby_anova_svm.html#sphx-glr-auto-examples-02-decoding-plot-haxby-anova-svm-py) and I do not understand the error message. I downloaded several time the ipynb file (I use ipython notebook) but the error is still appearing : 
+
+`C:\Users\Antoine Huet\Anaconda2\lib\site-packages\sklearn\externals\joblib\hashing.py:197: DeprecationWarning: Changing the shape of non-C contiguous array by
+descriptor assignment is deprecated. To maintain
+the Fortran contiguity of a multidimensional Fortran
+array, use 'a.T.view(...).T' instead
+  obj_bytes_view = obj.view(self.np.uint8)
+C:\Users\Antoine Huet\Anaconda2\lib\site-packages\sklearn\externals\joblib\hashing.py:197: DeprecationWarning: Changing the shape of non-C contiguous array by
+descriptor assignment is deprecated. To maintain
+the Fortran contiguity of a multidimensional Fortran
+array, use 'a.T.view(...).T' instead
+  obj_bytes_view = obj.view(self.np.uint8)`
+
+Could someone explain what the error is actually meaning?","start issue","Problem preparing the fMRI data in Decoding with ANOVA + SVM exercice"
+"issue_closed","1367","nilearn","nilearn","GaelVaroquaux","2017-01-25 17:19:55","","closed issue","Problem preparing the fMRI data in Decoding with ANOVA + SVM exercice"
+"issue_comment","1367","nilearn","nilearn","ant1hu8","2017-01-25 16:18:42","Thank you @GaelVaroquaux, however I did not wait enough time apparently because I got this printed below the warning I uploaded :
+
+`ValueError                                Traceback (most recent call last)
+<ipython-input-18-98e67f4284b7> in <module>()
+     13                            memory=""nilearn_cache"", memory_level=1)
+     14 func_filename = haxby_dataset.func[0]
+---> 15 X = nifti_masker.fit_transform(func_filename)
+     16 # Apply our condition_mask (apply the nifti_masker to func_filename)
+     17 X = X[condition_mask]
+
+C:\Users\Antoine Huet\AppData\Roaming\Python\Python27\site-packages\nilearn\input_data\base_masker.pyc in fit_transform(self, X, y, confounds, **fit_params)
+    204                                 ).transform(X, confounds=confounds)
+    205             else:
+--> 206                 return self.fit(**fit_params).transform(X, confounds=confounds)
+    207         else:
+    208             # fit method of arity 2 (supervised transformation)
+
+C:\Users\Antoine Huet\AppData\Roaming\Python\Python27\site-packages\nilearn\input_data\base_masker.pyc in transform(self, imgs, confounds)
+    174         self._check_fitted()
+    175 
+--> 176         return self.transform_single_imgs(imgs, confounds)
+    177 
+    178     def fit_transform(self, X, y=None, confounds=None, **fit_params):
+
+C:\Users\Antoine Huet\AppData\Roaming\Python\Python27\site-packages\nilearn\input_data\nifti_masker.pyc in transform_single_imgs(self, imgs, confounds, copy)
+    291             verbose=self.verbose,
+    292             confounds=confounds,
+--> 293             copy=copy
+    294         )
+    295 
+
+C:\Users\Antoine Huet\Anaconda2\lib\site-packages\sklearn\externals\joblib\memory.pyc in __call__(self, *args, **kwargs)
+    481 
+    482     def __call__(self, *args, **kwargs):
+--> 483         return self._cached_call(args, kwargs)[0]
+    484 
+    485     def __reduce__(self):
+
+C:\Users\Antoine Huet\Anaconda2\lib\site-packages\sklearn\externals\joblib\memory.pyc in _cached_call(self, args, kwargs)
+    428                           'directory %s'
+    429                         % (name, argument_hash, output_dir))
+--> 430             out, metadata = self.call(*args, **kwargs)
+    431             if self.mmap_mode is not None:
+    432                 # Memmap the output at the first call to be consistent with
+
+C:\Users\Antoine Huet\Anaconda2\lib\site-packages\sklearn\externals\joblib\memory.pyc in call(self, *args, **kwargs)
+    673         if self._verbose > 0:
+    674             print(format_call(self.func, args, kwargs))
+--> 675         output = self.func(*args, **kwargs)
+    676         self._persist_output(output, output_dir)
+    677         duration = time.time() - start_time
+
+C:\Users\Antoine Huet\AppData\Roaming\Python\Python27\site-packages\nilearn\input_data\nifti_masker.pyc in filter_and_mask(imgs, mask_img_, parameters, memory_level, memory, verbose, confounds, copy)
+     51                                       memory=memory,
+     52                                       verbose=verbose,
+---> 53                                       confounds=confounds, copy=copy)
+     54 
+     55     # For _later_: missing value removal or imputing of missing data
+
+C:\Users\Antoine Huet\AppData\Roaming\Python\Python27\site-packages\nilearn\input_data\base_masker.pyc in filter_and_extract(imgs, extraction_function, parameters, memory_level, memory, verbose, confounds, copy)
+    118             high_pass=parameters['high_pass'],
+    119             confounds=confounds,
+--> 120             sessions=sessions)
+    121 
+    122     return region_signals, aux
+
+C:\Users\Antoine Huet\Anaconda2\lib\site-packages\sklearn\externals\joblib\memory.pyc in __call__(self, *args, **kwargs)
+    281 
+    282     def __call__(self, *args, **kwargs):
+--> 283         return self.func(*args, **kwargs)
+    284 
+    285     def call_and_shelve(self, *args, **kwargs):
+
+C:\Users\Antoine Huet\AppData\Roaming\Python\Python27\site-packages\nilearn\signal.pyc in clean(signals, sessions, detrend, standardize, confounds, low_pass, high_pass, t_r)
+    471             raise ValueError(('The length of the session vector (%i) '
+    472                               'does not match the length of the signals (%i)')
+--> 473                               % (len(sessions), len(signals)))
+    474         for s in np.unique(sessions):
+    475             session_confounds = None
+
+ValueError: The length of the session vector (216) does not match the length of the signals (1452)`
+
+Could you confirm it's just part of the warning? Or will it mess with the rest of the script?","",""
+"issue_comment","1367","nilearn","nilearn","ant1hu8","2017-01-25 16:45:41","Alright, found the error, as you said the condition_mask was only applied to part of the data. 
+Thanks for your time @GaelVaroquaux  !","",""

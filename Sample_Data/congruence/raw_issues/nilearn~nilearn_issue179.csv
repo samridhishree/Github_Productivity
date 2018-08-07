@@ -1,0 +1,52 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","179","nilearn","nilearn","AlexandreAbraham","2014-03-31 15:33:35","When fetching a dataset, the programmer provides a list of the files to be downloaded. If he provides two files with the same name, eg `http://web.fr/xxx/archive.zip` and `http://web.fr/yyy/archive.zip`, then a local file archive.zip.part will be created when the first file is downloaded, extracted and deleted, and it is the same for the second file.
+
+This induces two problems:
+- if something goes wrong, we may start downloading `http://web.fr/yyy/archive.zip`, and then resuming system may resume a download of `http://web.fr/xxx/archive.zip` using `archive.zip.part` file, thinking that it is the same file
+- if someday we want to download file in parallel, this cannot work.
+
+We have now to decide if it's a programmer related issue, and then we can give him a way to rename a file, or if it's a nilearn issue, and then we have to solve it.
+
+A solution would be to assign a unique name to the file when downloading it. What I have in mind is:
+- using the E-tag header value if available
+- using a hash combining the download URL and file-size otherwise.
+
+We can also download the first bytes of the files before resuming: headers often contains a hash of the file. I don't think that it is a reliable solution.
+
+@GaelVaroquaux any thoughts on this one?
+@VirgileFritsch this is the bug that I was talking of. As all your zip files are names brainomics_data.zip, this may append. 
+","start issue","Fetching may fail if several files having the same name are requested"
+"issue_closed","179","nilearn","nilearn","AlexandreAbraham","2014-04-23 00:58:40","","closed issue","Fetching may fail if several files having the same name are requested"
+"issue_comment","179","nilearn","nilearn","GaelVaroquaux","2014-04-21 14:30:20","Is it a problem that we are currently facing? If not, let's just close
+this issue and move on: we have already way too many problems to worry
+about.
+","",""
+"issue_comment","179","nilearn","nilearn","GaelVaroquaux","2014-04-21 14:45:35","> I raised it because we had this problem with Virgile. For the localizer
+> fetcher, several files are downloaded and they are all named 'brainomics.zip'.
+> This is not urgent though... For the moment, in case of problem, the file will
+> be overwritten and downloaded again.
+
+OK, so we do have the problem, and it must indeed be solved...
+","",""
+"issue_comment","179","nilearn","nilearn","GaelVaroquaux","2014-04-21 15:53:52","> My concern is that we forget that before I leave and that someday, this bug
+> pops up and is so mystical that people will spend quite a lot of time looking
+> for the origin.
+
+Yes, but we are quite busy right now. I guess that I am more interested
+in moving nilearn forward than having the perfect dataset download API.
+","",""
+"issue_comment","179","nilearn","nilearn","GaelVaroquaux","2014-04-21 16:00:53","> Took me 2 minutes to fix the problem for the localizer dataset and raise a
+> warning if the urls given to the fetcher may trigger this problem. If it's a
+> bit complicated to solve, it is very easy to detect.
+
+That's a great solution! That's exactly the kind of compromises that we
+need.
+","",""
+"issue_comment","179","nilearn","nilearn","AlexandreAbraham","2014-04-21 14:44:07","I raised it because we had this problem with Virgile. For the localizer fetcher, several files are downloaded and they are all named 'brainomics.zip'. This is not urgent though... For the moment, in case of problem, the file will be overwritten and downloaded again.
+","",""
+"issue_comment","179","nilearn","nilearn","AlexandreAbraham","2014-04-21 15:48:37","Solving it in the specific case of the localizer dataset is simple. Basically, because of cubicweb, we give the name of the file to download (I won't go into the details). So we just have to name them brainomics1.zip, brainomics2.zip...
+
+My concern is that we forget that before I leave and that someday, this bug pops up and is so mystical that people will spend quite a lot of time looking for the origin.
+","",""
+"issue_comment","179","nilearn","nilearn","AlexandreAbraham","2014-04-21 15:58:28","Took me 2 minutes to fix the problem for the localizer dataset and raise a warning if the urls given to the fetcher may trigger this problem. If it's a bit complicated to solve, it is very easy to detect. I'll push that later, let's say that this bug is temporarly fixed.
+","",""

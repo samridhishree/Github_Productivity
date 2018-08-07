@@ -1,0 +1,70 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","273","nilearn","nilearn","banilo","2014-10-31 07:51:01","1) For check_niimgs: the ""accept_3d"" argument does not seem to be taken into account in all cases:
+
+``` python
+# nifti IS 3D!!!
+print ""Actual shape x=%i, y=%i, z=%i"" % nib.load('mask.nii').shape  # -> Actual shape x=40, y=64, z=64
+
+l = ['mask.nii']
+print check_niimgs(l, accept_3d=False).shape  # -> (40, 64, 64, 1)
+print check_niimgs(l, accept_3d=True).shape  # -> (40, 64, 64, 1)
+
+path = 'mask.nii'
+print check_niimgs(path, accept_3d=False).shape  # -> TypeError: Data must be either a 4D Nifti 
+print check_niimgs(path, accept_3d=True).shape  # -> (40, 64, 64, 1)
+
+l2 = [nib.load('mask.nii')]
+print check_niimgs(l2, accept_3d=False).shape  # -> (40, 64, 64, 1)
+print check_niimgs(l2, accept_3d=True).shape  # -> (40, 64, 64, 1)
+
+nii = nib.load('mask.nii')
+print check_niimgs(nii, accept_3d=False).shape  # -> TypeError: Data must be either a 4D Nifti 
+print check_niimgs(nii, accept_3d=True).shape  # -> (40, 64, 64, 1)
+```
+
+2) Apart from that check_niimg has a ""ensure_3d"" keyword, whereas check_niimgs has a ""accept_3d"" keyword. What's the rationale? Could it be unified?
+","start issue","Inconsistencies in check_niimg / check_niimgs in behavior and naming"
+"issue_closed","273","nilearn","nilearn","lesteve","2014-11-07 15:39:46","","closed issue","Inconsistencies in check_niimg / check_niimgs in behavior and naming"
+"issue_comment","273","nilearn","nilearn","banilo","2014-10-31 07:52:18","ups, the bold/big line was not intentional
+","",""
+"issue_comment","273","nilearn","nilearn","AlexandreAbraham","2014-10-31 08:05:53","1) The behavior is consistent.
+
+`l = ['mask.nii']` and `l2 = [nib.load('mask.nii')]` are 4D. By putting the mask in a list, you add a dimension.
+`path = 'mask.nii'` and `nii = nib.load('mask.nii')` are 3D and thus are not accepted by check_niimgs, unless `accept_3d=True`.
+
+2) Both parameters have been created for developer purposes. It avoids code repetition. `ensure_3d` is an assertion on the input data, whereas you can see `accept_3d` as a `atleast_4d` function for nifti images.
+","",""
+"issue_comment","273","nilearn","nilearn","banilo","2014-11-15 22:19:29","But if the general working unit in nilearn is the nibabel object then it might be confusing to some user that 3D and 4D here pertains to the general data structure instead of the nibabel object. Perhaps a note in the doc string?
+","",""
+"issue_comment","273","nilearn","nilearn","AlexandreAbraham","2014-11-16 23:55:35","I don't get your remark.
+","",""
+"issue_comment","273","nilearn","nilearn","GaelVaroquaux","2014-11-17 09:34:45","> I don't get your remark.
+
+Me neither.
+","",""
+"issue_comment","273","nilearn","nilearn","banilo","2014-11-17 10:09:36","...ok, what I am awkwardly trying to express is the following. Nifti images (not general data representation) appear to be the working unit of nilearn in general. So, a nifti-image-focused user might expect these two cases from above to actually throw a TypeError.
+
+``` python
+l = ['mask.nii']
+print check_niimgs(l, accept_3d=False).shape  # -> (40, 64, 64, 1)
+
+l2 = [nib.load('mask.nii')]
+print check_niimgs(l2, accept_3d=False).shape  # -> (40, 64, 64, 1)
+```
+
+The image is 3D, only embedding this single image in a list makes it 4D - but only in data representation, the image by itself is still 3D.
+
+Did I explain better this time?
+","",""
+"issue_comment","273","nilearn","nilearn","GaelVaroquaux","2014-11-17 12:16:50","> Did I explain better this time?
+
+You did. And if I understand things correctly, you are saying that you
+would want the code to throw an error. I think that this is a bad idea,
+because depending on the software you a using, a same analysis can result
+in a 3D or 4D (with shape[3] == 1) image. Typical, AFNI creates 4D
+images. The users are not aware of these sublte differences, and making
+the difference just for the sake of purity is not rendering them a
+service.
+","",""
+"issue_comment","273","nilearn","nilearn","banilo","2014-11-17 12:18:44","I see, thanks.
+","",""

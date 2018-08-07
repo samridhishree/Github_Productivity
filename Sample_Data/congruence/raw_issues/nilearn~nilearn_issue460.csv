@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","460","nilearn","nilearn","bcipolli","2015-02-24 10:42:17","Calling `mask.invert_transform(transform(img))` on a 3D image appends a 4th dimension.  
+
+To me, this is semantically wrong--if I start with 3D, I should finish with 3D.
+
+The practical problem I hit was while using `nipy`'s plotting functions.  They require 3D data, and this kind of unexpected 4D image made it hard to write generic code there--all other images I was working on were 3D (including others via nilearn functions like `index_img`), but only this one was not.
+
+Here's a script to reproduce the issue.
+
+``` python
+import nibabel
+from nilearn import datasets
+from nilearn.image import index_img
+from nilearn.input_data import NiftiMasker
+
+haxby_dataset = datasets.fetch_haxby()
+mask_filename = haxby_dataset.mask_vt[0]
+func_filename = haxby_dataset.func[0]
+
+nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True)
+fmri_img = index_img(nibabel.load(func_filename), 0)  # 3D image
+nifti_masker.fit(fmri_img)
+print nifti_masker.mask_img_.shape  # 3D mask
+
+fmri_masked = nifti_masker.transform(fmri_img)
+fmri_unmasked = nifti_masker.inverse_transform(fmri_masked)
+print fmri_img.shape, fmri_unmasked.shape  # 3D start image, 4D end image
+```
+","start issue","Calling mask.invert_transform(transform(img)) on a 3D image does not return a 3D image."
+"issue_closed","460","nilearn","nilearn","GaelVaroquaux","2015-05-11 05:12:06","","closed issue","Calling mask.invert_transform(transform(img)) on a 3D image does not return a 3D image."
+"issue_comment","460","nilearn","nilearn","bcipolli","2015-02-24 10:48:58","I debugged this for a while, and the introduction of the 4th dimenions occurs in `check_niimgs`, which converts a 3D image to 4D (even when `allow_3D=True`).  Once that's done, there's no way to return a 1D vector from `transform`, and so `inverse_transform` also must return 4D.
+
+Not sure if there is any simple fix.
+","",""
+"issue_comment","460","nilearn","nilearn","AlexandreAbraham","2015-02-24 12:43:57","We are aware of that and this point is still under discussion. We couldn't come with a satisfying answer yet.
+","",""
+"issue_comment","460","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:06:31","Well, the problem is that there is intrinsically a loss of information:
+the output of transform must be 2D to obey scikit-learn's convention.
+Thus a 3D (n_x, n_y, n_z) image and a 4D (n_x, n_y, n_z, 1) image are
+cast to the same 'X' matrix. For one of these two, 
+inverse_transform(transform()) will fail to give the same shape as the
+original.
+
+We are open to changing the current convention, ie to always cast to 4D,
+if you give us good arguments.
+","",""
+"issue_comment","460","nilearn","nilearn","AlexandreAbraham","2015-04-17 07:33:48","@GaelVaroquaux it is the opposite, we always return a 4D image. I think that we can close this issue now. The question is: should we still return 4D images or should we squeeze it to 3D if there is only one volume?
+","",""
+"issue_comment","460","nilearn","nilearn","GaelVaroquaux","2015-05-11 05:12:06","Closing this as won't fix: we have decided that consistency in the sense of always returning the same ouptut shape was more important.
+","",""

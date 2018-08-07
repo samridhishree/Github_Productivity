@@ -1,0 +1,311 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1537","nilearn","nilearn","banilo","2017-11-03 18:54:52","Working with the current version 0.3.1, I noticed that setting smoothing_fwhm=0 in the NiftiMasker() initialization leads to all zero outputs when transforming nifti images. The default choice for ""non-active"" is None, but perhaps an informative warning may be thrown when this non-sensible choice is made for the smoothing argument.
+","start issue","NiftiMasker: smoothing_fwhm=0 deletes data"
+"issue_closed","1537","nilearn","nilearn","KamalakerDadi","2017-11-14 10:35:30","","closed issue","NiftiMasker: smoothing_fwhm=0 deletes data"
+"issue_comment","1537","nilearn","nilearn","bthirion","2017-11-03 20:25:34","Yes. Can you issue a PR ?","",""
+"issue_comment","1537","nilearn","nilearn","bthirion","2017-11-10 09:12:01","* You have any equivalent sigma value when fwhm=0 ?
+I would convert fwhm=0 to fwhm=None and spit a warning.","",""
+"issue_comment","1537","nilearn","nilearn","bthirion","2017-11-10 10:07:34","On 10/11/2017 10:43, KamalakerDadi wrote:
+>
+>     You have any equivalent sigma value when fwhm=0 ?
+>     I would convert fwhm=0 to fwhm=None and spit a warning.
+>     Switching 0 to None by default appears to be a viable approach to me.
+>
+> Thanks, just want to check. If this should be only to recent SciPy or 
+> irrespective of versions ?
+>
+> —
+> You are receiving this because you commented.
+> Reply to this email directly, view it on GitHub 
+> <https://github.com/nilearn/nilearn/issues/1537#issuecomment-343425943>, 
+> or mute the thread 
+> <https://github.com/notifications/unsubscribe-auth/AAOT1suwg8SpxRubkbh-ybfMeeVhjrQVks5s1BqpgaJpZM4QRiLr>.
+>
+Ideally, you want to check and only do that  with scipy 1.0.0
+
+Thx.
+
+","",""
+"issue_comment","1537","nilearn","nilearn","banilo","2017-11-10 09:13:46","Switching 0 to None by default appears to be a viable approach to me.
+
+2017-11-10 10:03 GMT+01:00 KamalakerDadi <notifications@github.com>:
+
+> I don't want to open a new issue because it is already there regarding
+> smoothing_fwhm=0.
+>
+> Particularly, I see this issue in canica and dict_learning when tests are
+> failing because both estimator tests used smoothing_fwhm=0.. See for
+> failing of tests.
+> https://travis-ci.org/nilearn/nilearn/jobs/299711990#L3471
+>
+> The problem is with SciPy 1.0.0, if I think I understood well:
+> This code produces an array containing nans with smoothing_fwhm=0.
+>
+> import numpy as npfrom nilearn.image.image import _smooth_array
+>
+> data = np.zeros((40, 41, 42))
+> data[20, 20, 20] = 1
+> affine = np.eye(4)
+> filtered = _smooth_array(data, affine, fwhm=0)/home/kamalakar/miniconda2/lib/python2.7/site-packages/scipy/ndimage/filters.py:207: RuntimeWarning: divide by zero encountered in double_scalars
+>   p = numpy.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])/home/kamalakar/miniconda2/lib/python2.7/site-packages/numpy/polynomial/polynomial.py:775: RuntimeWarning: invalid value encountered in multiply
+>   c0 = c[-i] + c0*x
+> Result:
+> array([[[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        ...,
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+>
+>        [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         ...,
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+>         [ nan,  nan,  nan, ...,  nan,  nan,  nan]]])
+>
+> Before SciPy 1.0.0
+>
+> Result:
+> array([[[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        ...,
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+>
+>        [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         ...,
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+>         [ 0.,  0.,  0., ...,  0.,  0.,  0.]]])
+>
+> Internally the code uses scipy.ndimage.gaussian_filter1d.
+> I see two options to fix this:
+>
+>    - To not accept smoothing_fwhm=0. rather advice users to specify as
+>    smoothing_fwhm=None.
+>    - If somebody argues that 0. is a scalar and acceptable input then we
+>    need to ask in SciPy tracker about anything I am missing with
+>    gaussian_filter1d before and after new release.
+>    - You have any equivalent sigma value when fwhm=0 ?
+>
+> Please let me know your opinions as this some what important ?
+> @banilo <https://github.com/banilo> do you mind if I take over your PR
+> #1541 <https://github.com/nilearn/nilearn/pull/1541> ?
+>
+> —
+> You are receiving this because you were mentioned.
+> Reply to this email directly, view it on GitHub
+> <https://github.com/nilearn/nilearn/issues/1537#issuecomment-343416525>,
+> or mute the thread
+> <https://github.com/notifications/unsubscribe-auth/ADufRAwNTBx92LryVenK59JwDvbxEDy4ks5s1BFMgaJpZM4QRiLr>
+> .
+>
+","",""
+"issue_comment","1537","nilearn","nilearn","KamalakerDadi","2017-11-10 09:03:05","I don't want to open a new issue because it is already there regarding ```smoothing_fwhm=0```.
+
+Particularly, I see this issue in canica and dict_learning when tests are failing because both estimator tests used ```smoothing_fwhm=0.```. See for failing of tests.
+https://travis-ci.org/nilearn/nilearn/jobs/299711990#L3471
+
+The problem is with SciPy 1.0.0, if I think I understood well:
+This code produces an array containing nans with smoothing_fwhm=0.
+```python
+import numpy as np
+from nilearn.image.image import _smooth_array
+
+data = np.zeros((40, 41, 42))
+data[20, 20, 20] = 1
+affine = np.eye(4)
+filtered = _smooth_array(data, affine, fwhm=0)
+/home/kamalakar/miniconda2/lib/python2.7/site-packages/scipy/ndimage/filters.py:207: RuntimeWarning: divide by zero encountered in double_scalars
+  p = numpy.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])
+/home/kamalakar/miniconda2/lib/python2.7/site-packages/numpy/polynomial/polynomial.py:775: RuntimeWarning: invalid value encountered in multiply
+  c0 = c[-i] + c0*x
+Result:
+array([[[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       ..., 
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]],
+
+       [[ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        ..., 
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan],
+        [ nan,  nan,  nan, ...,  nan,  nan,  nan]]])
+```
+Before SciPy 1.0.0
+```python
+Result:
+array([[[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       ..., 
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+       [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]])
+```
+Internally the code uses ```scipy.ndimage.gaussian_filter1d```.
+I see two options to fix this:
+- To not accept ```smoothing_fwhm=0.``` rather advice users to specify as ```smoothing_fwhm=None```.
+- If somebody argues that 0. is a scalar and acceptable input then we need to ask in SciPy tracker about anything I am missing with ```gaussian_filter1d``` before and after new release.
+- You have any equivalent ```sigma``` value when ```fwhm=0``` ?
+
+Please let me know your opinions as this some what important ?
+@banilo do you mind if I take over your PR #1541 ?","",""
+"issue_comment","1537","nilearn","nilearn","KamalakerDadi","2017-11-10 09:43:05",">You have any equivalent sigma value when fwhm=0 ?
+>I would convert fwhm=0 to fwhm=None and spit a warning.
+>Switching 0 to None by default appears to be a viable approach to me.
+
+Thanks, just want to check. If this should be only to recent SciPy or irrespective of versions ?","",""
+"issue_comment","1537","nilearn","nilearn","KamalakerDadi","2017-11-14 10:35:30","Closing with PR #1545 ","",""

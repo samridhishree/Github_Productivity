@@ -1,0 +1,59 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","584","nilearn","nilearn","banilo","2015-05-12 11:09:41","Trying to iterate through 18749 nifti images with individual resample_img calls on a computer cluster.
+
+``` python
+transf_data = np.zeros((nfiles, nvox))
+for i, fpath in enumerate(paths):
+    print i
+    cur_nii = resample_img(fpath, target_affine=masknii.get_affine(), target_shape=masknii.shape)
+    transf_data[i, :] = masker.transform(cur_nii)[0, :]
+```
+
+I got a ""too many open files"" error with the following traceback:
+
+```
+Traceback (most recent call last):
+  File ""prepdata.py"", line 37, in <module>
+    niis4d = check_niimg(paths)
+  File ""/storage/workspace/danilo/nilearn/nilearn/_utils/niimg_conversions.py"", line 147, in check_niimg
+    return concat_niimgs(niimg, ensure_ndim=ensure_ndim)
+  File ""/storage/workspace/danilo/nilearn/nilearn/_utils/niimg_conversions.py"", line 307, in concat_niimgs
+    memory=memory, memory_level=memory_level))):
+  File ""/storage/workspace/danilo/nilearn/nilearn/_utils/niimg_conversions.py"", line 71, in _iter_check_niimg
+    niimg, ensure_ndim=ndim_minus_one, atleast_4d=atleast_4d)
+  File ""/storage/workspace/danilo/nilearn/nilearn/_utils/niimg_conversions.py"", line 158, in check_niimg
+    data = niimg.get_data().view()
+  File ""/usr/lib/pymodules/python2.7/nibabel/spatialimages.py"", line 341, in get_data
+    return np.asanyarray(self._data)
+  File ""/usr/lib/python2.7/dist-packages/numpy/core/numeric.py"", line 512, in asanyarray
+    return array(a, dtype, copy=False, order=order, subok=True)
+  File ""/usr/lib/pymodules/python2.7/nibabel/arrayproxy.py"", line 55, in __array__
+    self._data = self._read_data()
+  File ""/usr/lib/pymodules/python2.7/nibabel/arrayproxy.py"", line 60, in _read_data
+    data = self.header.data_from_fileobj(fileobj)
+  File ""/usr/lib/pymodules/python2.7/nibabel/analyze.py"", line 486, in data_from_fileobj
+    data = self.raw_data_from_fileobj(fileobj)
+  File ""/usr/lib/pymodules/python2.7/nibabel/analyze.py"", line 458, in raw_data_from_fileobj
+    return array_from_file(shape, dtype, fileobj, offset)
+  File ""/usr/lib/pymodules/python2.7/nibabel/volumeutils.py"", line 474, in array_from_file
+    offset=offset)
+  File ""/usr/lib/python2.7/dist-packages/numpy/core/memmap.py"", line 254, in __new__
+    mm = mmap.mmap(fid.fileno(), bytes, access=acc, offset=start)
+mmap.error: [Errno 24] Too many open files
+```
+","start issue","resample_img() might not properly handle file handles"
+"issue_closed","584","nilearn","nilearn","AlexandreAbraham","2015-06-22 15:37:56","","closed issue","resample_img() might not properly handle file handles"
+"issue_comment","584","nilearn","nilearn","AlexandreAbraham","2015-05-13 14:23:51","Could you try:
+
+``` python
+transf_data = np.zeros((nfiles, nvox))
+for i, fpath in enumerate(paths):
+    print i
+    cur_nii = resample_img(fpath, target_affine=masknii.get_affine(), target_shape=masknii.shape)
+    transf_data[i, :] = masker.transform(cur_nii)[0, :].copy()
+```
+","",""
+"issue_comment","584","nilearn","nilearn","AlexandreAbraham","2015-06-01 07:58:17","Tried to reproduce your bug but couldn't... This may be Mac OS specific.
+","",""
+"issue_comment","584","nilearn","nilearn","AlexandreAbraham","2015-06-02 23:51:47","Just a thought... Is it possible that your file handler is kept open because your niftis are not garbage collected? Could you call `gc.collect()` in your loop and see if it fixes the problem?
+","",""

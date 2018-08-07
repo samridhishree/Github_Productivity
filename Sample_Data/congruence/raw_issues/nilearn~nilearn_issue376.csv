@@ -1,0 +1,52 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","376","nilearn","nilearn","bcipolli","2015-01-31 00:55:52","On all other setups, this converges.  
+https://travis-ci.org/nilearn/nilearn/jobs/48902522
+
+For some reason, this does not affect the rest of the test, so perhaps something about the NeuroDebian setup causes this unexpected warning to trigger spuriously?
+
+Can someone take a look and figure out if this is just a spurious warning, a real bug, or an issue with how we're calling FastICA?
+","start issue","Test warning: FastICA reports it does not converge... only on our neurodebian install"
+"issue_closed","376","nilearn","nilearn","lesteve","2015-02-27 11:51:54","","closed issue","Test warning: FastICA reports it does not converge... only on our neurodebian install"
+"issue_comment","376","nilearn","nilearn","GaelVaroquaux","2015-02-18 20:49:56","> Would a PR that exposes max_iter in CanICA, and sent to fastica, be
+> acceptable? Or is another solution (exposing more fastica args, or
+> simply ignoring the warning) preferred?
+
+I would ignore the warning and move on (as in: not do anything about it).
+I am afraid that exposing too many parameters will simply scare away the
+end user.
+","",""
+"issue_comment","376","nilearn","nilearn","AlexandreAbraham","2015-02-09 12:52:29","This is a known issue. First, I don't think that this fix should be included in your PR about disabling warning. Second, I think that it is useful to run this test no matter the configuration. However, if it fails, it is possible to raison a SkipTestError to skip it if we really want to disable it.
+
+For me, it is similar to the warning issue: for the moment, nilearn is in development and thus we don't have a top quality release, even if we're doing our best. This kind of concern should be raised later, for the 1.0 release for example.
+","",""
+"issue_comment","376","nilearn","nilearn","bcipolli","2015-02-10 19:04:58","@AlexandreAbraham thanks; is there an existing issue describing what the problem is?  If not, could you add some info here as to what the issue is?
+","",""
+"issue_comment","376","nilearn","nilearn","AlexandreAbraham","2015-02-10 23:45:48","CanICA is not deterministic so it fails in rare cases. See issue #60 and PR #61 that fixes the issue on most plaform (but unfortunately it still fails sometimes...).
+","",""
+"issue_comment","376","nilearn","nilearn","bcipolli","2015-02-11 00:02:26","@AlexandreAbraham Thanks!  I think this may be a different issue?  I see the ICA warning that it has not converged on _every_ test run on the neurodebian build.  In addition, I never see a test failure--which I would expect to happen when ICA fails to converge.
+
+Could be nothing, but also could be something.
+","",""
+"issue_comment","376","nilearn","nilearn","AlexandreAbraham","2015-02-11 00:12:47","My bad. Well, in that case, juste increase the number of iterations. It should converge at some point.
+","",""
+"issue_comment","376","nilearn","nilearn","lesteve","2015-02-27 11:51:54","> I would ignore the warning and move on (as in: not do anything about it).
+
+Agreed closing this one.
+","",""
+"issue_comment","376","nilearn","nilearn","lesteve","2015-01-31 08:01:12","Good catch! I am not sure how much time we should invest in this given #341.
+","",""
+"issue_comment","376","nilearn","nilearn","lesteve","2015-01-31 08:08:39","Sorry I spoke too soon this is about one of the test and not the plot_ica_resting_state example...
+","",""
+"issue_comment","376","nilearn","nilearn","bcipolli","2015-01-31 17:37:02","The problem for me is that these `UserWarning`s throw errors in #371, so this is causing a test error.  I believe making `UserWarning`s throw errors is the right thing--these warnings should never be triggered in a test unless we expect to trigger them.  They're supposed to tell users something unexpected.
+
+For now, I suggest that one of the following be done:
+- Skip the test only on neurodebian (i.e. it's broken, we don't know why, but we don't want to figure it out)
+- Change the test so that the warning isn't thrown (i.e. the test isn't designed properly somehow)
+- Change the test to accept only that specific warning if thrown (i.e. the test is designed properly, and the warning is irrelevant).
+
+Advice is welcome!  Note that this affects #371, as well as the `python-3.x` branch I'm finishing up.
+","",""
+"issue_comment","376","nilearn","nilearn","bcipolli","2015-02-18 15:08:23","`max_iter` is not exposed as a parameter in `CanICA`.  I confirmed that if I up `max_iter`, it does solve the issue.
+
+Would a PR that exposes `max_iter` in `CanICA`, and sent to `fastica`, be acceptable?  Or is another solution (exposing more `fastica` args, or simply ignoring the warning) preferred?
+","",""

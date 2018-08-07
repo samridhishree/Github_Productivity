@@ -1,0 +1,213 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","585","nilearn","nilearn","AlexandreAbraham","2015-05-13 08:51:23","Fix #457
+- In CacheMixin, make memory levels mandatory for function `_cache`. It is logic and they are never used without them.
+- Fix logic in `cache` function (if called with a valid memory, no cache)
+- Add tests
+- Fix cache levels for several calls
+","start issue","Fix logic flaws in caching system (was Fix 457)"
+"issue_closed","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 12:40:52","","closed issue","Fix logic flaws in caching system (was Fix 457)"
+"pull_request_title","585","nilearn","nilearn","AlexandreAbraham","2015-05-13 08:51:23","Fix #457
+- In CacheMixin, make memory levels mandatory for function `_cache`. It is logic and they are never used without them.
+- Fix logic in `cache` function (if called with a valid memory, no cache)
+- Add tests
+- Fix cache levels for several calls
+","07366be1a0638c957e3b56dcc930d2909c4c505b","Fix logic flaws in caching system (was Fix 457)"
+"pull_request_merged","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 12:40:52","Fix logic flaws in caching system (was Fix 457)","9cc40b097cd63844fe6f271bbc5645391c898107","Pull request merge from AlexandreAbraham/nilearn:fix_457 to nilearn/nilearn:master"
+"issue_comment","585","nilearn","nilearn","bthirion","2015-05-23 20:46:28","Please notice a travis failure on Python 3.
+","",""
+"issue_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 12:14:22","@lesteve Ready for next round ;)
+","",""
+"issue_comment","585","nilearn","nilearn","lesteve","2015-06-23 14:20:36","> @lesteve Ready for next round ;)
+
+Not clear to me what the target_resampling=None has to do with this PR. Can you enlighten me ?
+","",""
+"issue_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 14:23:34","The code handling `target_resampling` was really messy and prevented me to do proper caching. I had to refactor it. I took this occasion to make it clearer.
+","",""
+"issue_comment","585","nilearn","nilearn","lesteve","2015-06-24 06:37:46","Looks like you need a rebase to fix the merge conflict.
+","",""
+"issue_comment","585","nilearn","nilearn","lesteve","2015-06-25 12:08:16","FYI this PR needs a rebase.
+","",""
+"issue_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 12:40:43","OK. Thx. Merging.
+","",""
+"pull_request_commit_comment","585","nilearn","nilearn","bthirion","2015-05-23 20:41:09","Could you add parentheses to help parsing ? I'm not sure I get ti right.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","bthirion","2015-05-23 20:41:46","And if this is not too complicated, explain the logic...
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","bthirion","2015-05-23 20:45:53","In general, what is the strategy to set memory_level / func_memory elvel to 1 or 2 ? Should there be a pragraph on it in the doc ?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-05-23 22:19:08","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-05-23 22:24:13","Each function has a reference memory_level (func_memory_level). If the user memory_level if equal or greater to func_memory_level, then the function is cached. The goal is, for example, to have several layers of caching. In NiftiMasker:
+- level 1 only cache the output (masked data)
+- level 2 will cache intermediate step of the pretreatment.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-09 09:07:34","While you are at it: typo here grater -> gr**e**ater
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-09 09:10:40","Looks like you meant to make both `func_memory_level` and `memory_level` parameters required but didn't do it in the function signature.
+
+Also just wondering whether something more explicit than func_memory_level could be used ... No great suggestions other than reference_memory_level though.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-09 09:15:15","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-09 09:17:15","Is there a standard way to precise that in the doc?
+
+Also, I'm not fond of this name but it already changed twice...
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-09 09:34:26","You are only checking half of your comment. Maybe something like that:
+
+``` python
+memory_params = [memory_level, func_memory_level]
+both_params_integers = all(isinstance(param, int) for param in memory_params)
+both_params_none = all(param is None for param in memory_params)
+
+if not (both_params_integers or both_params_none):
+    raise ValueError(...)
+```
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-09 11:06:30","Sorry I wasn't clear what I meant is that you didn't do what you announced in the description of the PR.
+
+> In CacheMixin, make memory levels mandatory for function _cache. It is logic and they are never used without them.
+
+Both `func_memory_level` and `memory_level` are still optional parameters atm ...
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-09 11:28:45","> In CacheMixin, make memory levels mandatory for function **_cache**. It is logic and they are never used without them.
+
+I talk about function `_cache`, for which `func_memory_level` is now a mandatory parameter. `cache` is another function and can be called without them.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-09 11:35:46","I like your version. Replaced!
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-12 11:54:33","Fair enough, but then func_memory_level is optional and the docstring should be consistent.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-12 11:54:50","same thing here, optional shouldn't have been removed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-12 11:59:32","Fixed.
+
+On Fri, Jun 12, 2015 at 1:54 PM, Loïc Estève notifications@github.com
+wrote:
+
+> In nilearn/_utils/cache_mixin.py
+> https://github.com/nilearn/nilearn/pull/585#discussion_r32309405:
+> 
+> > ```
+> >      The memory_level from which caching must be enabled for the wrapped
+> >      function.
+> > ```
+> > -    memory_level: int, optional
+> > -    memory_level: int
+> 
+> same thing here, optional shouldn't have been removed.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/585/files#r32309405.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-12 12:00:09","Any reason why you changed func_memory_level in this file? Used to be 1 now is 2.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-12 13:54:13","Good point! The logic is that at level 1, only the signals should be cached. And at level 2, all intermediate steps should be cached. But the level 1 is missing here.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:15:44","For better or worse it seems that logger is used consistently in this file. Not sure that this PR is the right place to replace logger.log by print statements.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:24:10","The use of itertools.combinations looks quite smart but you could just take the first image and make sure it has the same field of view as the remaining ones, couldn't you ?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:24:54","It is a bit of a shame that _assert_same_fov doesn't reuse _check_same_fov given their similar functionality.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:28:15","Don't you need to add more ignored parameters, for example memory and memory_level?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:28:33","Maybe a short docstring would be nice
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:34:39","Just curious, where is `_resampled_labels_img_` likely to be set prior to this statement?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(72, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:41:44","Seems very similar to _extract_signals in nifti_labels_masker.py. Maybe worth looking at some refactoring here.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(21, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 07:43:52","Do you need to ignore memory and memory_level here?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 08:07:30","`assert_equal(a, b)` gives slightly nicer error messages than `assert_true(a == b)`.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/tests/test_cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 08:11:11","Looking at it a bit closer, maybe from multiple calls to transform ?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(72, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:09:35","This is a PR to fix bugs so I took the occasion to fix other problems. I can remove it if it's necessary though.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:10:50","It's possible but I wanted to have the best error message possible. Note that this function is called with one or two params.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:12:37","They can be merged if I add a parameter to raise an error.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:17:40","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:19:15","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:19:43","Yes. It is a caching system for multiple calls.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(72, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:20:36","Fixed
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:22:52","I'm afraid to fix stuff since people tell me that it should be part of another PR :P.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/tests/test_cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","lesteve","2015-06-24 10:53:24","Can you remind me what was the problem with the logger?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 11:35:07","Nothing but the fact that it is not consistant with the rest of the API. I know that we once talked about removing it. Gaël has also suggested another logging system to replace it.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-30 14:07:01","Merged.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-06-30 15:29:53","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/tests/test_cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-07-02 10:53:23","Yes, but this is not the point of this PR. This is not as trivial as it seems. In particular, this is not the only code that can be factorized. It can be merged with the code coming from NiftiSpheresMasker and Searchlight (which have very similar code too). I was thinking of a BaseElementMasker that iterates on some kind of ROI iterator (list of ROI or labels or maps). But this require a lot of work. This is the step after!
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(21, '', u'nilearn/input_data/nifti_maps_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 09:37:01","That function needs a better docstring. First, the notion of ""equivalence"" of images should be made explicit (am I right in understanding that its: same shape and affine?). Second, what the kwargs are should be detailed.
+
+It doesn't have to be of the quality of user-facing docs, it's more a question of devs easily understanding what the function does.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 09:40:46","I would prefer, for readability, still having the name of the keyword argument in the code. It serves to explain what the '1' means.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 09:41:04","Same remark about keeping the name of the kwarg.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 09:48:13","I'd be happier with the kwarg being explicit :)
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 09:48:55","I think that in English, this is know as 'pre-processing"". ""Treatement"" being a bad translation.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 09:53:27","Is there a specific reason that you removed the default value?
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:13:56","I just wanted to make it explicit and mandatory. No strong feelings about that.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","GaelVaroquaux","2015-07-13 10:15:05","> I just wanted to make it explicit and mandatory. No strong feelings about that.
+
+I'd rather not bother people if they are not thinking about this kind of
+problem: it's a valid usecase to want to cache without controling the
+granularity.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/cache_mixin.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:21:54","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:27:14","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:27:18","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/multi_nifti_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:27:30","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit_comment","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:28:38","Fixed.
+","07366be1a0638c957e3b56dcc930d2909c4c505b","(None, '', u'nilearn/input_data/nifti_labels_masker.py')"
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-05-13 08:34:27","Mask func_memory_level mandatory. Fix cache logic.","1185ba104fa30497f41c6e080ae74f2efdd3c629",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-05-13 08:40:30","Add cache tests","710f2b010aafe2e7eb98c4255afc59858e9540ca",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-05-13 08:49:02","Add tests.","0c1016dc47c671a1469f25e8686717bfbfbca127",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-05-23 22:26:00","Address comments","dc04ce2dab9a344636a53bf3a6a06710adb62a28",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-05-24 06:57:10","Fix P3 compat.","cc1379f572923f9434de085fad13146a96dfc9c8",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-09 09:17:27","Fix typo","eec2c6099f1f0339d99de7bb59530226e5dcdd55",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-09 11:32:36","Fix missing parameter names.","2130cd709e753f3bedf8d410dc482ef14c12d95a",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-09 11:35:10","Better parameter check.","f33bed6553c861e49dd2d0ba8218059e068bcdde",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-12 11:58:53","Fix docstrings","9d68ac6fdcc11da7388b3990a8b24f4543851863",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 08:50:56","Activate level 1 caching for maps masker","951829286c6022af6e457cf1a2e6921a268ad169",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 09:12:00","Do things","ebb82224b974c6e19ecd26c885c58071718e88ab",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 11:09:46","Handle the `target_resampling=None` handling","063907787cd54bd3d2321bb130c24e4ab79f9f30",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 11:45:04","Forgotten file in commit","9998a0f577087d0bfb1ea0ae68e8f1051e47e487",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 12:01:03","Fix tests","828e66b204141a3bb6f6b89d69f16d4359bfc19a",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-23 14:22:05","Add tests","d20836544187b27aa88cef9edab17b63e9c989bf",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:17:29","Add forgotten ignored parameters","f1175c65c15805f9411a057bcecf21fbc0c73bc7",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-24 09:28:25","Fix comments","d769ecf3f61593d97158a5fafd62c3fe210a8050",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-30 13:32:50","Make tests Py3 compliant","bc005ae46de33b280d0f1be29ab4a2abbc04d04a",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-30 14:02:53","Merge check_same_fov and assert_same_fov","779765b666b5cedf5458aba8e76825dd8a7530cc",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-30 14:12:04","Fix tests","e466be090ab1cfa57239a1b6ced00d378dc4f749",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-06-30 15:29:52","Fix tests","d15e296fd530172a60bd69d42a9fb8ced9d44230",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-07-02 11:15:33","Fix tests","a040234a30e6a279fe3265f89211642d36c70ab8",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-07-02 11:52:35","Fix backward compat","4739e9e321f7ae68794e374819d4a6125b8bbb95",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-07-02 13:17:41","Address comments","39f9fadbf5d83e71627ca7d637ab48511e13c0da",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:21:19","Better docstring for `_check_same_fov`.","c33e9214156882a276d959b250f2e661b71e9d63",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:26:40","Put explicit keywork arg for `_cache`","31de368bbce60709d4ded78b20dd012e2685df04",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 10:28:14","Fix typo","d8556a7106f4da85de29900613ec49c8de669fce",""
+"pull_request_commit","585","nilearn","nilearn","AlexandreAbraham","2015-07-13 12:18:15","Put `func_memory_level=1` as default","07366be1a0638c957e3b56dcc930d2909c4c505b",""

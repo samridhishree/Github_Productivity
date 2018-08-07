@@ -1,0 +1,330 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","262","nilearn","nilearn","Titan-C","2014-10-14 09:25:29","Create the nilearn_data folder if none existant to keep the default behavior.
+Simple test added.
+","start issue","Dataset download fails in a fresh install"
+"issue_closed","262","nilearn","nilearn","lesteve","2014-10-31 12:50:38","","closed issue","Dataset download fails in a fresh install"
+"pull_request_title","262","nilearn","nilearn","Titan-C","2014-10-14 09:25:29","Create the nilearn_data folder if none existant to keep the default behavior.
+Simple test added.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","Dataset download fails in a fresh install"
+"pull_request_merged","262","nilearn","nilearn","lesteve","2014-10-31 12:50:38","Dataset download fails in a fresh install","e53c20c19579ce725e84627aa2b099160915392a","Pull request merge from Titan-C/nilearn:fetch_haxby to nilearn/nilearn:master"
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-14 09:49:24","Actually this is a duplicate of #257.
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-14 13:26:40","Yes, I agree is a better place to change the code in that place.
+The try except statement will raise the problem as soon as it cannot make the directory in the first path, whereas I think it shall raise the exception if none of the given paths is writable.
+","",""
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-14 13:31:17","I haven't tested it as I said earlier, but I think if the directory can not be created, then `exc.errno == errno.EACCESS` and the exception is not reraised.
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-14 14:54:58","This is a serious matter so I pushed a temporary fix on master.
+
+I think that your ideas are good: I did not consider that one could want to store data in a path that doesn't exist. I suggest something like:
+
+``` python
+exc = None
+for path in paths:
+    path = os.path.join(path, dataset_name)
+    try:
+        if not os.path.exists(path):
+            os.path.makedirs(path)
+    except Exception as e:
+        if exc is None:
+            exc = e
+    else:
+        print 'Dataset created in', path
+        return path
+raise exc
+```
+","",""
+"issue_comment","262","nilearn","nilearn","GaelVaroquaux","2014-10-14 14:57:23","> I think that your ideas are good: I did not consider that one could want to
+> store data in a path that doesn't exist. I suggest something like:
+
+Yes! Great job from everybody involved
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-14 16:05:58","I liked @lesteve idea better. I include the updated pull request with test.
+","",""
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-14 16:33:12","FWIW, I managed to retrieve one IPython thread about the race condition when doing:
+
+``` python
+if not os.path.exists(mydir):
+    os.makedirs(mydir)
+```
+
+http://thread.gmane.org/gmane.comp.python.ipython.devel/12683
+
+Their solution to this problem is quite interesting:
+https://github.com/ipython/ipython/pull/5739/files#diff-e9abe1130c725e4d7a576d28fa2072b4R568
+","",""
+"issue_comment","262","nilearn","nilearn","GaelVaroquaux","2014-10-14 16:48:51","> FWIW, I managed to retrieve one IPython thread about the race condition when
+> trying to do:
+
+Yes, usually the ""correct way"" of doing things is to trying creating, and
+then test if it exists in case of failure. Sounds weird, but that's
+robust :).
+","",""
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-14 16:55:09","I am going to close this issue since the main problem has been fixed in master. @Titan-C, tests would be very useful indeed to prevent similar problems from happening again. Could you please open a new PR for these?
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-14 17:18:03","I've only put a quickfix on master so that we were not in a hurry to decide what was the right way to do it. I think we should merge a PR with a clean solution (and for the sake of authorship since Titan-C raised this issue).
+
+@Titan-C : Can you make a clean PR? (rebase on master, remove unnecessary commits). If you don't have time, I'll merge your proposition directly into master.
+","",""
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-14 17:22:35","OK, fair enough reopening then.
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-14 17:24:54","I included the ideas of the IPython solution. I also merged this with the previous loop that searches for the existing directory.
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-14 17:45:18","Since there are now several possible errors, I think we should make the error message more informative.
+Something like:
+
+```
+Nilearn tried to store the dataset in the following directories, but errors occured:
+- /path/number/1/dataset (no write permission)
+- /path/number/2/dataset (exists and is a file)
+...
+```
+
+The goal here is to output an error message that a user can copy/paste to his administrator. It should contain enought information to know what's happening.
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-14 20:08:11","Yes there are many possible errors, but the aim of this function is to output a working directory path to load the data set in.
+The clauses `if exc.errno != os.errno.EACCES` and `if exc.errno != os.errno.EEXIST:` are to continue iterating over the available paths.
+Limited by my python knowledge: How do you present a report on the multiple exceptions that happened? and is it relevant to present them if one path was able to store the dataset.
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-14 20:46:52","We should not stop in case of `os.errno.EACCES` exception. This is normal and it is going to happen often. For the EEXIST exception, we should stop if path exists and is a directory (because this is a race condition) but, if this is a file, then we should move on.
+In any case, the dataset fetcher is not robust if called several calls to the same function occur at the same time, so handling race condition is not our n°1 priority.
+
+You can catch all the exceptions and generate your error message afterward (see the snipper of code I submitted above).
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-17 23:01:18","Apart from minor details regarding error messages, LGTM.
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-24 11:38:41","In this case the test will check for a directory getting created. In a clean environment it will be the ./nilearn_data/test000 and if environment variables where set the returned string is also checked. 
+
+On the first change I came to fail the test, by working inside the temporary folder. With the instruction `os.chdir(tmpdir)`. This causes 5 tests to fail. But I couldn't understand why?
+https://travis-ci.org/nilearn/nilearn/jobs/38905299
+
+workaround is to return to the test directory after the test.
+","",""
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-24 11:48:22","It seems like `os.getcwd()` raises an Exception if the current directory does not exist any more:
+
+``` python
+import os
+
+tmp_dir = '/tmp/asdf'
+os.makedirs(tmp_dir)
+os.chdir(tmp_dir)
+os.rmdir(tmp_dir)
+os.getcwd()
+```
+
+That is what was happening in your case since you cd'ed into a directory that was removed by teardown_tmpdata once the test was run.
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-27 23:25:34","extended get_dataset_dir test
+- Included error raising control under regular expressions.
+- Testing under different environment variables(it took me a very long while to notice that the proposed code mixed `NILEARN_SHARED_DATA` and `SHARED_NILEARN_DATA`)
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-28 12:41:02","suggestions included in testing code.
+","",""
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-28 13:16:24","Generic comment, I see that you have done this twice in this PR but in general, meaning as long as github tells you that the PR can be automatically merged, there is no strong reason to merge master into your branch.
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-28 13:20:09","Also, it is not recommended to merge master into your branch. If your PR cannot be automatically merged, it is better to rebase on master to keep a clean git history.
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-28 18:35:01","I learned to do the rebase on master. Is it also possible to merge/join/delete some commits?
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-28 18:38:14","You can manage your commits the way you want! The best is to try avoiding ""work in progress"" commits. For example when you change a bit of code somewhere and then revert your change with another commit.
+","",""
+"issue_comment","262","nilearn","nilearn","Titan-C","2014-10-31 10:35:44","Error message string is fixed.
+PR is newly rebased to master and commits have been squashed together for a clearer commit history
+","",""
+"issue_comment","262","nilearn","nilearn","lesteve","2014-10-31 12:50:41","Great stuff, merging!
+","",""
+"issue_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-31 16:50:15","Great work @Titan-C, sorry for the nitpicking ;).
+","",""
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-14 11:46:30","I don't think this is quite the right approach, the reason being that the dataset download folder can be different from ./nilearn_data (look at the docstring a few lines above for more details).
+
+What I would rather do is change the code [here](https://github.com/Titan-C/nilearn/blob/c87564faf524358b77f8452d13eadecc9d30d265/nilearn/datasets.py#L223) to use EAFP, something like (not tested and improvements welcome):
+
+``` python
+for path in paths:
+    path = os.path.join(path, dataset_name)
+    try:
+        os.path.makedirs(path)
+        print 'Dataset created in', path
+        return path
+    except IOError as exc:
+        if exc.errno != errno.EACCESS:
+            raise
+```
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-15 10:11:13","You shouldn't merge the two `for path in paths` loop. Let me try to summarise the logic as I understand it @AlexandreAbraham feel free to jump in if I missed something.
+
+We are trying to return the dataset asked by the user:
+1. We are checking whether the dataset has already been downloaded in one of the dataset download folders. The possible download folders are listed [here](https://nilearn.github.io/developers/dataset_download.html#dataset-directory) in order of priority.
+2. If the dataset hasn't been downloaded yet, we are going to download it in the first download folder we can write to.
+3. If we weren't able to create a subdirectory in any of the possible download folders, we want to raise an error with a summary of why it failed in each of the folder we tried.
+
+For more details about the motivations behind all this, see this [issue](https://github.com/nilearn/nilearn/issues/160) and the issues referenced in it.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-15 10:16:04","For completeness, what your current code may do is download the dataset again even if the dataset had already been downloaded in one of the folder down the priority list.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-17 22:57:34","You should put the path before the error message. A good result would be:
+
+```
+Nilearn bla bla:
+- /I/tried/this/path (no write permission)
+```
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-17 22:58:02","Should the string be concatenated?
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-17 22:58:43","'\n -' may be better? (no strong feeling)
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","Titan-C","2014-10-18 08:37:13","Actually the exceptions default error string is:
+
+```
+[Error #] the particular error message: /the/tried/path
+```
+
+So I did not include the path in the error message. All the possible errors are treated equally(included in the log) and one does not need to worry about specific clauses for each error. Then at the end of the loop of tested directories, if none is usable to download the dataset the exception is raised with the summary of the error raised by each directory.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","Titan-C","2014-10-18 08:38:38","yes I forgot to fix this line. it's concatenated
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","Titan-C","2014-10-18 09:24:19","I'm going to delete this clause. It was imported from the IPython solution. But it is aimed at building a directory only. Since our `path` variable already includes the `nilearn_data` directory and the expected data set directory. This clause is already trapped in the previous try clause.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-18 15:34:45","I think that it would be better to do something like: `""%s (%s)"" % (path, e.strerror)`
+It would be more significant for non technician people that may be scared by the standard error message. Also, you don't know if the path will be included in the message. In particular, on Windows, the error messages are totally non informative sometimes.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-18 15:35:27","I agree since this message should never pop up.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-20 09:25:35","This is not necessarily true, for example if NILEARN_DATA is set and the user has write access to it, which is a reasonable scenario.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-20 09:36:05","You should spend some time setting up your environment to get warnings in your editor when you are not following PEP8. For example, [here](http://scipy-lectures.github.io/advanced/debugging/index.html#a-type-as-go-spell-checker-like-integration) are some instructions.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-20 09:40:13","Not the greatest of ideas. When you want to run the examples, you need to download ~5GB of datasets which takes time. You definitely don't want to remove this folder each time you are running the tests.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-20 09:45:44","Very minor niggle, not sure whether you chose `fil` to prevent shadowing the `file` builtin but I would rather have `afile`, `my_file`, `this_file`, or any other variation that tickles your fancy.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","Titan-C","2014-10-23 17:49:41","I'm unsure then how to test for this case. I considered the fresh install and no global variables. Shall it be a test on the output string?
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-23 18:21:23","If the environment is not clean, we just have to clean it. And test all possible cases. Something like that:
+
+``` Python
+import os
+
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_get_dataset_dir():
+    os.chdir(tmpdir)
+    os.environ.pop['NILEARN_DATA']
+    os.environ.pop['NILEARN_SHARED_DATA']
+    data_dir = datasets._get_dataset_dir('test')
+    #Verify the directory gets created
+    assert(os.path.exists(data_dir))
+    os.environ['NILEARN_DATA'] = './test_nilearn_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+    os.environ['SHARED_NILEARN_DATA'] = './shared_nilearn_data'
+    data_dir.datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+```
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-23 18:29:27","I think that as you mentionned earlier, you should test both the string returned by _get_dataset_dir and that the folder has been created. I believe the folder you should check for existence is in the simplest case (no environment variables set) is 'nilearn_data/test' rather than 'nilearn_data' and that you should remove this folder after the assert to clean up and make sure that the test is always run in the same conditions.
+
+In an ideal world you would set `os.environ['NILEARN_DATA']` and `del os.environ['NILEARN_DATA']` to make sure in the test knows where the dataset folder will be created independently of the environment the test is run in.
+
+The ""fresh install + no environment variable set"" case you were referring above will actually be tested by Travis since each time we get a fresh new worker I am guessing.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-24 12:08:08","`strerror` is not an attribute for all Exception instances. Maybe you can use exc.args which is guaranteed to exist.
+
+TBH I am wondering whether we should catch only EnvironmentError here, in which case `strerror` is fine.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-24 12:12:14","I think the docstring is slightly misleading and should be removed. nilearn_data doesn't have to be created, for example if NILEARN_DATA is set.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-24 12:14:17","I would use assert_raises_regexp to check that the error message is the one you are expecting.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-24 12:14:43","Same as above.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-24 12:25:09","Ideally you should test the full path under different environment variables setups.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-24 17:01:04","Well, that's exactly what I put in another note. I put it again here:
+
+``` Python
+import os
+
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_get_dataset_dir():
+    os.chdir(tmpdir)
+    os.environ.pop['NILEARN_DATA']
+    os.environ.pop['NILEARN_SHARED_DATA']
+    data_dir = datasets._get_dataset_dir('test')
+    #Verify the directory gets created
+    assert(os.path.exists(data_dir))
+    os.environ['NILEARN_DATA'] = './test_nilearn_data'
+    data_dir = datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+    os.environ['SHARED_NILEARN_DATA'] = './shared_nilearn_data'
+    data_dir.datasets._get_dataset_dir('test')
+    assert_equal(data_dir, os.path.abs(os.path.join('shared_nilearn_data', 'test')))
+    assert(os.path.exists(data_dir))
+```
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","Titan-C","2014-10-24 23:02:08","my previous attempt was using `str(exc)`, but I was corrected into using `strerror` to enforce the formatting of the error message. Indeed here what is in general expected is an `OSError`
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-25 01:17:47","It's true that we may encounter different error than EnvironmentalError. Maybe we should put a special case. The goal is to have the best error message possible for the user.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-28 08:04:17","> It's true that we may encounter different error than EnvironmentalError
+
+@AlexandreAbraham out of curiosity do you have an example where os.makedirs raise an exception which is not an EnvironmentError?
+
+> my previous attempt was using str(exc), but I was corrected into using strerror to enforce the formatting of the error message
+
+@Titan-C Do you have an example where `str(exc)` is not good enough? In the couple of cases I could think of, it looks ok to me:
+- `""[Errno 13] Permission denied: '/asdfa'""`
+- `""[Errno 17] File exists: '/tmp/file'""`
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","Titan-C","2014-10-28 08:37:06","as @AlexandreAbraham wrote before
+
+> I think that it would be better to do something like: ""%s (%s)"" % (path, e.strerror)
+> It would be more significant for non technician people that may be scared by the standard error message. Also, you don't know if the path will be included in the message. In particular, on Windows, the error messages are totally non informative sometimes.
+
+I guess beyond formatting is the windows error messages.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-28 08:42:04","Why not call it 'nilearn_data'?
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-28 08:42:08","Why not call the variable `data_dir` and the folder name 'test' like the other tests below?
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-28 08:55:38","OK, putting the path explicitly in the error message sounds fine. If we stick to catching `Exception` rather than `EnvironmentError` we will need something like:
+
+``` python
+short_error_message = getattr(exc, 'strerror', str(exc))
+errors.append('\n -{} ({})'.format(path, short_error_message))
+```
+
+to make sure this works with all kinds of exceptions. 
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-28 08:58:14","The next two lines can be simplified with:
+
+``` python
+os.environ.pop('NILEARN_DATA', None)
+```
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-28 08:58:51","Same remark as above
+
+``` python
+os.environ.pop('NILEARN_SHARED_DATA', None)
+```
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","Titan-C","2014-10-28 09:02:05","because `nilearn_data` is already defined in `datasets._get_data_dir`, need to make sure other folder is used.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-28 09:17:21","Good point!
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/tests/test_datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-31 08:05:26","I believe this hasn't been fixed yet. This seems to me as the last thing to do before this PR can be merged.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","AlexandreAbraham","2014-10-31 08:15:27","I think so. Maybe we can merge it and apply your small patch afterward?
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","262","nilearn","nilearn","lesteve","2014-10-31 08:34:16","OK I'll wait a bit for @Titan-C and do that if I don't hear from him in the next few days.
+","705474f4d10567e6c7bd9c9e3ec99814ee2a000e","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit","262","nilearn","nilearn","Titan-C","2014-10-14 09:11:38","Create nilearn_data as a working dir for _get_dataset_dir","9f2b9788ae17033c7863f9646d6728ee03616161",""
+"pull_request_commit","262","nilearn","nilearn","Titan-C","2014-10-14 17:23:28","Change logic for searching dataset dir
+Catching all exceptions and reporting at the end","e0d1046fe6c0572c4eb158fce2ad7b07510107e0",""
+"pull_request_commit","262","nilearn","nilearn","Titan-C","2014-10-18 17:11:35","Test clause on non-directories","b0b03a3199e735f896d0be019e29c8903508155a",""
+"pull_request_commit","262","nilearn","nilearn","Titan-C","2014-10-24 08:53:26","change work inside temporary directory in get dataset dir test","91fd981e7a24b79920b039d1bd290ff9f0b9d22e",""
+"pull_request_commit","262","nilearn","nilearn","Titan-C","2014-10-24 23:22:30","Regexp control on raised errors","d1ef510bf6625030bc3a45b479582b8eb7f83d6f",""
+"pull_request_commit","262","nilearn","nilearn","Titan-C","2014-10-27 23:20:49","Different environment setup testing","a3096df06b8fac7a3617619c493d1a408c3de270",""
+"pull_request_commit","262","nilearn","nilearn","Titan-C","2014-10-31 10:00:13","_get_dataset_dir error message string","705474f4d10567e6c7bd9c9e3ec99814ee2a000e",""

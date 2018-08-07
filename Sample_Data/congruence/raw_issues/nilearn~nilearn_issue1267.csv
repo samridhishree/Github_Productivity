@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1267","nilearn","nilearn","salma1601","2016-09-07 16:47:57","Is it expected behavior to get negative labels after resampling ?
+
+``` Python
+import numpy as np
+import nibabel
+from nilearn import datasets, image
+aal = datasets.fetch_atlas_aal()
+adhd = datasets.fetch_adhd(n_subjects=1)
+resampled_aal_img = image.resample_to_img(aal.maps, adhd.func[0],
+                                          interpolation='nearest')
+resampled_aal_data = resampled_aal_img.get_data()
+print(np.unique(resampled_aal_data))
+```
+
+gives
+
+``` Python
+[-30445 -30189 -29661 -29430 -29174 -27885 -27629 -27101 -26360 -26104
+ -25325 -25320 -25069 -25064 -24541 -24305 -24049 -23800 -23544 -23265
+ -23009 -21981 -21745 -21489 -20705 -20449 -19421 -19185 -19180 -18929
+ -18924 -18165 -18145 -17909 -17889 -17125 -16869 -16861 -15095 -14839
+ -14301 -12025 -11769 -11741 -10985 -10729  -4845  -4589   -760   -504
+      0    281    537   1296   1552   1801   2057   2336   2592   3856
+   4112   4361   4617   4896   5152   6421   6677   6921   7177  10506
+  10531  10762  10787  13066  13091  13322  13347  13576  13832  14616
+  14872  15651  15907  16136  16392  17176  17432  18211  18467  19736
+  19992  20756  20771  21012  21027  22811  23067  23331  23587  24841
+  25097  25371  25627  25891  26147  26896  27152  27931  27936  28187
+  28192  28451  28707  28951  29207  31011  31267]
+```
+","start issue","negative labels when resampling AAL"
+"issue_closed","1267","nilearn","nilearn","KamalakerDadi","2017-06-23 23:00:19","","closed issue","negative labels when resampling AAL"
+"issue_comment","1267","nilearn","nilearn","AlexandreAbraham","2016-09-08 08:50:27","Nailed it. The dtype of aal.maps is '>i2', so big endian. image._resample_one_img creates an output image of the same type, '>i2' for the output. But scipy.ndimage.affine_transform writes values in little endian, hence the mess.
+","",""
+"issue_comment","1267","nilearn","nilearn","salma1601","2017-06-23 07:46:27","Yep ! No negative labels now, thanks !","",""
+"issue_comment","1267","nilearn","nilearn","KamalakerDadi","2017-03-13 10:24:25","Similar big endian problem appeared when using ```largest_connected_component``` from _utils.ndimage on AAL atlas.
+```ValueError: Big-endian buffer not supported on little-endian compiler```
+
+Basically, this will also have impact on this PR #1409 
+","",""
+"issue_comment","1267","nilearn","nilearn","KamalakerDadi","2017-06-23 00:51:28","With current master, we don't see any negative labels after resampling. @salma1601 Can you please confirm this one ?","",""

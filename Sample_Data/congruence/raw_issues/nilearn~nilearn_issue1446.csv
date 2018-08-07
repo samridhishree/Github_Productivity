@@ -1,0 +1,26 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1446","nilearn","nilearn","salma1601","2017-05-05 10:06:32","in 
+https://github.com/nilearn/nilearn/blob/master/nilearn/regions/region_extractor.py#L188
+
+volume is computed from affine diagonal. This is making my extraction fails because my affine is
+```Python
+np.array([[0.3, 0   , 0  , -14.55],
+          [0  , 0   , 0.3, -14.55],
+          [0  , -0.3, 0  ,  14.55],
+          [0  , 0   , 0  ,  1]])
+```
+
+What do you think about getting the volume information from `header.get_zooms()`","start issue","region_extractor.connected_regions gets zero volume from affine"
+"issue_closed","1446","nilearn","nilearn","GaelVaroquaux","2017-08-11 09:55:50","","closed issue","region_extractor.connected_regions gets zero volume from affine"
+"issue_comment","1446","nilearn","nilearn","albayenes","2017-08-10 23:33:47","Hi,
+I am curious about what is the purpose of an affine transformation with zero on the diagonal. Is an affine transformation with zero on the diagonal meaningful?","",""
+"issue_comment","1446","nilearn","nilearn","bthirion","2017-08-11 09:47:30","Yes: think of a permutation matrix (e.g. x->y, y->z, z->x). what matters is that det(affine[:3, :3]) != 0","",""
+"issue_comment","1446","nilearn","nilearn","salma1601","2017-10-18 13:21:23","Hi @KamalakerDadi 
+Was this issue solved ? Do you want me to do a PR ?","",""
+"issue_comment","1446","nilearn","nilearn","KamalakerDadi","2017-05-05 11:00:09","What is your ```min_region_size``` specified ? What is the size you get in return ?
+
+I would be in favour of changing min_region_size line to 
+```min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))``` if it solves your problem.
+
+As what we have did for ```connected_label_regions```","",""
+"issue_comment","1446","nilearn","nilearn","bthirion","2017-05-05 20:40:30","+1 for the change","",""

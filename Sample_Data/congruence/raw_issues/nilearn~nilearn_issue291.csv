@@ -1,0 +1,308 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","291","nilearn","nilearn","banilo","2014-11-22 17:51:32","tries to fix #165 
+","start issue","[ENH] NiftiMasker: added time mask"
+"issue_closed","291","nilearn","nilearn","lesteve","2015-02-12 10:07:09","","closed issue","[ENH] NiftiMasker: added time mask"
+"pull_request_title","291","nilearn","nilearn","banilo","2014-11-22 17:51:32","tries to fix #165 
+","ca858367317cf691a62672b29623cbd9e27af87a","[ENH] NiftiMasker: added time mask"
+"pull_request_merged","291","nilearn","nilearn","lesteve","2015-02-12 10:07:09","[ENH] NiftiMasker: added time mask","2d3912a3dc8ff56a09d3a4b7cb6ae5ee36572c26","Pull request merge from banilo/nilearn:mask_time to nilearn/nilearn:master"
+"issue_comment","291","nilearn","nilearn","banilo","2014-11-27 10:05:41","Thanks for your help!
+a) I changed the mask name to ""mask_time"" in analogy to the ""mask_img"" argument -> better?
+b) Am I right in understanding that we stick with passing the 4D mask to NiftiMasker directly instead of its transform function?
+","",""
+"issue_comment","291","nilearn","nilearn","AlexandreAbraham","2015-01-21 09:07:06","I have seen that time masking is done before the other pre-treatments. It makes sens the remove noisy scans at the beginning of a session, but for a condition mask (like Haxby), it would make more sense to me to apply it after the pretreatments (detrending, filtering...). So I'm wondering if it's a good idea to keep this name.
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-01-25 09:51:03","@AlexandreAbraham: Do you think it makes sense to include an option for either pre- or post-pretreatment application of the 4D filter?
+","",""
+"issue_comment","291","nilearn","nilearn","GaelVaroquaux","2015-01-25 09:54:00","> @AlexandreAbraham: Do you think it makes sense to include an option for either
+> pre- or post-pretreatment application of the 4D filter?
+
+We need to make a choice. Too many options are detrimental. It should
+probably be 'pre application', because these are the only semantics that
+make sens in general. However, this will blend a bit the masked data with
+the non masked data in the case of time filtering, so we will have to
+warn the user.
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-02-10 15:41:18","Comments hopefully addressed. Mask is currently applied pre-treatment.
+","",""
+"issue_comment","291","nilearn","nilearn","GaelVaroquaux","2015-02-10 16:38:09","LGTM: minor rephrasing to do, and a rebase necessary to address merge conflicts.
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-02-10 18:42:07","rephrased + rebased.
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-02-11 09:38:43","Docstring updated!
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-02-11 14:31:15","Ok, done.
+","",""
+"issue_comment","291","nilearn","nilearn","lesteve","2015-02-12 10:07:25","Looks good, merging, thanks a lot.
+","",""
+"issue_comment","291","nilearn","nilearn","eickenberg","2015-02-02 15:06:35","+1
+
+mask_time is weird
+
+timecourse_mask would be another option.
+
+however, the axis we are referring to can be more general than time. we
+could also select conditions with it for decoding, see e.g. the haxby
+example. in this perspective the name time_mask is a little restrictive.
+samples_mask would be more generic, and still understandable/correct
+
+On Monday, February 2, 2015, Gael Varoquaux notifications@github.com
+wrote:
+
+> > 1. I am still in favor of time_mask vs mask_time, be it only because it
+> >    is
+> >    closer to how you would call it in plain English.
+> 
+> +1
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/291#issuecomment-72468504.
+","",""
+"issue_comment","291","nilearn","nilearn","eickenberg","2015-02-02 17:05:18","detrending and standardization cannot be done on the haxby example before
+the chunks are cut up. One can also get by without doing it. In general I
+was thinking more along the lines of series of beta maps from a rapid
+event-related paradigm. You don't detrend or standardize those.
+
+On Mon, Feb 2, 2015 at 4:27 PM, Alexandre Abraham notifications@github.com
+wrote:
+
+> however, the axis we are referring to can be more general than time. we
+> could also select conditions with it for decoding, see e.g. the haxby
+> example. in this perspective the name time_mask is a little restrictive.
+> samples_mask would be more generic, and still understandable/correct
+> 
+> In the case of Haxby example, don't you select conditions after the
+> pre-treatment (ie detrending, etc)?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/291#issuecomment-72475594.
+","",""
+"issue_comment","291","nilearn","nilearn","eickenberg","2015-02-02 17:09:45","because they come from different runs. It doesn't make sense to detrend or
+standardize over the borders of runs. scipy.signal.detrend takes
+breakpoints, but they are not exposed in the niftimasker. I also don't
+think that this is a general case. As already discussed with Bertrand,
+datasets from nowadays are usually kept in one file per run because they
+are already large on their own. It is only with datasets that at present
+one can consider ""old"" that such concatenations become feasible.
+
+On Mon, Feb 2, 2015 at 6:06 PM, Gael Varoquaux notifications@github.com
+wrote:
+
+> > detrending and standardization cannot be done on the haxby example before
+> > the chunks are cut up.
+> 
+> Why?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/291#issuecomment-72494655.
+","",""
+"issue_comment","291","nilearn","nilearn","eickenberg","2015-02-02 17:41:45","They are 12 acquisition runs, the scanning is stopped after each one of them (that is my point) - but yes, one scanner session. Total acquisition time 3630 seconds.
+","",""
+"issue_comment","291","nilearn","nilearn","eickenberg","2015-02-02 17:42:29","(All in one file, runs labeled from 0 to 11 in the column ""chunk"")
+","",""
+"issue_comment","291","nilearn","nilearn","eickenberg","2015-02-03 10:20:56",":) I had to reproduce the original study once, so I was forced to read all the small print at one point.
+
+> centering would be taken care off by defining the session vector as a confound.
+
+Indeed, in a GLM, but we have typically done decoding directly on the data.
+
+My point is that one could use the ""Time Masker"" to mask conditions here. However, since these data are still temporally structured, the example is bad. If you consider a dataset consisting of many beta maps (such as an event-related paradigm), the is nothing time-related at all involved, but one may still be tempted to use the ""Time Masking"" to select images according to certain conditions.
+
+Hence my proposition to use a name that is more general than the word ""time"", e.g. ""sample"". That said, I have no problem using something that has the name ""time"" in it on my non-temporal 4th axis.
+","",""
+"issue_comment","291","nilearn","nilearn","AlexandreAbraham","2015-02-02 15:27:48","> however, the axis we are referring to can be more general than time. we could also select conditions with it for decoding, see e.g. the haxby example. in this perspective the name time_mask is a little restrictive. samples_mask would be more generic, and still understandable/correct
+
+In the case of Haxby example, don't you select conditions after the pre-treatment (ie detrending, etc)?
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-01-14 09:37:37","I promise to do it still some time today...
+
+2015-01-14 10:36 GMT+01:00 Loïc Estève notifications@github.com:
+
+> @banilo https://github.com/banilo could you look at the merge conflicts
+> on this one?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/pull/291#issuecomment-69890735.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-01-14 17:29:41","fixed merge conflicts + restored empty lines at file end + squashed
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-01-30 08:40:03","Ok, time masking now uses Loics index_img :)
+","",""
+"issue_comment","291","nilearn","nilearn","banilo","2015-02-03 10:24:41","> ""sample_mask"" seems like a reasonnable name
+
++1 on this
+","",""
+"pull_request_commit_comment","291","nilearn","nilearn","bthirion","2014-11-23 22:00:39","I don't understand this part ?
+
+Also, this functionality probably deserves a bit of narrative documentation: what is the use case ? 
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","GaelVaroquaux","2014-11-24 11:39:01","> I don't understand this part ?
+
+I think that the name is bad.
+
+> Also, this functionality probably deserves a bit of narrative documentation:
+> what is the use case ?
+
+Avoiding the bug we had in the anova haxby example :).
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","AlexandreAbraham","2014-11-24 16:33:28","> I think that the name is bad.
+> +1
+> 
+> Avoiding the bug we had in the anova haxby example :).
+> The bug was mainly due to the fact that the shape of the session mask was not checked. I think that the main advantage is to be able to apply a condition mask to the data without having to load them manually (and still delegate that to the NiftiMasker).
+
+However, given that this is only used for transform, shouldn't it be a parameter for the transform function rather than for the Masker in general?
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","GaelVaroquaux","2014-11-24 16:35:44","> However, given that this is only used for transform, shouldn't it be a
+> parameter for the transform function rather than for the Masker in general?
+
+Possible. The real argument is that it's data dependent (ie has a shape
+in n_samples) thus giving it at build-time break cross validation.
+
+Which tells us that sessions shouldn't be given at build time :$
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","AlexandreAbraham","2014-11-24 17:20:06","Exactly. We can even go further by saying that this is a form of sample extraction and that it could exist as its own object. Because, for exemple, when working on Haxby, maybe I would like to work first on face vs house and then cat vs chair.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","bthirion","2014-12-05 10:59:12","You probably mean: Data processing ignores the mask-time arguments and takes into account the whole sequence of image.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-01-16 08:50:33","It feels quite restrictive that mask_time has to be a list of bool, shouldn't it be something that can be passed into a numpy array indexing operation:
+
+``` python
+imgs = Nifti1Image(
+    imgs.get_data()[..., np.asarray(mask_time)],
+    imgs.get_affine())
+```
+
+For example, a slice object, a list of indices, etc...
+
+Not sure what's the best way to make sure that mask_time can be used inside a indexing operation.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-01-16 08:53:33","Why not, it's a design choice. Boolean arrays is however what naturally comes out of target/non-target label comparison operations.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","GaelVaroquaux","2015-01-16 08:55:09","Agreed with Loic. I wouldn't even call 'asarray' on it, so that it is
+possible to pass Slice objects.
+
+And do we want to call it 'mask_time' or 'time_mask' :)
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-01-20 20:01:02","> And do we want to call it 'mask_time' or 'time_mask' :)
+
+I went for 'mask_time' in analogy to 'mask_img', to allude to the 4D-3D complementary. Should we change that?
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-01-20 20:02:07","> Agreed with Loic. I wouldn't even call 'asarray' on it, so that it is
+> possible to pass Slice objects.
+
+Can't we combine this with Loics ongoing indexing/slicing PR?
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","bthirion","2015-01-20 21:56:37","Indeed, it is unclear for me what are the use cases addressed here that are not also addressed in the indexing/slicing PR ?
+@banilo, do you have any example to motivate it ?
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","GaelVaroquaux","2015-01-20 22:01:36","> Indeed, it is unclear for me what are the use cases addressed here that
+> are not also addressed in the indexing/slicing PR ?
+
+The indexing/slicing PR does make things much easier. However, suppose
+that you want, eg to remove the 3 first volumes. With Danilo's PR, it is
+trivial to do this in a pipeline, in distributed computing. Manually
+using slicing would require more work.
+
+However, the slicing PR should be merged, and then this PR updated to use
+it.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-01-20 22:06:25","A practical use case would be sub-selection as part of some sklearn-pipeline. Using this PR, memory is safed by avoiding creation of a tempory (sliced) nifti to pass on to the masker (index is provided at the time of masker instance creation). Just having idexing/slicing from Loic's PR cannot avoid this in a pipeline setting. ...I think.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","bthirion","2015-01-20 22:08:39","All right, thanks.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","AlexandreAbraham","2015-01-20 22:15:05",">  Just having idexing/slicing from Loic's PR cannot avoid this in a pipeline setting. ...I think.
+
+You have the exact same behavior if you use Loïc's PR and a NiftiMasker (and do the loop yourself).
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","eickenberg","2015-01-20 22:16:29","> Using this PR, memory is safed
+
+line 74 makes a copy... 
+
+If Loic's slicing PR permits slices into memmapped .nii files, then that is the best possible way of saving memory.
+
+So the sole advantage of having time slicing (once Loic's is merged) in the NiftiMasker is the fact that it can go in a pipeline.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-02 14:37:24","import is already a few lines below.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-02 14:44:28","> Data preprocessing will ignore the time mask whereas NiftiMasker.transform will only consider time-masked images.
+
+I thought this wasn't true anymore, i.e. the indexing was done before the other treatments like filtering.
+
+> Use case: Avoid creation of a temporary 4D data nifti, potentially expensive in memory, before application of NiftiMasker.
+
+Not sure what you mean by that, it seems to be that indexing does create a temporary 4D image but maybe I am missing something.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-02 14:46:20","Also maybe the ""pipelinability"" should be mentioned in this docstring.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-02 14:53:11","This is quite convoluted. I am sure there must be something better than this. mask.sum() should work but maybe there is something more generic.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-02 14:53:56","Could we not check that applying index_img and then the mask without time_mask is the same as applying the mask with time_mask to the original image?
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-02 15:10:35","minor comment, I would use `time/fourth dimension` rather than `time/4D dimension`
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-02-02 15:12:02","Ok
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-02-02 15:14:19","In real-world (float typed) binary mask niftis this did sometimes not give the same result, but here I will shift to sum() as suggested.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-02-02 15:17:36","I will make sure the 4D mask is 'pre application', as suggested by Gael
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-02 15:18:34","Depending on your use case, you could use something like `mask.astype(bool).sum()` or `np.isclose(mask, 0).sum()`. Note that the latter has some default absolute and relative tolerance that you may want to tweak.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","GaelVaroquaux","2015-02-10 16:36:52","Rather than 'usecase: ...' I would say: 'this is useful to perform...'
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-11 10:26:21","You may as well use index_img now that it exists.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-02-11 10:27:31","Should the tests not be as basic and transparent as possible?
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-11 10:31:54","Isn't it simpler to do (please use better names than mine):
+
+``` python
+
+masker2 = NiftiMasker(mask_img=mask_img)
+masker2.fit()
+data_imgs_subset = index_img(data_imgs, sample_mask)
+data_trans_direct = masker2.transform(data_imgs_subset)
+```
+
+Basically you want to make sure that using sample_mask in the masker is the same as using index_img on the data and then a masker without sample_mask.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-11 10:48:38","it looks like you moved away from PEP8 here
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-11 10:51:51","Yes. By the way, just curious, any particular reason you are not using data_img_4d in the transform call?
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-11 10:53:53","Maybe it's just me but I would do:
+
+``` python
+imgs = _utils.check_niimgs(imgs, accept_3d=True)
+
+if sample_mask is not None:
+    imgs = image.index_img(imgs, sample_mask)
+```
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-02-11 10:54:59","That is used in line 143.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/tests/test_nifti_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-02-11 10:55:33","It has been like that before, Alex wanted me to change it this way.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","AlexandreAbraham","2015-02-11 14:45:38","I suggested that because I thought that `index_img` could be faster if `imgs` was a list of 3D imgs. Given that it's not the case, I would be in favor of what @lesteve proposes.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","lesteve","2015-02-12 08:35:07","OK just this one to do and it should be good to go.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit_comment","291","nilearn","nilearn","banilo","2015-02-12 08:42:31","changed back to how it was before, as suggested.
+","ca858367317cf691a62672b29623cbd9e27af87a","(None, '', u'nilearn/input_data/base_masker.py')"
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-01-14 17:31:55","ENH NiftiMasker: add time mask","08faed3c6c9cc860a3ce1896db2bd51a1e3a202d",""
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-01-30 08:12:46","integrated Loics index_img","1878b105e8249990ba34d164111f59ad86f4fe66",""
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-01-30 08:33:16","corrected variable type","8f2fdeaab7184d77e6a859498db199b66ec683f5",""
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-02-10 15:40:11","switched to sample_mask + upgrates","380c0681bf8b9252befec411d12b71b0678222c6",""
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-02-10 18:38:46","rephrasing","713202b9d7f3e9ff7a4b087d59cc5ccd13b95e96",""
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-02-11 10:03:30","adapted docstring","168c9383f8ca8b986b6a1bec1a480e259221e899",""
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-02-11 14:27:46","simplifications + PEP8","51d6b543e193cf385f97ff216400a7f0f54f289a",""
+"pull_request_commit","291","nilearn","nilearn","banilo","2015-02-12 08:41:30","improved data flow","ca858367317cf691a62672b29623cbd9e27af87a",""

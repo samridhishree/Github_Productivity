@@ -1,0 +1,135 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","292","nilearn","nilearn","banilo","2014-11-24 08:53:19","I have the impression that variable and function names tend to include a ""_data"" suffix when dealing with 3D/4D numpy arrays and an ""_img"" suffix when dealing with Nifti1Image instances. Yet, often one can also read ""_niimg"" in the code, which appears to conflict with the uniqueness of ""_img"". A little summary shows that ""_img"" is more consistently used than ""_niimg"":
+
+```
+git grep -ni ""_img"" | wc -l
+1039
+git grep -ni ""_niimg"" | wc -l
+145
+```
+
+Thus, shouldn't we rename as many of the ""_niimg""'s as possible into ""_img""'s?
+
+**Soft solution:** to rename the following functions and all calls to those:
+
+```
+- _utils.check_niimg
+- _utils.check_niimgs
+- _utils._repr_niimgs
+- _utils.concat_niimgs
+- input_data.base_masker.transform_single_niimgs
+- input_data.base_masker.transform_niimgs
+- tests.test_niimg_conversions
+- tests.test_check_niimg
+- tests.test_check_niimgs
+- tests.test_repr_niimgs
+- test.test_concat_niimgs
+```
+
+**Hard solution:** rename any ""_niimg"" string into ""_img"" in the entire code, thus including variables etc.
+","start issue","API inconsistency: ""_niimg(s)"" versus ""_img(s)"" suffixes"
+"issue_closed","292","nilearn","nilearn","lesteve","2014-12-15 20:42:49","","closed issue","API inconsistency: ""_niimg(s)"" versus ""_img(s)"" suffixes"
+"issue_comment","292","nilearn","nilearn","GaelVaroquaux","2014-11-24 11:36:51","Hey Danilo,
+
+I agree with most of your analysis. In believe that in general, functions
+and variable names should end with ""_img"". However, there is one thing
+that we have in nilearn: we call 'niimage', and not 'img', or 'image' the
+type ""NiftiImage-like, or string pointing to a nifti file"". Thus I
+believe that check_niims, check_niimg, repr_niimgs should stay with
+niimg, because they are about dealing with this specific type.
+
+Aside from that, I would say that a PR is most welcome, as ideally we
+want to address these issues before the beta release.
+","",""
+"issue_comment","292","nilearn","nilearn","banilo","2014-11-24 11:48:56","Ok, so we are going for the hard solution? That is change suffixes in both functions and variables in all *.py, except for the three functions you mentioned that deal with nifti/list hybrids?
+
+Sent from my iPhone
+
+> On 24 Nov 2014, at 12:36, Gael Varoquaux notifications@github.com wrote:
+> 
+> Hey Danilo,
+> 
+> I agree with most of your analysis. In believe that in general, functions
+> and variable names should end with ""_img"". However, there is one thing
+> that we have in nilearn: we call 'niimage', and not 'img', or 'image' the
+> type ""NiftiImage-like, or string pointing to a nifti file"". Thus I
+> believe that check_niims, check_niimg, repr_niimgs should stay with
+> niimg, because they are about dealing with this specific type.
+> 
+> Aside from that, I would say that a PR is most welcome, as ideally we
+> want to address these issues before the beta release.
+> —
+> Reply to this email directly or view it on GitHub.
+","",""
+"issue_comment","292","nilearn","nilearn","GaelVaroquaux","2014-11-24 11:50:47","> Ok, so we are going for the hard solution? That is change suffixes in both
+> functions and variables in all *.py, except for the three functions you
+> mentioned that deal with nifti/list hybrids?
+
+Yes, and the corresponding tests.
+","",""
+"issue_comment","292","nilearn","nilearn","lesteve","2014-11-24 12:53:47","Hmm, just trying to understand this subtle distinction in more details. What's exactly is different between _img and _niimg? Is the former an object which has get_data and get_affine whereas the latter can also be a filename and may have some NiftiImage specific properties.
+
+Also, `nilearn.plotting.plot_img` is calling `check_niimg`so it accepts a NiftiImage-like object. Does that mean it should be called `plot_niimg` instead? This is probably not the only example as check_niimg(s) is used quite a bit.
+
+Also just curious, do we have some code that only works with Nifti-images?
+","",""
+"issue_comment","292","nilearn","nilearn","GaelVaroquaux","2014-11-24 12:56:27","> Also just curious, do we have some code that only works with Nifti-images?
+
+No, the goal is to have code that works with niimgs every where. I am
+just thinking that for the check and repr, that are the basic engineering
+to support this, I want to be explicit in the names, as these are the
+functions that pretty much define what a niimg is.
+","",""
+"issue_comment","292","nilearn","nilearn","banilo","2014-11-24 15:24:35","Why not add a small note in the check_niimg(s) and repr_niimgs docstrings,
+such as ""As a general rule, nilearn function with Nifti1Image input carry
+""_img"" in their name. This function is carries ""niimg"" because, as an
+exception, it accepts both paths and Nifti1Image objects.""
+
+2014-11-24 13:56 GMT+01:00 Gael Varoquaux notifications@github.com:
+
+> > Also just curious, do we have some code that only works with
+> > Nifti-images?
+> 
+> No, the goal is to have code that works with niimgs every where. I am
+> just thinking that for the check and repr, that are the basic engineering
+> to support this, I want to be explicit in the names, as these are the
+> functions that pretty much define what a niimg is.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/292#issuecomment-64190105.
+
+## 
+
+Viele Grüße,
+Danilo
+","",""
+"issue_comment","292","nilearn","nilearn","eickenberg","2014-11-24 15:58:17","> as an exception, it accepts both paths and Nifti1Image objects
+
+but this is the rule as far as I know the codebase.
+
+To me the distinction is more about putting `_img` when we want to forget about/hide/render transparent the fact that niimgs can be a lot of things and putting `_niimg` when we need to be aware of this fact.
+","",""
+"issue_comment","292","nilearn","nilearn","GaelVaroquaux","2014-11-24 15:59:09","> but this is the rule as far as I know the codebase.
+
+Yes.
+
+> To me the distinction is more about putting _img when we want to forget
+> about/ hide/render transparent the fact that niimgs can be a lot of
+> things and putting _niimg when we need to be aware of this fact.
+
+Well put.
+","",""
+"issue_comment","292","nilearn","nilearn","AlexandreAbraham","2014-11-24 16:22:28","Another that has been bugging me and may be considered before release is the NiftiMasker (and MultiNiftiMasker). I thing it would more consistent to call them NiimgMasker and NiimgsMasker.
+","",""
+"issue_comment","292","nilearn","nilearn","eickenberg","2014-11-24 16:27:03","(Or `ImgMasker`. Or `Masker`)
+","",""
+"issue_comment","292","nilearn","nilearn","GaelVaroquaux","2014-11-24 16:36:10","> Another that has been bugging me and may be considered before release is the
+> NiftiMasker (and MultiNiftiMasker). I thing it would more consistent to call
+> them NiimgMasker and NiimgsMasker.
+
+Niimg is jargon that has no meaning outside of nilearn. Thus I am -1 on
+that.
+","",""
+"issue_comment","292","nilearn","nilearn","banilo","2014-11-25 12:06:47","Do you think the suggested changes are ok like this?
+","",""

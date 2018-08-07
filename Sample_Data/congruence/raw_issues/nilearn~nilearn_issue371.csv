@@ -1,0 +1,316 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","371","nilearn","nilearn","bcipolli","2015-01-29 17:18:40","Here, I've made the tests run with `UserWarning` causing errors.  I've debugged each of the warnings to find the root cause, and made one of three changes in every case:
+- Tweaked the test to ignore that warning, if it's out of our control.
+- Tweaked the test to expect that warning, if the test is designed to cause the warning
+- Made small changes to the `nilearn` code to compensate for external bugs (there were 1 or 2 instances of this)
+- Changed the `nilearn` code because of what I believe was a bug.
+
+I have already gone through the commits once to try and make them clear; I will go through again to try and label what type of change I believe each one represents.
+
+This makes the test output completely clean--warnings are either known to be ignored, expected (and tested), or fixed.  I think this is the best way to proceed to identify changes in the behavior of `nilearn` moving forward.
+
+![image](https://cloud.githubusercontent.com/assets/4072455/5962296/c27d2390-a797-11e4-96a2-7b41ef12548f.png)
+","start issue","Fix warnings thrown during tests"
+"issue_closed","371","nilearn","nilearn","bcipolli","2015-03-18 18:30:02","","closed issue","Fix warnings thrown during tests"
+"pull_request_title","371","nilearn","nilearn","bcipolli","2015-01-29 17:18:40","Here, I've made the tests run with `UserWarning` causing errors.  I've debugged each of the warnings to find the root cause, and made one of three changes in every case:
+- Tweaked the test to ignore that warning, if it's out of our control.
+- Tweaked the test to expect that warning, if the test is designed to cause the warning
+- Made small changes to the `nilearn` code to compensate for external bugs (there were 1 or 2 instances of this)
+- Changed the `nilearn` code because of what I believe was a bug.
+
+I have already gone through the commits once to try and make them clear; I will go through again to try and label what type of change I believe each one represents.
+
+This makes the test output completely clean--warnings are either known to be ignored, expected (and tested), or fixed.  I think this is the best way to proceed to identify changes in the behavior of `nilearn` moving forward.
+
+![image](https://cloud.githubusercontent.com/assets/4072455/5962296/c27d2390-a797-11e4-96a2-7b41ef12548f.png)
+","f6f73951f754bec79a57e804b7a507932de59100","Fix warnings thrown during tests"
+"issue_comment","371","nilearn","nilearn","GaelVaroquaux","2015-01-29 19:02:54","> OK, happy to close this one until that is merged. Then I'll rebase and
+> we can go from there!
+
+Don't close it. Let us just no touch it.
+","",""
+"issue_comment","371","nilearn","nilearn","GaelVaroquaux","2015-02-02 22:16:00",">   • I am -1 on the UserWarning (or any kind of warnings for that matter)
+
+Same thing here: I think that it is a useful tool to debug/develop, but
+shouldn't be on by default in the codebase.
+
+> I put together a hack to silence warnings within nose,
+
+Nice hack! I am -1 on using it in the codebase.
+","",""
+"issue_comment","371","nilearn","nilearn","AlexandreAbraham","2015-02-09 12:57:58","I realized that I haven't answered to this one. I am also -1 on removing warning for now. Reasons:
+1. we are at version 0.1, not 1.0. We are doing our best to provide high quality code but things are not fixed and we can't impose such high requirements on quality for now.
+2. spurious warning may rise depending on versions of packages. For exemple, using an old sklearn with newest numpy/scipy raises a lot of DeprecationWarning. Not sure how robust it is to catch'em all.
+
+So, maybe some warning may legitimately be slienced, but a lot of them are natural and are not bugging more than that.
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-10 19:12:06","OK.  In this case, shall we abandon this PR?  Despite the fact that I've done the work to make things ""high quality"", that no recent changes have added any new warnings, and that I've carefully described why I think it's important, there's clearly resistance from the team to follow through on it.
+
+Just let me know where to go from here, and will do.  I'm fine even to abandon what's here, but some clear guidance on moving forward would be appreciated.
+","",""
+"issue_comment","371","nilearn","nilearn","lesteve","2015-02-10 23:14:12","I haven't looked at this one for a while, but when I did I thought that most of the commits reducing the warnings were fine to merge (I had some reservations about some of them, let me look at it more closely tomorrow). I think the main contention is about turning warnings into errors.
+","",""
+"issue_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:46:23","Also before I forget, there are merge conflicts to fix.
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-28 21:05:21","I am back to this one.  I may cherry-pick some of the bugfixes here into separate, small PRs.  I also will review each PR to re-assess design of warning suppression, now that I'm much more familiar with numpy.
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-03-01 05:37:26","I made the requested changes.  This included pulling about 10 commits and tweaking a couple of others.
+
+I tested this code with https://github.com/nilearn/nilearn/pull/397 (minver of sklearn as 0.12.1) and with  https://github.com/nilearn/nilearn/pull/470 (mutipca / masker interaction), to make sure these changes worked with them.  They do.  I then pulled those commits from this branch, so that this can be merged independently.
+
+The last commit is the one I'm least confident about.  I think the goal is the right one (users shouldn't see warnings for using our functions, it's confusing), but the implementation is not happy (suppressing all of those warnings after nilearn is loaded).  I would prefer to be less broad, but that would require more distributed code, and ... this is my current proposed compromise.
+
+I've also opened up https://github.com/nilearn/nilearn/issues/471 for one final issue that I have been investigating.  I think that can be dealt with separately, so this should be ready for review.
+
+I am removing ""WIP"", as I think this is much closer to being ready now.
+","",""
+"issue_comment","371","nilearn","nilearn","AlexandreAbraham","2015-03-17 10:35:48","@lesteve are we merging this one or not?
+","",""
+"issue_comment","371","nilearn","nilearn","lesteve","2015-03-17 11:59:38","> @lesteve are we merging this one or not?
+
+Not sure I haven't looked at it for a while I have to say. I think there are some changes that are completely fine (e.g. replace `-mask` by `np.logical_not(mask)` and some that are more controversial (e.g. I am not convinced we should mess with warnings settings in `nilearn/__init__.py`).
+
+I'll try to take a closer look in the upcoming days.
+","",""
+"issue_comment","371","nilearn","nilearn","lesteve","2015-03-19 07:56:44","@bcipolli did you mean to close this one? 
+
+Maybe you were planning to introduce these changes by cutting this PR in smaller chunks, which I would be very much in favour of.
+","",""
+"issue_comment","371","nilearn","nilearn","AlexandreAbraham","2015-03-19 11:50:27","Yeah there is a lot of great stuff in this PR. Please let us know if you drop it so that we take care of cherry picking the non-ambiguous ones ;)
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-03-19 12:12:49","Feel free to cherry-pick!  I got tired of fixing merge conflicts while rebasing this, and fixing new warnings / the removal of old warnings as the code changed but warning-related things weren't checked carefully by tests.
+","",""
+"issue_comment","371","nilearn","nilearn","lesteve","2015-02-02 22:10:16","Before I start looking at the details of this PR, here are a few general comments:
+- I am -1 on the UserWarning (or any kind of warnings for that matter) promoted to errors. It just seems to much of a burden on us to make sure that no warnings are issued for a wide range of numpy, scipy and scikit-learn versions for very little benefit IMHO. It makes sense every once in a while to look at the nosetests output and try to reduce the warnings coming from within the nilearn code but that's where I would stop. Maybe @GaelVaroquaux and @AlexandreAbraham can give their opinion too.
+- it would be very nice if a few commits were removed in order to make this PR only about warnings. I am thinking mostly about cache_mixin.py -> cache.py renaming and ref_memory_level vs memory_level. Both of them deserve their own issue and/or PR.
+
+I put together a hack to silence warnings within nose, if that can make people happier by reducing the noise when running the tests locally. Trust me it wasn't easy as I hoped and I tried a few dead-ends before getting something that actually worked. Put the following code in a script somewhere in your PATH and use it rather than nosetests:
+
+``` python
+#!/path/to/your/python
+
+from nose import main
+import warnings
+
+if __name__ == '__main__':
+    with warnings.catch_warnings(record=True):
+        # catch_warnings with record=True is going to silence the warnings
+        # by actually redefining warnings.showwarnings.
+        # Depending on your use case you may want to uncomment the following line
+        # warnings.simplefilter('ignore')
+        main()
+```
+
+By the way I didn't know about the PYTHONWARNINGS environment variable. Definitely something to remember when trying to figure out where some pesky warnings come from (turn them into errors and look at the stacktrace).
+","",""
+"issue_comment","371","nilearn","nilearn","lesteve","2015-02-03 08:50:33","> > I put together a hack to silence warnings within nose,
+> 
+> Nice hack! I am -1 on using it in the codebase.
+
+Goes without saying but given that it took me a while to get something that was fulfilling its promise of removing all the warnings, I thought I would share for people who want a quick and dirty way to have nice and tidy nosetests outputs.
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-01-29 19:01:25","OK, happy to close this one until that is merged.  Then I'll rebase and we can go from there!
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-01 15:45:13","Hmmm, I see that rebasing and force-pushing eliminated my per-commit comment explaining why I did what I did ... :(
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-01 15:46:11","also note that the test failure is due to #376 
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-02 22:21:58","Thanks for the thoughts, @lesteve !  I'm busy today, so will take time to respond tomorrow.
+
+> Same thing here: I think that it is a useful tool to debug/develop, but
+> shouldn't be on by default in the codebase.
+
+Just to be clear: it is not on by default in the production code.  It is turned on during testing only.
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-05 06:35:58","@lesteve @GaelVaroquaux A bit about my thinking here, and why I support throwing errors IN TESTS if unexpected warnings are thrown.
+
+The goal here isn't just to clean up the output of tests.  It's that warnings hide potential bugs, and debugging warnings (and potential bugs) is much more laborious after the fact than it is at the time the warning is introduced.
+
+If the goal is to eventually look into warnings, throwing on new warnings will make debugging things much easier.  Deferring will make the debugging harder, and will hide bugs--I found about 5 bugs in nilearn that I fixed in this PR that were hidden by warnings (including the caching issue that @AlexandreAbraham worked up properly).  I don't see any benefit of deferring here... to me it's the same benefit as having automated builds run through Travis.
+
+In addition, it's my personal principle that warning output to the user should be carefully controlled.  Having strong expectations that tests either intentionally trigger warnings and validate them (lack of validation was causing some of the output), or do not trigger warnings at all (the default for tests), helps make this happen. It's a useful tool.  That doesn't have to be the principle here, but it's how I approached things in this PR.
+
+Lastly, if the concern is that `sklearn` or others will throw lots of unexpected warnings... two responses: (1) We should all really hope that's not the case, that would suck for `nilearn`'s users.  If it is the case, however, I think we have some responsibility to see it ahead of time and mitigate it where possible. (2) It's so easy to turn the code to throw with warnings in the tests, if it becomes a problem... turn it off!
+
+As of now, I've done the work to clean things up.  I think there's big benefits to keeping it that way, and not a lot of downside.  It's about avoiding bugs, keeping on top of potential issues, and making sure that users only get warnings when we really want them to.
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-05 06:40:38","@lesteve I will separate the commits as requested, will review the code myself, and then will post here when things look good from my vantage point.  Thanks!
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-05 08:27:10","OK, I cleaned up the code and documented things a bit more.  After removing the changes here to the caching code, the 3 warnings-as-errors that indicated the bugs in the caching code came back.  So, I merged #386 to resolve those errors.  Let me know if a different approach is preferred.
+","",""
+"issue_comment","371","nilearn","nilearn","bcipolli","2015-02-19 17:20:21","Just a note: this is still on my radar, but I think some of the changes here are not the best.  Specifically, I'm looking closer at the numpy casting warnings, trying to figure out what's going on there, and whether there are recommended solutions (e.g. calling `.astype` to be careful about casting issues when doing `-=` / `+=`).
+","",""
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-01-29 17:44:14","This change is wrong. If it doesn't make a test fail, then a test is missing.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/cache.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-01-29 17:45:48","OK.  Can you help me understand why it's wrong?
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/cache.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-01-29 17:47:29","Why did you increase the verbosity level here?
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-01-29 17:51:43","cosmit: I prefer using parenthesis rather than backspace.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-01-29 17:53:01","This is from the ""silencing"" PR... I suggest reviewing that one before this one, otherwise the two issues will be intertwined and hard to complete.
+
+`verbose=0` was outputting here, so I upped everything (including the default) to keep everything on separate `verbose` levels, but to make `verbose=0` be silent.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-01-29 17:53:49","Won't it be ugly in practice to show both values?
+Also, you don't override `memory_level` anymore.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-01-29 17:57:41","Negative verbose should not be a problem.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-01-29 18:07:32","Not sure what's the best way to do it but @bcipolli could you remove the commits that are already in the #366 PR?
+
+I believe you'll need to do that eventually when we want to merge into master.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-01-29 18:07:55","I meant to say this particular change is in the #366 PR.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-01-29 18:11:15","I'd prefer not to--I believe the two overlap a bit, and so I'd need to de-merge, then re-merge.  If I leave things as they are, if / when #366 is merged to master, I will be able to rebase much more smoothly (even if changes occur there).
+
+In other projects, we dealt with this by looking at the changes on a commit-by-commit basis.  I think that's useful here; the commits break down pretty cleanly.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","GaelVaroquaux","2015-01-29 18:43:35","> Negative verbose should not be a problem.
+
+I think that they are a problem:
+
+<pre>
+In [1]: if -1: print 1
+1
+</pre>
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-01-29 18:44:39","Disclaimer I am not a git/github veteran but this seems to me a very strange way for me to proceed. What if you change something in #366, would you add the commit in this branch too so that the diff you mentioned above (https://github.com/bcipolli/nilearn/compare/bcipolli:allow_silence...fix_warnings) still makes sense?
+
+Maybe somebody with more git/github experience than me can share his opninions.
+
+Also I feel that linking the two PRs is not that great because while the stdout clean-up is a great thing (especially let's be honest for the dataset download mocking which was outputting thousands of lines or so) I am less convinced about trying to get rid of _all_ the warnings. Sure the warnings that we can fix in our code should be fixed but it seems too much a burden to go and catch all the warnings across a variety of numpy and scipy versions.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","GaelVaroquaux","2015-01-29 18:46:01","> I'd prefer not to--I believe the two overlap a bit, and so I'd need to
+> de-merge, then re-merge. If I leave things as they are, if / when #366
+> is merged to master, I will be able to rebase much more smoothly (even
+> if changes occur there).
+
+Then I suggest that we stop reviewing this PR till #366 is merged.
+
+> In other projects, we dealt with this by looking at the changes on a
+> commit-by-commit basis.
+
+That's not our workflow. We like to work based on PR. The github
+interface makes this very easy to do. The benefit is that looking at the
+whole PR makes it harder to miss something like the introduction of a
+bug.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-01-29 18:57:14","> Then I suggest that we stop reviewing this PR till #366 is merged.
+
+That's probably the best way to do it while saving time and hassle for everybody involved. I don't think #366 is that far away from being merged anyway.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-01-29 18:58:58","Oops the PR is actually #369 (#366 is the issue), sorry about that.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/group_sparse_covariance.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-02-02 17:05:08","@AlexandreAbraham can you help me with this one?  The docstring says:
+
+```
+    ref_memory_level: int
+        The reference memory_level used to determine if function call must
+        be cached or not (if memory_level is larger than ref_memory_level
+        the function is cached)
+```
+
+I believe this first check is for the not-caching condition, which means the code should be entered (according to the docstring) if `memory_level` is not larger than `ref_memory_level`.
+
+Seems I should do  `ref_memory_level >= memory_level` on that reading...
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/cache.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-02-02 17:07:03","I believe this is a bug; I think it specifically suppresses `warning_class`, rather than forcing it to show (which is what I think we want.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-02-02 18:05:23","This is weird. Are these parameters used somewhere? My impression is that the logic is in the mixin and that this function is always called with the default parameters.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/cache.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-02-02 18:14:43","As far as I can see, they're simply passed through (so could be user-specified), except here: https://github.com/nilearn/nilearn/blob/master/nilearn/input_data/base_masker.py#L170
+
+Seems weird to set the `ref_memory_level` to `self.memory_level`, given the docstring--this would disable memory usage, in my understanding.  Which is admittedly very weak :)
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/cache.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:01:05","This is the main point of contention and should be removed.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'Makefile')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:01:21","inspect is already imported a few lines below
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:07:08","From what I could see this was only used for the Neurodebian-specific warning. I think we can live without for now.
+
+Quite annoying though, that there is no way to have a unittest.skipIf in python 2.6 ...
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:12:59","I didn't manage to get a warning from this import and tried a few different numpy/scipy/sklearn versions. Do you remember how to get warnings from this import?
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:30:45","I would give up on this one as mentioned above.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/tests/test_canica.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:31:23","import probably not needed anymore if we give up on skipping the test for Neurodebian
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/tests/test_canica.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:33:10","I am not too sure about this one but we can probably live with the warning you get from `MultiPCA()`
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/tests/test_multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:33:16","This is probably a change from an old commit. I don't think we want it.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:34:58","Can you motivate this one? It seems like you are changing the warning policy significantly but maybe you have a good reason for doing so.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","lesteve","2015-02-11 14:37:37","Is there no meaningful string you could use here for the warning message? In case there is none, you could consider using assert_warns instead.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/tests/test_region.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-02-11 14:58:16","I still don't understand why you are making a special case of `memory_level`. Here you silently change it which is, for me, not a behavior that we want. Could you elaborate on that?
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-02-11 15:16:58","I'm fine with this modification.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/tests/test_multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-02-11 15:17:12",":+1:
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-02-11 15:17:54","Good catch but dependant of the internal code of the masker. I think that this code should go in the masker anyway.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","AlexandreAbraham","2015-02-11 15:28:55","It may be just me but I'm a bit worried about these catchs. I have the impression that we're putting a very high standard on tests that may frighten potential contributors. @lesteve sees no problem so this is a matter of taste.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decoding/tests/test_searchlight.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","GaelVaroquaux","2015-02-11 16:58:02","> > -        if self.masker_.mask_img:
+
+Should be 'is None', or something like this, as some objects (like
+arrays) raise errors when tested with an 'if'.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:03:18","It used to be necessary, from the old caching code--no longer is.  I've also made a smaller set of changes for this, here: https://github.com/bcipolli/nilearn/commit/448c69154e3cff1c41ae9d44b42d891950f19255
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:13:44","Done.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'Makefile')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:18:03","Done.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:18:55","I removed all the commits related to this, and opted for a more simple fix (ignore the warning), with a comment explaining.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:22:21","I have done this with the idea that tests should either: use things as intended (and get no warnings), or use things as not intended (and verify that warnings are emitted).
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/tests/test_multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:26:15","I reverted this to the orginal `> 10` setting.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/input_data/nifti_masker.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:33:43","This was my mistake, fixed.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:33:50","Fixed.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/tests/test_region.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 00:34:12","I created a separate PR for this.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/decomposition/multi_pca.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 05:07:00","I removed this, and no longer see it; perhaps it was in one of the configs we removed?  I think keeping it out until we can find a config where the issue pops up, is for the best.
+","f6f73951f754bec79a57e804b7a507932de59100","(None, '', u'nilearn/datasets.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","GaelVaroquaux","2015-03-01 08:21:12","Is the regexp at the end of the message desired? ('.' in regexp matches anything).
+","f6f73951f754bec79a57e804b7a507932de59100","(26, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","bcipolli","2015-03-01 15:14:21","> Is the regexp at the end of the message desired? ('.' in regexp matches anything).
+
+For me, not particularly desired or undesired.  With a match of this length and specificity, I didn't feel the need to be careful about the presence of `.`.  I would be happy to remove it if you'd like.
+","f6f73951f754bec79a57e804b7a507932de59100","(26, '', u'nilearn/__init__.py')"
+"pull_request_commit_comment","371","nilearn","nilearn","banilo","2015-03-06 13:24:22","necessary?
+","f6f73951f754bec79a57e804b7a507932de59100","(12, '', u'nilearn/_utils/testing.py')"
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:12:35","Get rid of warning due to (implicitly) computing mask on garbage data.","db2a3c65eca7997f187a26c523825bb5b3b9e3c6",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 06:47:54","Ignore a warning about divide-by-zero for our dummy data; it's not important.","e7b8a3656df8d8142925f43df299697000b04157",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 07:01:44","Fix warning re: negation of a boolean","a2525a5715c4a2e2fa86bde8a503da4134903736",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:11:27","Implement good version of assert_warns, use it in","7d11d9d565b3999656f23a95952fa56dfb39a507",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:30:13","Expect an 'empty mask' warning.","f00a09e203420b11bf45777d43d53d05aa8ef5e1",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:43:29","Expect transform warnings.","dd0a771c6a6bae34d2760d326739f833b535720e",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 08:53:07","Use assert_equal to get better error messages on failures.","a3be46f35458250f6253d69d0d7f1afb3a74a053",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:00:03","Slicing cannot be done with floats.","2aecf5d5df6900cc8c29ec579de9e5bcb9d0328a",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:13:23","Check expected ""Incompatible Cache"" warnings.","c0fe641d858c377f5a32ab3e7cff33a11eda66ea",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 09:24:19","Expect the download warning.","ae79768476b8172bd5df6ced693feaf0fc8451a6",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-02 18:06:46","Removing redunant code, adding docstring.","0b89d92f7100f54ebae3e1efbc8c36517bd6cb63",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-05 07:51:11","be more specific about expected error.","30475ee5c7b0e9525d7b27ac7558bd455acb6ef7",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-18 00:36:35","Fix broken import introduced during conflict resolution.","72f0b81e22245faf694af271664d603687828c14",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-01-29 13:45:06","Stop subscripting the Warning object.","66f06da1abdaef98a0eebace6f6abfb318ff9ec4",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-18 00:45:02","Avoid divide-by-zero errors.","210625b5113c2679fa196e0efd8d08f00adbb131",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-28 21:42:53","Ignore failure for FastICA to converge; it doesn't matter.","5f40122b6365921297c7c383c66e463cc7a32d3f",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-28 21:46:44","Suppress Ward Agglomeration cluster complaint.","c5d0d39a82de6533df3eac20bdee503e2411ebcd",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-28 22:27:51","Expect a warning when signal clean parameters are not quite right.","9e3a1af0062eccfeed40c379a4fcad61dfc7a5a3",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-28 23:38:26","Be smart enough to avoid warnings with default parameters.  'memory' is the tricky case.","b869cb2864918fbf20b1f4ebf134faefcdf6fa55",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-01 00:12:03","Change assert_warns_regex with empty string to assert_warns.","f6cb15cab6ed4bfccf0c519c6aba711a55102059",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-01 04:55:12","[int] -= [float] doesn't do what you think it does (it implicitly casts the float to int).  We need to weed these out.
+https://github.com/numpy/numpy/issues/4704","de46a14aa5987ff2c89b60919c37f0f4fc07fa0b",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-01 04:56:07","Suppress user warnings that we internally trigger.  Otherwise the user may think something may be going wrong.","9f7f229b715b46c73b420f1aa3f8b05439344184",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-01 05:43:11","Remove specific checks from old sklearn, check_cv.","766b53b3dd1f1b838b6c8e3f4c18af2b142cadae",""
+"pull_request_commit","371","nilearn","nilearn","bcipolli@ucsd.edu","2015-03-18 18:01:23","No warning for empty image anymore...","f6f73951f754bec79a57e804b7a507932de59100",""

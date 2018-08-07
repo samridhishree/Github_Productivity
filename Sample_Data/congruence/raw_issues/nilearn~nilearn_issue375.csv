@@ -1,0 +1,93 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","375","nilearn","nilearn","lesteve","2015-01-30 14:49:10","see #196 for context.
+
+Rebased on master, fixed merge conflicts and updated examples to follow the changes that have happened since.
+
+Things that still need to be done:
+- [ ] Look at non-tackled comments in #196
+- [ ] verbose parameters and print statements may need to be updated following #369
+- [ ] example .py and .png in the rst doc need to be updated because examples have moved around
+- [ ] small differences between #196 plots and the ones obtained from this PR need reviewing
+- [ ] examples rst titles (just (2) added to the non-RPBI example title) is not great and sometimes you don't actually see a difference in the gallery titles.
+- [ ] just checking: there is a standardize=True for the masker in plot_haxby_rpbi.py with a comment that says that it is important for RPBI. The thing is that standardize=True is not used for the other RPBI examples. Any reason why?
+","start issue","[WIP] Random Parcellation Based Inference continued PR"
+"issue_closed","375","nilearn","nilearn","lesteve","2016-09-06 14:23:12","","closed issue","[WIP] Random Parcellation Based Inference continued PR"
+"pull_request_title","375","nilearn","nilearn","lesteve","2015-01-30 14:49:10","see #196 for context.
+
+Rebased on master, fixed merge conflicts and updated examples to follow the changes that have happened since.
+
+Things that still need to be done:
+- [ ] Look at non-tackled comments in #196
+- [ ] verbose parameters and print statements may need to be updated following #369
+- [ ] example .py and .png in the rst doc need to be updated because examples have moved around
+- [ ] small differences between #196 plots and the ones obtained from this PR need reviewing
+- [ ] examples rst titles (just (2) added to the non-RPBI example title) is not great and sometimes you don't actually see a difference in the gallery titles.
+- [ ] just checking: there is a standardize=True for the masker in plot_haxby_rpbi.py with a comment that says that it is important for RPBI. The thing is that standardize=True is not used for the other RPBI examples. Any reason why?
+","67ea6bb4111eeb610f6a7bb9fbda79a59ca468d4","[WIP] Random Parcellation Based Inference continued PR"
+"issue_comment","375","nilearn","nilearn","bcipolli","2015-02-23 06:07:03","@lesteve I have been looking at this today, I think it could be useful for some of the RSA things I've been doing in the background.
+
+I'd be happy to help push this forward.  I can take care of the merge conflicts and take care of the printing / verbose issues, for example.  I also think the coding of the `plot_haxby_rpbi` example could be simplified.    
+
+I also had a couple of questions about analysis choices made in the `plot_haxby_rpbi` example.  I worry that my questions / concerns may be naive (I am still very new to neuroimaging analysis), but I will follow up with them in case they're questions others might have in learning from the examples.
+","",""
+"issue_comment","375","nilearn","nilearn","bcipolli","2015-02-23 06:44:02","2 questions to start:
+- Why does the Haxby example limit data to houses and faces?  I think a comment there would be helpful.
+- The code mentions that it takes the mean image per condition, as different samples within the same session have dependencies in time.
+  - Isn't this issue also true (to a lesser degree) between conditions (house vs. face)?
+  - Would this be (at least partially) alleviated by passing `detrend=True` in the mask?
+  - Is this really a concern in a block design (24s per stimulus, 12s of rest in-between)?
+","",""
+"issue_comment","375","nilearn","nilearn","lesteve","2015-02-27 09:36:28","> I'd be happy to help push this forward.
+
+That would be great indeed! There was some interest about working on it during the 0.1 sprint but other issues were deemed more important at the time.
+
+I guess the first thing would be to rebase on master and fix merge conflicts. The bullet points mentioned in my message at the very top are good next steps.
+","",""
+"issue_comment","375","nilearn","nilearn","eickenberg","2015-02-27 12:01:11","> Isn't this issue also true (to a lesser degree) between conditions (house vs. face)?
+
+Probably, but the extent depends on long range temporal interactions (which are typically drift components) that are difficult to quantify
+
+> Is this really a concern in a block design (24s per stimulus, 12s of rest in-between)?
+
+Drift cutoff in nipy GLM is set by default to a period of 128s. If the interactions are really that long, then this would be a concern. 
+
+> Would this be (at least partially) alleviated by passing detrend=True in the mask?
+
+Probably. But as mentioned elsewhere, this detrending needs to be done by chunks (as indicated by the `chunk` variable in the label data)
+","",""
+"issue_comment","375","nilearn","nilearn","bcipolli","2015-02-28 20:47:02","Rebased to master / fixed merge conflicts:
+https://github.com/bcipolli/nilearn/tree/rpbi
+
+Thanks @eickenberg ; I can perhaps include some of that in the example (like the detrending in chunks), and a bit more in comments.  I also think the code can be cleaned up a bit (after working through the example for some of the RSA-focused work I'm doing).
+
+I'll also take a look at the bullet points listed!
+","",""
+"issue_comment","375","nilearn","nilearn","AlexandreAbraham","2015-01-30 15:34:21","> just checking: there is a standardize=True for the masker in plot_haxby_rpbi.py with a comment that says that it is important for RPBI. The thing is that standardize=True is not used for the other RPBI examples. Any reason why?
+
+We should check in RPBI that data is standardize and raise a warning if not.
+","",""
+"issue_comment","375","nilearn","nilearn","AlexandreAbraham","2015-12-18 13:22:40","Should we kill this one? Or resurrect it?
+","",""
+"issue_comment","375","nilearn","nilearn","bthirion","2015-12-18 13:36:16","I am wondering what the right placeholder for that method is: Nilearn/Nistats. There are two blockers: 
+- the structure instantiated to obtain the p-values through permutation is a bit complex / hard to maintain.
+- Ward clustering is very slow. Renn should be implemented instead.
+  The second point is easy to address, not the first one.
+
+An idea that we have currently is to have a procedure that does not require the permutations, but this is a topic of research. Should go to nilearn-sandbox ?
+","",""
+"issue_comment","375","nilearn","nilearn","lesteve","2016-09-06 14:23:10","Closing this one, since this is in nilearn_sandbox now, see https://github.com/nilearn/nilearn_sandbox/pull/8.
+","",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-20 10:22:27","Fixed merged conflicts
+
+Tests passing","857d59b91e1e6c2856a47475c36453ccad898cb7",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-20 10:23:12","plot_haxby_rpbi.py harmonised and working","9e8d1e912bf93345630a0c9b1847e26ea7b05f1e",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-20 14:46:23","plot_localizer_rpbi.py harmonised and working","54e5d97a639c69721f06ecddec9b3b07f0deab2d",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-23 12:06:43","plot_oasis_vbm_rpbi.py harmonised and working","6ddbbaebd94a0972ccae6eb82ff805f1d1303252",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-23 14:12:58","Python 2.6 fix","6409eb49b2fea74ddec1f68b3b49aa28409b6a40",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-26 12:43:02","Used delayed import
+
+to ensure that matplotlib backend is set properly by nilearn/plotting/__init__.py
+in an environment without X","6a311462f7c7593f4c5a0a7627992af26fd444ac",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-26 12:54:10","Remove unnecessary changes to .gitignore","d868ad219bae8097203ef54f1b3d774325739518",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-01-30 14:11:56","Rename orthonormed -> orthonormalized","e8b13f7fe602c8fb06a1872d1ab24f19cf02b792",""
+"pull_request_commit","375","nilearn","nilearn","lesteve","2015-02-02 08:06:56","Fix merging gone wrong","67ea6bb4111eeb610f6a7bb9fbda79a59ca468d4",""

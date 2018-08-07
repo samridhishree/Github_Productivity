@@ -1,0 +1,39 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1445","nilearn","nilearn","lesteve","2017-05-04 13:11:59","```py
+import numpy as np
+
+import nibabel
+
+from nilearn.plotting import plot_stat_map
+from nilearn.image import new_img_like
+from nilearn.image import resample_img
+
+img = 'image_12099.nii.gz'
+affine = np.diag([-3, 3, 3])
+cut_coords = (0, 0, 0)
+
+plot_stat_map(img, cut_coords=cut_coords, title='original image')
+
+img_resampled = resample_img(img, target_affine=affine)
+plot_stat_map(img_resampled, cut_coords=(0, 0, 0), title='resampled image')
+
+img = nibabel.load(img)
+data = img.get_data().astype('f8')
+new_img_little_endian = new_img_like(img, data)
+img_resampled_little_endian = resample_img(new_img_little_endian, target_affine=affine)
+
+plot_stat_map(img_resampled_little_endian, cut_coords=cut_coords,
+              title='resample image with little-endian type')
+
+
+```
+
+The image is [image_12099.nii.gz](https://github.com/nilearn/nilearn/files/976184/image_12099.nii.gz).
+
+![original](https://cloud.githubusercontent.com/assets/1680079/25704776/1a2554c2-30db-11e7-8793-a079f8b2ca4a.png)
+![resampled](https://cloud.githubusercontent.com/assets/1680079/25704770/1673d8ee-30db-11e7-9d03-9755a46023b2.png)
+![resampled-from-little-endian](https://cloud.githubusercontent.com/assets/1680079/25704768/13dc86ee-30db-11e7-955a-f257a651d349.png)
+
+If you look at the resampled data, you have some NaNs and big values of the order of `1e308`. It seems like the culprit is that the scipy functions we are using don't deal well with big-endian dtypes on my little-endian machine.","start issue","resample_img problem with big-endian data on a little-endian machine"
+"issue_closed","1445","nilearn","nilearn","GaelVaroquaux","2017-05-30 14:38:22","","closed issue","resample_img problem with big-endian data on a little-endian machine"
+"issue_comment","1445","nilearn","nilearn","lesteve","2017-05-09 11:35:51","FYI I opened https://github.com/scipy/scipy/issues/7388 in the scipy tracker. The problem is very similar to the one we had 2+ years ago, except that this one happens when the affine passed into `ndimage.affine_transform` is 1d. The fix I did at the time only fixed the case where affine` is 2d :cry:","",""

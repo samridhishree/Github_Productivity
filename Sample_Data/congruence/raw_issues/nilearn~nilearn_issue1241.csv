@@ -1,0 +1,72 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1241","nilearn","nilearn","GaelVaroquaux","2016-08-11 17:31:29","Computing high-variance confounds or global signal mean is a common situation to clean data, in particular in resting-state settings.
+
+We could add an option ('compute_confounds'), that would be one of {None, 'global_signal', 'compcor_5', 'compcor_10'} to do this during the transform in the various maskers. It would very much simplify this common usecase.
+
+What do people think?
+","start issue","Enhancement suggestion: Have masker compute some confounds"
+"issue_comment","1241","nilearn","nilearn","GaelVaroquaux","2016-08-11 17:52:08","> Especially the global-mean-regression versus not is a classical reviewer
+> question that would be nice to have nilearn it tackled.
+
+Well, I'll want compcorr more than global-mean because global mean is a
+very stupid idea (makes the covariance matrix ill-conditionned by
+construction), and it's a pity that the community has not realized it.
+","",""
+"issue_comment","1241","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:13:21","> Yes but I have always better results when I use anatomical CompCor than
+> statistical CompCor. Sometimes removing high variance confounds gave me
+> worse results.
+
+I agree. And that's why these things should not be on by default. But,
+because they rely only on fMRI data, they are orders of magnitude easier
+to use. Hence there is value to using them.
+
+And motion + statistical compcor is not _always_ worse than only motion.
+Only when the data is not very noisy.
+","",""
+"issue_comment","1241","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:19:42","> I would prefer to have a possibility to enter my WM and CSF masks, and have an
+> anatomical CompCor
+
+That's much harder to do. It's not a problem that we can fix, in the
+current state of things.
+
+If BIDS preprocessed data (a standard for sharing preprocessed data)
+becomes a success and is widely used, then we'll be able to tackle this
+problem.
+","",""
+"issue_comment","1241","nilearn","nilearn","GaelVaroquaux","2016-08-11 18:23:28","> Ok, but then the default behaviour is important, what would you choose ? None ?
+
+None.
+","",""
+"issue_comment","1241","nilearn","nilearn","GaelVaroquaux","2016-08-11 20:08:16","#1104 is very useful, and should be merged, but I think that it is something different, as it does neither global signal mean, nor compcorr.
+","",""
+"issue_comment","1241","nilearn","nilearn","banilo","2016-08-11 17:46:52","+1
+
+Especially the global-mean-regression versus not is a classical reviewer question that would be nice to have nilearn it tackled.
+","",""
+"issue_comment","1241","nilearn","nilearn","salma1601","2016-09-09 11:45:02","actually I am changing my mind: I am working with very eroded group-level WM and CSF masks, and seems to me noise is better assessed with high variance confounds than anatomical compcor.
+
+So +1 for computing high variance confounds on the fly
+","",""
+"issue_comment","1241","nilearn","nilearn","salma1601","2016-08-11 18:10:17","Yes but I have always better results when I use anatomical CompCor than statistical CompCor. Sometimes removing high variance confounds gave me worse results than just removing motion confounds !
+","",""
+"issue_comment","1241","nilearn","nilearn","salma1601","2016-08-11 18:11:58","I mean motion + statistical CompCor worse than motion
+","",""
+"issue_comment","1241","nilearn","nilearn","salma1601","2016-08-11 18:17:29","> And motion + statistical compcor is not _always_ worse than only motion.
+
+Yes I agree, but people use default things, and I would prefer they are perfect, so that we push people to have good quality data, good preprocessing pipeline. In the same spirit we push them to use mathematically rigorous estimators.
+Preprocessing is very important for me, I don't like the idea of ""Come on, don't car about it, with 1000 subjects we will not see the effect"" ;)
+
+I would prefer to have a possibility to enter my WM and CSF masks, and have an anatomical CompCor
+","",""
+"issue_comment","1241","nilearn","nilearn","salma1601","2016-08-11 18:23:11"," Ok, but then the default behaviour is important, what would you choose ? None ? 
+","",""
+"issue_comment","1241","nilearn","nilearn","KamalakerDadi","2016-08-11 20:00:08","> What do people think?
+
+Do you want to do this as separate function as reported in #1104  or included in masker API ?
+If it is a function, I am ready with it but needs some good wording. EDITED: I meant doc
+","",""
+"issue_comment","1241","nilearn","nilearn","KamalakerDadi","2016-08-11 20:05:05","> Do you want to do this as separate function as reported in #1104 or included in masker API ?
+> If it is a function, I am ready with it but needs some good wording. EDITED: I meant doc
+
+It should not be a problem I think. we can do both ?
+","",""

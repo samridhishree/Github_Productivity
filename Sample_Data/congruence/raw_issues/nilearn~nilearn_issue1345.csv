@@ -1,0 +1,61 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1345","nilearn","nilearn","sprak0323","2016-12-11 05:38:14","Sorry for disturbing you
+
+I would like to align two MNI space images(same resolution, different affine&shape) to the same voxel space.
+
+>image.resample_to_img(atlas,stats, 
+                    interpolation='nearest', copy=True, order='F')
+
+and raise an error：
+
+>BoundingBoxError: The field of view given by the target affine does not contain any of the data
+
+So can you tell me how to do this?
+","start issue","A question about 'image.resample_img'"
+"issue_closed","1345","nilearn","nilearn","GaelVaroquaux","2017-11-06 21:14:05","","closed issue","A question about 'image.resample_img'"
+"issue_comment","1345","nilearn","nilearn","KamalakerDadi","2016-12-11 05:45:54","Do you think you can share/attach your nifti files ?
+
+You error message looks like there are spurious images to me.","",""
+"issue_comment","1345","nilearn","nilearn","sprak0323","2016-12-11 06:34:39","
+[atlas+stats.zip](https://github.com/nilearn/nilearn/files/644261/atlas.stats.zip)
+Thank you very much 
+
+","",""
+"issue_comment","1345","nilearn","nilearn","sprak0323","2016-12-11 06:55:15","Just like this:
+>>> A = image.load_img('/Volumes/LA_Fun/Allen/MRI/rs_reorder_T1_donor9861.nii')
+>>> B = image.load_img('/Volumes/LA_Fun/atlas/BN_Atlas_246_1mm.nii.gz')
+>>> B.shape
+(182, 218, 182)
+>>> A.shape
+(197, 233, 189)
+>>> C = image.resample_to_img(A, B)","",""
+"issue_comment","1345","nilearn","nilearn","KamalakerDadi","2016-12-11 07:05:10","This one '/Volumes/LA_Fun/Allen/MRI/rs_reorder_T1_donor9861.nii' doesn't seems like in MNI space.
+Can you check by specifying coordinates to [0, 0, 0]. If image is in MNI space then you see cursor at AC-PC line (Please google it if you don't know what AC-PC is)
+
+Let me know after aligning to MNI space, if it worked or not ?","",""
+"issue_comment","1345","nilearn","nilearn","KamalakerDadi","2016-12-11 07:07:48","Can you try this ?
+```python
+plotting.plot_stat_map('/Volumes/LA_Fun/Allen/MRI/rs_reorder_T1_donor9861.nii', cut_coords=[0, 0, 0])
+```","",""
+"issue_comment","1345","nilearn","nilearn","sprak0323","2016-12-11 07:10:54","![figure_1](https://cloud.githubusercontent.com/assets/18514015/21078718/f8e5fa66-bfb3-11e6-93f6-0f780208e3d2.png)
+This is what I got","",""
+"issue_comment","1345","nilearn","nilearn","KamalakerDadi","2016-12-11 07:23:34","Have you tried visualizing this image with other softwares ? How does it look like ?
+To make sure if there is problem with data or package.","",""
+"issue_comment","1345","nilearn","nilearn","sprak0323","2016-12-11 07:25:46","Sure, the image is an atlas and a samples ,I can open it by MRIcro software.","",""
+"issue_comment","1345","nilearn","nilearn","KamalakerDadi","2016-12-11 07:37:14","I can view atlas properly. I cannot view samples image properly which is a reordered image I suppose. I am not sure what's going on. It may time to debug it. Sorry. May be somebody will pitch in to have another solution.
+","",""
+"issue_comment","1345","nilearn","nilearn","sprak0323","2016-12-11 07:42:01","I see, thanks a lot, I think I should try some another way.","",""
+"issue_comment","1345","nilearn","nilearn","KamalakerDadi","2016-12-11 07:42:41","Just curious, What are these samples represent ?","",""
+"issue_comment","1345","nilearn","nilearn","sprak0323","2016-12-11 07:48:58","They are the allen gene expressions data, each sample represents a probe to measure all the gene expression there(we have MNI coordinates).
+And I think I should use the MNI coordinates to create my own image rather than resampling other's.
+
+For more information: http://human.brain-map.org","",""
+"issue_comment","1345","nilearn","nilearn","KamalakerDadi","2016-12-11 07:54:04"," >And I think I should use the MNI coordinates to create my own image rather than resampling other's.
+
+Yes, may be that would help.","",""
+"issue_comment","1345","nilearn","nilearn","GaelVaroquaux","2016-12-11 09:11:05","This error message is trying to tell you there is no data where you are
+targeting the resample, ie no overlap between the source and the target
+image.
+
+I suspect that your image is not in MNI space.
+","",""

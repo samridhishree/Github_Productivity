@@ -1,0 +1,72 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","453","nilearn","nilearn","bcipolli","2015-02-21 15:51:04","In one case, the random state is ignored without notification to the user.  
+
+``` python
+        random_state = check_random_state(self.random_state)
+        seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
+
+        if (LooseVersion(sklearn.__version__).version > [0, 12]):
+            # random_state in fastica was added in 0.13
+            results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                delayed(fastica)(self.components_.T,
+                    whiten=True, fun='cube', random_state=seed,
+                    max_iter=self.max_iter)
+                for seed in seeds)
+        else:
+            results = Parallel(n_jobs=1, verbose=self.verbose)(
+                delayed(fastica)(self.components_.T, whiten=True, fun='cube')
+                for seed in seeds)
+```
+
+I suggest to create a small wrapper function that is passed to parallel, which set the random state.  This would allow the `if...else` to choose a function (much like https://github.com/nilearn/nilearn/blob/master/nilearn/input_data/multi_nifti_masker.py#L176 ), which would allow only one specification of the parameters (note that `n_jobs` is hard-coded in one case here, the second time I've come across parameter inconsistencies when they're being copied).
+
+Another reasonable option is to warn the user that the random state is being ignored.
+
+Of course, hybrids (warn the user but still refactor the code to have one large set of generalized parameters, in addition to the `if...else` specific ones) are possible!
+","start issue","`random_state` is silently ignored within CanICA, for sklearn version < 0.13"
+"issue_closed","453","nilearn","nilearn","GaelVaroquaux","2015-03-04 20:32:37","","closed issue","`random_state` is silently ignored within CanICA, for sklearn version < 0.13"
+"issue_comment","453","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:00:40","> I suggest to create a small wrapper function that is passed to parallel, which
+> set the random state.
+
+For scikit-learn below 0.13, it's not possible to set the random state of
+FastICA. This was an oversight in the code of scikit-learn.
+
+> note that n_jobs is hard-coded in one case here, the second time I've
+> come across parameter inconsistencies when they're being copied).
+
+Yes, because parallel computing without control of the random_state would
+just duplicate the same random number generator, and thus do exactly the
+same operations in each subprocess.
+
+> Another reasonable option is to warn the user that the random state is being
+> ignored.
+
+It's not. It's actually n_jobs that is ignored.
+
+How important is this? The impact for the user is that if scikit-learn
+version is below 0.13, n_jobs is ignored, but the code works well. 0.13
+came out quite a while ago, so the people that are impacted by this minor
+problem are actually very few. They will be less and less as time goes.
+So my gut feeling would be to ignore the problem :).
+","",""
+"issue_comment","453","nilearn","nilearn","bcipolli","2015-02-21 16:06:20","OK.  For me, it's quite important, since support of sklearn `0.12.1` is listed (we can't know who, if anybody, will use it).  But I'm of course willing to defer.
+
+How about simply adding a warning inside the `if` check, and a test case to test the warning?  I'm happy to take care of it.  I can also mention there about `n_jobs` being ignored... :)
+
+Bug again, willing to defer.
+","",""
+"issue_comment","453","nilearn","nilearn","GaelVaroquaux","2015-02-21 16:08:08","> OK. For me, it's quite important, since support of sklearn 0.12.1 is
+> listed (we can't know who, if anybody, will use it).
+
+Yes, but it's not a bug. It will not lead to errors or wrong results.
+","",""
+"issue_comment","453","nilearn","nilearn","bcipolli","2015-02-21 16:18:05","> Yes, but it's not a bug. It will not lead to errors or wrong results.
+
+I agree!  I didn't mean to write ""bug again"" lol :)  
+
+It does, however, mislead the user--if there is a `random_state` parameter, I expect that by using it, I'll get the same results every time.  Same with `n_jobs`--if I pass it, I expect it'll be used.
+
+Again, happy to submit a PR that warns the user, to avoid potential confusion.  If you're still not convinced that it's worth the effort / lines of code, I'll just be quiet :)
+","",""
+"issue_comment","453","nilearn","nilearn","GaelVaroquaux","2015-03-04 20:32:37","I am closing this guy as a won't fix, to lighten a bit the number of open issues.
+","",""

@@ -1,0 +1,44 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","284","nilearn","nilearn","lesteve","2014-11-18 10:57:47","See [here](http://nilearn.github.io/auto_examples/plot_haxby_anova_svm.html). Maybe this is partly due to the slice which is chosen for the plot.
+- The support of the SVC doesn't look right
+- accuracy is 73% whereas a comment at the bottom of the example claims 98%
+","start issue","Haxby anova example looks suspicious"
+"issue_closed","284","nilearn","nilearn","GaelVaroquaux","2014-11-19 21:28:44","","closed issue","Haxby anova example looks suspicious"
+"issue_comment","284","nilearn","nilearn","GaelVaroquaux","2014-11-18 11:08:59","I can reproduce. I agree that it looks suspicious.
+","",""
+"issue_comment","284","nilearn","nilearn","AlexandreAbraham","2014-11-18 15:24:16","You get better results if you don't standardize.
+","",""
+"issue_comment","284","nilearn","nilearn","AlexandreAbraham","2014-11-18 17:22:53","Just to clarify my last remark: this is not a good solution but it explains why it has worked so far. The problem here is that, if the data is standardized, the feature selection will select noisy voxels (around the brain).
+","",""
+"issue_comment","284","nilearn","nilearn","lesteve","2014-11-19 15:27:53","> You get better results if you don't standardize.
+
+Just for completeness, @AlexandreAbraham is right with standardize=False in the NiftiMasker, the plot looks more familiar:
+![plot_haxby_anova_not_standardize](https://cloud.githubusercontent.com/assets/1680079/5108153/fe6bca18-7007-11e4-9ad7-aa7d3f3b9ad9.png)
+","",""
+"issue_comment","284","nilearn","nilearn","GaelVaroquaux","2014-11-19 15:33:09","> Just for completeness, @AlexandreAbraham is right with
+> standardize=False in the NiftiMasker, the plot looks more familiar:
+> plot_haxby_anova_not_standardize
+
+Hum, could it be that the NiftiMasker standardizes on all the data,
+whereas we would really like to standardize only on the time points used
+for learning? Could you check this (for instance by using scikit-learn's
+standardizer only on the selected time points?
+
+In which case, it is really an argument for:
+- The Decoder object that @schwarty and Andres are working on (it can
+  solve the problem by doing the standardization for the user)
+- Having a selection vector to select time points in the NiftiMasker
+","",""
+"issue_comment","284","nilearn","nilearn","bthirion","2014-11-19 21:02:10","The culprit is line 27. It should be done once the masking has been applied. It is actually strange that NiftiMasker does not throw an error...
+","",""
+"issue_comment","284","nilearn","nilearn","GaelVaroquaux","2014-11-19 21:28:36","Good catch. Fixed by 5428760
+","",""
+"issue_comment","284","nilearn","nilearn","GaelVaroquaux","2014-11-19 22:25:24","I've added some proper error capture to avoid such problem in the future, in 2886dfc
+","",""
+"issue_comment","284","nilearn","nilearn","lesteve","2014-11-20 10:29:28","FYI I have done a make install to update the website
+","",""
+"issue_comment","284","nilearn","nilearn","GaelVaroquaux","2014-11-20 10:31:31","> FYI I have done a make install to update the website
+
+Thank you. I was hesitating to ask you to do this, and decided not to
+burden you with too many things to do.
+","",""

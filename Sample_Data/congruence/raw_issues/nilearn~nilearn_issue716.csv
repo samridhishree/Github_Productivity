@@ -1,0 +1,63 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","716","nilearn","nilearn","dohmatob","2015-07-22 09:04:59","I'm getting drastically different results in my estimmators, depending on whether I use NiftiMasker of MultiNiftiMasker. Looking deeper into the problem, it seems the nifti masker factor has some consistency problems. For example, it seems the way the masking is done is dramatically different from one class to another.
+
+**Test case**
+
+`
+from nose.tools import assert_equal
+    import nibabel
+    from nilearn.input_data import NiftiMasker, MultiNiftiMasker
+
+```
+def test_maskers_consistent():
+    # make a series of (real-world!) 3D images
+    img = nibabel.load(""nilearn/datasets/data/avg152T1_brain.nii.gz"")
+    affine = img.get_affine()
+    data = img.get_data()
+    X = []
+    for _ in range(5):
+        data_ = data.copy()
+        img_ = nibabel.Nifti1Image(data_, affine)
+        X.append(img_)
+
+    # NiftiMasker and MultiNifiMasker should produce the same mask
+    nm = NiftiMasker().fit(X)
+    mnm = MultiNiftiMasker().fit(X)
+    assert_equal(nm.mask_img_.get_data().sum(),
+                 mnm.mask_img_.get_data().sum())
+```
+
+`
+
+**Output**
+
+`
+AssertionError: 228453 != 229007
+    '228453 != 229007' = '%s != %s' % (safe_repr(228453), safe_repr(229007))
+    '228453 != 229007' = self._formatMessage('228453 != 229007', '228453 != 229007')
+
+> >  raise self.failureException('228453 != 229007')
+> > `
+","start issue","Looks like NiftiMasker and MultiMasker don't have anything in common whatsoever"
+"issue_closed","716","nilearn","nilearn","AlexandreAbraham","2015-07-22 11:13:54","","closed issue","Looks like NiftiMasker and MultiMasker don't have anything in common whatsoever"
+"issue_comment","716","nilearn","nilearn","GaelVaroquaux","2015-07-22 09:07:16","Your assumption that they need to produce the same mask is wrong. They
+are different objects with different goals. And the masks differ only by
+a small amount.
+","",""
+"issue_comment","716","nilearn","nilearn","dohmatob","2015-07-22 09:09:46","OK, at this point, I might simply drop my dependence on the nifti masker routines altogether. What i'm trying to accomplish with it is really basic, and historically I used to do it manually in the estimator.
+","",""
+"issue_comment","716","nilearn","nilearn","AlexandreAbraham","2015-07-22 09:27:49","> Your assumption that they need to produce the same mask is wrong. They are different objects with different goals. And the masks differ only by a small amount.
+
+In this case, it's true. But Elvis showed me another case where he gets 120k voxels using NiftiMasker and 170k voxels using MultiNiftiMasker. But, as you said, they are different objects.
+","",""
+"issue_comment","716","nilearn","nilearn","GaelVaroquaux","2015-07-22 09:33:12","> OK, at this point, I might simply drop my dependence on the nifti masker
+> routines altogether.
+
+No. The discussion about scalability of the nifti masker(s) is an
+orthogonal problem to your PR. You should move on with your PR using the
+nifti masker.
+
+Does it work for 100 subjects?
+","",""
+"issue_comment","716","nilearn","nilearn","AlexandreAbraham","2015-07-22 11:13:54","I close this one as it is something known.
+","",""

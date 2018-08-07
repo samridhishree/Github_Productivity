@@ -1,0 +1,87 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","838","nilearn","nilearn","bcipolli","2015-11-10 15:20:28","In the neurovault fetcher, I need to attempt to download metadata by big chunks (100 rows). If offline, then I read the chunks from individual collections stored on disk.
+
+I am trying to use `_fetch_files` to download the chunks of metadata, but the output of `_fetch_files` is making things tough.
+- `verbose=2` is necessary to show the URL querystring (which I need to do; it's the only thing that changes from request to request), but it also outputs warnings if `total_size` is not set (which it is not). I need to suppress the warning but show the URL.
+- After download, `...done` is printed to a new line. I find that messy and hard to read. I'd rather print on the same line as the download bytes.
+- When a connection error occurs, I handle that and take care of things locally. However, I can't prevent a HTTP error from being reported, as well as ""dataset fetch aborted"". The error is re-raised in the code, so downstream functions have to catch anyway and handle--I think printing is unnecessary (either the exception is handled, or the same info will be printed to the console anyway).
+
+I see three possible outcomes:
+- `Update`_fetch_files` to be more flexible
+- Use `requests` (which does more of what I want anyway).
+- Use things as-is, and just have warnings & errors that need to be ignored by the user.
+
+Opening the issue here as I think it is easier to discuss as a separate small chunk.
+","start issue","Fetching output is not as flexible as needed for NeuroVault "
+"issue_closed","838","nilearn","nilearn","lesteve","2015-11-24 11:40:55","","closed issue","Fetching output is not as flexible as needed for NeuroVault "
+"pull_request_title","838","nilearn","nilearn","bcipolli","2015-11-10 15:20:28","In the neurovault fetcher, I need to attempt to download metadata by big chunks (100 rows). If offline, then I read the chunks from individual collections stored on disk.
+
+I am trying to use `_fetch_files` to download the chunks of metadata, but the output of `_fetch_files` is making things tough.
+- `verbose=2` is necessary to show the URL querystring (which I need to do; it's the only thing that changes from request to request), but it also outputs warnings if `total_size` is not set (which it is not). I need to suppress the warning but show the URL.
+- After download, `...done` is printed to a new line. I find that messy and hard to read. I'd rather print on the same line as the download bytes.
+- When a connection error occurs, I handle that and take care of things locally. However, I can't prevent a HTTP error from being reported, as well as ""dataset fetch aborted"". The error is re-raised in the code, so downstream functions have to catch anyway and handle--I think printing is unnecessary (either the exception is handled, or the same info will be printed to the console anyway).
+
+I see three possible outcomes:
+- `Update`_fetch_files` to be more flexible
+- Use `requests` (which does more of what I want anyway).
+- Use things as-is, and just have warnings & errors that need to be ignored by the user.
+
+Opening the issue here as I think it is easier to discuss as a separate small chunk.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","Fetching output is not as flexible as needed for NeuroVault "
+"pull_request_merged","838","nilearn","nilearn","lesteve","2015-11-24 11:40:55","Fetching output is not as flexible as needed for NeuroVault ","bf94ba7fa21ecb7198ee7f80c45fb17bbee1a502","Pull request merge from bcipolli/nilearn:fetch-files-print to nilearn/nilearn:master"
+"issue_comment","838","nilearn","nilearn","bcipolli","2015-11-10 17:03:23","Note: circleci ""failure"" looks like there's no actual problem.
+","",""
+"issue_comment","838","nilearn","nilearn","bcipolli","2015-11-14 19:35:11","Any comments or feedback on this one?
+","",""
+"issue_comment","838","nilearn","nilearn","lesteve","2015-11-24 11:40:53","Merging, thanks a lot !
+","",""
+"issue_comment","838","nilearn","nilearn","lesteve","2015-11-16 10:21:07","> I'm +1 excepted for the error catching stuff. We may discuss that but maybe another PR would be better not to block this one.
+
+What about the print vs sys.stderr.write? My impression is that stdout is used everywhere else for verbose messages so maybe we should stick with print.
+","",""
+"issue_comment","838","nilearn","nilearn","lesteve","2015-11-19 14:16:39","> This is weird, the CircleCI failure seems to be because of spacenet.
+
+Yeah we see this one from time to time (memory usage go above the 4GB limit). It'd be nice if someone looked at the SpaceNet example to make it use less memory (maybe less subjects?). ping @dohmatob 
+","",""
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-10 15:21:08","This newline was emitted elsewhere. It seems odd to have a reporting hook... and then not put as much of the reporting code as possible inside of it.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-10 15:21:53","Putting the `\r` at the start allows us to keep the end output position, eliminating the need to print a newline later.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-10 15:23:24","This warning (which I don't think is really necessary; there's no problem here that I can see) was at the same verbosity level as printing the querystring on the URL.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(50, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-10 15:23:29","Always report (even if ending).
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(62, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-10 15:24:01","Again... seems unnecessary to print start & end on separate lines. Follow the convention to print updating lines to stderr.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(84, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-10 15:25:04","These errors are re-raised, so outputting here at such a low verbosity level causes code that expects and handles errors to have error output. I suggest it should either be at a higher verbosity level or be removed, and I think removed is better.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-10 15:25:38","Output is at the last update position (not at the beginning of the line), so can be completed on the same line now.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","AlexandreAbraham","2015-11-16 07:25:11","If I remember well, these messages are helpful because the original error message is very poor.
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","lesteve","2015-11-17 15:19:15","Can you not remove the block then?
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","lesteve","2015-11-17 15:27:22","Does that actually work to change the error message of the exception ? I seem to remember that using .args is more reliable ...
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","lesteve","2015-11-17 15:28:31","Also just curious, I may have missed it but why not always use a friendly error message rather than only when verbose > 0?
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-17 15:42:53","Good point about `verbose > 0`; now that's not necessary.
+
+I decided to simply change `message`, rather than anything more complicated. We know the types of the errors, so we can be reasonably sure this will work.
+
+If you look at the other commit (c59e5b8) I discarded, I actually made a function to do all the heavy lifting, so that it could be used for any exception. I abandoned it because it was going to be complicated--I wrote tests and everything :)
+
+So, hard to answer your question: I'm going for the least-general / most-specific approach here, and it should work for these errors.
+
+Reading I did:
+http://www.ianbicking.org/blog/2007/09/re-raising-exceptions.html
+https://stackoverflow.com/questions/6062576/adding-information-to-a-python-exception
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-17 15:48:03","You're right. It doesn't work! :-1: fixing...
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit_comment","838","nilearn","nilearn","bcipolli","2015-11-17 16:02:59","Now:
+![image](https://cloud.githubusercontent.com/assets/4072455/11216706/8e203b14-8d01-11e5-84cb-bb948a593569.png)
+","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b","(None, '', u'nilearn/datasets/utils.py')"
+"pull_request_commit","838","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 14:25:30","ENH: Improve reporting (remove extraneous newline).","35e1a0fb1eccd87e86db45637dca1e972cef9765",""
+"pull_request_commit","838","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-10 14:26:15","DOC: allow me to print a full URL without getting warnings.","ba571e5a82b1b3255ec90158fce868bb88464027",""
+"pull_request_commit","838","nilearn","nilearn","bcipolli@ucsd.edu","2015-11-17 16:03:16","RF: don't print messages when re-raising errors.","f9a752933e30b4e75a49f0c77e4b5f78fc154b0b",""

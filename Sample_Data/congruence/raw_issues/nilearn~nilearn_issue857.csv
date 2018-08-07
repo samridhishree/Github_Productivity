@@ -1,0 +1,168 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","857","nilearn","nilearn","salma1601","2015-11-25 14:41:55","Hi,
+I am using plotting.plot_img with a color bar and I have a problem with my colorbar: it is too big and the ticks overlay the image. 
+
+``` Python
+from nilearn import plotting, datasets
+haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+haxby_anat_filename = haxby_dataset.anat[0]
+
+# Plotting anatomical maps
+import matplotlib.pylab as plt
+figure, (axes1, axes2) = plt.subplots(2, 1)
+for axes in [axes1, axes2]:
+    plotting.plot_img(haxby_anat_filename, axes=axes,
+                      colorbar=True, display_mode='z')
+plt.show()
+```
+
+![plot_img_subplots](https://cloud.githubusercontent.com/assets/7080143/11399998/ffb2805e-938a-11e5-86b3-9fd3e2834be2.png)
+I try to solve this by changing the figure size but when I have a lot of cuts it doesn't work.
+Is there a better workaround ?
+Thanks a lot !
+","start issue","colorbar size and ticks in subplots with plotting.plot_img"
+"issue_closed","857","nilearn","nilearn","AlexandreAbraham","2016-02-18 12:52:08","","closed issue","colorbar size and ticks in subplots with plotting.plot_img"
+"issue_comment","857","nilearn","nilearn","lesteve","2015-11-25 15:35:44","Just for later reference do you have a standalone snippet that reproduces the problem?
+","",""
+"issue_comment","857","nilearn","nilearn","salma1601","2015-11-26 07:56:02","``` Python
+from nilearn import plotting, datasets
+haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+haxby_anat_filename = haxby_dataset.anat[0]
+
+# Plotting anatomical maps
+import matplotlib.pylab as plt
+figure, (axes1, axes2) = plt.subplots(2, 1)
+for axes in [axes1, axes2]:
+    plotting.plot_img(haxby_anat_filename, axes=axes,
+                      colorbar=True, display_mode='z')
+plt.show()
+```
+","",""
+"issue_comment","857","nilearn","nilearn","bthirion","2015-11-26 08:04:49","If you resize the figure, the rendering is not too bad, is it ?
+","",""
+"issue_comment","857","nilearn","nilearn","salma1601","2015-11-26 08:12:30","![figure_1](https://cloud.githubusercontent.com/assets/7080143/11418143/6efa0f62-941d-11e5-8da2-f10836637433.png)
+Yes but my brains become too small. Plus I have to make it so wide that it does not fit into my screen so I find this strange isn't it? 
+","",""
+"issue_comment","857","nilearn","nilearn","AlexandreAbraham","2015-11-26 08:18:57","There is clearly a bug regarding the size of the colorbar. Didn't ben fix that bug in one od his unmerged PRs?
+","",""
+"issue_comment","857","nilearn","nilearn","lesteve","2015-11-26 08:31:22","I seem to remember he had similar or related complaints but I was unable to find anything useful.
+","",""
+"issue_comment","857","nilearn","nilearn","GaelVaroquaux","2015-11-26 10:29:09","> If you resize the figure, the rendering is not too bad, is it ?
+
+Things should work by default :).
+","",""
+"issue_comment","857","nilearn","nilearn","AlexandreAbraham","2015-11-26 11:50:29","> Things should work by default :).
+
+The problem is that it's not the point of view of matplotolib.
+
+I took a quick look at your problem. It comes from the fact that you create subplots by hand, which is not supported by nilearn. By doing this, you break the automatic behavior of matplotlib on which nilearn rely.
+
+For example,  if you do this:
+`figure, (axes1, axes2) = plt.subplots(2, 1, figsize=(10,5))`
+
+You obtain something more reasonable althought the text still overlaps with the figure.
+
+Solving this problem is not trivial unfortunately. The best way is maybe to do 2 separate figures.
+","",""
+"issue_comment","857","nilearn","nilearn","GaelVaroquaux","2015-11-26 11:54:01","> I took a quick look at your problem. It comes from the fact that you create
+> subplots by hand, which is not supported by nilearn.
+
+OK. I agree that it is very difficult to support.
+
+Maybe we should deprecate this feature. I know that some people won't be
+happy, but it is a road to unexpected behavior.
+","",""
+"issue_comment","857","nilearn","nilearn","arthurmensch","2015-11-26 11:54:26","You could try to use plt.figure (layout='tight') to automatically move
+subplots to avoid overlap
+Le 26 nov. 2015 09:12, ""salma1601"" notifications@github.com a écrit :
+
+> [image: figure_1]
+> https://cloud.githubusercontent.com/assets/7080143/11418143/6efa0f62-941d-11e5-8da2-f10836637433.png
+> Yes but my brains become too small. Plus I have to make it so wide that it
+> does not fit into my screen so I find this strange isn't it?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/nilearn/nilearn/issues/857#issuecomment-159843056.
+","",""
+"issue_comment","857","nilearn","nilearn","AlexandreAbraham","2015-11-26 12:14:55","> OK. I agree that it is very difficult to support.
+
+It requires to call proper matplotlib methods to get information on the display instead of relying on the magical ability of matplotlib to find a good size for the plots.
+
+> Maybe we should deprecate this feature. I know that some people won't be
+> happy, but it is a road to unexpected behavior.
+
+Note that if you plot each line in a separate plot, the result is very ugly although there is no overlap of figures.
+
+I think that I should explicit what happens in matplotlib and how this problem can be solved. When you plot something, before any call to `pyplot.show()`, matplotlib is unaware of the size of the plots. When you show (or save them), matplotlib will do the maths and adapt the size of the figure to the content, trying to avoid overlaps, with more or less success. When using subplots, a default size is given to the figure, I don't know exactly how it works, but the magic is gone. In that case, if some behavior relied on the magic instead of plotting things carefully by defining the boundaries of each axis, things are messed up.
+
+People from matplotlib solved this kink of layout problems by introducing the GridSpec layout. It allows to create a grid of plots easily, get the correct sizes and set constraints on them. We did not use that in nilearn because, historically, we supported matplotlib 0.99 and this has been introduced in matplotlib 1.0.
+","",""
+"issue_comment","857","nilearn","nilearn","GaelVaroquaux","2015-11-26 12:31:21","> I think that I should explicit what happens in matplotlib and how this problem
+> can be solved. When you plot something, before any call to pyplot.show(),
+> matplotlib is unaware of the size of the plots. When you show (or save them),
+> matplotlib will do the maths and adapt the size of the figure to the content,
+
+Indeed, and we are overriding this behavior in nilearn by registering a
+specific formatter. It's tricky: most people don't understand this code.
+But it's the code that makes the plots look nice by default.
+
+We could make this formatter aware of the colorbar. That might be the
+right way to do it. It requires someone who can understand the matplotlib
+formatters to pick this up. That's the rare resource.
+
+As a side note, it would be interesting to dig up the PR where @bcipolli
+had worked on this. It might be that the solution is in it.
+","",""
+"issue_comment","857","nilearn","nilearn","bcipolli","2015-11-26 14:48:04","@salma1601 can you post a code snippet to reproduce the problem? 
+
+As far as code I've done for plotting, I'm not sure any would fix this:
+- I messed with the colorbar in #464 (merged).
+- I played around with subplots in #212, code here: https://github.com/nilearn/nilearn/compare/master...bcipolli:issue-212
+- I messed with the label colors (described [here](https://github.com/nilearn/nilearn/issues/449#issuecomment-75629299)) in this branch https://github.com/nilearn/nilearn/compare/master...bcipolli:issue-449
+
+I doubt that any of these branches will solve the problem, but I'd be happy to try (if I can get a code snippet to reproduce the issue). I can also debug it if nothing here solves it.
+","",""
+"issue_comment","857","nilearn","nilearn","bcipolli","2015-11-26 14:48:46","(note: just saw the code snippet; would be great to move/copy that to the issue-opening post)
+","",""
+"issue_comment","857","nilearn","nilearn","bcipolli","2015-11-26 15:54:36","I just tried the `plot_mosiac` branch, and it has the same issue.
+
+When we talked before, subplotting was considered to be advanced behavior. The default behavior actually works fine, using the reproducing script: 
+
+![image](https://cloud.githubusercontent.com/assets/4072455/11426426/3b122164-942a-11e5-8ad2-71ceaef2750d.png)
+
+Simply setting the image size to compensate for the size of the plots also works (as detailed above):
+
+``` python
+figure, (axes1, axes2) = plt.subplots(2, 1, figsize=(18, 5))
+```
+
+![image](https://cloud.githubusercontent.com/assets/4072455/11426708/e8fda266-942b-11e5-9228-7e0e5c7db499.png)
+
+And reducing the # of cuts allows cuts to be larger:
+
+``` python
+    plotting.plot_img(haxby_anat_filename, axes=axes,
+                      colorbar=True, display_mode='z', cut_coords=4)
+```
+
+![image](https://cloud.githubusercontent.com/assets/4072455/11426679/b5eb95cc-942b-11e5-88b1-8460e12eca6f.png)
+
+So, the default behavior works, and there are lots of ways to set things up for more advanced users that work just fine. IMHO, there's not much need to address this via a matplotlib formatter.
+","",""
+"issue_comment","857","nilearn","nilearn","GaelVaroquaux","2015-11-26 15:56:21","> So, the default behavior works, and there are lots of ways to set
+> things up for more advanced users that work just fine. IMHO, there's
+> not much need to address this via a matplotlib formatter.
+
+OK. Thanks for your analysis. We might want to close that issue, then.
+","",""
+"issue_comment","857","nilearn","nilearn","AlexandreAbraham","2015-11-26 15:58:18","Is the space between the subplots acceptable? For me, it's a show-stopper if I consider publishing the image somewhere.
+","",""
+"issue_comment","857","nilearn","nilearn","salma1601","2015-11-26 20:03:53","Thanks for all the explanations ! 
+
+> Is the space between the subplots acceptable?
+
+Yes the space between the subplots is strange for me, but I guess this is also tricky.
+","",""
+"issue_comment","857","nilearn","nilearn","AlexandreAbraham","2016-02-18 12:52:08","I have noticed that now we require matplotlib > 1.1.1. That means that we actually can use GridSpec layout which should make all that stuff easier. I'll close this issue but keep your example in a more general one about colorbar code refactoring.
+","",""

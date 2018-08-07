@@ -1,0 +1,190 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","449","nilearn","nilearn","bcipolli","2015-02-20 07:17:03","I expected the background color to be white (or, in the worst case, for the background to be transparent/grey for both the image and text labels).
+
+I only found one example using subplots, and it specifies a background image... so not 100% sure my expectation / usage is proper.
+
+![screen shot 2015-02-19 at 11 08 18 pm](https://cloud.githubusercontent.com/assets/4072455/6282611/a012cd5e-b88c-11e4-9eb1-ff81ee5b0e81.png)
+
+``` python
+import matplotlib.pyplot as plt
+
+from nilearn import datasets
+from nilearn.plotting import plot_glass_brain
+from nilearn.image import index_img, iter_img
+
+n_maps = 3
+msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+maps_img = msdl_atlas_dataset.maps
+fh = plt.figure()
+for ii, img in enumerate(iter_img(index_img(maps_img, range(n_maps)))):
+    ax = fh.add_subplot(n_maps, 1, ii)
+    plot_glass_brain(img, axes=ax)
+plt.show()
+```
+","start issue","Background color not painted when using subplot."
+"issue_closed","449","nilearn","nilearn","AlexandreAbraham","2016-06-07 22:03:04","","closed issue","Background color not painted when using subplot."
+"issue_comment","449","nilearn","nilearn","lesteve","2015-02-20 07:49:42","In my mind passing an axes to plot_\* functions is an advanced usage and as a consequence you need to know a little bit more what you are doing.
+
+Changing the background of the figure would be fine provided we check that the figure facecolor is not different than the default from rcParams. I may want to create a figure with a green background for my plot and I would be pretty annoyed if the color was overriden by the black_bg argument of the plot_ function.
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 07:59:38","Looking at the code, the background color of the ""L"" and ""R"" text is hard-coded to black or white.  My preference would be to make that code a bit smarter (to use black if `black_bg` is set, otherwise, pull the figure face color and use that).
+
+https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L583
+
+I have a change on my machine that does this, but I'm not sure it generalizes to all object types that the `axes` parameter could accept.  Note that the label actually has a grey background (i.e. it isn't transparent)
+
+![image](https://cloud.githubusercontent.com/assets/4072455/6283028/45d0319a-b893-11e4-8bc4-a7f6017c9b31.png)
+","",""
+"issue_comment","449","nilearn","nilearn","AlexandreAbraham","2015-02-20 09:02:05","> In my mind passing an axes to plot_\* functions is an advanced usage and as a consequence you need to know a little bit more what you are doing.
+
+Not so advanced. People may copy-paste from the internets.
+Why not setting the background of the _axis_ only to white or black? Advanced users will know how to revert it to another color if needed.
+
+I honestly don't think that not handling figures with green background is a big drawback. But the rendering should be correct for default parameters at least.
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 16:05:51","I disagree that subplotting is advanced.  I always do subplotting and I have never touched face colors.  There's also an example that uses subplotting (and I think that's good!), so using axes should be available to all users.
+
+Another compromise, different than the one above, is to remove the colored bounding box and move the labels a bit farther away from the brains, to avoid overlap in all reasonable cases.  
+
+Indeed, I noticed that the padding of the bounding box is not very good above (note how the ""L"" touches the border of the brain), and in playing with that last night I settled this (bounding box still colored):
+
+![image](https://cloud.githubusercontent.com/assets/4072455/6289681/9ef29978-b8d6-11e4-91bf-40c3fee3997e.png)
+![image](https://cloud.githubusercontent.com/assets/4072455/6289679/95a5cbce-b8d6-11e4-8e2a-f4881ef77b9e.png)
+![image](https://cloud.githubusercontent.com/assets/4072455/6289688/adb7e63e-b8d6-11e4-98a2-a073ecbbae0c.png)
+![image](https://cloud.githubusercontent.com/assets/4072455/6289716/efd978b6-b8d6-11e4-9c9d-b1303d548aeb.png)
+
+For me, that positioning looks better, and there is only label overlap with the brain at the very smallest (to me, unreasonable) sizes.  In that case, removing the colored bounding box seems reasonable to me.  Thoughts?
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 16:55:24","Note that this issue is also present for the slice position.  I've made a similar change.
+
+From
+
+![image](https://cloud.githubusercontent.com/assets/4072455/6304906/889cdaa2-b8dc-11e4-8fe8-a59c28131066.png)
+and
+![screen shot 2015-02-20 at 8 44 04 am](https://cloud.githubusercontent.com/assets/4072455/6304949/c4941f02-b8dc-11e4-9d92-bc0dab7f67f2.png)
+
+To
+![image](https://cloud.githubusercontent.com/assets/4072455/6305166/00196eaa-b8de-11e4-9667-fe242890719e.png)
+and
+![screen shot 2015-02-20 at 8 54 29 am](https://cloud.githubusercontent.com/assets/4072455/6305195/2e736bf2-b8de-11e4-9533-4b6f6f8cac5a.png)
+
+Note that in this final cases, I had to tweak the logic such that if `position` is set, the background color is pulled from the figure, to avoid intersection of the ""L"" label and the cut localization lines.
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 16:56:57","One more suggestion: having a set of plotting tests that are intended for visual inspection (so, local-only, skipped on Travis) and are annotated (through the title, perhaps) with what's being tested, would be great for testing changes to plotting code (and feeling more confident about it!)
+","",""
+"issue_comment","449","nilearn","nilearn","lesteve","2015-02-20 17:15:23","How does it look like in terms of code changes?
+
+If I am completely honest, my preference would be to tackle #212 i.e. provide a high-level construct to create the kind of plots you are showing rather than just having tiny improvements that make our plotting functions play a little bit nicer with figure suplots. 
+","",""
+"issue_comment","449","nilearn","nilearn","lesteve","2015-02-20 17:27:05","> One more suggestion: having a set of plotting tests that are intended for visual inspection (so, local-only, skipped on Travis) and are annotated (through the title, perhaps) with what's being tested, would be great for testing changes to plotting code (and feeling more confident about it!)
+
+I agree it'd be nice to have better tests for plotting since at the moment we only have very limited smoke tests. I don't have a great suggestion for how to do that though. I meant to look at what matplotlib and seaborn was doing a while ago but I haven't got around to do it.
+","",""
+"issue_comment","449","nilearn","nilearn","GaelVaroquaux","2015-02-20 17:35:39","> Indeed, I noticed that the padding of the bounding box is not very good above
+> (note how the ""L"" touches the border of the brain), and in playing with that
+> last night I settled this (bounding box still colored):
+
+can you show us the lines of code that you changed.
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 17:36:19","I've done it in two ways in the past.
+1. Use the `TRAVIS` environment variable to select / skip tests (i.e. skip plotting tests in Travis, leave it to local testing).  It just looks like `@skip_if(os.environ('TRAVIS'))`.
+2. Implement a light-weight test runner that accepts command-line flags, where you can choose the types of tests (and again, set environment variables that are detected by the `@skip_if` decorator).
+
+Regardless of which case (or any other), this kind of code can be abstracted into a set of simple decorators in the `testing` utils, so we can say `@skip_if_travis` or `@skip_if_not_plotting` or whatever abstractions are desired.
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 17:39:17","> can you show us the lines of code that you changed.
+
+@lesteve @GaelVaroquaux It's embedded in a change where I was trying to allow users to easily override any of the defaults.  Here's the code I'm running:
+https://github.com/bcipolli/nilearn/compare/nilearn:master...bcipolli:issue-449?expand=1
+
+Things looked relatively clean to me, except the last change to deal with the position/label conflict:
+https://github.com/bcipolli/nilearn/blob/issue-449/nilearn/plotting/displays.py#L588
+","",""
+"issue_comment","449","nilearn","nilearn","GaelVaroquaux","2015-02-20 19:22:07","> 1. Use the TRAVIS environment variable to select / skip tests (i.e. skip
+>    plotting tests in Travis, leave it to local testing). It just looks like
+>    @skip_if(os.environ('TRAVIS')).
+> 2. Implement a light-weight test runner that accepts command-line flags, where
+>    you can choose the types of tests (and again, set environment variables
+>    that are detected by the @skip_if decorator).
+
+Hum, why would you need this? Why do you want to skip tests on travis? We
+have never had to do it in the past.
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 19:26:03","> Why do you want to skip tests on travis? 
+> It would allow adding tests that don't increase coverage, can't be auto-verified and would take substantial time... but would be important tests to have.
+
+All of the plotting edge cases I'm looking at now, and things like print-to-PDF concerns, seems like important regression tests to verify before changing plotting code, but would slow down the Travis run.
+
+There are other designs possible; for example, these types of tests could be implemented outside the `nosetests` framework.  That's just the way I've dealt with it in the past.  Very open to suggestions, but I do feel quite nervous changing plotting code without good regression tests to check that I'm not overlooking anything.
+","",""
+"issue_comment","449","nilearn","nilearn","GaelVaroquaux","2015-02-20 19:27:54","> All of the plotting edge cases I'm looking at now, and things like
+> print-to-PDF concerns, seems like important regression tests to verify
+> before changing plotting code, but would slow down the Travis run.
+
+If they are not run on Travis, they will go under our radar when merging
+pull request. So we need to find a way to have both good code coverage
+and fast test suite. In my experience, it has always been possible,
+though it sometime required work.
+","",""
+"issue_comment","449","nilearn","nilearn","GaelVaroquaux","2015-02-20 19:33:29","> @lesteve @GaelVaroquaux It's embedded in a change where I was trying to allow
+> users to easily override any of the defaults. Here's the code I'm running:
+> https://github.com/bcipolli/nilearn/compare/
+> nilearn:master...bcipolli:issue-449?expand=1
+
+I am very worried that adding the option to override defaults is going
+overboard in terms of complexity for little benefits. This is going to be
+of interest to a absolutely tiny fraction of users and it brings more
+code lines, and more ways of putting the plotting code in corner cases,
+and thus forcing us to add even more complexity. I think that we must
+limit the amount of customization: after all, it doesn't bring that much
+to the average user, who wants to do simple analysis and plotting of
+data.
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 19:35:23","> If they are not run on Travis, they will go under our radar when merging pull request.
+
+Unless I'm misunderstanding, even if they're run on Travis, and somehow we can show the image output, we'd have to remember to manually check that they ""look good"".  At least, I can't think of any automatic verification for the tests I'm thinking of (like, does the ""L"" label look good when the selected slice lines are nearby / intersecting?)
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-20 19:41:25","> I am very worried that adding the option to override defaults is going overboard in terms of complexity for little benefits.
+
+I agree, but this capability is already there--all of these functions take `kwargs`.  In my (admittedly uncertain) testing, this didn't work well for the existing functionality.
+
+My real reason for doing this was that the args passed to the `ax.text` function was duplicated for `L` and `R` labels, and they got out of sync (one was passed with `alpha`, the other was not).  In refactoring that code, I noticed that switching the order of where `kwargs` was added gave the opportunity to override.  No need to even mention it, but it's there.
+
+> it brings more code lines
+
+I believe it actually reduced the number of lines and chances for real bugs, as the parameters passed for setting text are consistent between ""L"" and ""R"" labels.  Duplicating that logic elsewhere for consistency added 1-2 lines in 2 other places, but it's either a wash or slightly shorter overall.
+
+No biggie either way to me.
+","",""
+"issue_comment","449","nilearn","nilearn","AlexandreAbraham","2015-02-22 14:45:14","I'm a bit lost in this PR. Putting aside the story of ""visual only"" tests, what do we do about the original problem?
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-23 20:52:59","How about I submit a PR with what I have? All I did is tweak the spacing and eliminate the coloring of the bounding box.
+
+I think the spacing of hemisphere labels is better, and it simplifies changing the background color.  See https://github.com/nilearn/nilearn/issues/449#issuecomment-75272574 for the current result.
+","",""
+"issue_comment","449","nilearn","nilearn","GaelVaroquaux","2015-02-24 15:48:05","> How about I submit a PR with what I have? All I did is tweak the spacing and
+> eliminate the coloring of the bounding box.
+
+Can you submit a PR with only these lines. When I looked at the diff
+earlier, it was confusing.
+
+Also typically, what we use as regression testing for visual aspect of
+things is simply the examples. Can you check that the plotting examples
+still look nice?
+","",""
+"issue_comment","449","nilearn","nilearn","bcipolli","2015-02-24 19:16:21","@GaelVaroquaux makes sense; I simplified the code and am looking over the examples.
+
+I see that `plot_epi` looks a little weird in subplots now.  Rather than tweaking parameters for a PR immediately, I'd rather try to do #212 in conjunction with this (as that may touch the same code).  
+
+If that sounds good, I will put things on hold here, take a look there, and come back if there's anything left here.
+","",""
+"issue_comment","449","nilearn","nilearn","AlexandreAbraham","2015-04-09 08:37:23","Any volunteer to take useful code from this issue and submit a PR?
+","",""
+"issue_comment","449","nilearn","nilearn","lesteve","2015-02-20 07:28:31","I think that happens because the default figure facecolor is grey (that's what you get when you do a plt.figure() for example).
+
+In your case you can just do that:
+
+``` python
+fh = plt.figure(facecolor='w')
+```
+","",""

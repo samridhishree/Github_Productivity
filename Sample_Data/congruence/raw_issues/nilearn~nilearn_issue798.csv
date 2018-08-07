@@ -1,0 +1,174 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","798","nilearn","nilearn","aabadie","2015-10-19 12:48:17","Fixes #763 
+","start issue","[MRG] use glob with check_niimg"
+"issue_closed","798","nilearn","nilearn","lesteve","2015-10-23 12:05:21","","closed issue","[MRG] use glob with check_niimg"
+"pull_request_title","798","nilearn","nilearn","aabadie","2015-10-19 12:48:17","Fixes #763 
+","7c82802d6142b3757a9065deabd93741eb0d1bda","[MRG] use glob with check_niimg"
+"pull_request_merged","798","nilearn","nilearn","lesteve","2015-10-23 12:05:21","[MRG] use glob with check_niimg","f753c394f85701326cbabc50c7958e6324182f5c","Pull request merge from aabadie/nilearn:763_niimgs_globbing to nilearn/nilearn:master"
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-21 12:50:39","> Indeed, we need to do 'import nilearn as ni'
+
+I pushed this change in commit 01b479b.
+","",""
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-21 15:24:36","> You need a test that fails before this commit and works after, that way we are convinced that it works.
+
++1
+I pushed 3115ba7 which contains a tests covering more use cases related to globbing. I'm waiting for the tests to fail and will push the fix later.
+","",""
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-21 15:34:12","Ok, so tests are now completely failing... (but not for the initial reason). @GaelVaroquaux maybe you prefer to validate the tests first or is it ok if I push my solution now ?
+","",""
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-22 14:01:39","@lesteve @KamalakerDadi your recent comments have been adressed ;)
+","",""
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-23 08:13:31","@KamalakerDadi, @GaelVaroquaux @lesteve @AlexandreAbraham, is this ok to merge ?
+","",""
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-23 09:00:40","> Maybe an additional test for the edge case where a real glob (i.e. containing *, [, or ?) matches only one file?
+
+It's already there I think : see line 235 in test_niimg_conversions.py
+","",""
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-23 10:47:57","Thanks for your comment @lesteve : I pushed 2 commits that should address those use cases.
+","",""
+"issue_comment","798","nilearn","nilearn","aabadie","2015-10-23 12:09:24","Thanks, this will make my day !
+","",""
+"issue_comment","798","nilearn","nilearn","bthirion","2015-10-20 19:00:20","Looks rather good, but documentation should be added to illustrate the behavior.
+","",""
+"issue_comment","798","nilearn","nilearn","lesteve","2015-10-21 12:24:29","First of all, there is a problem that `nilearn.EXPAND_PATH_WILDCARDS` and `nilearn._utils.niimg_conversions.EXPAND_PATH_WILDCARDS` are two different variables, so setting one has no effect on the other. As an illustration:
+
+``` python
+from nilearn._utils import niimg_conversions
+niimg_conversions.check_niimg('this_file_does_not_exist')  # error with please set global constants EXPAND_PATH_WILDCARDS to False
+
+import nilearn
+nilearn.EXPAND_PATH_WILDCARDS = False
+niimg_conversions.check_niimg('this_file_does_not_exist')  # still the same error as previously
+```
+
+Also I am a bit confused about EXPAND_PATH_WILDCARDS functionality. Why don't we want to always use `EXPAND_PATH_WILDCARDS = True` ? 
+
+Is it because we worry about files which contains the following characters: `*`, `[` or `?` ?
+","",""
+"issue_comment","798","nilearn","nilearn","GaelVaroquaux","2015-10-21 12:34:46","> First of all, there is a problem that nilearn.EXPAND_PATH_WILDCARDS and
+> nilearn._utils.niimg_conversions.EXPAND_PATH_WILDCARDS
+
+Indeed, we need to do 'import nilearn as ni' in
+nilearn._utils.niimg_conversions and then access EXPAND_PATH_WILDCARDS as
+""ni.EXPAND_PATH_WILDCARDS""
+","",""
+"issue_comment","798","nilearn","nilearn","GaelVaroquaux","2015-10-21 12:52:41","> I pushed this change in commit 01b479b.
+
+You need a test that fails before this commit and works after, that way
+we are convinced that it works.
+","",""
+"issue_comment","798","nilearn","nilearn","lesteve","2015-10-21 12:57:02","> Indeed, we need to do 'import nilearn as ni' in nilearn._utils.niimg_conversions and then access EXPAND_PATH_WILDCARDS as ""ni.EXPAND_PATH_WILDCARDS""
+
+Note that I couldn't figure out a way to do the same thing with a relative import. Not sure how likely this is to create a problem in the real world.
+
+> You need a test that fails before this commit and works after, that way we are convinced that it works.
+
+:+1:
+","",""
+"issue_comment","798","nilearn","nilearn","GaelVaroquaux","2015-10-21 15:27:13","> Note that I couldn't figure out a way to do the same thing with a relative
+> import.
+
+Good point.
+
+> Not sure how likely this is to create a problem in the real world.
+
+Let's not loose sleep on this and move on.
+","",""
+"issue_comment","798","nilearn","nilearn","GaelVaroquaux","2015-10-21 15:27:44","> ```
+> I pushed 3115ba7 which contains a tests covering more use cases related to
+> globbing. I'm waiting for the tests to fail and will push the fix later.
+> ```
+
+Test driven development! Yey
+","",""
+"issue_comment","798","nilearn","nilearn","AlexandreAbraham","2015-10-22 08:11:59","Apart from some usability questions, :+1: 
+","",""
+"issue_comment","798","nilearn","nilearn","lesteve","2015-10-23 08:56:39","Maybe an additional test for the edge case where a real glob (i.e. containing `*`, `[`, or `?`) matches only one file?
+","",""
+"issue_comment","798","nilearn","nilearn","lesteve","2015-10-23 09:22:10","> It's already there I think : see line 235 in test_niimg_conversions.py
+
+Good point I missed that. Looking at your tests a little bit more I think we should be testing 3d data too.
+
+If you only have test.nii which is a 3d image in the current working directory, you expect.
+
+``` python
+ # 3d image
+check_niimg('test.nii')
+ # 4d image with last dimension 1 i.e. it is equivalent to check_niimg(['test.nii'])
+check_niimg('test*.nii')
+```
+","",""
+"issue_comment","798","nilearn","nilearn","lesteve","2015-10-23 12:05:13","Merging this one, thanks!
+
+Still a few regexp rather than glob remaining but I'll fix them up in master directly.
+","",""
+"pull_request_commit_comment","798","nilearn","nilearn","bthirion","2015-10-20 18:56:33","'match'
+return_iterator
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","bthirion","2015-10-20 18:58:29","I find this ('return the first object of the list') a strange default behavior. maybe I did not understand.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","lesteve","2015-10-21 11:31:11","Not really necessary to import glob conditionally.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","aabadie","2015-10-21 12:05:29","Ok ! I removed it in 810643a
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","lesteve","2015-10-21 12:32:40","Missing % niimg or something to put the user input in the error message.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","AlexandreAbraham","2015-10-22 08:04:02","Same remark as before: in nilearn, a list of one file may not be an error nor a single file. This case is hard to handle. Maybe at least a warning would be enough ?
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","AlexandreAbraham","2015-10-22 08:10:33","Just a guess: can't we raise a warning and automatically retry by setting wildcards to False?
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","KamalakerDadi","2015-10-22 08:45:51","It would be nice if you refer some where giving reference to small code snippet to here. If you think its good, it is located in `doc/manipulating_visualizing/manipulating_images.rst` file. It would be more clear enough.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(47, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","KamalakerDadi","2015-10-22 08:47:33","Do you think is it also worth to explain a bit what is returns as output if you use `wild_cards=True` ?
+@GaelVaroquaux 
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(54, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","aabadie","2015-10-22 09:53:16","@KamalakerDadi: added online documentation in  243f789
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(47, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","lesteve","2015-10-22 13:07:01","You should probably be more explicit and say `nilearn.EXPAND_PATH_WILDCARDS`
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","lesteve","2015-10-22 13:12:28","> You should probably be more explicit and say nilearn.EXPAND_PATH_WILDCARDS
+
+I should have done the original comment here.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","lesteve","2015-10-22 13:15:18","This is really overkill isn't it?
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","lesteve","2015-10-22 13:16:54","Same comment, a bit overkill...
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","KamalakerDadi","2015-10-22 13:19:49","Will it be not easy to mention only about `wildcards=False` ?
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","aabadie","2015-10-22 13:41:11","As this message could be raised in the user console and wildcards=False is used internally (check_niimg should not be called directly by users), I would stick to the global constant in the message.
+
+This makes me think that the wildcards option is useless... and should be removed from the function signature.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","aabadie","2015-10-22 13:41:50","> You should probably be more explicit and say nilearn.EXPAND_PATH_WILDCARDS
+
+ok
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","lesteve","2015-10-22 13:44:50","Maybe we should do: `elif [niimg] == filenames` to differentiate the case where niimg is just a filename vs the one where the glob only matches one file.  In the latter I think it should be considered as a list with a single file.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","798","nilearn","nilearn","KamalakerDadi","2015-10-22 14:19:05","> I would stick to the global constant in the message.
+
+Its upto you but my point is user should not look to change global constants to set to False. That's my intuition. Correct me if I am wrong.
+","7c82802d6142b3757a9065deabd93741eb0d1bda","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit","798","nilearn","nilearn","aabadie","2015-10-15 14:24:20","use glob in check_niimg, nilearn/nilearn#763","8ca723bedbbe8f756b3121d96331755edb5be6cf",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-19 12:01:31","improving usage of wildcards","351892ae67b654c382559fc765ac750a2ad48597",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-19 12:45:16","Adding test","61fb1f3bf6e305609970ca7f82723fa485e3e6e4",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-20 09:17:28","fixing typo","81eedf390a3df9bff43b0c8769241b40761f770f",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-21 11:28:32","improving doctring of check_niimg function:
+- fixing typo on option name 'wirldcards'
+- improving the description of the 'wirldcards' option","9aff4553f6dca97ff3e3e54db0c9a0276b44617f",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-21 12:04:51","removing conditionnal import of glob module","81a34474910116728f9653e06b115d19b39377e0",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-21 12:47:13","fixing bug with EXPAND_PATH_WILDCARDS global constant","01b479bfbd065b0153b67eab8e2469d0c09d9609",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-21 15:22:20","adding extended globbing feature test","3115ba797dade8b89dcebe9dd32e8798e3ee0cc8",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-21 15:22:58","fixing nilearn globbing test","0e14e1dcba996997cdb20327d314276879f2c5a1",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 08:18:30","display filename in raised exception 'file not found'","a81a6c81aa4fa8f62a9a9f0e782bd37bd65fa608",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 08:44:10","improving glob use case and raised error messages","36589601b9f89b523d82d0f8265f382c71112515",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 09:47:19","adding documentation for filenames with wildcards","243f789fc5ddb4a152f5b9cee6e30dbe8b1692e0",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 10:06:19","typo","447a6e78e4a2c3d937b33f4633f66b91b39a17df",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 11:09:38","fixing failing doctest","67ce2cdabf1398de28270993b7e65afbb1778e24",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 13:58:51","addressing comment","810e0b653b3cdcd06f2a80dbd5ff04996b769a86",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 13:59:11","addressing comment","9093b1da0a3693a503b89aa41682a512e5eec387",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 14:00:52","addressing another comment","ebb702a374d27f778c771980cae0fd69e662857d",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-22 15:41:47","fix failing test","d966c7634dfee147d8d2c268f44112f7e011cee8",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-23 10:44:50","cover more use cases in check_niimg test","644beae6b73f50d79497fe63c4a95ebab03a726f",""
+"pull_request_commit","798","nilearn","nilearn","alexandre.abadie@therapixel.com","2015-10-23 10:47:01","make write_tmp_imgs more robust: created tmp images were not removed in case of an error","7c82802d6142b3757a9065deabd93741eb0d1bda",""

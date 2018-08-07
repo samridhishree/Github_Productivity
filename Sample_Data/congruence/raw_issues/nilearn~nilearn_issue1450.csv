@@ -1,0 +1,95 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1450","nilearn","nilearn","fliem","2017-05-10 07:11:10","Hi folks.
+I have noticed a difference between `plot_anat` and `plot_roi` regarding the size in which the brain is displayed. With `plot_roi` it nearly fills the entire image, with `plot_anat` it is much smaller.
+Is there a way to zoom in on the `plot_anat` images as well? Thanks.
+
+`plot_roi`
+![plot_roi](https://cloud.githubusercontent.com/assets/5772811/25886858/cc9d9bfe-355f-11e7-8775-a1dab44586d0.png)
+`plot_anat`
+![plot_anat](https://cloud.githubusercontent.com/assets/5772811/25886857/cc9c54b0-355f-11e7-9909-318c6a3927e8.png)
+","start issue","add_contours shrinks brain"
+"issue_closed","1450","nilearn","nilearn","KamalakerDadi","2017-05-30 11:09:40","","closed issue","add_contours shrinks brain"
+"issue_comment","1450","nilearn","nilearn","GaelVaroquaux","2017-05-10 07:16:24","It could be because plot_roi has a tiny threshold by default and hence removes the background. Try adding a small threshold to your plot_anat 
+
+⁣Sent from my phone, please excuse typos and briefness​
+
+On May 10, 2017, 09:11, at 09:11, Franz Liem <notifications@github.com> wrote:
+>Hi folks.
+>I have noticed a difference between `plot_anat` and `plot_roi`
+>regarding the size in which the brain is displayed. With `plot_roi` it
+>nearly fills the entire image, with `plot_anat` it is much smaller.
+>Is there a way to zoom in on the `plot_anat` images as well? Thanks.
+>
+>`plot_roi`
+>![plot_roi](https://cloud.githubusercontent.com/assets/5772811/25886858/cc9d9bfe-355f-11e7-8775-a1dab44586d0.png)
+>`plot_anat`
+>![plot_anat](https://cloud.githubusercontent.com/assets/5772811/25886857/cc9c54b0-355f-11e7-9909-318c6a3927e8.png)
+>
+>
+>-- 
+>You are receiving this because you are subscribed to this thread.
+>Reply to this email directly or view it on GitHub:
+>https://github.com/nilearn/nilearn/issues/1450
+","",""
+"issue_comment","1450","nilearn","nilearn","GaelVaroquaux","2017-05-10 08:37:08","Yes, indeed, contours has this bug (can you change the title, please).
+
+Basically, we need to use better the get_bounds mechanism in the
+add_contours method of the objects in displays.py to set a tighter
+bounding box, as we do in the _map_show method.
+
+On Wed, May 10, 2017 at 01:30:34AM -0700, Franz Liem wrote:
+> Sorry to reopen.
+> While plot_anat displays the brain large if I add threshold=1e-6, adding a
+> contour to the display shrinks it back again. Adding a threshold to
+> the.add_contours call doesn't help. Thanks!
+
+> display = plotting.plot_anat(brain, threshold=1e-6)
+> display.add_contours(contour, colors='r', threshold=1e-6)
+
+> contours.pdf
+
+> —
+> You are receiving this because you commented.
+> Reply to this email directly, view it on GitHub, or mute the thread.*
+
+
+-- 
+    Gael Varoquaux
+    Researcher, INRIA Parietal
+    NeuroSpin/CEA Saclay , Bat 145, 91191 Gif-sur-Yvette France
+    Phone:  ++ 33-1-69-08-79-68
+    http://gael-varoquaux.info            http://twitter.com/GaelVaroquaux
+","",""
+"issue_comment","1450","nilearn","nilearn","GaelVaroquaux","2017-05-29 12:01:30",">     Basically, we need to use better the get_bounds mechanism in the
+>     add_contours method of the objects in displays.py to set a tighter bounding
+>     box, as we do in the _map_show method.
+
+> AFAIK, add_contours itself uses _map_show method.
+
+Good point. So what we should do would be, in map_show, to set a
+threshold a bit below the minimum contour, so that the mechanism of
+bounding box is reused.
+
+I've tried something in this direction in
+https://github.com/nilearn/nilearn/pull/1459 . It's a rough sketch done
+while listening to a talk. @fliem, can you check that it solves your
+problem.
+","",""
+"issue_comment","1450","nilearn","nilearn","GaelVaroquaux","2017-05-29 13:36:47","Reopening, as we haven't merged my PR","",""
+"issue_comment","1450","nilearn","nilearn","fliem","2017-05-10 07:36:30","That works. Thanks Gael.","",""
+"issue_comment","1450","nilearn","nilearn","fliem","2017-05-10 08:30:33","Sorry to reopen.
+While `plot_anat` displays the brain large if I add `threshold=1e-6`, adding a contour to the display shrinks it back again. Adding a threshold to the`.add_contours` call  doesn't help. Thanks!
+```
+display = plotting.plot_anat(brain, threshold=1e-6)
+display.add_contours(contour, colors='r', threshold=1e-6)
+```
+![contours.pdf](https://github.com/nilearn/nilearn/files/989167/contours.pdf)
+","",""
+"issue_comment","1450","nilearn","nilearn","fliem","2017-05-29 13:34:35","Thanks su much @GaelVaroquaux. That looks good!
+![contours](https://cloud.githubusercontent.com/assets/5772811/26551741/3a4ba19a-4484-11e7-8b05-41c746cedfd5.png)
+","",""
+"issue_comment","1450","nilearn","nilearn","KamalakerDadi","2017-05-26 15:37:06","@fliem It would be beneficial if you could provide image and script which reproduces this problem.
+
+ >Basically, we need to use better the get_bounds mechanism in the add_contours method of the objects in displays.py to set a tighter bounding box, as we do in the _map_show method.
+
+AFAIK, add_contours itself uses _map_show method. ","",""

@@ -1,0 +1,23 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1417","nilearn","nilearn","banilo","2017-03-21 12:10:15","Surfing around in the ```signal.clean``` space, I noticed that the base functions of the NiftiMaskers perform resampling of nifti images using the ```interpolation=""continuous""``` option in some rare instances. It may be problematic to use this argument by default, rather than ```interpolation=""nearest""```, because we have often observed ringing artefacts in the resampled images.
+
+```
+13:02:01-admin/git/nilearn (master)$ git grep interpolation=\""nearest\"" | wc -l
+      21
+13:02:20-admin/git/nilearn (master)$ git grep interpolation=\""continuous\"" | wc -l
+       3
+13:02:28-admin/git/nilearn (master)$ git grep interpolation=\""continuous\""
+nilearn/input_data/base_masker.py:                imgs, interpolation=""continuous"",
+nilearn/input_data/nifti_maps_masker.py:                interpolation=""continuous"",
+nilearn/input_data/nifti_maps_masker.py:                        self.maps_img_, interpolation=""continuous"",
+```","start issue","Masker families: Consistently use resampling with *nearest* interpolation?"
+"issue_comment","1417","nilearn","nilearn","GaelVaroquaux","2017-03-21 12:54:22","I disagree with your conclusions. The way it is currently done in the
+maskers is that ""nearest"" is used for masks and labels, and ""continuous""
+for the rest.
+
+Yes there will be ringing. But what makes you think that ringing is more
+a problem than the artifacts that nearest neighbor interpolation will
+create? By standard considerations of signal processing, it should be
+less a problem.
+
+","",""

@@ -1,0 +1,217 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","882","nilearn","nilearn","aabadie","2015-12-02 17:56:24","This should address and fix #866.
+","start issue","[MRG+1] Fix: add globbing to _iter_check_niimg"
+"issue_closed","882","nilearn","nilearn","AlexandreAbraham","2015-12-10 13:24:46","","closed issue","[MRG+1] Fix: add globbing to _iter_check_niimg"
+"pull_request_title","882","nilearn","nilearn","aabadie","2015-12-02 17:56:24","This should address and fix #866.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","[MRG+1] Fix: add globbing to _iter_check_niimg"
+"pull_request_merged","882","nilearn","nilearn","AlexandreAbraham","2015-12-10 13:24:46","[MRG+1] Fix: add globbing to _iter_check_niimg","397f1639b730a28031a329f9173fe3f6a253c685","Pull request merge from aabadie/nilearn:globbing_2 to nilearn/nilearn:master"
+"issue_comment","882","nilearn","nilearn","lesteve","2015-12-02 22:15:49","From the associated issue, in case it has been lost in all the activity:
+
+> Thinking about it, what is wrong with nilearn._utils.check_niimg('~/*.nii', return_iterator=True) or its check_niimg_4d equivalent?
+","",""
+"issue_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-02 22:20:49","> ```
+> Thinking about it, what is wrong with
+> nilearn._utils.check_niimg('~/*.nii', return_iterator=True) or its
+> check_niimg_4d equivalent?
+> ```
+
+What you are pointing to is greedy, in the sense that it will load all
+the data in memory. That's a big nono when working with large data.
+","",""
+"issue_comment","882","nilearn","nilearn","lesteve","2015-12-02 22:33:17","> What you are pointing to is greedy
+
+I don't think that's true if you use return_iterator=True, see [this](https://github.com/nilearn/nilearn/blob/master/nilearn/_utils/niimg_conversions.py#L240).
+","",""
+"issue_comment","882","nilearn","nilearn","aabadie","2015-12-03 09:00:53","Travis is failing on python 2.6, will fix it.
+","",""
+"issue_comment","882","nilearn","nilearn","lesteve","2015-12-03 09:34:04","@aabadie do you have anything to add on what this PR brings compared to using `nilearn._utils.check_niimg('~/*.nii', return_iterator=True)`?
+
+From what I remember very vaguely, _iter_check_niimg was always supposed to only be a helper function for check_niimg with return_iterator=True.
+","",""
+"issue_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-03 09:38:30","> @aabadie do you have anything to add on what this PR brings compared to using
+> nilearn._utils.check_niimg('~/*.nii', return_iterator=True)?
+
+As a side note, I am currently working on a small change to this PR to
+limit memory usage. Temporarily, it leads to not using _iter_check_niimg.
+We can come back to trying to use checkers in this code after the
+release.
+
+I think that the trick is really to delay loading as much as possible,
+and it's easy to get that wrong with the checkers.
+","",""
+"issue_comment","882","nilearn","nilearn","aabadie","2015-12-03 10:05:55","I'm also wondering what should be done with this PR. What do you think @GaelVaroquaux ? Should it be dropped ?
+","",""
+"issue_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-03 10:09:15","> I'm also wondering what should be done with this PR. What do you think
+> @GaelVaroquaux ? Should it be dropped ?
+
+I don't think so. The general idea with it is good. It's just that we are
+struggling with other parts of the codebase. Maybe we need to shelve it,
+ie postpone it and come back to it once we have cleared a bit the other
+parts of the design.
+","",""
+"issue_comment","882","nilearn","nilearn","lesteve","2015-12-03 10:33:23","> > I'm also wondering what should be done with this PR. What do you think
+> >  @GaelVaroquaux ? Should it be dropped ?
+> 
+> I don't think so. The general idea with it is good.
+
+I have to disagree on this one. I really don't see what this PR brings, sorry if I am missing something. 
+
+Here is the picture in my mind: `check_niimg(..., return_iterator=True)` calls `_iter_check_img` as a helper function. `check_niimg(..., return_iterator=True)` supports globbing already, just use it.  
+
+> I think that the trick is really to delay loading as much as possible, and it's easy to get that wrong with the checkers.
+
+I guess if you are saying that the interface is not great, and you want to have a `iter_img` function, that is a valid point but then it should probably call `check_niimg(..., return_iterator=True)`.
+","",""
+"issue_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-03 10:35:36","> I have to disagree on this one. I really don't see what this PR brings, sorry
+> if I am missing something.
+
+CanICA().fit('*.nii.gz')
+
+> Here is the picture in my mind: check_niimg(..., return_iterator=True) calls
+> _iter_check_img as a helper function. `check_niimg(..., return_iterator=True)
+> supports globbing already, just use it.
+
+No. _iter_check_iimgs does much more than that. It does resampling for
+instance.
+
+> I guess if you are saying that the interface is not great, and you want
+> to have a iter_img function, that is a valid point but then it should
+> probably call `check_niimg(..., return_iterator=True).
+
+It's not a question about interface, it a question of how things fit
+together. Looking at this single function and it's signature won't tell
+us anything. We need to look at how it's been used.
+","",""
+"issue_comment","882","nilearn","nilearn","lesteve","2015-12-03 10:47:44","> No. _iter_check_iimgs does much more than that. It does resampling for instance.
+
+OK how many times do I have to repeat this? `_iter_check_img` is a helper function called by check_niimg when return_iterator=True.
+","",""
+"issue_comment","882","nilearn","nilearn","lesteve","2015-12-03 10:49:19","> OK how many times do I have to repeat this? _iter_check_img is a helper function called by check_niimg when return_iterator=True.
+
+So what I meant is that if `_iter_check_img` does something `check_niimg` does it as well.
+","",""
+"issue_comment","882","nilearn","nilearn","aabadie","2015-12-03 10:52:01","> So what I meant is that if _iter_check_img does something check_niimg does as well.
+
+It does a little bit more if you set target_fov option.
+","",""
+"issue_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-03 10:57:02","> ```
+> OK how many times do I have to repeat this?
+> ```
+
+I am not sure that this formulation helps me focusing on the technical
+aspects of the discussion.
+
+> So what I meant is that if _iter_check_img does something check_niimg does it
+> as well.
+
+I don't think is, because _iter_check_niimg has arguments that are unused
+in check_niimg.
+
+Anyhow, the fact is that _iter_check_niimg is called outside of
+check_niimg by the MultiNiftiMasker. This in itself may be a design flaw,
+but before sweeping the existing code under the rug, we need to
+understand why it does that. One reason is that it uses those arguments
+not exposed in check_niimg. There might be other reasons, or might not.
+We need to assess this.
+","",""
+"issue_comment","882","nilearn","nilearn","lesteve","2015-12-03 12:38:07","> Anyhow, the fact is that _iter_check_niimg is called outside of check_niimg by the MultiNiftiMasker. 
+
+I see, that's definitely a piece of information I completely missed.
+
+> One reason is that it uses those arguments not exposed in check_niimg. There might be other reasons, or might not. We need to assess this.
+
+Agreed.
+","",""
+"issue_comment","882","nilearn","nilearn","AlexandreAbraham","2015-12-03 12:53:22","What an atmosphere! Next time, use `git blame` and ping the guy who wrote the code :P.
+
+The answers are really simple and lie in a fine distinction between what is a niimg and what is a list of niimg.
+
+A niimg represents a single ""session"" (or a single atlas). A 4D niimg can be a single 4D nifti file or a list of 3D nifti files. If this is a list, all the nifti files should have the same affine, no resample is allowed.
+
+A list of niimgs is a list of single sessions. Meaning, they can have different field of views, but this is acceptable and we can resample them.
+
+Note that the mix between these 2 concepts (`niimg` and `niimgs`) brought a huge mess in the code before the last refactoring I made.
+
+Now, `check_niimg*` functions will load single session nifti files. if a list if files is given, no resampling is allowed. To optimize some code here and there, people needed to iterate on the 3d scan of a 4d niimg at some point, this is why `return_iterator` is here. It calls `iter_check_niimg` for convenience but no resampling allowed, it will just check that the affine is the same everywhere.
+
+In order to iterate on several subjects, such as MultiNiftiMasker, we want to allow resampling, this is why we call `_iter_check_niimg` directly.
+
+I hope this is clearer now.
+","",""
+"issue_comment","882","nilearn","nilearn","bthirion","2015-12-03 21:32:45","I am aware that this is secondary, but be aware that it happens 
+sometimes that you obtain data from one session with different affines, 
+in particular with data coming from SPM pipelines.
+This is in particular the case of the multimodal_faces dataset used in 
+nistats.
+https://github.com/nistats/nistats/blob/master/examples/plot_spm_multimodal_faces.py
+
+Note that nistats code handles this case perfectly, but if I understand 
+correctly this formally breaks the semantics that you associate with 
+niimg/niimgs.
+","",""
+"issue_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-04 05:58:18","> Note that nistats code handles this case perfectly, but if I understand
+> correctly this formally breaks the semantics that you associate with
+> niimg/niimgs.
+
+No it doesn't, and we would like to support this.
+","",""
+"issue_comment","882","nilearn","nilearn","AlexandreAbraham","2015-12-10 13:24:42","+1, merging.
+","",""
+"pull_request_commit_comment","882","nilearn","nilearn","lesteve","2015-12-02 18:09:13","You don't need os.sep if you are using os.path.join
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","lesteve","2015-12-02 18:10:35","Python 2.6 is not going to be happy ... You need explicit numbers `{0}`
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","lesteve","2015-12-02 18:11:08","Use a `with open(...)` this way you don't need the .close
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-02 18:14:33","I removed this.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-02 18:15:45","I used the `testing.write_tmp_img` function for this.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-02 18:16:04","Done
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/tests/test_niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","banilo","2015-12-03 10:17:45","general purpose function for this scenario?
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-03 10:20:31","> general purpose function for this scenario?
+
+I'd rather address the big-picture design before worrying about breaking
+down into subfunctions.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","banilo","2015-12-03 10:21:21","How about extending this logic also to `os.path.abspath()`?
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-03 10:23:02","Indeed the check should be hasattr(niimgs, ""__iter__"") in order to be more generic.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","banilo","2015-12-03 10:24:34","> Indeed the check should be hasattr(niimgs, ""**iter**"") in order to be more generic
+
+Yes, this will also catch tuples for instance.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","GaelVaroquaux","2015-12-03 10:25:10","> How about extending this logic also to os.path.abspath()?
+
+What would it bring us?
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-03 10:43:43","I tested this and the problem comes from generators that can be passed as arguments which are also included in this check. I see 2 options : 
+- use `isinstance(niimgs, list) or isinstance(niimgs, tuple)`
+- remove this check. It was already like that initially.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","AlexandreAbraham","2015-12-03 13:21:44","Calling `len` on `niimgs` won't work if `niimgs` is a generator. What you can do is checking the number of loops done in the `for loop` below.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","AlexandreAbraham","2015-12-03 13:22:08","I agree with Gael, this is not necessary.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","AlexandreAbraham","2015-12-03 13:23:11","If you do when I suggested above. This check becomes unnecessary.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(14, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-03 15:00:57","There's a small difference in the error message which return the input filename.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(14, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-03 15:03:35","Ok, I'll use this.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit_comment","882","nilearn","nilearn","aabadie","2015-12-03 15:16:46","Done.
+","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b","(None, '', u'nilearn/_utils/niimg_conversions.py')"
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-02 17:55:39","add globbing to _iter_check_niimg","96248df00a619f0a67046269f4978dfd4bb8c06d",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-02 18:11:58","addressing comments","57bbc8329ad67dd12217e453b9785cf1de40527e",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-02 18:12:51","addressing comments","2932823a20551f103540c018521de783e177b88e",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-02 18:14:18","removing useless variables","61e3462bddae3a6003d95890c40287a9dec1dc21",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-03 08:44:47","making test python 2.6 compliant","2f40fe933acd09193bdfa10748be07cba03aa237",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-03 09:08:18","adding see also in docstring","817fbfc8294a0dffc80cadb8a827a529b98a679e",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-03 09:11:43","converting string formatting to old python style","adcb6fd4f3665038682a036ed9500769b5a4a8a6",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-03 13:05:46","fixing test on windows, improving _iter_check_niimg check","9cc888f974b9c4db34afbc669941f23ade2beb7b",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-03 15:04:16","expecting this to fix appveyor","cf0f905af1feeb6fdb43d2a20796e36f78400881",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-03 15:14:53","raising error with empty generators","db0773b8b81e3f7be3ba75ebf0370b5b70f9ae51",""
+"pull_request_commit","882","nilearn","nilearn","aabadie","2015-12-04 08:44:27","trying to fix appveyor","c9f79c8d5b6d4dfa6bf508aefa9cd6c6debe901b",""

@@ -1,0 +1,14 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1570","nilearn","nilearn","bthirion","2017-11-22 14:23:24","decoding examples e.g. plot_haxby_space_net.py require very recent pandas (at least > 0.19.2) to work,   maybe because of the initial manipulation .isin","start issue","Too recent pandas required for decoding examples"
+"issue_comment","1570","nilearn","nilearn","emdupre","2017-11-22 18:08:09",".isin was added in 0.13.0, so it should be available in more recent versions of pandas. Testing in a new (0.20.3) and an older (0.15.0) pandas environment, I get the correct shapes for both`y_train` and `y_test` in the `plot_haxby_space_net.py` example, suggesting .isin is working ok. 
+
+In the 0.15.0 pandas environment, though, I don't get the correct shapes for `X_train` and `X_test` from .index_img unless I modify the code to explicitly pass values:
+
+> X_train = index_img(func_filenames, condition_mask_train)
+> X_train.shape
+(40, 64, 64, 1452)
+> X_train = index_img(func_filenames, condition_mask_train.values)
+> X_train.shape
+(40, 64, 64, 126)
+
+My guess is it has to do with how newer vs older versions of pandas are returning data series. It's an easy patch in the examples, but do you think it's something that should instead be checked for in .index_img?","",""

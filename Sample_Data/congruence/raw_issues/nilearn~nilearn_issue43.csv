@@ -1,0 +1,116 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","43","nilearn","nilearn","pgervais","2013-04-08 12:40:39","This pull request clarifies and normalizes the API. Some optimizations have been implemented as well. 
+
+**This pull request breaks many things in the API**, hopefully for the best. Comments welcome.
+
+Main change: orientation of input and output arrays has been inverted, to match scikit-learn's. Masked data (timeseries) are thus represented as an array with shape (number of time instants, number of masked voxels), instead of the inverse. It may remain some functions working the old way, I consider this as a bug. A consequence of this is that every ""transpose"" option has been removed. Porting old code may require adding a "".T"" somewhere, but that's it.
+
+The clean() function has been simplified and optimized. **Its output is slightly different from the previous state**. I find it clearer this way, but I need feedback on this matter. Some processing code may rely on a feature that I removed/changed. More specifically, the ""shift_confounds"" keyword argument has been removed, because its usage seemed rather obscure (and no documentation was available).
+
+A lot of tests has been added/enhanced, including for technical functions like _standardize and _detrend. Documentation has been written/enhanced in many places.
+","start issue","API cleanup"
+"issue_closed","43","nilearn","nilearn","AlexandreAbraham","2013-04-11 15:53:58","","closed issue","API cleanup"
+"pull_request_title","43","nilearn","nilearn","pgervais","2013-04-08 12:40:39","This pull request clarifies and normalizes the API. Some optimizations have been implemented as well. 
+
+**This pull request breaks many things in the API**, hopefully for the best. Comments welcome.
+
+Main change: orientation of input and output arrays has been inverted, to match scikit-learn's. Masked data (timeseries) are thus represented as an array with shape (number of time instants, number of masked voxels), instead of the inverse. It may remain some functions working the old way, I consider this as a bug. A consequence of this is that every ""transpose"" option has been removed. Porting old code may require adding a "".T"" somewhere, but that's it.
+
+The clean() function has been simplified and optimized. **Its output is slightly different from the previous state**. I find it clearer this way, but I need feedback on this matter. Some processing code may rely on a feature that I removed/changed. More specifically, the ""shift_confounds"" keyword argument has been removed, because its usage seemed rather obscure (and no documentation was available).
+
+A lot of tests has been added/enhanced, including for technical functions like _standardize and _detrend. Documentation has been written/enhanced in many places.
+","0590686eda04089e08a965eb3508eb4b01687ca7","API cleanup"
+"pull_request_merged","43","nilearn","nilearn","AlexandreAbraham","2013-04-11 15:53:58","API cleanup","092d71949199f0302629b44e3d134dcfe7756efb","Pull request merge from pgervais/nilearn:api_cleanup to nilearn/nilearn:master"
+"issue_comment","43","nilearn","nilearn","GaelVaroquaux","2013-04-09 07:41:53","> I spoke too quickly: the shape is in fact good but the clean function
+> is called on transposed data during data preparation. You just have to
+> remove the transposition before the call to clean and after.
+
+How do we test objectively for this? It's a naive question, but an
+important one: we need to have an easy way to be sure that we are doing
+it right.
+","",""
+"issue_comment","43","nilearn","nilearn","pgervais","2013-04-09 13:13:22","@GaelVaroquaux Please comment on my last commit. It is supposed to be an answer to your question.
+","",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-02 14:27:58","Cleanup in apply_mask() signature
+
+Removed parameter ""transpose"". The output array is now what was obtained
+previously with transpose=True. The shape is (time, features), consistent
+with scikit-learn's.
+
+The default value for parameter ""smooth"" is now None instead of False, to
+make it consistent with common python practice.
+
+NiftiMasker classes have been adapted. Updated tests as well.","c26a546081504415132372f2997e6c34f8fc00b3",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-02 15:24:32","Wrote clean() docstring.","6f0c1b3760a28e7d6d3c0c31c05d78183a7d83bd",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-03 11:55:10","Corrected a bug in clean()
+
+The way detrending of confounds was performed in clean() was incorrect
+(wrong axis, one more time).
+
+A test case has been added in test_signals.
+
+Signature of clean() has been modified, input array is now like
+scikit-learn's: first dimension is instants, second is features.","fd0ae4e922f86fb7910d1d70318dbda4d14238c3",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-03 15:11:54","Added _detrend() function.
+
+This function is similar to scipy.signal.detrend, but better suited
+to the needs of nisl. It is also faster.
+
+Tests have been added as well.","677cb13414d9c0089de24854837189d433c46e5d",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-03 15:50:09","Change _standardize() signature
+
+_standardize now takes as input an array with scikit-learn orientation.
+
+Added tests for _standardize.","6704c535b8c59ab3b9b98c0489a051654c1ee727",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-04 07:21:21","Implemented option in _detrend()
+
+Option ""type"" has been implemented, and test added.","f8eb9a2885e44dd9f3baa4ea9a2c161b8451180d",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-04 08:44:56","Simplified butterworth() function
+
+A tricky memory allocation scheme was used, and was quite ineffective.
+The purpose was to avoid a huge memory allocation, by allocating output
+arrays lines one at a time. However, it all ended with a call to
+np.asarray(), which did a huge memory allocation, *and* copy everything.
+
+Replaced by a simpler scheme, that turns out to be faster as well.","cedf1615c4ae0a9dae836db85e13c98ffbd0ebda",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-04 14:42:13","Comment cleanup","364ed5878f34c581b389e159376225a2707f1ec0",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-08 12:12:47","Merge remote branch 'nisl/master' into api_cleanup
+
+Conflicts:
+	nisl/utils.py","ee3c34f0450d657d5ca5ec244a410f2e61b7b759",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-09 12:57:04","Added a test for NiftiMasker
+
+Test orientation of output of NiftiMasker.transform(), and consistency
+between transform() and inverse_transform().","a6e805fec3a150652e90e52d337dce11cb680f4d",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-09 16:21:40","Small fixes","ebc29c3e927bf899ff02ff3fffd3b7706b0e21ea",""
+"pull_request_commit","43","nilearn","nilearn","pgervais","2013-04-10 15:44:44","Corrected a bug in tests/__init__.py
+
+This file hasn't been updated after that commit. A non-ascii character was
+remaining, and a reference to a deleted file.","0590686eda04089e08a965eb3508eb4b01687ca7",""
+"pull_request_commit_comment","43","nilearn","nilearn","GaelVaroquaux","2013-04-09 15:54:43","Order of imports should be:
+1. Standard library modules
+2. Standard scientific packages (eg numpy)
+3. Standard general purpose packages (eg nose)
+4. Neuroimaging-specific packages (nibabel)
+5. Local imports
+
+2 and 3 can be swapped.
+
+The logic is to go from most common and general to least.
+","a6e805fec3a150652e90e52d337dce11cb680f4d","(12, 12, u'nisl/tests/test_io_nifti_masker.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","GaelVaroquaux","2013-04-09 15:55:33","Missing 'kind=...', also you should indicate 'optional' when parameters are optional.
+","a6e805fec3a150652e90e52d337dce11cb680f4d","(28, 28, u'nisl/tests/test_io_nifti_masker.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","GaelVaroquaux","2013-04-09 15:56:40","I prefer naming conventions that separate words with underscores: 'rand_gen'
+","a6e805fec3a150652e90e52d337dce11cb680f4d","(41, 41, u'nisl/tests/test_io_nifti_masker.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","GaelVaroquaux","2013-04-09 16:02:21","This file should be merged with nisl/io/tests/test_multi_masker.py. As a general rule, we try, for a code in file 'bar/foo.py', to always put the tests in 'bar/tests/test_foo.py'.
+","a6e805fec3a150652e90e52d337dce11cb680f4d","(1, 1, u'nisl/tests/test_io_nifti_masker.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","GaelVaroquaux","2013-04-09 16:03:58","The test looks good. I would also test the detrend the same way. But I like the logic, and I do think that it answers my question/remark. Thanks.
+","a6e805fec3a150652e90e52d337dce11cb680f4d","(86, 86, u'nisl/tests/test_io_nifti_masker.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","pgervais","2013-04-09 16:18:11","I wasn't aware of this file. I'll make the change.
+","a6e805fec3a150652e90e52d337dce11cb680f4d","(1, 1, u'nisl/tests/test_io_nifti_masker.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","pgervais","2013-04-09 16:18:45","It's just a matter of adding detrend=True, I'll do it.
+","a6e805fec3a150652e90e52d337dce11cb680f4d","(86, 86, u'nisl/tests/test_io_nifti_masker.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","AlexandreAbraham","2013-04-08 12:58:57","Why do you remove the colon ?
+","c26a546081504415132372f2997e6c34f8fc00b3","(14, 271, u'nisl/masking.py')"
+"pull_request_commit_comment","43","nilearn","nilearn","pgervais","2013-04-08 13:13:21","Because there is already a colon inserted by Shinx at the end of this line, and two colons seem to many.
+","c26a546081504415132372f2997e6c34f8fc00b3","(14, 271, u'nisl/masking.py')"

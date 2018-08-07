@@ -1,0 +1,23 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","545","nilearn","nilearn","lesteve","2015-04-16 06:43:37","The colorbar code could be cleaned up. For example, it is a bit nasty that there is some code in displays.py to create the colorbar and that it is then modified in img_plotting.py in the case corresponding to positive only or negative only values in plot_stat_map. In this case you only keep half of the colorbar (upper/lower for positive/negative only values).
+
+A first thing to try to would be to create the ""halved"" colorbar in plot_stat_map and pass it to _plot_img_with_bg. The colorbar halving logic could go to plotting/cm.py if that works.
+
+Another way to do it would be to have some kind of colorbar factory that takes care of the threshold graying and colorbar halving.
+","start issue","Clean up colorbar code"
+"issue_comment","545","nilearn","nilearn","AlexandreAbraham","2016-02-18 12:52:40","Example of bad layout:
+
+``` python
+from nilearn import plotting, datasets
+haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+haxby_anat_filename = haxby_dataset.anat[0]
+
+# Plotting anatomical maps
+import matplotlib.pylab as plt
+figure, (axes1, axes2) = plt.subplots(2, 1)
+for axes in [axes1, axes2]:
+    plotting.plot_img(haxby_anat_filename, axes=axes,
+                      colorbar=True, display_mode='z')
+plt.show()
+```
+","",""

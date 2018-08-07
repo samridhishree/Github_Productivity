@@ -1,0 +1,111 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1464,nilearn,nilearn,TheChymera,2017-06-13 03:07:34,"I am performing brain stimulation in a region which has ample inhibitory projections. As such, I commonly need to show statistical maps centered both on the site of stimulation and on the projection areas (commonly the larger cluster). An example can be seen in this seed-based connectivity plot:
+![dr_fc](https://user-images.githubusercontent.com/950524/27064023-4c3ff10e-4ff5-11e7-8634-a59039f01ae3.png)
+
+Since it is one and the same map, and it makes no sense to change the color mapping between the two views, I would like to make the plots share the colorbar. Is there any way of doing so?
+
+I have tried to dig through [the code](https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/img_plotting.py) but it seems none of the kwargs make their way to matplotlib.
+ ",start issue,Make statistic map plots share colorbar
+2,issue_closed,1464,nilearn,nilearn,TheChymera,2017-10-13 11:35:36,,closed issue,Make statistic map plots share colorbar
+3,issue_comment,1464,nilearn,nilearn,bthirion,2017-06-13 07:49:41,"This is typically advances usage and I don't see how to find a solution to cover all the possible cases. You probably want to use colorbar=None and create a separate figure for the colorbar, by re-using the code in Nilearn plotting (that's what I do in this kind of case).",,
+4,issue_comment,1464,nilearn,nilearn,bthirion,2017-06-13 21:08:10,"Here is an example that creates a colorbar in a given axis (inspired from nilearn, but purely matplotlib).
+HTH
+
+```
+def _draw_colorbar(colorbar_ax, vmax=8, offset=4.):
+    from matplotlib.colorbar import ColorbarBase
+    from matplotlib import colors
+    our_cmap = plotting.cm.cold_hot
+    nb_ticks = 5
+    ticks = np.linspace(-vmax, vmax, nb_ticks)
+    bounds = np.linspace(-vmax, vmax, our_cmap.N)
+    norm = colors.Normalize(vmin=-vmax, vmax=vmax)
+    # some colormap hacking
+    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+    istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
+    istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
+    for i in range(istart, istop):
+        cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
+    our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+
+    ColorbarBase(
+        colorbar_ax, ticks=ticks, norm=norm,
+        orientation='vertical', cmap=our_cmap, boundaries=bounds,
+        spacing='proportional', format='%.2g')
+    colorbar_ax.yaxis.tick_left()
+    tick_color = 'w'
+    for tick in colorbar_ax.yaxis.get_ticklabels():
+        tick.set_color(tick_color)
+    colorbar_ax.yaxis.set_tick_params(width=0)
+```",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1525,nilearn,nilearn,KamalakerDadi,2017-10-13 08:44:52,"Few examples and travis are failing with recent matplotlib 2.1.0.
+
+Details about recent failures with ```imshow``` matplotlib 2.1.0 are in [here](https://github.com/matplotlib/matplotlib/issues/9280)
+
+Examples: plot_overlay.py & plot_prob_atlas.py
+
+I agree this is not a good FIX and I even don't know if this fixes it.
+Any ideas are welcome",start issue,FIX: travis and circle with matplotlib
+2,issue_closed,1525,nilearn,nilearn,lesteve,2017-10-13 11:32:29,,closed issue,FIX: travis and circle with matplotlib
+3,pull_request_title,1525,nilearn,nilearn,KamalakerDadi,2017-10-13 08:44:52,"Few examples and travis are failing with recent matplotlib 2.1.0.
+
+Details about recent failures with ```imshow``` matplotlib 2.1.0 are in [here](https://github.com/matplotlib/matplotlib/issues/9280)
+
+Examples: plot_overlay.py & plot_prob_atlas.py
+
+I agree this is not a good FIX and I even don't know if this fixes it.
+Any ideas are welcome",d23a6359347997728dce8273c2286701985ffe99,FIX: travis and circle with matplotlib
+4,pull_request_merged,1525,nilearn,nilearn,lesteve,2017-10-13 11:32:29,FIX: travis and circle with matplotlib,cdc54971e86ee2c813ed71e4f5beb307717c7d64,Pull request merge from KamalakerDadi/nilearn:fix_travis to nilearn/nilearn:master
+5,issue_comment,1525,nilearn,nilearn,lesteve,2017-10-13 09:16:59,Very quickly looking this seems a reasonable work-around which I expect to fix Travis and CircleCI. You can revert to `*` when matplotlib 2.1.1 is released.,,
+6,issue_comment,1525,nilearn,nilearn,lesteve,2017-10-13 11:31:52,"CIs are green, merging, thanks a lot!",,
+7,issue_comment,1525,nilearn,nilearn,KamalakerDadi,2017-10-13 09:18:37,">You can revert to * when matplotlib 2.1.1 is released.
+
+Yup, I will revert to * once it is released. Thanks",,
+8,issue_comment,1525,nilearn,nilearn,codecov[bot],2017-10-13 10:31:04,"# [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=h1) Report
+> Merging [#1525](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=desc) into [master](https://codecov.io/gh/nilearn/nilearn/commit/c7b5e37786aab71aadafe83b99b92bbad04787b4?src=pr&el=desc) will **increase** coverage by `1.75%`.
+> The diff coverage is `n/a`.
+
+[![Impacted file tree graph](https://codecov.io/gh/nilearn/nilearn/pull/1525/graphs/tree.svg?width=650&src=pr&token=KpYArSdyXv&height=150)](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master    #1525      +/-   ##
+==========================================
++ Coverage   92.73%   94.48%   +1.75%     
+==========================================
+  Files         122      122              
+  Lines       14912    14912              
+==========================================
++ Hits        13829    14090     +261     
++ Misses       1083      822     -261
+```
+
+
+| [Impacted Files](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [nilearn/plotting/tests/test\_img\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy90ZXN0cy90ZXN0X2ltZ19wbG90dGluZy5weQ==) | `100% <0%> (+0.21%)` | :arrow_up: |
+| [nilearn/plotting/displays.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9kaXNwbGF5cy5weQ==) | `94.33% <0%> (+0.3%)` | :arrow_up: |
+| [nilearn/connectome/group\_sparse\_cov.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9jb25uZWN0b21lL2dyb3VwX3NwYXJzZV9jb3YucHk=) | `85.71% <0%> (+0.54%)` | :arrow_up: |
+| [nilearn/datasets/neurovault.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9kYXRhc2V0cy9uZXVyb3ZhdWx0LnB5) | `93.59% <0%> (+0.6%)` | :arrow_up: |
+| [nilearn/decomposition/base.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9kZWNvbXBvc2l0aW9uL2Jhc2UucHk=) | `95.48% <0%> (+0.64%)` | :arrow_up: |
+| [nilearn/plotting/img\_plotting.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9pbWdfcGxvdHRpbmcucHk=) | `94.34% <0%> (+0.7%)` | :arrow_up: |
+| [nilearn/decoding/space\_net.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9kZWNvZGluZy9zcGFjZV9uZXQucHk=) | `94.69% <0%> (+0.83%)` | :arrow_up: |
+| [nilearn/image/resampling.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9pbWFnZS9yZXNhbXBsaW5nLnB5) | `99.49% <0%> (+1%)` | :arrow_up: |
+| [nilearn/decoding/searchlight.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9kZWNvZGluZy9zZWFyY2hsaWdodC5weQ==) | `82.5% <0%> (+1.25%)` | :arrow_up: |
+| [nilearn/plotting/glass\_brain.py](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree#diff-bmlsZWFybi9wbG90dGluZy9nbGFzc19icmFpbi5weQ==) | `87.5% <0%> (+1.25%)` | :arrow_up: |
+| ... and [11 more](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=tree-more) | |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=footer). Last update [c7b5e37...d23a635](https://codecov.io/gh/nilearn/nilearn/pull/1525?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+9,pull_request_commit,1525,nilearn,nilearn,KamalakerDadi,2017-10-13 08:33:30,FIX: travis and circle with matplotlib,89f219e973789996afa63508693c29c46f64cb7a,
+10,pull_request_commit,1525,nilearn,nilearn,KamalakerDadi,2017-10-13 08:54:35,Attempts to FIX: Removed hard-coded package version of matplotlib,d23a6359347997728dce8273c2286701985ffe99,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1497,nilearn,nilearn,GaelVaroquaux,2017-08-24 12:20:48,The bottom of page: http://nilearn.github.io/introduction.html#python-for-neuroimaging-a-quick-start is out of date. The scikit-learn mailing list is now https://mail.python.org/mailman/listinfo/scikit-learn,start issue,The mailing list for scikit-learn has changed
+2,issue_closed,1497,nilearn,nilearn,KamalakerDadi,2017-10-13 11:57:25,,closed issue,The mailing list for scikit-learn has changed

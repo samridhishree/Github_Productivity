@@ -1,0 +1,36 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1192","nilearn","nilearn","salma1601","2016-08-02 19:05:14","Is there an appropriate way to extract voxels time series within spheres ? I am using  `iter_signals_from_spheres`
+
+``` Python
+import nibabel
+from nilearn import datasets, input_data
+from nilearn.input_data.nifti_spheres_masker import _iter_signals_from_spheres
+adhd = datasets.fetch_adhd(n_subjects=1)
+func_filename = adhd.func[0]
+seeds_masker = input_data.NiftiSpheresMasker([(-6, 50, -1)], radius=6.)
+seeds_masker.fit()
+sphere_timeseries = _iter_signals_from_spheres(
+    seeds_masker.seeds_, nibabel.load(func_filename),
+    seeds_masker.radius,
+    seeds_masker.allow_overlap).next()
+```
+
+I also want to go from array to image using `inverse_transform` but I got an error
+
+``` Python
+image = seeds_masker.inverse_transform(sphere_timeseries.T)
+```
+
+> 'NiftiSpheresMasker' object has no attribute 'mask_img_'
+","start issue","extracting voxels timeseries within a sphere and using inverse_transform with NiftiSpheresMasker"
+"issue_comment","1192","nilearn","nilearn","salma1601","2016-08-03 11:15:11","Can't we have an `inverse_transform` method for `NiftiSpheresMasker` ?
+","",""
+"issue_comment","1192","nilearn","nilearn","salma1601","2016-08-03 12:00:48","I wanted it for a connectivity example I plan to PR to demo the impact of changing the radius in spheric ROIs.
+OK I will take a look to see if it's not too hard for me :)
+","",""
+"issue_comment","1192","nilearn","nilearn","salma1601","2016-08-03 12:25:13","OK I will try that too
+","",""
+"issue_comment","1192","nilearn","nilearn","salma1601","2016-08-10 17:23:56","> For non-overlapping spheres, it should indeed be a quickfix. For non-overlapping... It's more complicated (as you can guess)
+
+I looked into it this afternoon and it looks complex for me. May be I can try to work on #1229 to become familiar with the inverse_transform concept
+","",""

@@ -1,0 +1,30 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1042","nilearn","nilearn","aabadie","2016-03-02 15:31:27","While working on #1000, I encountered this reported issue. This fix #999.
+","start issue","[MRG+1] fixing plot_mixed_gambles_space_net.py decoding example"
+"issue_closed","1042","nilearn","nilearn","AlexandreAbraham","2016-03-03 09:06:45","","closed issue","[MRG+1] fixing plot_mixed_gambles_space_net.py decoding example"
+"pull_request_title","1042","nilearn","nilearn","aabadie","2016-03-02 15:31:27","While working on #1000, I encountered this reported issue. This fix #999.
+","776e84f392d1137550eec999c46c5b46cf2ca50d","[MRG+1] fixing plot_mixed_gambles_space_net.py decoding example"
+"pull_request_merged","1042","nilearn","nilearn","AlexandreAbraham","2016-03-03 09:06:45","[MRG+1] fixing plot_mixed_gambles_space_net.py decoding example","55264b3e88605182c4005826ead8668055ed4ce7","Pull request merge from aabadie/nilearn:fix_plot_mixed_gambles_ex_py3 to nilearn/nilearn:master"
+"issue_comment","1042","nilearn","nilearn","GaelVaroquaux","2016-03-03 08:58:44","LGTM. Thanks!
+","",""
+"issue_comment","1042","nilearn","nilearn","aabadie","2016-03-02 15:33:39","For the record, the issue is that `zmap_imgs` is a `map` and len(map) is not allowed in py3. But looking at the code above this change,  ̀mask` has the same length.
+","",""
+"issue_comment","1042","nilearn","nilearn","aabadie","2016-03-02 20:28:28","Indeed @lesteve, your proposition looks better than mine. Will change that.
+","",""
+"issue_comment","1042","nilearn","nilearn","aabadie","2016-03-02 21:31:56","I pushed a new commit using `check_niimg` to return an iterator as you suggested @lesteve and keeping my previous change (using len(mask)). Let's wait for CI's
+","",""
+"issue_comment","1042","nilearn","nilearn","lesteve","2016-03-02 16:16:14","The Python2/Python3 inconsistency comes from this [line](https://github.com/nilearn/nilearn/blob/418b646aa6689f94d9aed7b20f9f976fa78ec2d9/nilearn/datasets/func.py#L1294):
+
+``` python
+X, y, mask_img = _load_mixed_gambles(map(nibabel.load, data.zmaps))
+```
+
+A simple fix would be to useuse a list comprehension.
+
+``` python
+X, y, mask_img = _load_mixed_gambles([nibabel.load(fname) for fname in data.zmaps])
+```
+
+Maybe there is one of the check_niimg_ helper we can use too, not sure.
+","",""
+"pull_request_commit","1042","nilearn","nilearn","aabadie","2016-03-02 20:47:52","check niimg and use an iterator on zmaps","776e84f392d1137550eec999c46c5b46cf2ca50d",""

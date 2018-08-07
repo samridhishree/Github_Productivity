@@ -1,0 +1,98 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","463","nilearn","nilearn","bcipolli","2015-02-25 16:25:32","```
+from nilearn import datasets
+from nilearn.image import iter_img, index_img
+from nilearn._utils.niimg_conversions import check_niimgs
+
+haxby_dataset = datasets.fetch_haxby_simple()
+func_img_1 = index_img(haxby_dataset.func, 0)
+
+# This works
+print list(check_niimgs([func_img_1], return_iterator=True))
+
+# This incorrectly returns an empty iterator
+print list(check_niimgs(iter_img([func_img_1]), return_iterator=True))
+
+# This throws an error
+try:
+    print check_niimgs(iter_img([func_img_1]))
+except Exception as e:
+    print e.__class__
+```
+
+**Expected behavior:**
+`check_niimgs` called on an iterator of 3D images to return all images.
+
+**Current behavior:**
+`check_niimgs` returns a list, or iterator, with the first image missing.  The output from the above:
+
+```
+[<nibabel.nifti1.Nifti1Image object at 0x10b3eaf10>]
+[]
+<type 'exceptions.StopIteration'>
+```
+
+**Notes:**
+- I'm not sure what use-cases this would hit.  I expected `mean_img` to call `check_niimgs`, but it does not, nor am I clear when an iterator would be passed to `check_niimgs`.
+- When `check_niimgs` runs, it grabs the first image to examine image information.  In the case of an iterator, however, it simply returns the remaining iterator (not a new one that contains the first image that's been popped off.
+- I'm not sure the best way to fix this.  Issue #462 was an accidental product of me trying to find a solution to this issue.
+","start issue","concat_niimgs is not iterator friendly (was: check_niimgs eliminates the first 3D image from an iterator)"
+"issue_closed","463","nilearn","nilearn","AlexandreAbraham","2015-04-30 08:25:00","","closed issue","concat_niimgs is not iterator friendly (was: check_niimgs eliminates the first 3D image from an iterator)"
+"issue_comment","463","nilearn","nilearn","lesteve","2015-02-26 07:43:07","Looks like a bug to me, a simple fix would be to use itertools.tee to consume the first item but still be able to return the unadulterated iterator. Adding a test would be great too.
+","",""
+"issue_comment","463","nilearn","nilearn","AlexandreAbraham","2015-02-26 11:54:54","@bcipolli thanks for spotting this one. By digging in this code, we found out that there is some unconsistent behavior in both `check_niimg` and `check_niimgs`. We want to release soon so we'll fix this one first but we will open a discussion about image loading later.
+","",""
+"issue_comment","463","nilearn","nilearn","lesteve","2015-02-26 14:07:30","Hmmm it looks like the check_niimg(s) function are not very iterator friendly in contrary to what the docstring is saying. 
+
+Note this has been the case for a while, and is not specific to the relatively recent return_iterator=True in check_niimgs. To make matters worse, I wasn't able to find tests with check_niimg(s) and iterators.
+
+A couple of examples I just found:
+
+``` python
+import numpy as np
+from nibabel import Nifti1Image
+
+from nilearn import _utils
+
+affine = np.eye(4)
+img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+
+input_iterator = iter([img_3d, img_3d])
+img_4d = _utils.check_niimgs(input_iterator)  # Exception in concat_niimgs
+
+input_iterator = iter([img_3d, img_3d])
+img_4d = _utils.check_niimg(input_iterator)
+img_4d.shape  # (10, 10, 10, 1) instead of (10, 10, 10, 2)
+```
+
+The safe way to use check_niimg(s) seems to use lists rather than iterators as arguments and I bet that's the way they are used in our source code.
+","",""
+"issue_comment","463","nilearn","nilearn","AlexandreAbraham","2015-02-26 14:14:28","Since we plan to refactor `check_niimg*`, I suggest that we convert iterators into lists and move on until the code is refactored.
+","",""
+"issue_comment","463","nilearn","nilearn","banilo","2015-02-27 08:49:56","> Since we plan to refactor check_niimg*
+
+:+1:
+","",""
+"issue_comment","463","nilearn","nilearn","AlexandreAbraham","2015-04-08 08:57:53","The first bug evoked by ben is now solved. Here is a new script to test the second one:
+
+``` python
+from nilearn import datasets
+from nilearn.image import iter_img, index_img
+from nilearn._utils.niimg_conversions import check_niimg_4d
+
+haxby_dataset = datasets.fetch_haxby_simple()
+func_img_1 = index_img(haxby_dataset.func, 0)
+
+# This works
+print(list(check_niimg_4d([func_img_1], return_iterator=True)))
+
+# This throws an error
+check_niimg_4d(iter_img([func_img_1]))
+```
+","",""
+"issue_comment","463","nilearn","nilearn","GaelVaroquaux","2015-04-15 11:07:53","What's the status of this guy? Do we have pending work that tries to fix the second bug?
+","",""
+"issue_comment","463","nilearn","nilearn","AlexandreAbraham","2015-04-15 11:10:50","#542 fixes the second bug but still has some dirty code and needs review.
+","",""
+"issue_comment","463","nilearn","nilearn","GaelVaroquaux","2015-04-15 11:12:32","OK, #542 is fixing 2 critical bugs. So I think that we should try to finish it and merge it before the release.
+","",""

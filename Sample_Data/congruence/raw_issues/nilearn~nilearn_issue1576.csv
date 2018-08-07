@@ -1,0 +1,33 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1576","nilearn","nilearn","grjd","2017-11-27 15:20:33","How can I obtain a masker for the entire brain in MNI space?
+I have a fmri image in MNI space (79x95x79) and using NiftiMasker(mask_img=datasets.fetch_icbm152_2009(), ....) it 
+returns more voxels than the voxels my image has (79x95x79).
+","start issue","Masker in MNI space"
+"issue_comment","1576","nilearn","nilearn","grjd","2017-11-28 08:48:53","I understand that the mask has more voxels that I need, 197x233x189 to be precise. 
+But I don't understand if I extract the time series  I get time series that can not possibly being extracted from my epi_file. I get over 1M time series while my epi_file has just 79x95x79=592895 voxels.
+The epi_file is already normalized in MNI space I just need to extract all the time series from epi_file.
+
+```
+masker = NiftiMasker(mask_img=datasets.fetch_icbm152_2009(), detrend=preproc_parameters['detrend'],t_r=preproc_parameters['t_r'])
+masker.fit_transform(epi_file)
+```
+
+
+
+ ","",""
+"issue_comment","1576","nilearn","nilearn","grjd","2017-11-28 16:48:57","I get this error:
+
+> ValueError: Given mask is not made of 2 values: [ -6.93889390e-16  -6.78060039e-16  -6.15067892e-16 ...,   1.00000006e+00
+>    1.00000006e+00   1.00000006e+00]. Cannot interpret as true or false
+
+when I perform this transform with a mask reshape. What am I doing wrong? I just want to extract the time series of all voxels in an epi file.
+
+> template = load_mni152_template()
+> icbms = datasets.fetch_icbm152_2009()
+> reshape_mask = resample_to_img(icbms.mask, template)
+> masker = NiftiMasker(mask_img= reshape_mask, mask_strategy = 'epi')
+> masker.fit(epi_filename)
+> time_series = masker.fit_transform(epi_filename)
+
+","",""
+"issue_comment","1576","nilearn","nilearn","grjd","2017-11-29 09:16:01","that worked. thanks!","",""

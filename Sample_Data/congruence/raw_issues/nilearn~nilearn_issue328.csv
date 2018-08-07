@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","328","nilearn","nilearn","bcipolli","2014-12-19 15:07:03","Great package here!
+
+Not sure if I've done something improperly, but during both `pip install` and the development cloning process, I had dependency errors.  I came back and saw the dependencies and resolved them manually.
+
+Rather than declaring dependencies in the `README.md` file, what about declaring in a `requirements.txt` file? ([documentation](https://pip.pypa.io/en/latest/user_guide.html#requirements-files)).
+
+This should allow `pip` to resolve dependencies when installing the package, and should make getting the development version after cloning `nilearn` up and running more easily.
+
+I'd be happy to do this, if it sounds good! 
+","start issue","Add package dependencies to a requirements.txt file"
+"issue_closed","328","nilearn","nilearn","lesteve","2015-01-16 14:03:37","","closed issue","Add package dependencies to a requirements.txt file"
+"issue_comment","328","nilearn","nilearn","lesteve","2014-12-19 15:37:18","Thanks for the kind words!
+
+We could also have defined the dependencies in setup.py. The thing is that for example numpy needs to be compiled from source when using pip install. This compilation step is likely to fail (for example because you don't have the package with the required C headers on Linux, or even more likely on Windows where most of our users don't have any C compiler installed) 
+
+Basically we are strongly encouraging users to install numpy, scipy and scikit-learn via their OS package managers on Linux or Anaconda on Windows and OSX.
+
+@GaelVaroquaux @AlexandreAbraham any other opinions?
+","",""
+"issue_comment","328","nilearn","nilearn","GaelVaroquaux","2014-12-19 15:53:52","> @GaelVaroquaux @AlexandreAbraham any other opinions?
+
+Not much to add to what you said. That said, we should note that since
+the alpha release, we have added the nibabel dependency in the
+requirement file. So things will be a bit more streamlined in the next
+release.
+
+Time for an beta?
+","",""
+"issue_comment","328","nilearn","nilearn","bcipolli","2014-12-19 17:12:12","Ok.  Perhaps having an explicit way to (a) install dependencies that play nice and (b) a way to error out the `pip install` of `nilearn` when they don't have `numpy`, `scipy`, or `scikit-learn` will help more novice  (installation-wise) users understand what's expected of them.
+
+Glad to look into how to accomplish this in a `setup.py` file (sounds like a `requirements.txt` file may not be flexible enough to accomplish the above), if that sounds like a reasonable direction.
+","",""
+"issue_comment","328","nilearn","nilearn","GaelVaroquaux","2014-12-19 17:51:51","> Ok. Perhaps having an explicit way to (a) install dependencies that play nice
+> and (b) a way to error out the pip install of nilearn when they don't have
+> numpy, scipy, or scikit-learn will help more novice (installation-wise) users
+> understand what's expected of them.
+
+Maybe shooting a warning (or an error) in the setup.py would be a good
+way to do this.
+
+To do this, we should probably move the '_check_dependencies' out from
+nilearn/__init__.py to nilearn.version and 'import' it in the setup.py as
+the version number is currently imported.
+
+I think that we would accept a PR (pull request) doing that.
+Unfortunately, I'll be offline for 2 weeks starting tomorrow. So I cannot
+review it, but maybe other people of the nilearn team will be able to.
+","",""
+"issue_comment","328","nilearn","nilearn","lesteve","2014-12-19 18:12:19","> To do this, we should probably move the '_check_dependencies' out from nilearn/__init__.py to nilearn.version and 'import' it in the setup.py as the version number is currently imported. 
+
+I think the general idea has legs but needs to be tweaked a bit. The caveat is that you don't want to throw when nibabel is not installed in setup.py because setup.py is supposed to install it.
+
+Also it'd be good to check what setup.py install error exactly looks like, to make sure we get an error that is actually helpful.
+","",""
+"issue_comment","328","nilearn","nilearn","GaelVaroquaux","2014-12-19 18:40:52","> I think the general idea has legs but needs to be tweaked a bit. The caveat is
+> that you don't want to throw when nibabel is not installed in setup.py because
+> setup.py is supposed to install it.
+
+Good point. That means that you probably need to have a keyword argument
+in the dependency checker.
+
+Also, we should raise an error only if an install is asked, and not other
+options.
+","",""
+"issue_comment","328","nilearn","nilearn","bcipolli","2015-01-08 15:35:00","@GaelVaroquaux I was planning to take a look at this after Jan. 15 (I have two things due then); would that work for you?
+","",""
+"issue_comment","328","nilearn","nilearn","bcipolli","2015-01-08 18:47:55","OK.  If this is something you'd like in the release, just give me an idea of your timelines and I'll make time to do it!
+","",""
+"issue_comment","328","nilearn","nilearn","bcipolli","2015-01-09 05:25:25","I will take a look at this now.
+","",""
+"issue_comment","328","nilearn","nilearn","bcipolli","2015-01-09 07:15:21","Pull request is all set.  Will be heading to bed shortly, but tried to document what I did in the PR.  Will be able to discuss / update with any requests in the morning!
+","",""

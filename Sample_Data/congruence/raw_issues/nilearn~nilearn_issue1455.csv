@@ -1,0 +1,69 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1455","nilearn","nilearn","nilearn-user","2017-05-16 20:29:31","I need the Harvard cortical atlas coords to plot my connectome but nothing woorks. is there a way to compute those coords?","start issue","Harvard cortical atlas coords"
+"issue_closed","1455","nilearn","nilearn","nilearn-user","2017-05-17 17:28:22","","closed issue","Harvard cortical atlas coords"
+"issue_comment","1455","nilearn","nilearn","bthirion","2017-05-17 07:58:36","On 17/05/2017 09:26, nilearn-user wrote:
+>
+> I tried using /nilearn.plotting.find_xyz_cut_coords/ but it returns 3 
+> coords only, and to plot a connectome the coords should be a map of 
+> (n, 3) where n is the number of ROIs.
+>
+You probably wish to loop over ROIs.
+>
+> AlexandreAbraham I don't know what is the symmetrized version of HO 
+> and where to find it
+>
+symmetric_split=True in
+datasets.fetch_atlas_harvard_oxford()
+","",""
+"issue_comment","1455","nilearn","nilearn","AlexandreAbraham","2017-05-17 06:54:45","But be careful to take the symmetrized version of HO in that case because this function can misbehave for maps with two symmetrical blobs.","",""
+"issue_comment","1455","nilearn","nilearn","AlexandreAbraham","2017-05-17 15:51:18","Can you please post the full stacktrace or your code so that we can see where the error comes from?
+
+Thanks.","",""
+"issue_comment","1455","nilearn","nilearn","mrahim","2017-05-17 06:49:04","Use `nilearn.plotting.find_xyz_cut_coords`","",""
+"issue_comment","1455","nilearn","nilearn","mrahim","2017-05-17 08:03:22","You can try this :
+
+```python
+import numpy as np
+import nibabel
+from nilearn.datasets import fetch_atlas_harvard_oxford
+from nilearn.plotting import find_xyz_cut_coords, plot_connectome
+
+atlas = fetch_atlas_harvard_oxford(atlas_name='cort-maxprob-thr25-2mm',
+                                   symmetric_split=True)
+atlas_img = atlas['maps']
+
+# all ROIs except the background
+values = np.unique(atlas_img.get_data())[1:]
+
+# iterate over Harvard-Oxford ROIs
+coords = []
+for v in values:
+    data = np.zeros_like(atlas_img.get_data())
+    data[atlas_img.get_data() == v] = 1
+    xyz = find_xyz_cut_coords(nibabel.Nifti1Image(data, atlas_img.affine))
+    coords.append(xyz)
+
+# no connections, just visualize coords
+plot_connectome(np.eye(len(coords)), coords)
+
+```","",""
+"issue_comment","1455","nilearn","nilearn","nilearn-user","2017-05-17 07:26:44","I tried using _nilearn.plotting.find_xyz_cut_coords_ but it returns 3 coords only, and to plot a connectome the coords should be a map of (n, 3) where n is the number of ROIs.
+
+AlexandreAbraham I don't know what is the symmetrized version of HO and where to find it","",""
+"issue_comment","1455","nilearn","nilearn","nilearn-user","2017-05-17 15:44:08","Thank you all for your help.
+
+I tried the code of @mrahim and it worked perfectely.
+
+but when I tried plotting the connectome of my correlation matrix I got this error:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+","",""
+"issue_comment","1455","nilearn","nilearn","nilearn-user","2017-05-17 17:12:35","I found my error.
+In the code after computing the correlation matrix I called:
+G=nx.from_numpy_matrix(correlation_matrix)
+to create a graph from the matrix
+and then I called:
+correlation_matrix=nx.to_numpy_matrix(G)
+to recreate the matrix from the graph
+I suppose that something has gone wrong in between.
+
+Now it works thank you.","",""

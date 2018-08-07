@@ -1,0 +1,144 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","464","nilearn","nilearn","bcipolli","2015-02-25 17:08:31","The colorbar axis code was in some places assuming that the axis size would be [0, 0, 1, 1].  This is not always the case, in particular when using subplots.
+
+I've generalized the code to work for axis sizes in general.  I also abstracted a new variable, `colorbar_margin`, to try and improve code readability.  There was also code in there to control the tick formatting, that wasn't working properly; rather than remove it, I fixed it to work.
+## Old Image (single)
+
+![figure_1](https://cloud.githubusercontent.com/assets/4072455/6375552/a4e00010-bccc-11e4-9a82-6dbca0bb6488.png)
+## New Image (single)
+
+![new_figure_1](https://cloud.githubusercontent.com/assets/4072455/6375562/b8c260d2-bccc-11e4-8584-dca13556e991.png)
+## Old Image (1x3 grid)
+
+![figure_2](https://cloud.githubusercontent.com/assets/4072455/6375553/a4e601ae-bccc-11e4-9c39-44bfb79b5876.png)
+## New Image (1x3 grid)
+
+![new_figure_2](https://cloud.githubusercontent.com/assets/4072455/6375564/ba3293ec-bccc-11e4-8a9f-35e60600c6ce.png)
+## Old Image (4x4 grid)
+
+![screen shot 2015-02-25 at 8 35 35 am](https://cloud.githubusercontent.com/assets/4072455/6375556/a98160be-bccc-11e4-9290-a7be93c4f12d.png)
+## New Image (4x4 grid)
+
+![new_figure_3](https://cloud.githubusercontent.com/assets/4072455/6375578/cbafd698-bccc-11e4-9386-2d834151bc9e.png)
+## This also works fine for code without color bars:
+
+![new_figure_4](https://cloud.githubusercontent.com/assets/4072455/6375692/9ab8e6fa-bccd-11e4-8343-0d7882ff3ea6.png)
+## And for 'ortho' plots:
+
+![new_figure_5](https://cloud.githubusercontent.com/assets/4072455/6375693/9abc86d4-bccd-11e4-907c-a60b5f90b426.png)
+
+Code for producing these images, in case you'd like to test:
+
+``` python
+import matplotlib.pyplot as plt
+
+from nilearn import datasets
+from nilearn.plotting import plot_stat_map, plot_glass_brain
+from nilearn.image import index_img, iter_img
+
+msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+maps_img = msdl_atlas_dataset.maps
+
+# Just a single plot
+plot_stat_map(index_img(maps_img, 0), display_mode='z', cut_coords=1)
+
+# Row of subplots
+fh = plt.figure()
+for pi, img in enumerate(iter_img(index_img(maps_img, slice(None, 3)))):
+    ax = fh.add_subplot(1, 3, pi + 1)
+    plot_stat_map(img, axes=ax, display_mode='z', cut_coords=1)
+
+# Grid of subplots
+fh = plt.figure()
+for pi, img in enumerate(iter_img(index_img(maps_img, slice(None, 16)))):
+    ax = fh.add_subplot(4, 4, pi + 1)
+    plot_stat_map(img, axes=ax, display_mode='z', cut_coords=1)
+
+# No colorbars:
+plot_glass_brain(index_img(maps_img, 0))
+
+# Just a single plot
+plot_stat_map(index_img(maps_img, 0))
+
+plt.show()
+```
+","start issue","Generalize colorbar axis computations for different input axis sizes"
+"issue_closed","464","nilearn","nilearn","AlexandreAbraham","2015-03-17 10:29:58","","closed issue","Generalize colorbar axis computations for different input axis sizes"
+"pull_request_title","464","nilearn","nilearn","bcipolli","2015-02-25 17:08:31","The colorbar axis code was in some places assuming that the axis size would be [0, 0, 1, 1].  This is not always the case, in particular when using subplots.
+
+I've generalized the code to work for axis sizes in general.  I also abstracted a new variable, `colorbar_margin`, to try and improve code readability.  There was also code in there to control the tick formatting, that wasn't working properly; rather than remove it, I fixed it to work.
+## Old Image (single)
+
+![figure_1](https://cloud.githubusercontent.com/assets/4072455/6375552/a4e00010-bccc-11e4-9a82-6dbca0bb6488.png)
+## New Image (single)
+
+![new_figure_1](https://cloud.githubusercontent.com/assets/4072455/6375562/b8c260d2-bccc-11e4-8584-dca13556e991.png)
+## Old Image (1x3 grid)
+
+![figure_2](https://cloud.githubusercontent.com/assets/4072455/6375553/a4e601ae-bccc-11e4-9c39-44bfb79b5876.png)
+## New Image (1x3 grid)
+
+![new_figure_2](https://cloud.githubusercontent.com/assets/4072455/6375564/ba3293ec-bccc-11e4-8a9f-35e60600c6ce.png)
+## Old Image (4x4 grid)
+
+![screen shot 2015-02-25 at 8 35 35 am](https://cloud.githubusercontent.com/assets/4072455/6375556/a98160be-bccc-11e4-9290-a7be93c4f12d.png)
+## New Image (4x4 grid)
+
+![new_figure_3](https://cloud.githubusercontent.com/assets/4072455/6375578/cbafd698-bccc-11e4-9386-2d834151bc9e.png)
+## This also works fine for code without color bars:
+
+![new_figure_4](https://cloud.githubusercontent.com/assets/4072455/6375692/9ab8e6fa-bccd-11e4-8343-0d7882ff3ea6.png)
+## And for 'ortho' plots:
+
+![new_figure_5](https://cloud.githubusercontent.com/assets/4072455/6375693/9abc86d4-bccd-11e4-907c-a60b5f90b426.png)
+
+Code for producing these images, in case you'd like to test:
+
+``` python
+import matplotlib.pyplot as plt
+
+from nilearn import datasets
+from nilearn.plotting import plot_stat_map, plot_glass_brain
+from nilearn.image import index_img, iter_img
+
+msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+maps_img = msdl_atlas_dataset.maps
+
+# Just a single plot
+plot_stat_map(index_img(maps_img, 0), display_mode='z', cut_coords=1)
+
+# Row of subplots
+fh = plt.figure()
+for pi, img in enumerate(iter_img(index_img(maps_img, slice(None, 3)))):
+    ax = fh.add_subplot(1, 3, pi + 1)
+    plot_stat_map(img, axes=ax, display_mode='z', cut_coords=1)
+
+# Grid of subplots
+fh = plt.figure()
+for pi, img in enumerate(iter_img(index_img(maps_img, slice(None, 16)))):
+    ax = fh.add_subplot(4, 4, pi + 1)
+    plot_stat_map(img, axes=ax, display_mode='z', cut_coords=1)
+
+# No colorbars:
+plot_glass_brain(index_img(maps_img, 0))
+
+# Just a single plot
+plot_stat_map(index_img(maps_img, 0))
+
+plt.show()
+```
+","e48569474292b89bf0f067bd9822132d06afede7","Generalize colorbar axis computations for different input axis sizes"
+"pull_request_merged","464","nilearn","nilearn","AlexandreAbraham","2015-03-17 10:29:58","Generalize colorbar axis computations for different input axis sizes","97e139a52273f40c896e0e716f14016202e524fc","Pull request merge from bcipolli/nilearn:issue-461 to nilearn/nilearn:master"
+"issue_comment","464","nilearn","nilearn","bthirion","2015-03-01 22:53:44","LGTM overall.
+","",""
+"issue_comment","464","nilearn","nilearn","bcipolli","2015-03-06 13:16:37","Rebased to master to test for Python 3.4 support.
+","",""
+"issue_comment","464","nilearn","nilearn","AlexandreAbraham","2015-03-17 10:30:03","Thanks!
+","",""
+"pull_request_commit_comment","464","nilearn","nilearn","bthirion","2015-03-01 22:51:53","Note: the _locator method seems very redundant across classes. maybe there will be something to refactor here in a future PR.
+","e48569474292b89bf0f067bd9822132d06afede7","(111, '', u'nilearn/plotting/displays.py')"
+"pull_request_commit","464","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-25 00:46:03","Properly resize the colorbar, based on the axis size.","ff0178653d5c0d1e309a6c2e96a5f8b7cf39d865",""
+"pull_request_commit","464","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-25 00:46:34","Make sure the yticks get updated with the intended format.","2bc3593e632876ee7bf1573aabc7d81e55540b89",""
+"pull_request_commit","464","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-25 01:13:46","Further adjustments by specifying left and right padding to colorbar more clearly.","0a889c5bf2e115e878960e07066f312ed154c6e4",""
+"pull_request_commit","464","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-25 16:45:43","Generalize code a bit to create a ""colorbar_margin"" variable.","9f54002527c106f5fa9bb947752ca4707eab6a71",""
+"pull_request_commit","464","nilearn","nilearn","bcipolli@ucsd.edu","2015-02-25 16:56:41","Generalize code to y margins.","e48569474292b89bf0f067bd9822132d06afede7",""

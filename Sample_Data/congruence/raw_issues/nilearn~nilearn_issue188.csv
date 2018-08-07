@@ -1,0 +1,114 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:16:21","Addresses cleanly #187 with a mix of mask and imputation via extrapolation.
+
+@schwarty, @bthirion, @eickenberg: care to review?
+","start issue","Nan in resample"
+"issue_closed","188","nilearn","nilearn","GaelVaroquaux","2014-05-16 14:55:56","","closed issue","Nan in resample"
+"pull_request_title","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:16:21","Addresses cleanly #187 with a mix of mask and imputation via extrapolation.
+
+@schwarty, @bthirion, @eickenberg: care to review?
+","c4dc4f94ed8170322212a130b8c198821d06aae3","Nan in resample"
+"issue_comment","188","nilearn","nilearn","GaelVaroquaux","2014-04-26 11:15:13","Is there any reason not to merge this PR?
+","",""
+"issue_comment","188","nilearn","nilearn","GaelVaroquaux","2014-05-16 14:46:26","I have taken in account the various comments and merged. Thanks all!
+
+Pff, this nan behavior was really getting in our way.
+","",""
+"issue_comment","188","nilearn","nilearn","eickenberg","2014-04-27 19:48:12","LGTM
+","",""
+"issue_comment","188","nilearn","nilearn","AlexandreAbraham","2014-05-01 20:44:44","I agree with Virgile: we should do something to avoid code duplication. Apart from that, LGTM.
+","",""
+"pull_request_commit_comment","188","nilearn","nilearn","eickenberg","2014-04-22 20:29:39","Do you count `np.inf` as NaN? Or would you disambiguate between them? It all depends on definition/ convention
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:30:19","> Do you count np.inf as NaN? Or would you disambiguate between them? It all
+> depends on definition/ convention
+
+I can indeed improve the warning message.
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","eickenberg","2014-04-22 20:44:43","I assume this transforms as gracefully as possible? I looked in the scipy code until I found that `_nd_image.geometric_transform` is written in C if I am not mistaken. My question is whether binary values are handled well using this function. It seems to have worked well using the nifti_masker, at least in my experience it has always worked.
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(79, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","eickenberg","2014-04-22 20:45:46","same question as above with respect to explicit mention of `Inf`
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:46:20","> My question is whether binary values are handled well using this
+> function. It seems to have worked well using the nifti_masker, at least
+> in my experience it has always worked.
+
+That's why I use an interpolation order of 0: this setting handles
+discrete values well (and in particular binary values).
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(79, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:47:16","> same question as above with respect to explicit mention of Inf
+
+I believe that I have addressed this (valid) concern. You should probably try
+reloading the page of the PR.
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(None, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","eickenberg","2014-04-22 20:53:37","From what I understood, the proposal was to give an option whether to keep the NaNs or keep the imputed values. Here it seems that NaNs are set back always.
+
+Also, less importantly, previous `-np.inf` and `np.inf` will all end up being `np.nan` at the output of this function. Again, a question of convention
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(117, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:57:18","> From what I understood, the proposal was to give an option whether to keep the
+> NaNs or keep the imputed values. Here it seems that NaNs are set back always.
+
+Indeed. I didn't feel confident to do this robustly, as it could require
+extrapolating arbitrarily far from the data, and I'd rather that such an
+operation be done by the user, as it is bound to be fragile.
+
+> Also, less importantly, previous -np.inf and np.inf will all end up being
+> np.nan at the output of this function. Again, a question of convention
+
+Yes, it would be significantly more work to try to keep them, so I gave
+up :). I think that right now we have a somewhat sensible behavior to
+non-finite values, and I think that we can stop here. At least now we
+won't be completely breaking pipelines when there are NaNs.
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(117, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","eickenberg","2014-04-22 21:00:08","If `iterations` were a large value, this recursion would create a lot of copies of the mask, but I don't think this problem is relevant in the usecases of this function.
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(11, '', u'nilearn/masking.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","eickenberg","2014-04-22 21:03:17","Could you explain the reasoning behind `iterations=2`? Is 4 the most probable max side length of NaN clusters? It is true that a NaN cluster of 5x5x5 voxels within the data part of the image seems like an indicator that something else has gone wrong.
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(69, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 21:05:57","> Could you explain the reasoning behind iterations=2?
+
+I am not expecting resampling by more than a factor of 4 (going from 4mm
+voxels to 1mm voxels). But what this really boils down to is a trade-off
+between computing speed and quality in most common cases.
+
+It might be improvable by looking at the largest eigen value of the
+scaling part of the affine matrix :).
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(69, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","eickenberg","2014-04-23 08:15:19","OK, so your reasoning is with respect to maximal size that one voxel can take once rescaled and that rescaling won't probably exceed an upsampling of 4, which seems reasonable.
+
+I was more concerned about blocks of NaNs in the data that are larger than 4x4x4, even if there is no rescaling. But I don't know if this is something that can happen
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(69, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","GaelVaroquaux","2014-04-23 08:17:34","> OK, so your reasoning is with respect to maximal size that one voxel can take
+> once rescaled and that rescaling won't probably exceed an upsampling of 4,
+> which seems reasonable.
+
+Yes.
+
+> I was more concerned about blocks of NaNs in the data that are larger than
+> 4x4x4, even if there is no rescaling. But I don't know if this is something
+> that can happen
+
+This might happen, and it would be a problem if we actually tried to do
+inpainting of missing values in the NaNs, but we are not doing this. We
+need to extrapolate only to avoid border effects near the NaNs.
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(69, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","VirgileFritsch","2014-04-28 12:29:41","The code below seems to be the same as the code above. I think it would be better to make any volume a 4D volume (possibly with only one single element in the fourth, optional dimension). I think a `np.reshape` would do the trick, although there might exist some more clever and efficient alternatives.
+
+Another option would be to put the duplicated code in a function (e.g.`resample_one_volume`).
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(85, '', u'nilearn/image/resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","VirgileFritsch","2014-04-28 12:31:06","maybe ""they do NOT"" ;)
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(28, '', u'nilearn/image/tests/test_resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","VirgileFritsch","2014-04-28 12:33:01","Weird line return?
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(35, '', u'nilearn/image/tests/test_resampling.py')"
+"pull_request_commit_comment","188","nilearn","nilearn","VirgileFritsch","2014-04-28 12:33:58","Too many blank lines
+","c4dc4f94ed8170322212a130b8c198821d06aae3","(71, '', u'nilearn/image/tests/test_resampling.py')"
+"pull_request_commit","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 18:42:50","ENH: basic handling of NaNs in resampling
+
+Right now there is no clever imputation, just filling with zeros","434f231f6dae40a226b16b9afb20654bee32ba6f",""
+"pull_request_commit","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 19:57:13","ENH: NaN in resampling: extrapolation
+
+extrapolation before resampling avoids completing with zeros, which has
+side effects in the resampling.","ef46230700ea6e50f31d6563d8db4a395ec0e52a",""
+"pull_request_commit","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:13:39","ENH: warn properly on NaNs in resample","90b2316b1309f046c3234c9b0b125ec783b36664",""
+"pull_request_commit","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:21:54","BUG: support old scikit-learn versions","f1936ddec050d0c76477df259da9d15d90cc64af",""
+"pull_request_commit","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:32:55","DOC: better warning messages","c8ecf6495c9cb9dfdde00fb4eae04b1b2b6c9de8",""
+"pull_request_commit","188","nilearn","nilearn","GaelVaroquaux","2014-04-22 20:33:50","BUG: fix old versions of scikit-learn","c4dc4f94ed8170322212a130b8c198821d06aae3",""

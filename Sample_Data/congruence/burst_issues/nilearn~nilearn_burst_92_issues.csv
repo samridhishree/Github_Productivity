@@ -1,0 +1,299 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1313,nilearn,nilearn,Joaoloula,2016-10-17 18:39:07,"The docstring says the `subjects` argument in `fetch_haxby` is a list containing the subjects to be fetched, but it actually also accepts an int as argument, in which case it behaves as the deprecated `n_subjects`. This is problematic because in this case an unaware user can pass an int n as the argument and run  `haxby_dataset.func[0]`, which will return data for subject 1 instead of subject n. It seems to me that we should either:
+- Make this use case explicit in the docstring or;
+- Throw an error when `subjects` is an int.
+",start issue,Unexpected behavior from 'subject' argument on haxby fetcher
+2,issue_closed,1313,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:04:19,,closed issue,Unexpected behavior from 'subject' argument on haxby fetcher
+3,issue_comment,1313,nilearn,nilearn,AlexandreAbraham,2016-10-19 09:00:35,"> my preference was two have two different arguments: `subjects` and `n_subjects` 
+
++1
+",,
+4,issue_comment,1313,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:05:06,"@bthirion I merged the PR of Joao because it makes doc better. Do you want me to open an issue about the two different args?
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1316,nilearn,nilearn,Joaoloula,2016-10-25 13:15:54,"Updates `fetch_haxby` documentation to include the case when `subjects` parameter is an int and corrects `fetch_abide_pcp` for the new download link.
+",start issue,[MRG] Fixes #1313 and #1314
+2,issue_closed,1316,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:04:15,,closed issue,[MRG] Fixes #1313 and #1314
+3,pull_request_title,1316,nilearn,nilearn,Joaoloula,2016-10-25 13:15:54,"Updates `fetch_haxby` documentation to include the case when `subjects` parameter is an int and corrects `fetch_abide_pcp` for the new download link.
+",32f41f8a0eb34ce2e1a66a6cb98c95c579891e15,[MRG] Fixes #1313 and #1314
+4,pull_request_merged,1316,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:04:15,[MRG] Fixes #1313 and #1314,dd9353274cf4814c5625b32eb8f90ee6853f3689,Pull request merge from Joaoloula/nilearn:issue_1313_1314 to nilearn/nilearn:master
+5,issue_comment,1316,nilearn,nilearn,AlexandreAbraham,2016-10-26 08:30:09,"Small question: are we sure that there is no difference between fcp-indi and fcp-indi-new?
+",,
+6,issue_comment,1316,nilearn,nilearn,AlexandreAbraham,2016-10-26 08:53:00,"> I think we should go with ""fcp-indi-new"" since the main project has the same name.
+
+I know that it is the new URL but what is the difference with the previous one? Maybe the used an update version of CPAC for the preproc? I just would like to be sure that we are still fetching the same data.
+",,
+7,issue_comment,1316,nilearn,nilearn,AlexandreAbraham,2016-10-26 11:21:13,"I think that taking the md5 hash of a bucnh of random files should be enough. Or maybe @Joaoloula can grab Cameron at brainhack and ask him ? :P
+",,
+8,issue_comment,1316,nilearn,nilearn,AlexandreAbraham,2016-10-31 13:49:59,"So, let's go merging this one when all is green.
+",,
+9,issue_comment,1316,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:04:11,"Merging as it makes doc better (independently of the subjects / n_subjects debate).
+",,
+10,issue_comment,1316,nilearn,nilearn,Joaoloula,2016-10-26 12:08:55,"Cameron's not here :/ In the middle of testing, I actually overwrote the dataset coming from the old download link, so I can't compare the checksums, can someone who still has the 'old' data take care of that?
+",,
+11,issue_comment,1316,nilearn,nilearn,Joaoloula,2016-10-31 13:46:54,"So @AlexandreAbraham got in touch with the Child Mind Institute people and, long story short, the fcp-indi-new does have exactly the same data as fcp-indi, but it was just a temporary switch they made. The old link is now up and running again, and so I reverted this part of the PR.
+",,
+12,pull_request_commit,1316,nilearn,nilearn,Joaoloula,2016-09-20 08:26:29,added jaccard index and jaccard distance functions to nilearn.connectome,eaa9684f12f18e2ec36e0aed1d6c07389123e8c0,
+13,pull_request_commit,1316,nilearn,nilearn,Joaoloula,2016-10-25 12:54:52,Merge branch 'master' of git://github.com/nilearn/nilearn into jaccard_index,7c11db74ce1908bd390c3571becce10fbc85cd34,
+14,pull_request_commit,1316,nilearn,nilearn,Joaoloula,2016-10-25 13:04:58,updated haxby fetcher documentation and abide fetcher link,9e6f6e24e54fe0df2b5c8bf97e59626dac8bd3ea,
+15,pull_request_commit,1316,nilearn,nilearn,Joaoloula,2016-10-25 13:14:39,updated haxby fetcher documentation and abide fetcher link,dce978d4ccf3be67807a849729a66959ea0b8974,
+16,pull_request_commit,1316,nilearn,nilearn,Joaoloula,2016-10-31 13:44:31,reverted fetch_abide_pcp to old link (works again),32f41f8a0eb34ce2e1a66a6cb98c95c579891e15,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1251,nilearn,nilearn,GaelVaroquaux,2016-08-19 16:43:16,"Code to reproduce
+
+<pre>
+from nilearn import datasets
+
+localizer_dataset = datasets.fetch_localizer_button_task()
+localizer_tmap_filename = localizer_dataset.tmaps[0]
+
+from nilearn import plotting
+glass_brain = plotting.plot_glass_brain(None)
+
+glass_brain.add_contours(localizer_tmap_filename, filled=True,
+                         levels=[3, ], colors=['g', ], alpha=1)
+</pre>
+
+
+This doesn't run if I don't specify colors and alpha. It does if I don't use filled=True. I really should have to worry about colors, and alpha: it should work the same way in both cases.
+",start issue,add_contours(filled=True) requires to specify color and alpha
+2,issue_closed,1251,nilearn,nilearn,GaelVaroquaux,2016-11-03 13:25:37,,closed issue,add_contours(filled=True) requires to specify color and alpha
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1317,nilearn,nilearn,KamalakerDadi,2016-10-25 14:51:07,"This has rather surprising behaviour when using `add_contours` with `filled=True`. Example of one suprising behaviour can be seen from a plot in PR #1315. 
+
+It appears that we need an argument called `threshold=1e-6` in `add_contours` for the same terminology in consistent with `add_overlay` to suppress out minimum background value given in `threshold`.   
+",start issue,Inconsitency of having and not having argument `threshold` in add_overlay and add_contours
+2,issue_closed,1317,nilearn,nilearn,KamalakerDadi,2016-11-03 13:30:17,,closed issue,Inconsitency of having and not having argument `threshold` in add_overlay and add_contours
+3,issue_comment,1317,nilearn,nilearn,GaelVaroquaux,2016-10-26 15:51:25,"I am +1 on changing threshold in add_contours from None to 1e-6, as in
+add_overlay.
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1322,nilearn,nilearn,Joaoloula,2016-11-01 20:59:21,Clean version of the earlier PR.,start issue,[MRG] Fixes #1313
+2,issue_closed,1322,nilearn,nilearn,AlexandreAbraham,2016-11-02 08:38:20,,closed issue,[MRG] Fixes #1313
+3,pull_request_title,1322,nilearn,nilearn,Joaoloula,2016-11-01 20:59:21,Clean version of the earlier PR.,200f2a6f3bc7f010e8334a81255915f89e52b7c8,[MRG] Fixes #1313
+4,pull_request_merged,1322,nilearn,nilearn,AlexandreAbraham,2016-11-02 08:38:20,[MRG] Fixes #1313,f9451dbc9498d16baaabdadfdac7fa91be92b31c,Pull request merge from Joaoloula/nilearn:issue_1313 to nilearn/nilearn:master
+5,pull_request_commit,1322,nilearn,nilearn,Joaoloula,2016-11-01 20:59:51,created clean branch for issue 1313,200f2a6f3bc7f010e8334a81255915f89e52b7c8,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1314,nilearn,nilearn,KamalakerDadi,2016-10-20 11:10:50,"``` python
+In [1]: from nilearn import datasets
+
+In [2]: abide = datasets.fetch_abide_pcp()
+Downloading data from https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz ...
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-2-1f1f31175720> in <module>()
+
+AttributeError: can't set attribute
+```
+
+Can somebody reproduce it ?'
+Seems like download link from amazon is changed. Replacing fcp-indi -> fcp-indi-new in the fetcher download link will work.
+",start issue,ABIDE fetcher download link needs to be renamed
+2,issue_closed,1314,nilearn,nilearn,AlexandreAbraham,2016-10-31 13:45:31,,closed issue,ABIDE fetcher download link needs to be renamed
+3,issue_comment,1314,nilearn,nilearn,AlexandreAbraham,2016-10-31 13:45:31,"As @jpellman explained to Joao and me, the fcp-indi-new bucket was a temporary one and we should point to it. Full answer:
+
+> We recently migrated to a new AWS account.  As part of this migration, the data from the 'fcp-indi' bucket was synced to a temporary bucket ('fcp-indi-new') belonging to our new account.  After the migration of our data to the new account, our old account was deleted, and along with it the old 'fcp-indi' bucket.  In order to preserve the S3 paths that we had been using under the old account, we re-created the 'fcp-indi' bucket under our new account and began syncing all of the data in 'fcp-indi-new' to it.  At this time, I changed the URLs in our documentation to ensure that interested researchers could still access our data from the temporary bucket while it was syncing to the new 'fcp-indi' bucket.  Presently, the file sync is finished and the only reason that the temporary bucket ('fcp-indi-new') is still referred to in the documentation is that we also had to change permissions for all the files in 'fcp-indi' using a script so that they were publicly readable.  This script has finished executing, however, and I am reverting the documentation to refer to the 'fcp-indi' bucket now.
+> 
+> So to answer your question, the data is the same in 'fcp-indi-new' and 'fcp-indi', but you shouldn't need to change your code.  In fact, you should use 'fcp-indi', since we are going to remove the 'fcp-indi-new' bucket now that our migration is finished.
+> 
+> ```
+> ```
+",,
+4,issue_comment,1314,nilearn,nilearn,mrahim,2016-10-20 11:19:43,"Same thing here.
+Looks like the link has changed ([see here](http://preprocessed-connectomes-project.org/abide/download.html)):
+https://s3.amazonaws.com/fcp-indi-new/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz
+
+was
+https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative/Outputs/cpac/nofilt_noglobal/func_preproc/Pitt_0050003_func_preproc.nii.gz
+",,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 17:44:55,"Attempts to Fix #1251 
+",start issue,[MRG] Fix: add_contours (filled=True) which will not require to specify color or alpha
+2,issue_closed,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 13:25:37,,closed issue,[MRG] Fix: add_contours (filled=True) which will not require to specify color or alpha
+3,pull_request_title,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 17:44:55,"Attempts to Fix #1251 
+",d8f824f114b0f628b39109d475aef9f3167163e5,[MRG] Fix: add_contours (filled=True) which will not require to specify color or alpha
+4,pull_request_merged,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 13:25:37,[MRG] Fix: add_contours (filled=True) which will not require to specify color or alpha,211a5a95c0deb22c873fb0499c705167cd1c1e0b,Pull request merge from KamalakerDadi/nilearn:fix_filled_contours_consistency to nilearn/nilearn:master
+5,issue_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-10-25 13:01:32,"Looks good in general. I'd like the heuristic that I suggested to be implement when level is not specified:
+
+<pre>
+abs_data = np.abs(data)
+data_90 = np.percentile(abs_data, 90)
+data_50 = np.median(abs_data)
+levels = [data_90, data_50, -data_50, -data_90]
+</pre>
+",,
+6,issue_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 06:25:00,"This is in general good to go for me. However, I'd that that on the notebook-like example we always have only one figure per cell.
+",,
+7,issue_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 13:25:33,"LGTM. Merging. Thank you!
+",,
+8,issue_comment,1315,nilearn,nilearn,ccvanschie,2016-12-08 09:22:04,"Dear Kamalaker,
+
+I am not feeling well today so I decided to go back home. Unfortunately, I will not get to see you again today. It was very nice to meet you. Thank you for your help! I wish you a great conference but an even greater holiday with your family.
+
+Kind regards, Charlotte
+
+",,
+9,pull_request_commit_comment,1315,nilearn,nilearn,bthirion,2016-10-24 20:36:14,"Maybe add a test with only one value for `levels`
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'nilearn/plotting/tests/test_displays.py')"
+10,pull_request_commit_comment,1315,nilearn,nilearn,bthirion,2016-10-24 20:36:37,"Seems a bit unrelated...
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(6, '', u'nilearn/datasets/func.py')"
+11,pull_request_commit_comment,1315,nilearn,nilearn,bthirion,2016-10-24 20:37:28,"countour_ fillings
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'nilearn/plotting/displays.py')"
+12,pull_request_commit_comment,1315,nilearn,nilearn,bthirion,2016-10-24 20:39:43,"What happens if levels not in kwargs ? Does this deserve a unit test ?
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(45, '', u'nilearn/plotting/displays.py')"
+13,pull_request_commit_comment,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 21:01:14,"> What happens if levels not in kwargs ?
+
+Good point. Plots looks surprising. It is not failing with error but fails drastically in finding correct levels leading to masking out entire background.
+For example,
+![figure_1](https://cloud.githubusercontent.com/assets/11410385/19663754/b40c0cdc-9a3d-11e6-8a47-0472f38eee2f.png)
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(45, '', u'nilearn/plotting/displays.py')"
+14,pull_request_commit_comment,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 21:05:18,"Done
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'nilearn/plotting/tests/test_displays.py')"
+15,pull_request_commit_comment,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 21:05:27,"My mistake.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(6, '', u'nilearn/datasets/func.py')"
+16,pull_request_commit_comment,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 21:05:37,"Done
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'nilearn/plotting/displays.py')"
+17,pull_request_commit_comment,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 21:09:01,"May be I should remove `if` condition to force to give certain levels value ? 
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(45, '', u'nilearn/plotting/displays.py')"
+18,pull_request_commit_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-10-25 12:54:24,"I'd rather not, but we coud do good guesses: + and - 90th percentile and 50th percentile of the absolute value.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(45, '', u'nilearn/plotting/displays.py')"
+19,pull_request_commit_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-10-25 12:55:36,"@KamalakerDadi : did you push these changes? I don't see that test.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'nilearn/plotting/tests/test_displays.py')"
+20,pull_request_commit_comment,1315,nilearn,nilearn,KamalakerDadi,2016-10-25 13:10:03,"I haven't. I am waiting to push with some other changes integrated which we are discussing on how to choose/set 'levels'. I will work on those comments and push them.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'nilearn/plotting/tests/test_displays.py')"
+21,pull_request_commit_comment,1315,nilearn,nilearn,KamalakerDadi,2016-10-25 14:54:35,"I have opened an issue #1317. I have the same behaviour even for automatic guesses in levels. The thing we are missing is `threshold` from what I have understood. Then in that case, we don't have to worry about guessing values. 
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(45, '', u'nilearn/plotting/displays.py')"
+22,pull_request_commit_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 06:08:51,"I would have liked an extra separation here, so that we have only one figure per cell. It makes things easier to understand for the user.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'examples/01_plotting/plot_demo_glass_brain_extensive.py')"
+23,pull_request_commit_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 06:09:17,"Same remark here: one separation would be useful.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(33, '', u'examples/01_plotting/plot_demo_glass_brain_extensive.py')"
+24,pull_request_commit_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 06:12:33,"A separation here too
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(49, '', u'examples/01_plotting/plot_demo_glass_brain_extensive.py')"
+25,pull_request_commit_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 06:12:51,"And one here
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(84, '', u'examples/01_plotting/plot_demo_glass_brain_extensive.py')"
+26,pull_request_commit_comment,1315,nilearn,nilearn,GaelVaroquaux,2016-11-03 06:21:17,"Same here: one new cell, please.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'examples/01_plotting/plot_demo_glass_brain_extensive.py')"
+27,pull_request_commit_comment,1315,nilearn,nilearn,AlexandreAbraham,2016-11-03 07:35:01,"I would reformulate:
+We give two values through the `levels`parameter which corresponds to the thresholds of the contour we want to draw: One is positive and the other one is negative. We give a list of colors as parameter to associate a different color to each contour. Additionally, we plot them with thick line widths: We give only one value so that it is used for both contours.
+",d8f824f114b0f628b39109d475aef9f3167163e5,"(None, '', u'examples/01_plotting/plot_demo_glass_brain_extensive.py')"
+28,pull_request_commit,1315,nilearn,nilearn,KamalakerDadi,2016-10-24 17:39:36,Fix: add_contours (filled=True) which will not require to specify color or alpha,0e0f35581608082d9752fa5dba776bbe880a8ae2,
+29,pull_request_commit,1315,nilearn,nilearn,KamalakerDadi,2016-10-25 19:12:03,Addressed comments:documentation nitpick and tests to check one value given in levels,7365b4359e3a318c79a58b3bb6c31d44c7131e2a,
+30,pull_request_commit,1315,nilearn,nilearn,KamalakerDadi,2016-10-30 13:31:24,"Addressed comments, example enhancement in plot_demo_glass_brain_extensive",aa00b6c09e49d29f6189c9d5d5e6763330192144,
+31,pull_request_commit,1315,nilearn,nilearn,KamalakerDadi,2016-11-03 10:42:07,Addressed:Made each demonstration in a separate cell,d8f824f114b0f628b39109d475aef9f3167163e5,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1284,nilearn,nilearn,Joaoloula,2016-09-20 08:27:12,"Work needed on examples and documentation. We could also consider adding other measures of similarity (ICC, mutual information).
+",start issue,[WIP] Adding Jaccard index for computing atlas similarity
+2,issue_closed,1284,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:04:18,,closed issue,[WIP] Adding Jaccard index for computing atlas similarity
+3,pull_request_title,1284,nilearn,nilearn,Joaoloula,2016-09-20 08:27:12,"Work needed on examples and documentation. We could also consider adding other measures of similarity (ICC, mutual information).
+",eaa9684f12f18e2ec36e0aed1d6c07389123e8c0,[WIP] Adding Jaccard index for computing atlas similarity
+4,pull_request_merged,1284,nilearn,nilearn,AlexandreAbraham,2016-10-31 16:04:18,[WIP] Adding Jaccard index for computing atlas similarity,eaa9684f12f18e2ec36e0aed1d6c07389123e8c0,Pull request merge from Joaoloula/nilearn:jaccard_index to nilearn/nilearn:master
+5,issue_comment,1284,nilearn,nilearn,GaelVaroquaux,2016-09-20 08:44:51,"Jaccard similarity is already in scikit-learn:
+http://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_similarity_score.html
+
+Overall, this kind of functionality, not strictly neuroimaging related, lives more in scikit-learn than nilearn.
+
+What may be useful could be to add a function to do matching of 2 sets of maps, using sklearn.utils.linear_assignment. It should also be added to a nilearn example, for instance at the end of http://nilearn.github.io/auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html, to plot the same map for both ICA and dict-learning.
+",,
+6,issue_comment,1284,nilearn,nilearn,GaelVaroquaux,2016-09-20 08:56:08,"I won't accept this in nilearn unless it comes with clear neuroimaging
+applications. Everything in nilearn should solve a brain-research
+problem.
+
+What's the problem that you are trying to solve?
+",,
+7,issue_comment,1284,nilearn,nilearn,GaelVaroquaux,2016-09-20 09:00:20,"> ```
+> What's the problem that you are trying to solve?
+> ```
+> 
+> Having a similarity score between two sets of brain maps with
+> continuous values and possible overlaps.
+
+No, that's a formal problem. In what application setting? What the
+'brain' question?
+",,
+8,issue_comment,1284,nilearn,nilearn,GaelVaroquaux,2016-09-20 09:21:20,"You don't have to convince me it is useful, I am convinced. You have to
+put it in a way that non technical users can use it, understand how and
+why.
+
+Nilearn targets people who are not computer scientists. If we cannot
+demonstrate how some piece of code makes their life better, it does not
+enter nilearn.
+",,
+9,issue_comment,1284,nilearn,nilearn,GaelVaroquaux,2016-09-20 09:40:45,"Yes, but just giving them a metric won't help them solve their problem.
+They need more. It's like giving people a showel when they want to build
+a house.
+
+Once again: either you can do a convincing example, or it does not go
+into nilearn. Without a convincing example, it either won't be used, or
+we'll keep getting questions on how to use it.
+
+That's a clear and important rule of nilearn: anything that goes in must
+produce an example that is relevant for brain imaging, even for people
+who are not computer scientists.
+",,
+10,issue_comment,1284,nilearn,nilearn,GaelVaroquaux,2016-09-20 12:08:51,"OK. Make sure that the example runs fast enough. Maybe limit yourself to
+6 subjects, and make 2 different sub-groups of 5 subjects, with only 10
+components.
+
+To make an example that is easy to follow, I think that you need
+something higher level than just the Jaccard index. It's too low level,
+and will lead to a lot of numpy code in the example. Maybe a function
+that take 2 set of maps, returns a reordered version and a list of
+similarities.
+",,
+11,issue_comment,1284,nilearn,nilearn,GaelVaroquaux,2016-10-31 18:44:25,"> Merged #1284.
+
+Not happy
+",,
+12,issue_comment,1284,nilearn,nilearn,AlexandreAbraham,2016-09-20 08:54:02,"> Jaccard similarity is already in scikit-learn:
+> http://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_similarity_score.html
+
+Scikit-learn implements the Jaccard Index in the specific setting of measuring clustering similarity. Here we have a fuzzy extension of the measure that will probably not be accepted in sklearn because there is no ""best"" way to make this extension. In particular, people in neuroimaging tend to use extensions that do not rely on linear assignment of the regions, see _Generalized Overlap Measures for Evaluation and
+Validation in Medical Image Analysis_ (Crum 2006)
+",,
+13,issue_comment,1284,nilearn,nilearn,AlexandreAbraham,2016-09-20 08:58:38,"> What's the problem that you are trying to solve?
+
+Having a similarity score between two sets of brain maps with continuous values and possible overlaps.
+",,
+14,issue_comment,1284,nilearn,nilearn,Joaoloula,2016-09-20 09:07:08,"I'd argue one of the main interests is a matter of reproducibility; we could introduce an example in which we split a dataset and build atlases from each of the splits and compare their similarity (the brain question being: are the regions we're learning serving actual stable and interesting neuroscientific purposes or are they just an artifact of the specific subset we looked at?)
+",,
+15,issue_comment,1284,nilearn,nilearn,AlexandreAbraham,2016-09-20 09:36:53,"So! People here wants to assess the _reliability_ of methods extracting resting state networks. They define _reliability_ as the ability to extract similar brain atlases on test-retest sessions. In particular, most of them want to compare ICA to their approach. This is what I understood!
+",,
+16,issue_comment,1284,nilearn,nilearn,Joaoloula,2016-09-20 10:07:00,"I think the following example is quite didactic: in the spirit of 8.4.7, we take ADHD and we split it in two. We then create atlases for both splits using CanICA and Dictionary Learning. Finally, we compute two Jaccard indexes: one between the CanICA atlases and one between the DictLearning atlases, to compare replicability between methods. The narrative would explain that we want our methods to be not only valid, but also replicable, and would give an intuitive explanation of the index.
+",,
+17,issue_comment,1284,nilearn,nilearn,Joaoloula,2016-09-20 11:53:28,"A rough idea of the example: http://bit.ly/2cVX1Hh
+",,
+18,issue_comment,1284,nilearn,nilearn,Joaoloula,2016-09-20 14:17:25,"Simplified example (with 10 subjects because the atlas using 6 subjects were just too ugly): http://bit.ly/2cVX1Hh. I think it's reasonably high-level and light on numpy code (most of the example is just _getting_ the atlases, which is quite a standard analysis, and computing the jaccard indexes is done in one line).
+
+I really like the idea of comparing two atlases map by map and trying to find a one-to-one correspondence, and I believe a lot of people would be interested in it. However, it seems to me like a significantly different question than just measuring similarity between atlases, shouldn't we leave it to another PR?
+",,
+19,issue_comment,1284,nilearn,nilearn,Joaoloula,2016-11-01 11:33:51,"Sorry about that, totally my fault: I got mixed up with the working branch for the other PR and it ended up pushing this one, since the changes had been reverted I didn't think it would change anything. I didn't know this would get automatically merged as well. I'll create new, clean PRs.
+",,
+20,pull_request_commit,1284,nilearn,nilearn,Joaoloula,2016-09-20 08:26:29,added jaccard index and jaccard distance functions to nilearn.connectome,eaa9684f12f18e2ec36e0aed1d6c07389123e8c0,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1321,nilearn,nilearn,AlexandreAbraham,2016-11-01 10:17:52,"Reverts nilearn/nilearn#1316
+
+I revert it beause it contains spurious commits (Jaccard Index).",start issue,"Revert ""[MRG] Fixes #1313 and #1314"""
+2,issue_closed,1321,nilearn,nilearn,AlexandreAbraham,2016-11-01 10:18:00,,closed issue,"Revert ""[MRG] Fixes #1313 and #1314"""
+3,pull_request_title,1321,nilearn,nilearn,AlexandreAbraham,2016-11-01 10:17:52,"Reverts nilearn/nilearn#1316
+
+I revert it beause it contains spurious commits (Jaccard Index).",791ec97c8ac5210d9805b4572dc3a3afbe2f7e9b,"Revert ""[MRG] Fixes #1313 and #1314"""
+4,pull_request_merged,1321,nilearn,nilearn,AlexandreAbraham,2016-11-01 10:18:00,"Revert ""[MRG] Fixes #1313 and #1314""",ea453320d055ce5f5666ecb56847f5bafe0e2970,Pull request merge from nilearn/nilearn:revert-1316-issue_1313_1314 to nilearn/nilearn:master
+5,pull_request_commit,1321,nilearn,nilearn,AlexandreAbraham,2016-11-01 10:17:28,"Revert ""[MRG] Fixes #1313 and #1314""",791ec97c8ac5210d9805b4572dc3a3afbe2f7e9b,
+0,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+1,issue_title,1320,nilearn,nilearn,khamael,2016-10-31 11:38:05,"I've done a per-connection correlation between a set of connectomes and some psycometric scores - doesn't really matter here, just that I have a 'matrix' I want to plot using plot_connectome, so I easily see where are the interesting connections. However I'm having issues with the node_coords, as they end up outside of the glass brain.
+
+I'm trying also to get each region node by computing the center_of_mass (as I found in some previous issues here), but there's still issues. So what is the coordinate frame here? What do you mean by world space?
+
+Thanks",start issue,plot_connectome node coordinates issue
+2,issue_closed,1320,nilearn,nilearn,khamael,2016-11-01 19:40:02,,closed issue,plot_connectome node coordinates issue
+3,issue_comment,1320,nilearn,nilearn,GaelVaroquaux,2016-11-01 18:23:17,"I think that either you are not correctly registered, or the way you compute the x, y, z coordinates of the nodes is wrong.
+",,
+4,issue_comment,1320,nilearn,nilearn,khamael,2016-10-31 15:07:53,"Suggestions how to convert to MNI?
+",,
+5,issue_comment,1320,nilearn,nilearn,khamael,2016-11-01 18:21:18,"yeah, so I'm registering the cortical labels file into the standard/MNI152_T1_2mm
+I get the x,y,z of that new file, and when I plot it, it's kinda in the glass brain, but not quite:
+<img width=""666"" alt=""screen shot 2016-11-01 at 7 20 28 pm"" src=""https://cloud.githubusercontent.com/assets/5000837/19901701/4df029f2-a068-11e6-9072-d2ba6f31a453.png"">
+",,
+6,issue_comment,1320,nilearn,nilearn,khamael,2016-11-01 19:40:02,"Ok, I've figured out. I was using x,y,z from LabelStats but something was wrong there. It's nice now! thanks
+",,

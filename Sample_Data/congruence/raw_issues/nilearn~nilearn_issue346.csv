@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","346","nilearn","nilearn","lesteve","2015-01-09 10:14:34","Migrated from #322.
+
+A simple example reproducing the problem:
+
+``` python
+
+from nilearn.image import resample_img
+import numpy as np
+from nibabel import Nifti1Image
+
+
+def test(fourth_dim):
+    shape_in = (64, 64, 64)
+    aff_in = np.diag([2., 2., 2., 1.])
+    aff_out = np.diag([3., 3., 3., 1.])
+    data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
+
+    img_in = Nifti1Image(data, aff_in)
+
+    img_out = resample_img(img_in,
+                           target_affine=aff_out,
+                           interpolation='nearest')
+
+    print 'shape: ', img_out.shape
+
+test(1024)  # works fine on my machine
+test(1025)  # segmentation fault
+```
+","start issue","resample_img segmentation fault"
+"issue_closed","346","nilearn","nilearn","AlexandreAbraham","2015-02-05 10:43:50","","closed issue","resample_img segmentation fault"
+"issue_comment","346","nilearn","nilearn","eickenberg","2015-01-09 10:18:06","I confirm -- 1024 works, 1025 segfaults. Thanks for isolating!
+","",""
+"issue_comment","346","nilearn","nilearn","eickenberg","2015-01-09 10:20:09","`np.log2(64 * 64 * 64 * 1024) == 28`
+","",""
+"issue_comment","346","nilearn","nilearn","eickenberg","2015-01-09 10:28:54","With `shape_in == (32, 64, 64)`, @lesteve and I both find segfault at 2115, works at 2114
+","",""
+"issue_comment","346","nilearn","nilearn","eickenberg","2015-01-09 10:43:57","With `shape_in == (64, 32, 64)` it segfaults at 2050 ...
+","",""
+"issue_comment","346","nilearn","nilearn","banilo","2015-01-09 10:17:37","Cool!
+","",""
