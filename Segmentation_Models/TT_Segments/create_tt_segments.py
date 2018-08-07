@@ -29,11 +29,13 @@ k = 1
 
 # Converts a list of string times to datetime objects
 def ConvertToTime(str_time_list, str_format):
+    null_num = 0
     formatted = []
     for str_time in str_time_list:
         # For Nullstate put it as is
         if 'NullState' in str_time:
-            formatted.append(str_time)
+            formatted.append(str_time + str(null_num))
+            null_num += 1
         else:
             str_time = str_time.replace('/', '-')
             if '+' in str_time:

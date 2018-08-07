@@ -88,7 +88,7 @@ def ComputePk(ref_burst, hyp_burst, project_active_days, avg_len):
     n = len(project_active_days)
     # Compute pk
     okay = 0
-    fa = 0
+    fa = 0  # False Alarm
     miss = 0
     i = 0
     end_mark = k
