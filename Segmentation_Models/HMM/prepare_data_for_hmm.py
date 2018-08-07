@@ -13,9 +13,10 @@ from collections import defaultdict
 import argparse
 
 # Day HMM activity traces
-focus_var = ['git_commits', 'gha_pr_merge', 'gha_pushes', \
-            'gha_issue_comments' , 'gha_commit_comments', \
-            'nml_pull_request_title', 'issues_opened', 'issues_closed']
+focus_var = ['commit_messages', 'pull_request_merged',
+           'issue_comment', 'commit_comments', 'issue_title', 'issue_closed',
+           'pull_request_title', 'pull_request_commit_comment',
+           'pull_request_commit']
 
 def CreateDataLengthMatrix(project_list, input_dir, is_train, compressed_file):
     data_collection = defaultdict(list)

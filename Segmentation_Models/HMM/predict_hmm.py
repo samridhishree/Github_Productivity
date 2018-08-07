@@ -29,10 +29,10 @@ project_data_dir = args.project_data_dir
 model_dir = args.model_dir
 output_dir = args.output_dir
 nstates = int(args.nstates)
-focus_var = ['git_commits', 'gha_pr_merge', 'gha_pushes', \
-            'gha_issue_comments' , 'gha_commit_comments', \
-            'nml_pull_request_title', 'issues_opened', 'issues_closed']
-
+focus_var = ['commit_messages', 'pull_request_merged',
+           'issue_comment', 'commit_comments', 'issue_title', 'issue_closed',
+           'pull_request_title', 'pull_request_commit_comment',
+           'pull_request_commit']
 try:
     os.makedirs(output_dir)
 except:
