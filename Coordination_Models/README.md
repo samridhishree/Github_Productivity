@@ -43,3 +43,6 @@ The execution is divided into three phases:
 ---
 1. __*Socio-Technical Congruence*__: Implementation of Socio-Technical Congruence Measure introduced by: "_Cataldo, Marcelo, et al. __"Identification of coordination requirements: implications for the Design of collaboration and awareness tools."__ Proceedings of the 2006 20th anniversary conference on Computer supported cooperative work. ACM, 2006._"
 > Script: __burst_congruence.py__
+
+2. __*Generate the final table*__: Generates the final table that acts as in input to the linear regression model by concatenating the individual project files.
+> Script: __combine_congruence_data.py__
