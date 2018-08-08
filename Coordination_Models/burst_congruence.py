@@ -296,7 +296,7 @@ def CalculateAndStoreCongruence(project_name, bursts):
 	fct_adjacency_file = project_name + '_co_commit.pickle'
 	user_file_pickle = project_name + '_user_file.pickle'
 	user_mod_filename = project_name + '_user_module.pickle'
-	file_mod_filename = project_name + '_file_mod.pickle'
+	file_mod_filename = "repo_" + project_name + '_file_mod.pickle'
 	exp_dict_filename = prev +'_user_experience.pickle'
 	pickle_file = os.path.join(output_pickle_dir, project_name + '_cm_mr_info.pickle')
 
