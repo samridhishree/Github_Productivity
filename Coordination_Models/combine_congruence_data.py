@@ -7,13 +7,19 @@ import sys
 import csv
 import pandas as pd
 import cPickle as pickle
-
+import argpase
 csv.field_size_limit(sys.maxsize)
 
-congruence_dir = sys.argv[1]
-valid_project_pickle = sys.argv[2]
-output_file = sys.argv[3]
-projects = pickle.load(open(valid_project_pickle, 'rb'))
+parser = argparse.ArgumentParser()
+parser.add_argument('--congruence_dir', help='Directory containing the out csvs from burst_congruence.py',\
+    default='Sample_Data/congruence/congruence_outputs/output_csv/')
+parser.add_argument('--output_file', help='Final regression table',\
+    default='Sample_Data/congruence/congruence_outputs/regression_table.csv')
+args, unknown = parser.parse_known_args()
+
+congruence_dir = args.congruence_dir
+output_file = args.output_file
+
 title_row = ['burst_id', 'burst_start', 'burst_end', 'burst_duration_days', 'total_activity', \
             'num_files (Change Size)', 'file_modules (#Teams)', 'total_num_issues', 'issues_opened', 'issues_closed',\
             'avg_res_time_hours', 'efficiency', 'issue_per_person (Team Load)', \
@@ -24,8 +30,11 @@ w = open(output_file, 'wb')
 writer = csv.writer(w, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 writer.writerow(['project'] + title_row)
 
-for project in projects:
-    congruence_file = os.path.join(congruence_dir, project.replace('~','_') + '_cm_mr_info.csv')
+#for project in projects:
+for filename in os.listdir(congruence_dir):
+    project = filename.split('_cm_mr_info.csv')[0]
+    #congruence_file = os.path.join(congruence_dir, project.replace('~','_') + '_cm_mr_info.csv')
+    congruence_file = os.path.join(congruence_dir, filename)
     if os.path.isfile(congruence_file) == False:
         continue
     print "Processing for project = ", project
