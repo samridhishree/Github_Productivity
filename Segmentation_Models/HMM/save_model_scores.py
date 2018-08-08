@@ -25,7 +25,7 @@ parser.add_argument('--output_file', help='CSV file containeing the model scores
 
 
 
-
+args, unknown = parser.parse_known_args()
 data_file = args.data_file
 model_dir = args.model_dir
 output_file = args.output_file
