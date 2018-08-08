@@ -26,7 +26,7 @@ csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--fct_adjacency_dir', help='Directory containing 2D adjacency matrix (output of: reformat_adjacency.py)',\
-	default='Sample_Data/congruence/reformatted_co_commit_adj/')
+	default='Sample_Data/congruence/co_commit_adj/')
 parser.add_argument('--user_file_pickle_dir', help='Directory containing the user-file membership (output of: people_file_dict.py)',\
 	default='Sample_Data/congruence/user_file_dict/')
 parser.add_argument('--user_mod_fct', help='Directory containing user module membership (output of: people_module_dict.py)',\
@@ -293,15 +293,15 @@ Read the PR info csv files for each project and compute measure for each PR in t
 def CalculateAndStoreCongruence(project_name, bursts):
 	prev = project_name
 	project_name = project_name.replace("~", "_")	
-	fct_adjacency_file = project_name + '_co_commit.pickle'
+	fct_adjacency_file = "repo_" + project_name + '_co_commit.pickle'
 	user_file_pickle = project_name + '_user_file.pickle'
-	user_mod_filename = prev + '_user_module.pickle'
+	user_mod_filename = project_name + '_user_module.pickle'
 	file_mod_filename = "repo_" + project_name + '_file_mod.pickle'
 	exp_dict_filename = prev +'_user_experience.pickle'
 	pickle_file = os.path.join(output_pickle_dir, project_name + '_cm_mr_info.pickle')
 
-	print os.path.join(user_mod_fct, user_mod_filename)
-
+	if (os.path.isfile(os.path.join(user_mod_fct, user_mod_filename)) == False):  print "Warning: " + user_mod_fct + user_mod_filename + " missing"
+	if (os.path.isfile(os.path.join(fct_adjacency_dir, fct_adjacency_file)) == False): print "Warning: " + fct_adjacency_dir + fct_adjacency_file + " missing"
 	if (os.path.isfile(os.path.join(user_mod_fct, user_mod_filename)) == True) and \
 	(os.path.isfile(os.path.join(fct_adjacency_dir, fct_adjacency_file)) == True):
 		print "Calculating the measure for the project = ", project_name
