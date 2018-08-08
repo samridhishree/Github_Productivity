@@ -1,0 +1,36 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","200","pycqa","astroid","pylint-bot","2015-09-29 22:27:36","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, astroid crashes with a KeyError. This is happening because Instance.getitem always wraps its arguments in a Const object, while sometimes it gets passed a slice object. It should use objects.Slice instead and probably it shouldn't do the wrapping itself, but the caller should be responsible for this.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+class A:
+   def __getitem__(self, k):       
+       return k
+
+A()[:42] #@
+
+''')
+print(next(n.infer()))
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/200
+","start issue","KeyError when trying to infer what an instance's __getitem__ returns when called with a slice"
+"issue_closed","200","pycqa","astroid","pylint-bot","2015-12-09 05:55:00","","closed issue","KeyError when trying to infer what an instance's __getitem__ returns when called with a slice"
+"issue_comment","200","pycqa","astroid","pylint-bot","2015-10-03 14:44:56","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Don't wrap instance's arguments into a Const, instead let the original index object to be used.
+
+This prevents a crash when the original index object is a slice object,
+which was wrapped inadvertendly in a Const node, leading to a crash
+later on if the said object was inferred. Closes issue #200.
+","",""

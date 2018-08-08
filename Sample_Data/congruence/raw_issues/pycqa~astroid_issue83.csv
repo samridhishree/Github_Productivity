@@ -1,0 +1,46 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","83","pycqa","astroid","pylint-bot","2015-03-16 19:40:26","Originally reported by: **Arfrever Frehtes Taifersar Arahesis (BitBucket: [arfrever](http://bitbucket.org/arfrever), GitHub: @arfrever?)**
+
+---
+
+Astroid has some test failures with Jython.
+
+It seems that many of them are due to assumption that byte-compiled modules have `.pyc` suffix, but Jython uses `$py.class`.
+
+I attach output of test suite of Astroid 1.3.6.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/83
+","start issue","Test failures with Jython"
+"issue_closed","83","pycqa","astroid","pylint-bot","2015-12-09 05:53:05","","closed issue","Test failures with Jython"
+"issue_comment","83","pycqa","astroid","pylint-bot","2015-03-30 18:46:46","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Add some fixes which enhances the Jython support.
+
+The fix mostly includes updates to modutils, which is
+modified in order to properly lookup paths from live objects,
+which ends in $py.class, not pyc as for Python 2,
+Closes issue #83.
+","",""
+"issue_comment","83","pycqa","astroid","pylint-bot","2015-03-30 18:57:32","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This is just a partial fix, since there are some problems with Jython and its objects: http://bugs.jython.org/issue2304 and http://bugs.jython.org/issue2303. In fact, there are many more objects in Jython which don't provide a **module** or where it is set to None. This impedes the inference in certain cases, mostly for builtin functions, but it's something that should be tackled in Jython, not in pylint. Nevertheless, except a couple of tests which are deactivated for Jython, astroid seems to be working for it.
+","",""
+"issue_comment","83","pycqa","astroid","pylint-bot","2015-03-30 20:29:13","_Original comment by_ **Arfrever Frehtes Taifersar Arahesis (BitBucket: [arfrever](http://bitbucket.org/arfrever), GitHub: @arfrever?)**:
+
+---
+
+By the way, what is the status of `logilab.common.modutils` module?
+Is it still maintained? Is it deprecated? Is it scheduled for deletion?
+(It has the same problems with $py.class.)
+","",""
+"issue_comment","83","pycqa","astroid","pylint-bot","2015-03-30 20:33:31","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+We don't use it for pylint / astroid, since we have our own included version. I doubt this change will help them.
+","",""

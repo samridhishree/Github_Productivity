@@ -1,0 +1,96 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","232","pycqa","astroid","pylint-bot","2015-10-28 01:52:09","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+With the changes I've made in this bookmark, the nodes representing None and dicts no longer have locals or instance_attrs attributes, so as written this test fails, and the situation that it's testing shouldn't be possible in the first place because there should no longer be external assignments to locals in astroid at all and only nodes with explicit need for instance_attrs should have that dictionary available.  What should I do with the test?
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/232
+","start issue","[modular_locals bugs] test_inferred_dont_pollute changes"
+"issue_closed","232","pycqa","astroid","pylint-bot","2015-12-09 05:55:33","","closed issue","[modular_locals bugs] test_inferred_dont_pollute changes"
+"issue_comment","232","pycqa","astroid","pylint-bot","2015-10-28 07:39:52","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+It seems that with the current modular-locals this raises UnresolvableName, 
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+            def func(a=None):
+                a.custom_attr = 0
+                a #@
+''')
+print(next(n.infer()))
+```
+
+which seems like a regression and a bit weird to happen. If the object doesn't have a locals or instance_attrs, then whatever assignment computations we have, they should be ignored. Apart of this, the tests should be changed to see that a is still inferred, but has no attributes at all.
+","",""
+"issue_comment","232","pycqa","astroid","pylint-bot","2015-10-28 16:25:33","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The UnresolvableName bug is a separate issue, this bookmark still has a lot of bugs.
+","",""
+"issue_comment","232","pycqa","astroid","pylint-bot","2015-11-03 15:35:43","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Still relevant? Seems to be changed in modular-locals.
+","",""
+"issue_comment","232","pycqa","astroid","pylint-bot","2015-11-03 21:57:00","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I fixed the bug that was causing the NameInferenceError.  Unfortunately, I now have new bugs :(.  At the moment, the new test is failing because with the new code, inference on the first Name.a node is returning ClassDef.NoneType (from the mock builtins) rather than NameConstant.None.  I'm not quite sure why this is.  Shouldn't inference return the object that the name is referring to, not its type?
+
+``` python
+        code = '''
+        def func(a=None):
+            a.custom_attr = 0
+            a #@
+        def func2(a={}):
+            a.custom_attr = 0
+            a #@
+        '''
+        name_nodes = test_utils.extract_node(code)
+```
+","",""
+"issue_comment","232","pycqa","astroid","pylint-bot","2015-11-04 07:31:33","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+That's weird, because I get NameConstant instead when running the test.
+","",""
+"issue_comment","232","pycqa","astroid","pylint-bot","2015-11-04 15:38:03","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Oh, I see what's going on now: it is correctly returning NameConstant.None, it's that the custom **gettattr** on NameConstant (inherited from Const) is returning ClassDef.NoneType, which does have a locals attribute.  I fixed the test by reverting to use assertNotIn:
+
+``` python
+        code = '''
+        def func(a=None):
+            a.custom_attr = 0
+            a #@
+        def func2(a={}):
+            a.custom_attr = 0
+            a #@
+        '''
+        name_nodes = test_utils.extract_node(code)
+        for node in name_nodes:
+            self.assertNotIn('custom_attr', next(node.infer()).locals)
+            self.assertNotIn('custom_attr', next(node.infer()).instance_attrs)
+```
+
+Here's hoping this is fixed for good and nothing will break when I fix the rest of the bugs.
+","",""
+"issue_comment","232","pycqa","astroid","pylint-bot","2015-11-04 16:03:11","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Fixed by 43cb866783ba, which changes the test to use assertNotIn to check that the locals and instance_attrs of ClassDef.NoneType are not changed.
+","",""

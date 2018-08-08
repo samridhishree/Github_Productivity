@@ -1,0 +1,19 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","271","aio-libs","aioredis","popravich","2017-07-20 09:44:22","Rationale:
+* Get rid of bouble buffering (`data from socket -> asyncio.StreamReader.buffer -> hiredis.Reader.buffer`);
+  our StreamReader can feed data directly to parser (hiredis or PyReader);
+* Step over this issue — http://bugs.python.org/issue30861;
+
+Some specs:
+* must inherit from `asyncio.StreamReader`;
+* `read...`-family functions should probably raise an error (RuntimeError);
+* provide `async def read_response()` method waiting and returning either valid response
+or raising an error (protocol error, canceled, closed, etc) (maybe some other method name);","start issue","Implement custom StreamReader"
+"issue_comment","271","aio-libs","aioredis","popravich","2017-07-20 09:45:26","/cc @pfreixes ","",""
+"issue_comment","271","aio-libs","aioredis","pfreixes","2017-07-20 09:46:19","Challenge accepted.","",""
+"issue_comment","271","aio-libs","aioredis","pfreixes","2017-07-22 07:45:44","Just one note about that task, the implementation of that new Reader class **won't get rid of the double buffer flow**. In any case, the new implementation will replace the official class provided by asyncio for a new one but the double step must remain there for many reasons.
+
+are we in the same page?
+
+Further, we could think in implement the Reader class - will become a bunch of code lines - in Cython. Theoretically, in an environment with `uvloop` and `hiredis` must speed up `aioredis`. ","",""
+"issue_comment","271","aio-libs","aioredis","pfreixes","2017-07-22 10:09:03","Forget it, we will remove the double buffer and one coroutine step.","",""

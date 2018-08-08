@@ -1,0 +1,52 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,220,idan,oauthlib,wrr,2013-10-31 16:39:48,"Currently to support 'refresh_token' grant RequestValidator needs to implement get_original_scopes() method. The method must return a list of all valid scopes of the refresh_token.
+
+This approach does not allow to support implicit scopes. Say a user can have many files to which access can be granted individually with scopes such as read:/mydir/foo  write:/mydir/bar/. To support a token with scope read_all_files, a method get_original_scopes() needs to list all possible files, which is not practical.
+
+A more flexible approach would be to support a hook that would allow to determine if one scope is a sub scope of some other scope. Say a provider can implement a method is_subscope(requested_scope, original_scopes), that when called: is_subscope('read:/mydir/foo', 'read_all_files') could return True.
+
+Is there any way to achieve this currently other than implementing own RefreshTokenGrant class?
+",start issue,Dynamically check if a scope requested during a token refresh is a sub scope of the original scope.
+1,issue_closed,220,idan,oauthlib,ib-lundgren,2013-11-10 22:55:33,,closed issue,Dynamically check if a scope requested during a token refresh is a sub scope of the original scope.
+2,issue_comment,220,idan,oauthlib,ib-lundgren,2013-11-01 09:25:09,"Good point. There is no easy way to do this but a PR would be very welcome. 
+
+I can see a slight inefficiency with `is_subscope` being called naively on all scopes/requested scope permutations. A better approach might be to hand all checking over to the implementer with a `is_within_original_scope(request.scopes, request.refresh_token, request)` method on the validator. Then the code could do the normal checking first and fall back on this method if that fails (with a default implementation returning False).
+
+@wrr what do you think?
+",,
+3,issue_comment,220,idan,oauthlib,wrr,2013-11-02 09:06:59,"This sounds good. I'll work on it and send a PR so we can see how it looks in practice. 
+",,
+0,issue_title,223,idan,oauthlib,wrr,2013-11-05 14:13:32,"Without the fix only a single test_invalid_scope method is run.
+",start issue,Fix test method name conflict.
+1,issue_closed,223,idan,oauthlib,ib-lundgren,2013-11-10 22:53:31,,closed issue,Fix test method name conflict.
+2,pull_request_title,223,idan,oauthlib,wrr,2013-11-05 14:13:32,"Without the fix only a single test_invalid_scope method is run.
+",c4c5a480485a4bc39149c62ff1bc289e82542cda,Fix test method name conflict.
+3,pull_request_merged,223,idan,oauthlib,ib-lundgren,2013-11-10 22:53:31,Fix test method name conflict.,02d2376b3fbfa39124fff6bac9b539acda1bb573,Pull request merge from wrr/oauthlib:test_name_conflict to idan/oauthlib:master
+4,pull_request_commit,223,idan,oauthlib,wrr,2013-11-05 14:06:52,"Fix test method name conflict.
+
+Without the fix only a single test_invalid_scope method is run.",c4c5a480485a4bc39149c62ff1bc289e82542cda,
+0,issue_title,222,idan,oauthlib,lepture,2013-11-04 03:27:53,"Add meta info for the module, so that when someone `help(oauthlib)` they can get the right information.
+
+BTW, I added the maintainer information for you.
+",start issue,Meta
+1,issue_closed,222,idan,oauthlib,ib-lundgren,2013-11-10 22:52:25,,closed issue,Meta
+2,pull_request_title,222,idan,oauthlib,lepture,2013-11-04 03:27:53,"Add meta info for the module, so that when someone `help(oauthlib)` they can get the right information.
+
+BTW, I added the maintainer information for you.
+",d1ad84e978192a8d73faf15ef6963c5cffba60bc,Meta
+3,pull_request_merged,222,idan,oauthlib,ib-lundgren,2013-11-10 22:52:25,Meta,f1a1b86c9c2e7352c5bc01284b8af235d01d1628,Pull request merge from lepture/oauthlib:meta to idan/oauthlib:master
+4,issue_comment,222,idan,oauthlib,ib-lundgren,2013-11-10 22:52:22,"Awesome as always. Thanks @lepture!
+",,
+5,pull_request_commit,222,idan,oauthlib,lepture,2013-11-04 03:24:15,Add meta info in oauthlib module,1846ebff5c71a8c3bb0c9cccd29460f656f5a21b,
+6,pull_request_commit,222,idan,oauthlib,lepture,2013-11-04 03:24:51,Add maintainer info and get version from oauthlib module.,d1ad84e978192a8d73faf15ef6963c5cffba60bc,
+0,issue_title,224,idan,oauthlib,wrr,2013-11-05 15:39:43,,start issue,is_within_original_scope method for refresh token grant (Issue #220)
+1,issue_closed,224,idan,oauthlib,ib-lundgren,2013-11-10 22:55:02,,closed issue,is_within_original_scope method for refresh token grant (Issue #220)
+2,pull_request_title,224,idan,oauthlib,wrr,2013-11-05 15:39:43,,7d4f5ce783206bce5eade09c45cca81c75b34cf1,is_within_original_scope method for refresh token grant (Issue #220)
+3,pull_request_merged,224,idan,oauthlib,ib-lundgren,2013-11-10 22:55:02,is_within_original_scope method for refresh token grant (Issue #220),279e6972b56b3b09e6307457c6397500e5d8c936,Pull request merge from wrr/oauthlib:is_within_original_scope to idan/oauthlib:master
+4,issue_comment,224,idan,oauthlib,ib-lundgren,2013-11-10 22:54:58,"@wrr excellent work :cake:! Sorry for taking so long to review it :(
+",,
+5,issue_comment,224,idan,oauthlib,wrr,2013-11-11 14:22:52,"Thank you @ib-lundgren! Good cake :)
+",,
+6,pull_request_commit_comment,224,idan,oauthlib,clintecker,2013-11-11 15:33:39,"s/withing/within
+",7d4f5ce783206bce5eade09c45cca81c75b34cf1,"(11, '', u'oauthlib/oauth2/rfc6749/request_validator.py')"
+7,pull_request_commit,224,idan,oauthlib,wrr,2013-11-05 15:34:47,is_within_original_scope method for refresh token grant (Issue #220),7d4f5ce783206bce5eade09c45cca81c75b34cf1,

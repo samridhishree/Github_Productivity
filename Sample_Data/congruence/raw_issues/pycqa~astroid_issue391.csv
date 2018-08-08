@@ -1,0 +1,107 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","391","pycqa","astroid","ceridwen","2017-01-26 22:12:44","Running pylint on the astroid code base with the aforementioned profilers causes a crash in astroid after most of the pylint warnings have been printed:
+
+With cProfile:
+```
+python -m cProfile -s cumtime /usr/local/bin/pylint astroid/
+```
+
+```
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/runpy.py"", line 174, in _run_module_as_main
+    ""__main__"", fname, loader, pkg_name)
+  File ""/usr/lib/python2.7/runpy.py"", line 72, in _run_code
+    exec code in run_globals
+  File ""/usr/lib/python2.7/cProfile.py"", line 199, in <module>
+    main()
+  File ""/usr/lib/python2.7/cProfile.py"", line 192, in main
+    runctx(code, globs, None, options.outfile, options.sort)
+  File ""/usr/lib/python2.7/cProfile.py"", line 49, in runctx
+    prof = prof.runctx(statement, globals, locals)
+  File ""/usr/lib/python2.7/cProfile.py"", line 140, in runctx
+    exec cmd in globals, locals
+  File ""/usr/local/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 1310, in __init__
+    linter.check(args)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 732, in check
+    self._do_check(files_or_modules)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 863, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 944, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 944, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 944, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 941, in walk
+    cb(astroid)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/checkers/imports.py"", line 355, in visit_import
+    importedmodnode = self._get_imported_module(node, name)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/checkers/imports.py"", line 569, in _get_imported_module
+    return importnode.do_import_module(modname)
+  File ""astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""astroid/scoped_nodes.py"", line 414, in import_module
+    return MANAGER.ast_from_module_name(modname)
+  File ""astroid/manager.py"", line 162, in ast_from_module_name
+    raise e
+astroid.exceptions.AstroidImportError: Failed to import module importlib.machinery with error:
+No module named importlib.machinery.
+```
+
+With vmprof:
+```
+python -m vmprof /usr/local/bin/pylint astroid/
+```
+
+```
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/runpy.py"", line 174, in _run_module_as_main
+    ""__main__"", fname, loader, pkg_name)
+  File ""/usr/lib/python2.7/runpy.py"", line 72, in _run_code
+    exec code in run_globals
+  File ""~/.local/lib/python2.7/site-packages/vmprof/__main__.py"", line 85, in <module>
+    main()
+  File ""~/.local/lib/python2.7/site-packages/vmprof/__main__.py"", line 70, in main
+    runpy.run_path(args.program, run_name='__main__')
+  File ""/usr/lib/python2.7/runpy.py"", line 252, in run_path
+    return _run_module_code(code, init_globals, run_name, path_name)
+  File ""/usr/lib/python2.7/runpy.py"", line 82, in _run_module_code
+    mod_name, mod_fname, mod_loader, pkg_name)
+  File ""/usr/lib/python2.7/runpy.py"", line 72, in _run_code
+    exec code in run_globals
+  File ""/usr/local/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 1310, in __init__
+    linter.check(args)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 732, in check
+    self._do_check(files_or_modules)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 863, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 944, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 944, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 944, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 941, in walk
+    cb(astroid)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/checkers/imports.py"", line 355, in visit_import
+    importedmodnode = self._get_imported_module(node, name)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/checkers/imports.py"", line 569, in _get_imported_module
+    return importnode.do_import_module(modname)
+  File ""astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""astroid/scoped_nodes.py"", line 414, in import_module
+    return MANAGER.ast_from_module_name(modname)
+  File ""astroid/manager.py"", line 162, in ast_from_module_name
+    raise e
+astroid.exceptions.AstroidImportError: Failed to import module importlib.machinery with error:
+No module named importlib.machinery.
+```","start issue","Running pylint on astroid under cProfile or vmprof crashes"
+"issue_comment","391","pycqa","astroid","ceridwen","2017-01-26 22:33:53","Looks like it only occurs when the astroid library that's used by pylint is the same astroid library that pylint is being run on, so it should only affect astroid developers.","",""

@@ -1,0 +1,65 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","239","aio-libs","aioredis","argaen","2017-06-05 14:29:53","","start issue","close_waiter is lazily created"
+"issue_closed","239","aio-libs","aioredis","popravich","2017-06-08 20:27:47","","closed issue","close_waiter is lazily created"
+"pull_request_title","239","aio-libs","aioredis","argaen","2017-06-05 14:29:53","","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e","close_waiter is lazily created"
+"pull_request_merged","239","aio-libs","aioredis","popravich","2017-06-08 20:27:47","close_waiter is lazily created","46e0f48ca41f9e594719ff733d2427c393e40f46","Pull request merge from argaen/aioredis:pool_close_warning_#236 to aio-libs/aioredis:master"
+"issue_comment","239","aio-libs","aioredis","codecov-io","2017-06-05 14:43:29","# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=h1) Report
+> Merging [#239](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=desc) into [master](https://codecov.io/gh/aio-libs/aioredis/commit/a9c386d525949bbd6d213e24b930ba0a102a1138?src=pr&el=desc) will **decrease** coverage by `0.05%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/239/graphs/tree.svg?token=THCDhqngRB&src=pr&height=150&width=650)](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master     #239      +/-   ##
+==========================================
+- Coverage   96.97%   96.91%   -0.06%     
+==========================================
+  Files          55       55              
+  Lines        7492     7379     -113     
+  Branches      625      582      -43     
+==========================================
+- Hits         7265     7151     -114     
+  Misses        168      168              
+- Partials       59       60       +1
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/pool\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree#diff-dGVzdHMvcG9vbF90ZXN0LnB5) | `98.24% <100%> (ø)` | :arrow_up: |
+| [aioredis/sentinel/pool.py](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree#diff-YWlvcmVkaXMvc2VudGluZWwvcG9vbC5weQ==) | `86.42% <100%> (-3.71%)` | :arrow_down: |
+| [tests/sentinel\_failover\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree#diff-dGVzdHMvc2VudGluZWxfZmFpbG92ZXJfdGVzdC5weQ==) | `87.21% <0%> (-1.51%)` | :arrow_down: |
+| [aioredis/commands/pubsub.py](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree#diff-YWlvcmVkaXMvY29tbWFuZHMvcHVic3ViLnB5) | `95.85% <0%> (-0.36%)` | :arrow_down: |
+| [aioredis/sentinel/\_\_init\_\_.py](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree#diff-YWlvcmVkaXMvc2VudGluZWwvX19pbml0X18ucHk=) | `100% <0%> (ø)` | :arrow_up: |
+| [aioredis/commands/server.py](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=tree#diff-YWlvcmVkaXMvY29tbWFuZHMvc2VydmVyLnB5) | `85.23% <0%> (+1.34%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=footer). Last update [a9c386d...6e7ea11](https://codecov.io/gh/aio-libs/aioredis/pull/239?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+","",""
+"issue_comment","239","aio-libs","aioredis","popravich","2017-06-08 20:27:04","Thanks","",""
+"pull_request_commit_comment","239","aio-libs","aioredis","popravich","2017-06-07 12:17:43","I think this method can be simplified to look like this
+```python
+@asyncio.coroutine
+def wait_closed(self):
+    yield from self._close_state.wait()
+    assert self._close_waiter is not None
+    yield from asyncio.shield(self._close_waiter, loop=self._loop)
+```","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e","(None, '', u'aioredis/pool.py')"
+"pull_request_commit_comment","239","aio-libs","aioredis","popravich","2017-06-07 12:42:48","Otherwise you should add check `if self._close_waiter is None` in `close()` method.
+This also applies to sentinel pool.","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e","(None, '', u'aioredis/pool.py')"
+"pull_request_commit_comment","239","aio-libs","aioredis","argaen","2017-06-08 17:18:40","I don't get your point there.
+
+If `close` is called first, it will create the `self._close_waiter` task
+
+If `wait_closed` is called first, it will create the self._close_waiter` and then wait until `close_state` is set","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e","(None, '', u'aioredis/pool.py')"
+"pull_request_commit_comment","239","aio-libs","aioredis","popravich","2017-06-08 18:08:48","Yes, but it (`wait_closed`) will wait until `_close_state` is set, which is called from `close()`,
+and so `_close_waiter` will be replaced with new task from `close`.","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e","(None, '', u'aioredis/pool.py')"
+"pull_request_commit_comment","239","aio-libs","aioredis","popravich","2017-06-08 18:09:17","...two tasks will try to close pool","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e","(None, '', u'aioredis/pool.py')"
+"pull_request_commit_comment","239","aio-libs","aioredis","argaen","2017-06-08 18:15:16","ah True that, I'll update the code","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e","(None, '', u'aioredis/pool.py')"
+"pull_request_commit","239","aio-libs","aioredis","argaen","2017-06-05 14:26:22","close_waiter is lazily created","347d32bb8a8112635416eb69f3df8065a50d2c4a",""
+"pull_request_commit","239","aio-libs","aioredis","argaen","2017-06-08 18:40:44","Create only one task for closing","6e7ea11cb05ef371bd35a28cedbf7cca6334be7e",""

@@ -1,0 +1,89 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","190","aio-libs","aioredis","skbergam","2017-01-24 04:02:43","I'm trying to make my application more resilient to Redis server being unavailable.  I do BRPOP and SUBSCRIBE operations, and I would like them to handle this exceptional case by sleeping for a few seconds and simply trying the operation again.  The problem I'm running into is that I just get back a `CancelledError` whenever this happens, and I can't differentiate between that and a ""legitimate"" `CancelledError` that happens when I decide to cancel execution of the task intentionally from within my application.
+
+I notice from the exception output that this line is referenced:
+```
+File ""/xyz/lib/python3.5/site-packages/aioredis/commands/__init__.py"", line 42, in execute                                                                                           │2017-01-23 19:56:35,975 E Unhandled exception in asyncio task with unknown TaskWithLogger logger (<class 'NoneType'>)
+    return (yield from conn.execute(*args, **kwargs)) 
+```
+
+But that doesn't appear to match the latest code I see in `master`, but I confirmed I have the latest version from pip.
+
+2 questions:
+
+1. Is there any way to differentiate between these two exception cases? 
+2. Does the current code in `master` behave any differently?","start issue","Can't distinguish between co-routine cancellation and Redis connection broken"
+"issue_comment","190","aio-libs","aioredis","popravich","2017-01-25 15:39:20","Hi, @skbergam 
+
+> 1. Is there any way to differentiate between these two exception cases?
+
+Currently there is no way to distinguish between these two.
+I am thinking on this and probably I will add distinct exception for cancelling pending waiters on connection close.
+However for now the only way to differentiate these two is to catch CancelledError and to check
+if connection is marked as closed:
+```python
+for _ in range(retry_count):
+    try:
+        await redis.brpop(...)
+    except asyncio.CancelledError:
+        if not redis.closed:
+            continue
+        raise
+    else:
+        break
+```
+(Ofcourse both task cancellation and connection close can happen same time....)
+
+> 2. Does the current code in master behave any differently?
+
+In terms of cancellation — no, it behaves differently in terms of API, see #40 and [example](http://aioredis.readthedocs.io/en/latest/examples.html#commands-example)","",""
+"issue_comment","190","aio-libs","aioredis","skbergam","2017-01-26 04:25:45","@popravich: Thank you for the help.  Unfortunately checking `.closed` in this case doesn't seem to work, as the value is always `False`  in both cases (1. stopping the redis server to simulate a connection issue, and 2. cancelling the task myself).
+
+Here is my code:
+```
+import asyncio
+import aioredis
+import sys
+import traceback as tb
+
+async def main_async(readline_async):
+    task = asyncio.ensure_future(run_in_a_loop())
+    print(""waiting for BRPOP in a loop. press [ENTER] to cancel."")
+    await readline_async()
+    task.cancel()
+    await task
+
+async def run_in_a_loop():
+    connection = await aioredis.create_reconnecting_redis((""127.0.0.1"", 6379), ssl=None, password=None)
+
+    while True:
+        try:
+            print(""BRPOP pending..."")
+            x = await connection.brpop(""test_channel"")
+            print("".. BRPOPped %s."" % x)
+        except Exception as e:
+            print('EXCEPTION DURING BRPOP')
+            print('connection.closed=%s' % connection.closed)
+
+            if not connection.closed:
+                print('APPEARS TO BE A CONNECTION ISSUE, WE SHOULD PAUSE FOR 5 SECONDS AND RETRY...')
+                await asyncio.sleep(5)
+                continue
+            else:
+                print('WE ARE BEING CANCELLED, LET THE EXCEPTION PERCOLATE UP THE STACK')
+                tb.print_exc()
+                raise
+
+if __name__ == ""__main__"":
+    loop = asyncio.get_event_loop()
+
+    async def readline_async():
+        return await loop.run_in_executor(None, sys.stdin.readline)
+
+    loop.run_until_complete(main_async(readline_async))
+    loop.close()
+```
+
+Do you know what the issue could be?","",""
+"issue_comment","190","aio-libs","aioredis","skbergam","2017-01-26 04:41:56","Ahh it appears that the value of `.closed` is as expected if I use `create_redis` instead of `create_reconnecting_redis`, however I will have to change my application logic if I switch to this type of connection.","",""
+"issue_comment","190","aio-libs","aioredis","popravich","2017-01-26 09:19:16","`create_reconnecting_redis` is deprecated and, indeed, it never `closed`.","",""

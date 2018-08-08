@@ -1,0 +1,23 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","147","pycqa","astroid","pylint-bot","2015-07-03 15:47:23","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+The current state of the project is far from being good, mostly due to circular dependencies between a lot of components, which leads to low reusability and ugly design hacks:
+- Instance.getitem depends on CallContext, which is in inference.py. CallContext depends on nodes.py, which depends on bases.py.
+- LookupMixin depends on AssName and DelName from node_classes, moving it in mixins.py is not possible,
+- the monkey patching of inference functions in inference.py as well as assigned_stmts in protocols.py is horrendous. I'm thinking on having an InferenceVisitor, which should be enough to clean up this mess.
+- lots of other small dependencies (I don't remember all of them right now)
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/147
+","start issue","Lots of circular dependencies in the project"
+"issue_closed","147","pycqa","astroid","pylint-bot","2015-12-09 05:54:07","","closed issue","Lots of circular dependencies in the project"
+"issue_comment","147","pycqa","astroid","pylint-bot","2015-11-07 13:08:30","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Most of the circular dependencies are fixed in bookmark 2.0. The idea through this get fixed was to use virtual base classes for nodes and other objects, which means that object needs to register itself as a concrete implementation of one or more virtual base classes. This means that isinstance can be used with virtual base classes now, rather than with concrete objects, which removed almost all the dependencies we had in the project. Another pain was the use of monkey patching in inference.py and protocols.py, which is now removed by implementing dispatch methods on virtual base classes instead. There were some places though where we needed the concrete node classes in order to build nodes during inference, which is solved with dependency injection: in node_classes, when these functions are called, we pass the current module as an extra argument. 
+
+Solving this issue also meant the separation of nodes from runtime objects, which now live in two separate namespaces, astroid.tree respectively astroid.interpreter.
+","",""

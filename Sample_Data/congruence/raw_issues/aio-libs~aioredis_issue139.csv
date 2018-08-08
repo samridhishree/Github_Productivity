@@ -1,0 +1,20 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","139","aio-libs","aioredis","argaen","2016-09-13 18:05:23","If the dict contains boolean fields the `hmset_dict` fails with `TypeError` because it expects bytes, string, etc. Does this mean we should cast all booleans to strings before calling the function? Would it make sense to do this inside the `hmset_dict`? I could try to provide a pull request in case it's something that makes sense to support.
+","start issue","hmset_dict fails with boolean fields"
+"issue_closed","139","aio-libs","aioredis","argaen","2016-10-05 13:07:35","","closed issue","hmset_dict fails with boolean fields"
+"issue_comment","139","aio-libs","aioredis","asvetlov","2016-09-13 19:27:48","I believe it's done for good reason.
+We have the same behavior for aiohttp multidict support.
+[yarl](http://yarl.readthedocs.io/en/latest/) accepts `str` only in `with_query` parameter.
+
+The problem is: until we don't have a way to return back `bool`, `int`, `float` and `datetime` back by _getter_ conversion of these values by _setter_ makes a mess I believe. 
+","",""
+"issue_comment","139","aio-libs","aioredis","argaen","2016-09-14 08:13:00","Yeah, when I was talking about the pull request I meant both things. If you serialize something to be stored in Redis, when you retrieve it it should be exactly the same. So in this case, both the getter and setter should be modified in order to support the `True`/`False` values.
+
+This only raises one issue which is what would we do if the user wants to store a ""True"" with pure string and retrieve it as a string? this functionality would be lost because the getter would transform it to boolean.
+","",""
+"issue_comment","139","aio-libs","aioredis","popravich","2016-09-14 10:26:45","I believe this should be done in user's code, basically its to many ""what ifs"" (""True"" as sttring, ""1"" as bool, ""1"" as int, etc).
+","",""
+"issue_comment","139","aio-libs","aioredis","argaen","2016-09-19 08:32:06","Yeah that's True. I have different feelings about this. On one hand is what you say that there are many ""what ifs"" cases but on the other hand, the developer would also expect that default python types are correctly stored. If not, a sentence mentioning that because of Redis, data sent to the set functions can only be strings or ints would help :).
+","",""
+"issue_comment","139","aio-libs","aioredis","argaen","2016-10-05 13:07:35","I'm closing this. Feels correct only supporting data that also Redis supports :).
+","",""

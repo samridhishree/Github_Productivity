@@ -1,0 +1,129 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","10","pycqa","astroid","pylint-bot","2014-01-13 16:30:37","Originally reported by: **Ethan Glasser-Camp (BitBucket: [glasserc](http://bitbucket.org/glasserc), GitHub: @glasserc?)**
+
+---
+
+This is the same as pylint issue 95 (https://bitbucket.org/logilab/pylint/issue/95/how-can-i-write-a-plugin-to-change-imports). sthenault asked me to create this new issue specific to astroid and indicate that it is a follow-up.
+
+Hi, I use flask. Flask defines a module called flask.ext. Importing flask.ext.foo is automagically mapped to importing flask_foo. I wrote a plugin on an old version of pylint to handle this: http://engineering.pave.com/post/51820567994/welcome-linting-flask-ext
+
+I'm trying now to upgrade to pylint 1.0.0 and I see that the API has changed. I'm trying to use the new API but having trouble. I can define a transform function, as follows:
+
+```
+MANAGER.register_transform(node_classes.From, replace_from_flask_ext,
+                           is_from_flask_ext)
+```
+
+With is_from_flask_ext and replace_from_flask_ext defined as:
+
+```
+def copy_node_info(src, dest):
+    """"""Copy information from src to dest
+
+    Every node in the AST has to have line number information.  Get
+    the information from the old stmt.""""""
+    for attr in ['lineno', 'fromlineno', 'tolineno',
+                 'col_offset', 'parent']:
+        if hasattr(src, attr):
+            setattr(dest, attr, getattr(src, attr))
+
+
+def splice(stmt, new_stmt):
+    """"""Replace stmt with new_stmt in the AST
+
+    Also, copy useful information from stmt to new_stmt.
+
+    This assumes that stmt and new_stmt are of the same type and
+    define the same names.
+    """"""
+    copy_node_info(stmt, new_stmt)
+
+    # Replace stmt with new_stmt in the sequence of statements that
+    # included stmt.
+    # body = stmt.parent.body
+    # i = body.index(stmt)
+    # stmt.parent.body[i] = new_stmt
+
+    # The names defined by an import statement are kept in stmt.names
+    # as a pair of (exported_name, as_name). For example, ""import foo,
+    # bar as baz"" corresponds to an import statement with
+    # names=[(""foo"", None), (""bar"", ""baz"")].
+    #
+    # All names that stmt defined should now be defined by new_stmt.
+    for (name, as_name) in stmt.names:
+        stmt.parent.set_local(as_name or name, new_stmt)
+
+    return new_stmt
+
+def is_from_flask_ext(node):
+    """"""Is this a 'from flask.ext import wtf' statement?""""""
+    return node.modname == 'flask.ext'
+
+def replace_from_flask_ext(node):
+    """"""Replace 'from flask.ext import wtf' with 'import flask_wtf as wtf'.""""""
+    new_stmt = node_classes.Import()
+    new_stmt.names = []
+    for pair in node.names:
+        (name, as_name) = pair
+        new_stmt.names.append(('flask_'+name, as_name or name))
+
+    return splice(node, new_stmt)
+```
+
+I'm running it on code like (from the test):
+
+```
+from flask.ext import wtf
+
+print wtf.Flboltolo
+class MyForm(wtf.Form):
+    """"""Test form""""""
+    field = StringField()
+```
+
+Unfortunately, this doesn't infer anything about the ""wtf"" variable. (In particular I don't see the ""E: 15, 6: Module 'flask_wtf' has no 'Flboltolo' member"" error.) I think this is due to the fact that the TreeRebuilder stores all From nodes in a member variable called _from_nodes, even when I replace them with other nodes. Commenting out self._from_nodes.append(newnode) on line 490 of rebuilder.py gives me the expected result. There appears to be no other way for me to achieve this effect, because the TreeRebuilder isn't passed to the transform functions and it cannot be accessed in any other way.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/10
+","start issue","How can I write a plugin to change imports?"
+"issue_closed","10","pycqa","astroid","pylint-bot","2015-12-09 05:51:40","","closed issue","How can I write a plugin to change imports?"
+"issue_comment","10","pycqa","astroid","pylint-bot","2014-01-13 15:31:14","_Original comment by_ **Ethan Glasser-Camp (BitBucket: [glasserc](http://bitbucket.org/glasserc), GitHub: @glasserc?)**:
+
+---
+
+Relatedly, I have another plugin that tries to add instance variables to classes if they're inherited from certain classes. Right now it's impossible to trace their inheritance chains from a register_transform function if those classes are imported using ""from module import Class"".
+","",""
+"issue_comment","10","pycqa","astroid","pylint-bot","2014-04-08 12:21:29","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+This used to work but doesn't anymore since you updated your code to the new api?
+","",""
+"issue_comment","10","pycqa","astroid","pylint-bot","2014-04-08 13:21:00","_Original comment by_ **Ethan Glasser-Camp (BitBucket: [glasserc](http://bitbucket.org/glasserc), GitHub: @glasserc?)**:
+
+---
+
+As far as I know, although I haven't tried it since January.
+","",""
+"issue_comment","10","pycqa","astroid","pylint-bot","2014-11-06 00:21:19","_Original comment by_ **BitBucket: [mdbostwick](http://bitbucket.org/mdbostwick)**:
+
+---
+
+Did anything happen with this? I am using pylint 1.3.1 and astroid 1.2.1, common 0.63.0,  that I am getting false positives on flask.ext.<plugin> and would very much like to resolve those. 
+","",""
+"issue_comment","10","pycqa","astroid","pylint-bot","2015-06-28 22:22:01","_Original comment by_ **Joe Schafer (BitBucket: [jschaf](http://bitbucket.org/jschaf), GitHub: @jschaf?)**:
+
+---
+
+I created a pylint-flask plugin that solves this issue in a different way.  My code is at https://github.com/jschaf/pylint-flask
+
+Instead of reusing the From node, I just made new ones.
+","",""
+"issue_comment","10","pycqa","astroid","pylint-bot","2015-08-10 22:02:21","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I'm really sorry for the delay, having bugs lurking around for years is not acceptable.
+
+The original problem, the fact that inference wasn't really possible in transforms was fixed in the commit e22bcea38c2cfe9de535819cca3047ce5ad06426, which added a separate step for transforms. The problem with the transforms was that they were running at the same time the AST tree was built, which meant that whenever a transform was doing inference, it was doing inference on a partially constructed tree, with results similar as the one experienced in this issue. Since now the transforms are separated and called after the AST is built, inference is fully possible inside transforms, which means that transforms as the one provided by Ethan are working properly now. The fix will be part of astroid 1.4.
+","",""

@@ -1,0 +1,74 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","436","idan","oauthlib","jandd","2016-09-17 00:01:01","When trying to use the OAuth2 authorization endpoint (indirectly from a django-oauth-toolkit based application) I found an issue with how oauthlib/oauth2/rfc6749/endpoints/authorization.py and oauthlib/oauth2/rfc6749/grant_types/openid_connect.py interact. I assume that the problem is not related to django-oauth-toolkit because I can easily reproduce it with a minimal test in an interactive Python interpreter:
+
+```
+Python 2.7.11+ (default, May  9 2016, 15:54:33) 
+[GCC 5.3.1 20160429] on linux2
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> from oauthlib.oauth2.rfc6749.endpoints import pre_configured
+>>> ps=pre_configured.Server(None)
+>>> ps.validate_authorization_request('/oauth2/authorize/', 'http://localhost:8080/', body='', headers={})
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+  File ""/home/jan/.virtualenvs/test/local/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/home/jan/.virtualenvs/test/local/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/endpoints/authorization.py"", line 113, in validate_authorization_request
+    return response_type_handler.validate_authorization_request(request)
+  File ""/home/jan/.virtualenvs/test/local/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/grant_types/openid_connect.py"", line 77, in validate_authorization_request
+    return self._handler_for_request(request).validate_authorization_request(request)
+  File ""/home/jan/.virtualenvs/test/local/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/grant_types/openid_connect.py"", line 67, in _handler_for_request
+    if ""openid"" in request.scopes:
+TypeError: argument of type 'NoneType' is not iterable
+```
+
+The validate_authorization_request method in authorization.py initializes request.scope:
+
+``` python
+
+request.scopes = None
+```
+
+and the _handler_for_request method in openid_connect.py tries to iterate request.scopes
+
+``` python
+
+if ""openid"" in request.scopes:
+    handler = self.oidc_auth_grant
+```
+
+I walked through the code in pdb but there is nothing setting the request.scope to any useful value between these calls. I tried to set request.scopes to [] in validate_authorization_request which fixes the TypeError but I do not know whether this is semantically correct.
+
+I used oauthlib 2.0.0, but the code is the same as in the current master branch. I don't think that this is a duplicate of #433 or #359.
+","start issue","TypeError: argument of type 'NoneType' is not iterable in openid_connect implementation"
+"issue_closed","436","idan","oauthlib","thedrow","2016-11-23 10:18:36","","closed issue","TypeError: argument of type 'NoneType' is not iterable in openid_connect implementation"
+"issue_comment","436","idan","oauthlib","Sumukh","2016-09-17 05:09:21","I also ran into this with flask-oauthlib and came to the same conclusion.
+
+[Source file](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/openid_connect.py#L66)
+
+Considering that `request.scopes` was set to `None` in v1.1.2, it might be better to avoid changing it to be set to an empty list. 
+
+A PR with this change should avoid the TypeError (and hopefully work - but I haven't tried it on our application)
+
+``` python
+ if request.scopes and ""openid"" in request.scopes:
+    handler = self.oidc_auth_grant
+```
+","",""
+"issue_comment","436","idan","oauthlib","antoine-roux","2016-10-12 12:47:42","Look at the commit where `request.scopes` was set to `None` (https://github.com/idan/oauthlib/commit/520865b6631d91c560a94ebabe476926ed9878e9). It was a very big one !
+Maybe the `None` assignment was a mistake.
+
+In the v1.1.2, OpenID Connect was not supported, I think we must consider to check the correctness of this `None` value ...
+","",""
+"issue_comment","436","idan","oauthlib","frol","2016-11-12 08:32:51","@thedrow I beg your pardon, but it seems that you are the only active member here. May I ask you to review #437 and/or #441 addressing this issue?
+","",""
+"issue_comment","436","idan","oauthlib","thedrow","2016-11-13 09:39:22","I'll do so today.
+","",""
+"issue_comment","436","idan","oauthlib","thedrow","2016-11-13 14:22:12","@joelstevenson Can you please take a look as well. I'm not sure if it's semantically correct as well.
+","",""
+"issue_comment","436","idan","oauthlib","joelstevenson","2016-11-21 02:39:44","Hi, sorry I just saw this - I will look into it tomorrow!","",""
+"issue_comment","436","idan","oauthlib","arsatiki","2016-11-21 11:34:31","I encountered this bug today. I am specifically looking to use OIDC. After debugging it for some time I found that 
+
+1. There's no calls to any of RequestValidator methods before the check, so I don't have an opportunity to set `request.scopes`.
+2. `request.scope` _is_ set, because it's in the query parameters.
+
+The fixes above that would check if `request.scopes` is truthy would not help in my case. `request.scopes` is None in every case, even when `openid` is present.","",""

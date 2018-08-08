@@ -1,0 +1,56 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","490","idan","oauthlib","mc-nathan","2017-10-18 21:24:51","Our commit that failed on Travis is:
+
+https://github.com/masschallenge/impact-api/commit/ccb685f909ebf08d91a2a52249c612bcdb752061
+
+The Travis build with the stack trace is:
+
+https://travis-ci.org/masschallenge/impact-api/builds/289533334
+
+Test passes if we pin oauthlib to 2.0.4.
+
+","start issue","2.0.5 caused ""NotImplementedError: Subclasses must implement this method."" error"
+"issue_comment","490","idan","oauthlib","duaneking","2017-10-18 21:56:07","Confirmed. I get the same issue.
+
+Edit: Pining to the older version keeps the exception from happening, but it's still not authorizing any requests for me even after I do that.","",""
+"issue_comment","490","idan","oauthlib","lepture","2017-10-19 00:17:07","Sorry for the release. This is introduced in https://github.com/idan/oauthlib/pull/484
+
+ping @wiliamsouza
+
+could you fix this?","",""
+"issue_comment","490","idan","oauthlib","wiliamsouza","2017-10-19 15:03:14","This is an example how to implement `get_authorization_code_scopes` method I do it for django-oauth-toolkit:
+
+```
+    def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
+        scopes = []
+        fields = {
+            ""code"": code,
+        }
+
+        if client_id:
+            fields[""application__client_id""] = client_id
+
+        if redirect_uri:
+            fields[""redirect_uri""] = redirect_uri
+
+        grant = Grant.objects.filter(**fields).values()
+        if grant.exists():
+            grant_dict = dict(grant[0])
+            scopes = utils.scope_to_list(grant_dict[""scope""])
+        return scopes
+```
+
+@lepture what fix are you suggesting?","",""
+"issue_comment","490","idan","oauthlib","lepture","2017-10-19 15:06:39","@wiliamsouza there are other projects that dependent on this project. We should provide a fallback so that it won't break other's projects.","",""
+"issue_comment","490","idan","oauthlib","lepture","2017-10-19 15:16:01","@wiliamsouza oh. I see. It should not be released in 2.x.","",""
+"issue_comment","490","idan","oauthlib","lepture","2017-10-19 15:16:54","@mc-nathan could you confirm that https://github.com/idan/oauthlib/tree/2.x works well?","",""
+"issue_comment","490","idan","oauthlib","lepture","2017-10-19 15:17:07","ping @duaneking ","",""
+"issue_comment","490","idan","oauthlib","duaneking","2017-10-19 15:31:32","Thanks @lepture but I'm using flask-oauthlib so I don't have a place to put that method unless I edit flask-oauthlib/oauth directly.
+
+Edit: Looking at the possibility of sending in a merge request but I'm new to the code base so code isn't the easiest to navigate. I may not get the time today as my ability to dedicate real time to this requires I get a simple OAuth client flow working first... gah. Will try.","",""
+"issue_comment","490","idan","oauthlib","lepture","2017-10-19 15:45:08","@duaneking could you use the code in branch 2.x to test if it works?","",""
+"issue_comment","490","idan","oauthlib","duaneking","2017-10-19 16:18:30","I'm still relatively new to this level of python debugging so I don't even know how to do that.  My background is actually in C/C++/ObjC/C#/Java/Javascript/Golang and other languages, so I'm still getting ramped up on python in many ways.  We also use AWS for everything so I'm limited by AWS's constraints to deploy to an elastic beanstalk instance I'm using for testing.
+
+How would I do that?","",""
+"issue_comment","490","idan","oauthlib","lepture","2017-10-20 17:20:09","@mc-nathan could you confirm that 2.0.6 works?","",""
+"issue_comment","490","idan","oauthlib","mc-nathan","2017-10-30 12:49:36","@lepture Confirmed that 2.0.6 works.  Thanks for the quick turn around!","",""

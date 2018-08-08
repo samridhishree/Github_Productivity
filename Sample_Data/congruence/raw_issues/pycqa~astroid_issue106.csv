@@ -1,0 +1,66 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","106","pycqa","astroid","pylint-bot","2015-06-03 20:55:41","Originally reported by: **Anonymous**
+
+---
+
+Adding python2.7/lib-dynload to the pythonpath, depending on its location (default, virtualenv), breaks what MANAGER.ast_from_module_name('datetime') returns.
+
+Test code:
+
+```
+#!shell
+(isc)vhermecz@vhermecz-utosh:~$ export PYTHONPATH='/usr/lib/python2.7/lib-dynload'
+(isc)vhermecz@vhermecz-utosh:~$ python
+Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
+[GCC 4.8.2] on linux2
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> from astroid import MANAGER, scoped_nodes, nodes, inference_tip
+>>> MANAGER.ast_from_module_name('datetime').locals
+{'timedelta': [<Class(timedelta) l.0 [datetime] at 0x7f0c33750a50>], 'MAXYEAR': [<Const(MAXYEAR) l.0 [datetime] at 0x7f0c33a11510>], 'datetime': [<Class(datetime) l.0 [datetime] at 0x7f0c33a11610>], 'date': [<Class(date) l.0 [datetime] at 0x7f0c33a115d0>], 'datetime_CAPI': [<EmptyNode(datetime_CAPI) l.0 [datetime] at 0x7f0c339c38d0>], 'tzinfo': [<Class(tzinfo) l.0 [datetime] at 0x7f0c3375cc90>], 'time': [<Class(time) l.0 [datetime] at 0x7f0c33750a10>], 'MINYEAR': [<Const(MINYEAR) l.0 [datetime] at 0x7f0c33a11550>], '__package__': [<Const(__package__) l.0 [datetime] at 0x7f0c33a11590>]}
+>>> import datetime
+>>> datetime.__file__
+'/usr/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so'
+>>> exit()
+(isc)vhermecz@vhermecz-utosh:~$ export PYTHONPATH='/home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload'
+(isc)vhermecz@vhermecz-utosh:~$ python
+Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
+[GCC 4.8.2] on linux2
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> from astroid import MANAGER, scoped_nodes, nodes, inference_tip
+>>> MANAGER.ast_from_module_name('datetime').locals
+{}
+>>> import datetime
+>>> datetime.__file__
+'/home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so'
+>>> exit()
+(isc)vhermecz@vhermecz-utosh:~$ diff /home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so /usr/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so | wc -l
+0
+(isc)vhermecz@vhermecz-utosh:~$ diff /home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so /usr/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so
+(isc)vhermecz@vhermecz-utosh:~$ ll /home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so /usr/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so
+-rw-r--r-- 1 root root 109232 Mar 22  2014 /home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so
+-rw-r--r-- 1 root root 109232 Mar 22  2014 /usr/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so
+(isc)vhermecz@vhermecz-utosh:~$ md5sum /home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so /usr/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so
+e8c03b647ec98b8d272134581c92d667  /home/vhermecz/.virtualenvs/isc/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so
+e8c03b647ec98b8d272134581c92d667  /usr/lib/python2.7/lib-dynload/datetime.x86_64-linux-gnu.so
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/106
+","start issue","dynload datetime problem"
+"issue_closed","106","pycqa","astroid","pylint-bot","2015-12-09 05:53:33","","closed issue","dynload datetime problem"
+"issue_comment","106","pycqa","astroid","pylint-bot","2015-06-03 19:04:45","_Original comment by_ **Vajk Hermecz (BitBucket: [vhermecz](http://bitbucket.org/vhermecz), GitHub: @vhermecz?)**:
+
+---
+
+I've created the issue, sorry for not logging in before doing so. - vhermecz
+","",""
+"issue_comment","106","pycqa","astroid","pylint-bot","2015-06-05 21:11:26","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+There's nothing wrong with how astroid behaves regarding to PYTHONPATH and datetime.
+
+In astroid.modutils, we're retrieving the locations where the standard library is expected to be, using disutils.sysconfig.get_python_lib. Whenever a module should be loaded using astroid, we're looking to see if we can find it in one of those locations. If so, we know the module is a builtin and we can safely load it if it's an extension module. In the current case, the module will not be marked as a builtin, since PYTHONPATH is not taken in consideration when the standard library paths are retrieved and thus it will be an empty module, due to the fact that it is an extension modules and they aren't loaded automatically if they aren't builtins.
+
+At this point, you can set MANAGER.extension_package_whitelist to ('datetime', ) and that should load this module properly from the extra PYTHONPATH.
+","",""

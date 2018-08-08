@@ -1,0 +1,128 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","437","pycqa","astroid","MarKett","2017-05-22 09:18:03","### Steps to reproduce
+Python 2.7.10
+pylint 1.7.1
+astroid 1.5.2
+
+Try to run pylint on this code:
+```
+def flatten(seq):
+    res = []
+    for item in seq:
+        if isinstance(item, (tuple, list)):
+            res += flatten(item)
+        else:
+            res.append(item)
+        continue
+    return res
+
+f_list = flatten([1, [1]])
+for obj in f_list:
+    if obj:
+        pass
+```
+
+Last part of the very long stack_trace:
+
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\context.py"", line 40, in cache_generator
+>     for result in generator:
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\decorators.py"", line 82, in wrapped
+>     generator = _func(node, context, **kwargs)
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\inference.py"", line 137, in infer_name
+>     frame, stmts = self.lookup(self.name)
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\node_classes.py"", line 716, in lookup
+>     return self.scope().scope_lookup(self, name)
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\scoped_nodes.py"", line 698, in scope_lookup
+>     return frame._scope_lookup(node, name, offset)
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\scoped_nodes.py"", line 157, in _scope_lookup
+>     return pscope.scope_lookup(node, name)
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\scoped_nodes.py"", line 327, in scope_lookup
+>     return self._scope_lookup(node, name, offset)
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\scoped_nodes.py"", line 146, in _scope_lookup
+>     stmts = node._filter_stmts(self.locals[name], self, offset)
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\node_classes.py"", line 743, in _filter_stmts
+>     myframe = self.frame()
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\node_classes.py"", line 340, in frame
+>     return self.parent.frame()
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\node_classes.py"", line 340, in frame
+>     return self.parent.frame()
+>   File ""D:\Program Files\Python27\lib\site-packages\astroid\node_classes.py"", line 340, in frame
+>     return self.parent.frame()
+> RuntimeError: maximum recursion depth exceeded
+
+### Current behavior
+Pylint raises an exception when trying to parse the following code.
+The exception does not happen, without the if-statement: ""if obj:""
+The exception does not happen when changing the call of flatten() to:
+`f_list = list(flatten([1, [1]]))`
+
+### Expected behavior
+Pylint does not raise an exception and parses the code correct.","start issue","RuntimeError: maximum recursion depth exceeded in recursive function"
+"issue_comment","437","pycqa","astroid","volans-","2017-06-19 08:17:59","I can confirm it, also with the latest `astroid 1.5.3`, and add that is a regression as it **did not happen** with previous versions like:
+```
+pylint 1.6.5,
+astroid 1.4.9
+Python 2.7.10 (default, Feb  7 2017, 00:08:15)
+```
+
+### Problematic code
+```
+def run(tokens):
+    return _flatten_tokens(tokens).format(foo='bar')
+
+
+def _flatten_tokens(tokens):
+    string = ''
+
+    for token in tokens:
+        if isinstance(token, list):
+            string += _flatten_tokens(token)
+        else:
+            string += str(token)
+
+    return string
+```
+
+### Cases in which `pylint` do not crash:
+Any of the following changes makes `pylint` run correctly
+- replacing `+=` with `= string +`, as reported above
+- removing the `.format()` from `run()`
+
+### Workaround
+Is there any workaround usable without changing the code or skipping the entire file in pylint?
+I've tried to add `# pylint: disable=all` to the line that calls the recursive function, but it seems to disable all the checks for the whole file, not just that line.
+
+It was also reported as a `pylint` bug in PyCQA/pylint#1452","",""
+"issue_comment","437","pycqa","astroid","PCManticore","2017-06-20 19:30:55","I can reproduce this problem. Unfortunately, I don't have time right now to check why this is happening.","",""
+"issue_comment","437","pycqa","astroid","FeepingCreature","2017-11-08 14:52:40","Simpler repro:
+
+    def fun():
+      arr = []
+      arr += fun()
+      if arr:
+        return arr","",""
+"issue_comment","437","pycqa","astroid","sieira","2018-01-02 17:00:20","Well, I can confirm this bug, i just spent most of my day tracking the code down.
+
+```py
+def fun(parent):                                
+    arr = [parent]                                  
+    for child in parent.children:                           
+        children += fun(child)
+    return children  
+```
+
+Changing to:
+
+```py
+def fun(parent):                                
+    arr = [parent]                                  
+    for child in parent.children:                           
+        children = children + fun(child)
+    return children  
+```
+Alpine on docker
+Python 2.7
+astroid==1.6.0
+pylint==1.8.1
+
+","",""

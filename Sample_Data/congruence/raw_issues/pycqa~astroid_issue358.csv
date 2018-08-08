@@ -1,0 +1,129 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","358","pycqa","astroid","moylop260","2016-08-22 15:08:44","### Steps to reproduce
+1. `pip install --upgrade git+https://github.com/PyCQA/astroid@41a0c`
+### Current behaviour
+
+Error
+
+``` bash
+Collecting git+https://github.com/PyCQA/astroid@41a0c
+  Cloning https://github.com/PyCQA/astroid (to 41a0c) to /var/folders/zc/1m37yppx4z5596yfyzg385140000gn/T/pip-Z0zkzq-build
+  Could not find a tag or branch '41a0c', assuming commit.
+    Complete output from command python setup.py egg_info:
+    error in astroid setup command: Invalid environment marker: python_version<""3.4""
+
+    ----------------------------------------
+Command ""python setup.py egg_info"" failed with error code 1 in /var/folders/zc/1m37yppx4z5596yfyzg385140000gn/T/pip-Z0zkzq-build/
+```
+### Expected behavior
+
+No error
+### `python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""` output
+
+Sha: https://github.com/PyCQA/astroid/commit/41a0c77cab88a54787d49913030bebf482fa014c
+
+python --version
+Python 2.7.10
+
+python -m pip --version
+pip 8.1.2 from /Users/moylop260/Library/Python/2.7/lib/python/site-packages (python 2.7)
+
+python -c ""import setuptools;print setuptools.**version**""
+1.1.6
+
+Same case for https://travis-ci.org/Vauxoo/pylint-odoo/jobs/154185968#L456
+","start issue","Installing: Invalid environment marker: python_version<""3.4"""
+"issue_closed","358","pycqa","astroid","moylop260","2016-09-25 18:58:50","","closed issue","Installing: Invalid environment marker: python_version<""3.4"""
+"issue_comment","358","pycqa","astroid","PCManticore","2016-08-22 15:12:44","Try to update setuptools and see if the problem goes away.
+","",""
+"issue_comment","358","pycqa","astroid","moylop260","2016-08-22 15:43:16","``` bash
+$ pip install --upgrade --user setuptools pip
+Collecting setuptools
+  Using cached setuptools-26.0.0-py2.py3-none-any.whl
+Requirement already up-to-date: pip in /Users/moylop260/Library/Python/2.7/lib/python/site-packages
+Installing collected packages: setuptools
+Successfully installed setuptools-1.1.6
+
+$ pip install --user --upgrade git+https://github.com/PyCQA/astroid@41a0c
+Collecting git+https://github.com/PyCQA/astroid@41a0c
+  Cloning https://github.com/PyCQA/astroid (to 41a0c) to /var/folders/zc/1m37yppx4z5596yfyzg385140000gn/T/pip-4l21cO-build
+  Could not find a tag or branch '41a0c', assuming commit.
+    Complete output from command python setup.py egg_info:
+    error in astroid setup command: Invalid environment marker: python_version<""3.4""
+
+    ----------------------------------------
+Command ""python setup.py egg_info"" failed with error code 1 in /var/folders/zc/1m37yppx4z5596yfyzg385140000gn/T/pip-4l21cO-build/
+```
+
+FYI our CI show the same error: https://travis-ci.org/Vauxoo/pylint-odoo/jobs/154185968#L456
+","",""
+"issue_comment","358","pycqa","astroid","PCManticore","2016-08-22 15:46:46","Why does it say `Successfully installed setuptools-1.1.6`? For what it's worth, this works perfectly for me using 25+.
+","",""
+"issue_comment","358","pycqa","astroid","moylop260","2016-08-22 17:55:00","You are right!
+
+``` bash
+virtualenv /tmp/test
+cd /tmp/test
+source bin/activate
+pip install --upgrade setuptools pip
+python -c ""import setuptools;print setuptools.__version__""
+# 26.0.0
+pip install --upgrade git+https://github.com/PyCQA/astroid@41a0c
+Successfully installed astroid-1.5.0...
+```
+
+We have the same issue with our travis.
+What is the best way to fix it?
+Is a good idea to have incompatibility with other setuptools versions?
+","",""
+"issue_comment","358","pycqa","astroid","jayvdb","2016-08-22 18:28:25","The problem is setuptools has incompatibility with itself for environment markers.
+You can read more about it at https://github.com/pypa/packaging/issues/72#issuecomment-232820331 to the end.
+And `setup_requires` is not a solution that works reliably for older versions of setuptools either.
+
+And setuptools downgrading to 1.1.6 on travis is not something I have seen before, and should be considered a bug somewhere else (not astroid).  It might be another case of #4194 (which I have only glanced at, so I might be off base there).
+","",""
+"issue_comment","358","pycqa","astroid","moylop260","2016-08-22 18:59:51","Thanks @jayvdb for the information.
+My question is:
+Should astroid lose full compatibility with old `setuptools` and show this error in some environments?
+
+I mean, What is the advantage of use https://github.com/PyCQA/astroid/commit/41a0c77cab88a54787d49913030bebf482fa014c vs disadvantages?
+","",""
+"issue_comment","358","pycqa","astroid","jayvdb","2016-08-22 21:32:11","The advantage is universal wheels. And the disadvantages are it doesnt work on many versions of setup tools, unless my hack is added.
+","",""
+"issue_comment","358","pycqa","astroid","PCManticore","2016-08-23 05:55:45","Does this issue still has to be open? From my point of view, the environment markers are quite important when having to deal with multiple Python releases, each with a different set of dependencies, which is why 41a0c77 (and similar commits in pylint) was made in the first place. A release was fudged, because the wheel was built with 3.5, but the installation failed on older 3.X versions.
+","",""
+"issue_comment","358","pycqa","astroid","jayvdb","2016-08-23 06:02:37","> A release was fudged, because the wheel was built with 3.5...
+
+The release is a universal wheel, so that should not matter.
+","",""
+"issue_comment","358","pycqa","astroid","PCManticore","2016-08-23 06:51:59","I might have forgot the details, but this happened because some of
+dependencies were not installed when installing astroid / pylint on other
+releases, due to the Python version checks in the installation script. The
+environment markers fixed this, so something was amiss there.
+
+On Aug 23, 2016 9:02 AM, ""John Vandenberg"" notifications@github.com wrote:
+
+> A release was fudged, because the wheel was built with 3.5...
+> 
+> The release is a universal wheel, so that should not matter.
+> 
+> —
+> You are receiving this because you commented.
+> Reply to this email directly, view it on GitHub
+> https://github.com/PyCQA/astroid/issues/358#issuecomment-241635221, or mute
+> the thread
+> https://github.com/notifications/unsubscribe-auth/AAbWppXGI81uwK-w_9VByyvIxK-Zlbw6ks5qioz-gaJpZM4Jp-Pz
+> .
+","",""
+"issue_comment","358","pycqa","astroid","jayvdb","2016-08-23 07:08:15","Ah ok. Yes environment markers are needed. But this bug is about older setuptools not understanding environment markers, even as recently as setuptools 21.
+","",""
+"issue_comment","358","pycqa","astroid","PCManticore","2016-08-23 09:28:49","I know that, the question is if we have to do something here, from astroid's perspective. Requiring  a more up to date setuptools version seems weird, since it is not a dependency per se of the library.
+","",""
+"issue_comment","358","pycqa","astroid","moylop260","2016-08-23 20:02:54","I don't know if is a good idea for you but I added the old code with new one for full compatibility.
+Let me know if is a bad idea: https://github.com/PyCQA/astroid/pull/360/files
+","",""
+"issue_comment","358","pycqa","astroid","PCManticore","2016-09-25 16:57:57","Do we still need this opened?
+","",""
+"issue_comment","358","pycqa","astroid","moylop260","2016-09-25 19:04:03","For record
+Fixed for astroid https://github.com/PyCQA/astroid/pull/360 and fixed for pylint https://github.com/PyCQA/pylint/pull/1107
+","",""

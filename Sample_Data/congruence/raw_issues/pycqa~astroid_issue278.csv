@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","278","pycqa","astroid","pylint-bot","2015-12-03 20:34:01","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+qname is a method which can be used to retrieve the qualified name of an object. For instance, for a function, the qname could be formed by the module where it is defined, followed by the class where it is defined and finally terminating with the function's name itself. Unfortunately, the current implementation gives a qname to nodes which shouldn't have it, as for instance for GeneratorExp node. This also doesn't work, because GeneratorExp doesn't have a name.
+
+```
+#!python
+
+>>> from astroid.test_utils import extract_node
+>>> n = extract_node('''(i for i in range(10))''')
+>>> n
+<GeneratorExp() l.1 [] at 0x3ff16f0>
+>>> n.qname
+<bound method LocalsDictNodeNG.qname of <GeneratorExp() l.1 [] at 0x3ff16f0>>
+>>> n.qname()
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+  File ""d:\projects\repos\astroid\astroid\scoped_nodes.py"", line 168, in qname
+    return '%s.%s' % (self.parent.frame().qname(), self.name)
+AttributeError: 'GeneratorExp' object has no attribute 'name'
+>>>
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/278
+","start issue","Not all subclasses of LocalsDictNodeNG should have a qname method."
+"issue_closed","278","pycqa","astroid","PCManticore","2015-12-30 09:01:13","","closed issue","Not all subclasses of LocalsDictNodeNG should have a qname method."

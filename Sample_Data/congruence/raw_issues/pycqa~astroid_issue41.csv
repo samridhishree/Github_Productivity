@@ -1,0 +1,66 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","41","pycqa","astroid","pylint-bot","2014-07-25 11:04:43","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+The following is from Cole Robinson:
+
+""""""
+
+I poked at this a bit. Basically just doing:
+
+```
+#!python
+
+diff --git a/brain/py2gi.py b/brain/py2gi.py
+index 5001b7c..2584055 100644
+--- a/brain/py2gi.py
++++ b/brain/py2gi.py
+@@ -128,18 +129,21 @@ def _new_import_module(self, modname, relative_only=False,
+             modnames.append('gi._glib')
+         elif modname == 'gi.repository.GObject':
+             modnames.append('gi._gobject')
++
++        import importlib
++
++        astng = None
+         try:
+-            modcode = ''
+-            for m in modnames:
+-                __import__(m)
+-                modcode += _gi_build_stub(sys.modules[m])
++            for m in modnames[:1]:
++                acmod = importlib.import_module(m)
++                astng = MANAGER.ast_from_module(acmod, modname=m)
+         except ImportError:
+             astng = _inspected_modules[modname] = None
+         else:
+-            astng = AstroidBuilder(MANAGER).string_build(modcode, modname)
+             _inspected_modules[modname] = astng
+
+```
+
+It didn't blow up, but running it against a simple script like:
+
+from gi.repository import Gtk
+
+print Gtk.get_major_version
+print Gtk.get_major_version()
+
+w = Gtk.Label()
+w.set_label(""foo"")
+
+Yielded these errors:
+
+**\* Module pylint.testgtk E: 8, 0: Function 'wrapper' has no 'set_label' member (no-member) E: 8, 0: Instance of 'Label' has no 'set_label' member (no-member)
+
+Unfortunately looking at the actual inspection code was overwhelming, so I don't think I can help here. I'm happy to test any work though, or help provide test cases.
+
+""""""
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/41
+","start issue","py2gi: rewrite using the living object builder"
+"issue_closed","41","pycqa","astroid","PCManticore","2016-02-18 22:07:53","","closed issue","py2gi: rewrite using the living object builder"
+"issue_comment","41","pycqa","astroid","PCManticore","2016-02-18 22:07:53","Closing this. I don't know a lot about py2gi, since it is mostly developed by contributors and as such, there is no point in having this issue opened.
+","",""

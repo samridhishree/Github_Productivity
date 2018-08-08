@@ -1,0 +1,70 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","86","idan","oauthlib","warsaw","2013-01-03 19:54:22","I'm currently trying to convert a package from oauth to oauthlib (specifically ubuntu-sso-client) and I've hit a snag.  The library wants to generate its own timestamp values, which it gets through various rendezvous with the sso server.  There doesn't seem to be a way in oauthlib to pass this timestamp in through the oauth_timestamp parameter, because oauthlib always generates its own timestamp.  AFAICT, there is no API for passing in our own oauth_timestamp value.
+
+This is a problem both for the conversion (i.e. test suite failures), and for functionality, since the server uses the generated timestamp values for validation.
+
+Am I missing how to do this, or is there really no way?  If the latter, this should probably be a wishlist bug. ;)
+","start issue","Passing in our own oauth_timestamp value"
+"issue_closed","86","idan","oauthlib","ib-lundgren","2013-01-29 20:18:12","","closed issue","Passing in our own oauth_timestamp value"
+"issue_comment","86","idan","oauthlib","ib-lundgren","2013-01-04 16:09:23","There is no way using Client but it could quite easily be added. When adding it it would be a good idea to provide the same thing for nonce. 
+
+Adding a timestamp and nonce param to Client.**init** and modify Client.get_oauth_params should do it. I won't have time to add this for a few days unfortunately...
+","",""
+"issue_comment","86","idan","oauthlib","warsaw","2013-01-04 16:25:53","That sounds good to me, and simple enough I might even try to implement it. :)
+","",""
+"issue_comment","86","idan","oauthlib","warsaw","2013-01-04 21:29:15","One thing I'm unsure of is whether to accept ints for timestamp and have oauthlib implicitly convert them to unicodes.  This wouldn't need to be keyed off of convert_to_unicode since there's nothing else that makes sense if the value is an int.  Right now, my pull request doesn't do this, but the use case I'm converting passes int timestamps.  I've changed its test suite to use strings (which _does_ key off of convert_to_unicode), but maybe it would be fine to just accept ints.  Thoughts?  (Also, does this apply to nonce?)
+","",""
+"issue_comment","86","idan","oauthlib","ib-lundgren","2013-01-05 11:01:33","I thought I'd update the unicode conversion in Client to just take encoding as a parameter and encode all input to that unless it is None/boolean false with a default being utf-8. This should take care of ints too and be cleaner than the current hack. I'll do this the coming week then roll a new release to PyPI.
+","",""
+"issue_comment","86","idan","oauthlib","warsaw","2013-01-05 13:45:02","That sounds good, and I agree there's little need for two unicode conversion arguments.
+
+Another case where I've had to do unicode conversions at the call site is with the body parameters.  If this is a dictionary of Py2 str/Py3 bytes objects then I have to pre-convert both the keys and values to unicodes before passing them in to .sign().  So it might be useful to apply the encoding to the body parameters as well, although that would have to happen in .sign() instead of the constructor.
+
+(Funnily enough, I had to reconvert the returned body key/values to bytes to pass into Twisted, which requires bytes instead of unicodes.)
+","",""
+"issue_comment","86","idan","oauthlib","ib-lundgren","2013-01-05 14:57:52","Yea, definitely convert url, body and headers in sign as well using the
+constructor provided encoding.
+
+Encoding sure is a hassle a lot of the time but I feel going with unicode
+everywhere makes it easier to reason about things even though it will take
+some time to get there.
+
+On Sat, Jan 5, 2013 at 2:45 PM, Barry Warsaw notifications@github.comwrote:
+
+> That sounds good, and I agree there's little need for two unicode
+> conversion arguments.
+> 
+> Another case where I've had to do unicode conversions at the call site is
+> with the body parameters. If this is a dictionary of Py2 str/Py3 bytes
+> objects then I have to pre-convert both the keys and values to unicodes
+> before passing them in to .sign(). So it might be useful to apply the
+> encoding to the body parameters as well, although that would have to happen
+> in .sign() instead of the constructor.
+> 
+> (Funnily enough, I had to reconvert the returned body key/values to bytes
+> to pass into Twisted, which requires bytes instead of unicodes.)
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/86#issuecomment-11914144.
+","",""
+"issue_comment","86","idan","oauthlib","warsaw","2013-01-16 23:08:52","I like the API for timestamp and encoding.  I've updated one package I've been converted to use this API and it looks nice and clean.  Any chance for a release some time soon? :)
+
+https://code.launchpad.net/~barry/ubuntu-sso-client/lp1077087/+merge/141983
+","",""
+"issue_comment","86","idan","oauthlib","ib-lundgren","2013-01-17 10:50:20","Certainly. Will push by the latest this weekend.
+
+On Thu, Jan 17, 2013 at 12:08 AM, Barry Warsaw notifications@github.comwrote:
+
+> I like the API for timestamp and encoding. I've updated one package I've
+> been converted to use this API and it looks nice and clean. Any chance for
+> a release some time soon? :)
+> 
+> https://code.launchpad.net/~barry/ubuntu-sso-client/lp1077087/+merge/141983https://code.launchpad.net/%7Ebarry/ubuntu-sso-client/lp1077087/+merge/141983
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/86#issuecomment-12345786.
+","",""
+"issue_comment","86","idan","oauthlib","ib-lundgren","2013-01-29 20:18:12","Sorry for taking so long. Pushed 0.3.5 now.
+","",""
+"issue_comment","86","idan","oauthlib","warsaw","2013-01-30 00:25:46","Thanks!
+","",""

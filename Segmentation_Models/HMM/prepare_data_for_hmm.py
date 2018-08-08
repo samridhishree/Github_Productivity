@@ -59,10 +59,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_dir', \
                         help='Directory containing daily activity counts (with nullstates inserted in non active days)',\
-                        default='data/daily_data_nullstate/')
+                        default='Sample_Data/HMM/daily_data_with_nullstate/')
     parser.add_argument('--output_dir',\
                         help='Directory to store the data in hdf5 format', \
-                        default='data/')
+                        default='Sample_Data/HMM/')
     args, unknown = parser.parse_known_args()
 
     projects = os.listdir(args.input_dir)

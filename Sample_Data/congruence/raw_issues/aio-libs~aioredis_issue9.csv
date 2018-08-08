@@ -1,0 +1,26 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","9","aio-libs","aioredis","popravich","2014-05-28 17:20:17","","start issue","implement redis protocol exceptions handling"
+"issue_closed","9","aio-libs","aioredis","popravich","2014-05-30 06:42:05","","closed issue","implement redis protocol exceptions handling"
+"issue_comment","9","aio-libs","aioredis","asvetlov","2014-05-28 17:54:34","Please elaborate what kinds of exceptions do you want to process and how do like to do this ones.
+From my perspective exceptions are split in two groups: fatal ones and command specific.
+Command specific exceptions should be sent to end user code.
+Fatal exceptions should to close connection and cancel all pending waiters in RedisConnection._waiters queue.
+
+Looking on code I doubt that you need to create new Task for every `.execute` call.
+I guess just to write data in `execute` without draining.
+`self._writer.write(data)` can raise an exception only if the writer is closed.
+Otherwise just send data to redis server and push future into results queue.
+That's all what you need to do.
+","",""
+"issue_comment","9","aio-libs","aioredis","popravich","2014-05-28 18:03:43","Ok. need a clarification here.
+Saying 'redis protocol exception handling' I mean detecting and raising `hiredis` exceptions.
+Sorry for confusion)
+","",""
+"issue_comment","9","aio-libs","aioredis","asvetlov","2014-05-28 18:20:38","I think `hiredis` exceptions are **fatal** ones in terms of my previous post.
+","",""
+"issue_comment","9","aio-libs","aioredis","popravich","2014-05-28 18:34:03","Yes, that is correct.
+
+In terms of #2 I'm planning to implement several exception wrappers so in case of any (`hiredis` or _pure-python_) response parser raised exceptions would have the same type, ex `aioredis.ProtocolError`
+","",""
+"issue_comment","9","aio-libs","aioredis","popravich","2014-05-30 06:42:05","done
+","",""

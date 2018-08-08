@@ -1,0 +1,79 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","27","aio-libs","aioredis","popravich","2014-07-10 09:16:26","This must be implemented in connection.
+
+TODO:
+- add separate methods for subscribing to channels/patterns;
+- mark connection as ""in subscribe"" mode;
+- add check to `execute` method that connection is not ""in subscribe"" mode;
+- check if connection ""in subscribe"" in `_read_data` method and start other reader task;
+- create ""other reader task"" (need better name) that will wait for messages (similar way as `asyncio.as_completed()`;
+
+result must be something like:
+
+``` python
+ok = yield from conn.subscribe('channel:1', 'channel:2')
+for waiter in conn.wait_messages(): # (this is the ""other reader task"" that need a good name)
+    data = yield from waiter
+    # do something
+```
+
+As for high-level part Redis docs have a good hint: http://redis.io/topics/pubsub (Client library implementation hints)
+","start issue","Pub/Sub mode"
+"issue_closed","27","aio-libs","aioredis","popravich","2015-06-03 09:41:03","","closed issue","Pub/Sub mode"
+"issue_comment","27","aio-libs","aioredis","ghost","2015-02-22 13:36:07","+1 I'd love to see this feature implemented.
+","",""
+"issue_comment","27","aio-libs","aioredis","dveselov","2015-02-22 20:20:47","bump?
+","",""
+"issue_comment","27","aio-libs","aioredis","popravich","2015-02-23 07:31:06","Hi guys,
+This is in progress, very slow progress.
+I think I'll implement it in a week or two.
+","",""
+"issue_comment","27","aio-libs","aioredis","Natim","2015-03-23 12:56:07","Hello, I need it as well :)
+","",""
+"issue_comment","27","aio-libs","aioredis","Natim","2015-03-23 13:41:39","Apparently https://github.com/jonathanslenders/asyncio-redis does it already.
+","",""
+"issue_comment","27","aio-libs","aioredis","kernel0","2015-04-28 07:47:33","I'm really need it!
+","",""
+"issue_comment","27","aio-libs","aioredis","popravich","2015-04-28 08:38:42","almost there)
+","",""
+"issue_comment","27","aio-libs","aioredis","popravich","2015-04-29 14:18:19","So, its in master (see #61 ).
+docs and hi-level interface is still TBD.
+currently the usage as follows:
+
+``` python
+sub = yield from create_connection(...)
+
+yield from sub.execute('subscribe', 'chan:1', 'chan:2', 'etc')
+
+@asycnio.coroutine
+def worker(queue):
+    while True:
+        msg = yield from queue.get()
+        # Process messsage....
+asyncio.async(worker(sub.pubsub_channels['chan:1']))
+# or
+while True:
+    msg = yield from sub.pubsub_channels['chan:2'].get()
+    # process message...
+```
+","",""
+"issue_comment","27","aio-libs","aioredis","popravich","2015-04-29 14:19:32","There is still things that need to be done and I may change this interface a bit,
+but you still can test it.
+","",""
+"issue_comment","27","aio-libs","aioredis","kernel0","2015-04-30 15:01:09","thank you!! I will use as follows until complete of hi-level interface:
+
+``` python
+    pool = yield from aioredis.create_pool(('localhost',6379))
+    with (yield from pool) as redis:
+        yield from redis.connection.execute('subscribe', 'chan1')
+        while True:
+            msg = yield from redis.connection.pubsub_channels['chan1'].get()
+            print(msg)
+```
+
+ps : I hope this wonderful feature is distributed to pypi!
+","",""
+"issue_comment","27","aio-libs","aioredis","popravich","2015-06-03 09:41:03","released
+","",""
+"issue_comment","27","aio-libs","aioredis","kernel0","2015-06-04 03:39:55","congratulations!
+","",""

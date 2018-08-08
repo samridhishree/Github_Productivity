@@ -1,0 +1,51 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","228","pycqa","astroid","pylint-bot","2015-10-26 19:36:33","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+(This is part of a series of issues I'm going to open to talk about necessary reworkings that aren't obvious.)
+
+``` python
+======================================================================
+ERROR: test_inferred_dont_pollute (unittest_builder.BuilderTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_builder.py"", line 539, in test_inferred_dont_pollute
+    self.assertNotIn('custom_attr', nonetype.locals)
+  File ""~/code/astroid/astroid/bases.py"", line 79, in __getattr__
+    return getattr(self._proxied, name)
+  File ""~/code/astroid/astroid/decorators.py"", line 79, in __get__
+    val = self.wrapped(inst)
+  File ""~/code/astroid/astroid/node_classes.py"", line 1220, in _proxied
+    return builtins.getattr(type(self.value).__name__)[0]
+  File ""~/code/astroid/astroid/scoped_nodes.py"", line 102, in decorator
+    nodes = [n for n in func(*args, **kwargs) if not isinstance(n, cls)]
+  File ""~/code/astroid/astroid/scoped_nodes.py"", line 433, in getattr
+    raise exceptions.NotFoundError(name)
+astroid.exceptions.NotFoundError: NoneType
+```
+
+This test is raising ultimately because for None, `type(self.value).__name__` evaluates to `NoneType`, which is the type of the None singleton, only there's no name in the builtins module for `NoneType`.  This will also be a problem for NotImplemented.
+
+Fundamentally, this problem and others like it are arising because astroid is using AST nodes to represent both ASTs and live objects.  However, there's no one-to-one mapping between ASTs and live objects: because None and NotImplemented only exist in the AST as Name(name=None) and Name(name=NotImplemented), using Const to represent them is kind of a hack.  In the far future, we should maybe talk about better-distinguishing the two layers of astroid objects, AST nodes and live objects, and clarifying what kinds of objects only exist in one layer or the other.
+
+For now, my best suggestion is to create a new node that subclasses Const called Singleton that overrides the _proxied property.  Alternately, we could talk about shifting to a different proxy structure, perhaps in combination with replacing bases.Proxy with a different proxy (#205).  Other solutions, like dispatching on the type of the object in _proxied or modifying the builtins AST to add names, look more hackish to me.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/228
+","start issue","[modular_locals bugs] Issues with Const._proxied and singletons"
+"issue_closed","228","pycqa","astroid","pylint-bot","2015-12-09 05:55:29","","closed issue","[modular_locals bugs] Issues with Const._proxied and singletons"
+"issue_comment","228","pycqa","astroid","pylint-bot","2015-10-26 21:01:42","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Having a Singleton node makes sense to me, so I would pretty much prefer this solution.
+
+Yes, at some point we'll have to discuss about separating ASTs from live objects, but we shouldn't worry right now about this. I don't know why issue #205 has any relevancy here, the underlying proxy mechanism should be just an implementation detail from Const's point of view.
+","",""
+"issue_comment","228","pycqa","astroid","pylint-bot","2015-10-28 03:50:57","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Added Singleton node in 45b5ba2 to resolve some of these problems.
+","",""

@@ -10,8 +10,8 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_dir', help='The trained models directory', default='results/GaussianHMMdiag/')
-parser.add_argument('--output_dir', help='Interpreted csv output folder', default='result/model_interpretations/')
+parser.add_argument('--model_dir', help='The trained models directory', default='Sample_Data/HMM/results/GaussianHMMdiag/')
+parser.add_argument('--output_dir', help='Interpreted csv output folder', default='Sample_Data/HMM/result/model_interpretations/')
 args, unknown = parser.parse_known_args()
 
 

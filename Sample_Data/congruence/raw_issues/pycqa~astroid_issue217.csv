@@ -1,0 +1,33 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","217","pycqa","astroid","pylint-bot","2015-10-19 23:44:06","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+At the moment, there are no tests to call module_build() or inspect_build() with a path value that's not None.  Since module_build() is only called on builtin modules and `__file__` is never set for builtins, the first getattr always evaluates to None.
+
+``` python
+    def module_build(self, module, modname=None):
+        """"""Build an astroid from a living module instance.""""""
+        node = None
+        path = getattr(module, '__file__', None)
+        if path is not None:
+            path_, ext = os.path.splitext(modutils._path_from_filename(path))
+            if ext in ('.py', '.pyc', '.pyo') and os.path.exists(path_ + '.py'):
+                node = self.file_build(path_ + '.py', modname)
+        if node is None:
+            # this is a built-in module
+            # get a partial representation by introspection
+            node = self.inspect_build(module, modname=modname, path=path)
+```
+
+The only call to inspect_build() with a path argument at all is in module_build().
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/217
+","start issue","Use of path in Module nodes is not properly tested"
+"issue_comment","217","pycqa","astroid","pylint-bot","2015-10-20 13:41:03","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+For the record, it is expected that the first `if` branch is not taken for builtin modules, while it is actually taken for modules written in Python. This needs a test for a builtin module such as sys and for a module in Python, such as collections.
+","",""

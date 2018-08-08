@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","204","pycqa","astroid","pylint-bot","2015-09-30 13:20:23","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Related to #198. Given the following code, astroid crashes with a maximum recursion error.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+class A:
+
+    def copy(self):
+        """"""Create a copy of the current one.""""""
+        rv = object.__new__(self.__class__)
+        rv #@
+        rv.identifiers = object.__new__(self.identifiers.__class__)
+        return rv
+''')
+print(n)
+i = next(n.infer())
+print(list(i.igetattr('identifiers')))
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/204
+","start issue","object.__new__ and improper attribute lookup leads to MaximumRecursionError"

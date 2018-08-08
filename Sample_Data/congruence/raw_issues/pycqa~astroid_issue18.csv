@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","18","pycqa","astroid","pylint-bot","2014-02-22 13:56:37","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+For Python 3, the following code will trigger a crash in astroid:
+
+```
+#!python
+
+with open('c.txt', 'w') as stream, open('b.txt', 'w'):
+    stream.write('a')
+
+```
+
+The traceback is:
+  File ""D:\Python33\lib\site-packages\pylint-1.1.0-py3.3.egg\pylint\checkers\base.py"", line 349, in visit_callfunc
+    infered = next(node.func.infer())
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\bases.py"", line 307, in wrapped
+    for res in _func(node, context, *_kwargs):
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\bases.py"", line 331, in wrapper
+    for node in func(_args, *_kwargs):
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\inference.py"", line 208, in infer_getattr
+    for owner in self.expr.infer(context):
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\bases.py"", line 307, in wrapped
+    for res in _func(node, context, *_kwargs):
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\bases.py"", line 115, in _infer_stmts
+    for infered in stmt.infer(context):
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\bases.py"", line 307, in wrapped
+    for res in _func(node, context, *_kwargs):
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\inference.py"", line 353, in infer_ass
+    stmts = list(self.assigned_stmts(context=context))
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\bases.py"", line 331, in wrapper
+    for node in func(_args, **kwargs):
+  File ""D:\Python33\lib\site-packages\astroid-1.0.1-py3.3.egg\astroid\protocols.py"", line 316, in with_assigned_stmts
+    for lst in vars.infer(context):
+AttributeError: 'NoneType' object has no attribute 'infer'
+
+The problem is in astroid.protocols.with_assignment_statements, where `vars` can be None in the case of the second context manager, which doesn't use the `as` assignment.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/18
+","start issue","Crash when inferring nodes from `with` statements"
+"issue_closed","18","pycqa","astroid","pylint-bot","2015-12-09 05:51:50","","closed issue","Crash when inferring nodes from `with` statements"
+"issue_comment","18","pycqa","astroid","pylint-bot","2014-02-22 13:00:02","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Don't crash when inferring nodes from with statements, with multiple context managers. Closes #18.
+","",""

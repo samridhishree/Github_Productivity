@@ -1,0 +1,179 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,430,idan,oauthlib,richardasaurus,2016-07-08 14:00:42,,start issue,Run tests against python 3.6 dev
+1,issue_closed,430,idan,oauthlib,thedrow,2016-11-24 15:54:12,,closed issue,Run tests against python 3.6 dev
+2,pull_request_title,430,idan,oauthlib,richardasaurus,2016-07-08 14:00:42,,c598b6ca27da7eaf743717421325a72d8b7a8380,Run tests against python 3.6 dev
+3,pull_request_merged,430,idan,oauthlib,thedrow,2016-11-24 15:54:12,Run tests against python 3.6 dev,8aed781d118baeb6b34d0546ca001b62b93e83a5,Pull request merge from richardasaurus/oauthlib:patch-1 to idan/oauthlib:master
+4,issue_comment,430,idan,oauthlib,thedrow,2016-11-24 15:54:16,Thanks!,,
+5,pull_request_commit,430,idan,oauthlib,richardasaurus,2016-07-08 14:00:33,Run tests against python 3.6,bed9ecce5171810aa1c59d16c31a27571e1f1965,
+6,pull_request_commit,430,idan,oauthlib,richardasaurus,2016-07-08 14:04:27,Update tox.ini,6eca23db3492411f139ba405195d8b19e5052418,
+7,pull_request_commit,430,idan,oauthlib,richardasaurus,2016-07-08 14:06:53,Update tox.ini,c598b6ca27da7eaf743717421325a72d8b7a8380,
+0,issue_title,442,idan,oauthlib,mistermocha,2016-10-21 21:36:02,"self.rsa_key is printing out another secret! This should be scrubbed from **repr**
+",start issue,scrubbing rsa_key from __repr__
+1,issue_closed,442,idan,oauthlib,thedrow,2016-11-24 15:51:47,,closed issue,scrubbing rsa_key from __repr__
+2,pull_request_title,442,idan,oauthlib,mistermocha,2016-10-21 21:36:02,"self.rsa_key is printing out another secret! This should be scrubbed from **repr**
+",ce756e750141b28ac55ea46219b7b3bacc73a2c1,scrubbing rsa_key from __repr__
+3,pull_request_merged,442,idan,oauthlib,thedrow,2016-11-24 15:51:47,scrubbing rsa_key from __repr__,3bac2e23d0fed1a0f0ffa9b0d9f5fb9e174e6e51,Pull request merge from mistermocha/oauthlib:master to idan/oauthlib:master
+4,issue_comment,442,idan,oauthlib,thedrow,2016-11-24 15:51:51,Thanks!,,
+5,pull_request_commit,442,idan,oauthlib,mistermocha,2016-10-21 21:34:25,scrubbing rsa_key from __repr__,ce756e750141b28ac55ea46219b7b3bacc73a2c1,
+0,issue_title,447,idan,oauthlib,seyriz,2016-11-15 07:38:10,"Error Info : TypeError
+I using Flask-Oauthlib.Oauth2Provider for Oauth2 server.
+the request.scope in ` oauthlib.oauth2.rfc6749
+.AuthorizationEndpoint.validate_authorization_request()`  IS ALWAYS None.
+that  `if ""openid"" in request.scopes:` line in ` oauthlib.oauth2.rfc6749.grant_types.openid_connect.AuthCodeGrantDispatcher._handler_for_request()` raise TypeError: argument of type 'NoneType' is not iterable. 
+to avoid this error, 
+ fix `oauthlib.oauth2.rfc6749.grant_types.openid_connect.AuthCodeGrantDispatcher._handler_for_request() `
+``` python
+    def _handler_for_request(self, request):
+        handler = self.default_auth_grant
+
+        if and ""openid"" in request.scopes:
+            handler = self.oidc_auth_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+```
+
+to
+``` python
+    def _handler_for_request(self, request):
+        handler = self.default_auth_grant
+
+        if request.scopes is not None and ""openid"" in request.scopes:
+            handler = self.oidc_auth_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+```",start issue,request.scopes is always None.
+1,issue_closed,447,idan,oauthlib,thedrow,2016-11-24 15:48:26,,closed issue,request.scopes is always None.
+2,issue_comment,447,idan,oauthlib,thedrow,2016-11-24 15:48:25,Try the new version.,,
+0,issue_title,440,idan,oauthlib,fabfuel,2016-10-03 08:30:49,"In grant type authorization_code, `create_token_response()` and `validate_token_request()` are using `request.client_id`:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L275
+
+But `validate_token_request()` is only checking, if `request.client.client_id` is set:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L413-L416
+
+When e.g. using Flask-Oauthlib, the `request.client_id` is not set in token requests. The client id is only available in `request.client.client_id`.
+
+**That leads to a critical bug, that authorization codes are never invalidated/deleted**, because the passed client_id is always `None` and the query to find the code fails and the invalidation is silently ignored (that's out of scope here, I'll create an issue in its project as well).
+
+This can be fixed by ensuring `request.client_id` like it's already done in e.g. the client_credentials grant:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py#L120
+
+Best
+Fabian
+",start issue,Ensure request.client_id in grant authorization_code
+1,issue_closed,440,idan,oauthlib,thedrow,2016-11-24 15:57:41,,closed issue,Ensure request.client_id in grant authorization_code
+2,pull_request_title,440,idan,oauthlib,fabfuel,2016-10-03 08:30:49,"In grant type authorization_code, `create_token_response()` and `validate_token_request()` are using `request.client_id`:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L275
+
+But `validate_token_request()` is only checking, if `request.client.client_id` is set:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L413-L416
+
+When e.g. using Flask-Oauthlib, the `request.client_id` is not set in token requests. The client id is only available in `request.client.client_id`.
+
+**That leads to a critical bug, that authorization codes are never invalidated/deleted**, because the passed client_id is always `None` and the query to find the code fails and the invalidation is silently ignored (that's out of scope here, I'll create an issue in its project as well).
+
+This can be fixed by ensuring `request.client_id` like it's already done in e.g. the client_credentials grant:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py#L120
+
+Best
+Fabian
+",335d9e8b427163bc64c18cb7ad54e609fcd84b23,Ensure request.client_id in grant authorization_code
+3,pull_request_merged,440,idan,oauthlib,thedrow,2016-11-24 15:57:41,Ensure request.client_id in grant authorization_code,3185028db1711b7c0bc1be1ab3ab9a0a9249469f,Pull request merge from fabfuel/oauthlib:ensure-request-client_id-from-request-client to idan/oauthlib:master
+4,issue_comment,440,idan,oauthlib,fabfuel,2016-10-07 17:22:55,"The build failures are not related to my changes. Not the same, but similar issues with Python 3.2 as in #437 
+",,
+5,issue_comment,440,idan,oauthlib,thedrow,2016-11-24 15:57:48,Thanks!,,
+6,pull_request_commit,440,idan,oauthlib,fabfuel,2016-10-03 08:16:14,"Ensure request.client_id, getting it optionally from request.client.client_id",83ed13701707b19420773f18a32aa8b688ae7a3c,
+7,pull_request_commit,440,idan,oauthlib,fabfuel,2016-10-03 08:38:38,Ensure request.client_id after checking request.client.client_id,335d9e8b427163bc64c18cb7ad54e609fcd84b23,
+0,issue_title,448,idan,oauthlib,seyriz,2016-11-15 07:39:18,"Error Info : TypeError
+I using Flask-Oauthlib.Oauth2Provider for Oauth2 server.
+the request.scope in ` oauthlib.oauth2.rfc6749
+.AuthorizationEndpoint.validate_authorization_request()`  IS ALWAYS None.
+that  `if ""openid"" in request.scopes:` line in ` oauthlib.oauth2.rfc6749.grant_types.openid_connect.AuthCodeGrantDispatcher._handler_for_request()` raise TypeError: argument of type 'NoneType' is not iterable. 
+to avoid this error, 
+ fix `oauthlib.oauth2.rfc6749.grant_types.openid_connect.AuthCodeGrantDispatcher._handler_for_request() `
+``` python
+    def _handler_for_request(self, request):
+        handler = self.default_auth_grant
+
+        if and ""openid"" in request.scopes:
+            handler = self.oidc_auth_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+```
+
+to
+``` python
+    def _handler_for_request(self, request):
+        handler = self.default_auth_grant
+
+        if request.scopes is not None and ""openid"" in request.scopes:
+            handler = self.oidc_auth_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+```",start issue,Try iterate NoneType in AuthCodeGrantDispatcher._handler_for_request()
+1,issue_closed,448,idan,oauthlib,thedrow,2016-11-24 15:49:30,,closed issue,Try iterate NoneType in AuthCodeGrantDispatcher._handler_for_request()
+2,issue_comment,448,idan,oauthlib,thedrow,2016-11-24 15:49:30,Try the new version.,,
+0,issue_title,443,idan,oauthlib,mistermocha,2016-10-21 22:05:59,"This is definitely a secret that shouldn't be printed: https://github.com/idan/oauthlib/blob/master/oauthlib/oauth1/rfc5849/__init__.py#L97
+
+... but this block doesn't scrub it https://github.com/idan/oauthlib/blob/master/oauthlib/oauth1/rfc5849/__init__.py#L105-L111
+
+I would like to request filtering out the rsa_key from the **repr**
+",start issue,__repr__ still prints rsa_key secret
+1,issue_closed,443,idan,oauthlib,thedrow,2016-11-24 15:52:13,,closed issue,__repr__ still prints rsa_key secret
+2,issue_comment,443,idan,oauthlib,mistermocha,2016-10-21 22:30:09,"For the record, here's a snip from a run https://gist.github.com/mistermocha/a65ded680cd5c8fcbaf7bb32da3290d7
+
+The import chain here is:
+
+my script -> requests -> requests-oauthlib -> oauthlib
+",,
+3,issue_comment,443,idan,oauthlib,mistermocha,2016-11-03 17:20:14,"Ping? This should be an easy change, but my attempts to merge failed tests.
+",,
+4,issue_comment,443,idan,oauthlib,thedrow,2016-11-24 15:52:13,I'll release this soon with other changes.,,
+0,issue_title,437,idan,oauthlib,jandd,2016-09-17 09:42:54,"This pull request fixes the ""TypeError: argument of type 'NoneType' is not iterable"" that was caused by calling the openid_connect validate_authorization method with a request where request.scopes was
+set to None (fixes #436).
+",start issue,Fix TypeError in openid_connect
+1,issue_closed,437,idan,oauthlib,thedrow,2016-11-24 16:00:10,,closed issue,Fix TypeError in openid_connect
+2,pull_request_title,437,idan,oauthlib,jandd,2016-09-17 09:42:54,"This pull request fixes the ""TypeError: argument of type 'NoneType' is not iterable"" that was caused by calling the openid_connect validate_authorization method with a request where request.scopes was
+set to None (fixes #436).
+",d8ba5858a024efebc3e918ad6b9134d11a1c2120,Fix TypeError in openid_connect
+3,issue_comment,437,idan,oauthlib,jandd,2016-09-17 09:50:56,"The tox run for py32 in the Travis build fails for reasons not related to the code change.
+",,
+4,issue_comment,437,idan,oauthlib,jandd,2016-09-17 10:21:43,"The build fails for the cloned master branch as well (see https://travis-ci.org/jandd/oauthlib/jobs/160642978)
+",,
+5,issue_comment,437,idan,oauthlib,yon2004,2016-09-22 13:17:34,"Can confirm that this fixes the issue. Thanks @jandd 
+",,
+6,issue_comment,437,idan,oauthlib,Sumukh,2016-10-07 04:06:44,"If you merge master back in - tests should pass again. 
+
+I'm not sure who is responsible for merging/reviewing - but the change in here is really small and can only fix errors (which is impacting a lot of users of downstream libraries). 
+",,
+7,issue_comment,437,idan,oauthlib,thedrow,2016-11-24 16:00:10,#450 Should fix this,,
+8,pull_request_commit,437,idan,oauthlib,jandd,2016-09-17 09:38:50,"Fix TypeError in openid_connect
+
+This commit fixes the ""TypeError: argument of type 'NoneType' is not
+iterable"" that was caused by calling the openid_connect
+validate_authorization method with a request where request.scopes was
+set to None.",d8ba5858a024efebc3e918ad6b9134d11a1c2120,
+0,issue_title,441,idan,oauthlib,davidvartanian,2016-10-17 09:20:51,"Scopes are initialised as request.scopes = None in validate_authorization_request() method and response_type_handler.validate_authorization_request(request) is called immediately afterwards.
+Now, in method _handler_for_request() called by validate_authorization_request() there's a call to if ""openid"" in request.scopes, which expects of course request.scopes to be an Iterable.
+
+Since I couldn't find any other way this library to work, please merge it so that it's available to be installed via pip.
+Thanks!
+",start issue,Updating request.scopes to a list to fix the NoneType is not iterable error.
+1,issue_closed,441,idan,oauthlib,thedrow,2016-11-24 15:55:07,,closed issue,Updating request.scopes to a list to fix the NoneType is not iterable error.
+2,pull_request_title,441,idan,oauthlib,davidvartanian,2016-10-17 09:20:51,"Scopes are initialised as request.scopes = None in validate_authorization_request() method and response_type_handler.validate_authorization_request(request) is called immediately afterwards.
+Now, in method _handler_for_request() called by validate_authorization_request() there's a call to if ""openid"" in request.scopes, which expects of course request.scopes to be an Iterable.
+
+Since I couldn't find any other way this library to work, please merge it so that it's available to be installed via pip.
+Thanks!
+",02fff506210cf729ac5ae64751c772542385beb7,Updating request.scopes to a list to fix the NoneType is not iterable error.
+3,issue_comment,441,idan,oauthlib,davidvartanian,2016-10-17 09:35:11,"Please notice that Travis tests fail on py32 for reasons not related to this commit as well as the tests on master without my change.
+",,
+4,issue_comment,441,idan,oauthlib,Sumukh,2016-10-20 19:11:18,"#436 is also another approach to this same issue. In the meantime, what we have done is install directly from our fork. 
+
+I have a fork that should work:  https://github.com/Sumukh/oauthlib
+",,
+5,issue_comment,441,idan,oauthlib,thedrow,2016-11-24 15:55:07,#450 should fix this,,
+6,pull_request_commit,441,idan,oauthlib,david@bab.la,2016-10-17 09:12:16,Updating request.scopes to a list to fix the NoneType is not iterable error.,02fff506210cf729ac5ae64751c772542385beb7,

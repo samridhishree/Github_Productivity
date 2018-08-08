@@ -1,0 +1,45 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","65","pycqa","astroid","pylint-bot","2014-12-07 00:26:53","Originally reported by: **BitBucket: [jquast](http://bitbucket.org/jquast), GitHub: @jquast?**
+
+---
+
+This reported duplicated from another project, https://github.com/landscapeio/prospector/issues/73#issuecomment-65918116
+
+Reporter claims to have a fairly large project size. Is it possible there is a file descriptor leak?
+
+```
+Traceback (most recent call last):
+  File ""/usr/local/bin/prospector"", line 9, in <module>
+  File ""/usr/local/lib/python2.7/site-packages/prospector/run.py"", line 317, in main
+  File ""/usr/local/lib/python2.7/site-packages/prospector/run.py"", line 224, in execute
+  File ""/usr/local/lib/python2.7/site-packages/prospector/tools/pylint/__init__.py"", line 182, in run
+  File ""/usr/local/lib/python2.7/site-packages/pylint/lint.py"", line 585, in check
+  File ""/usr/local/lib/python2.7/site-packages/pylint/lint.py"", line 662, in check_astroid_module
+  File ""/usr/local/lib/python2.7/site-packages/pylint/utils.py"", line 804, in walk
+  File ""/usr/local/lib/python2.7/site-packages/pylint/utils.py"", line 801, in walk
+  File ""/usr/local/lib/python2.7/site-packages/pylint/checkers/variables.py"", line 756, in visit_import
+  File ""/usr/local/lib/python2.7/site-packages/astroid/bases.py"", line 110, in cache_generator
+  File ""/usr/local/lib/python2.7/site-packages/astroid/bases.py"", line 341, in wrapped
+  File ""/usr/local/lib/python2.7/site-packages/astroid/inference.py"", line 212, in infer_import
+  File ""/usr/local/lib/python2.7/site-packages/astroid/mixins.py"", line 107, in do_import_module
+  File ""/usr/local/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 361, in import_module
+  File ""/usr/local/lib/python2.7/site-packages/astroid/manager.py"", line 125, in ast_from_module_name
+OSError: [Errno 24] Too many open files
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/65
+","start issue","OSError: [Errno 24] Too many open files analyzing large project"
+"issue_closed","65","pycqa","astroid","pylint-bot","2015-12-09 05:52:46","","closed issue","OSError: [Errno 24] Too many open files analyzing large project"
+"issue_comment","65","pycqa","astroid","pylint-bot","2014-12-15 15:26:09","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Indeed, it was a file descriptor leak. Not a leak per se, since the files were closed after Pylint finished analyzing the modules, but since there were already too many open files, it failed to reach that point. In 468534927b4cace0232e6659892942b291996998 I added a new way for retrieving a module's file stream, using a method, which will be used in Pylint 1.4.1 and thus the file will be closed right away. This problem should go away by then. Since the astroid part is finished, I'll close the issue, but you can reopen it if it reoccurs in Pylint 1.4.1.
+","",""
+"issue_comment","65","pycqa","astroid","pylint-bot","2014-12-15 16:50:37","_Original comment by_ **BitBucket: [jquast](http://bitbucket.org/jquast), GitHub: @jquast?**:
+
+---
+
+Great job, solution looks sound.  Thanks for your attention!
+","",""

@@ -1,0 +1,101 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","438","pycqa","astroid","poncovka","2017-05-22 16:01:48","When we run `pylint` on a code that imports `rpm` package, we get tracebacks, because `rpm` has undefined symbol `spec_Type`. I have reported it to `rpm`, but maybe it could be fixed also here.
+
+### Steps to reproduce
+
+Environment:
+* Fedora 27 (Rawhide)
+* python 3.6.1
+* pylint 1.7.1
+* python3-astroid 1.5.2
+* python3-rpm 4.13.0.1
+
+Prepared file for testing:
+```
+> cat test.py
+import rpm
+```
+
+### Current behavior
+Current output from pylint:
+```
+pylint test.py
+No config file found, using default configuration
+************* Module test
+C:  1, 0: Missing module docstring (missing-docstring)
+Traceback (most recent call last):
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 129, in ast_from_module_name
+    module = modutils.load_module_from_name(modname)
+  File ""/usr/lib/python3.6/site-packages/astroid/modutils.py"", line 190, in load_module_from_name
+    return load_module_from_modpath(dotted_name.split('.'), path, use_sys)
+  File ""/usr/lib/python3.6/site-packages/astroid/modutils.py"", line 233, in load_module_from_modpath
+    module = imp.load_module(curname, mp_file, mp_filename, mp_desc)
+  File ""/usr/lib64/python3.6/imp.py"", line 242, in load_module
+    return load_dynamic(name, filename, file)
+  File ""/usr/lib64/python3.6/imp.py"", line 342, in load_dynamic
+    return _load(spec)
+  File ""<frozen importlib._bootstrap>"", line 675, in _load
+  File ""<frozen importlib._bootstrap>"", line 648, in _load_unlocked
+  File ""<frozen importlib._bootstrap>"", line 560, in module_from_spec
+  File ""<frozen importlib._bootstrap_external>"", line 922, in create_module
+  File ""<frozen importlib._bootstrap>"", line 205, in _call_with_frames_removed
+ImportError: /usr/lib64/python3.6/site-packages/rpm/_rpms.cpython-36m-x86_64-linux-gnu.so: undefined symbol: spec_Type
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 11, in <module>
+    load_entry_point('pylint==1.7.1', 'console_scripts', 'pylint')()
+  File ""/usr/lib/python3.6/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/lib/python3.6/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""/usr/lib/python3.6/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File ""/usr/lib/python3.6/site-packages/pylint/checkers/variables.py"", line 1129, in visit_import
+    module = next(node.infer_name_module(parts[0]))
+  File ""/usr/lib/python3.6/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.6/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.6/site-packages/astroid/inference.py"", line 193, in infer_import
+    yield self.do_import_module(name)
+  File ""/usr/lib/python3.6/site-packages/astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/lib/python3.6/site-packages/astroid/scoped_nodes.py"", line 409, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 154, in ast_from_module_name
+    return self.ast_from_file(found_spec.location, modname, fallback=False)
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 80, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/lib/python3.6/site-packages/astroid/builder.py"", line 152, in file_build
+    return self._post_build(module, encoding)
+  File ""/usr/lib/python3.6/site-packages/astroid/builder.py"", line 169, in _post_build
+    self.add_from_names_to_locals(from_node)
+  File ""/usr/lib/python3.6/site-packages/astroid/builder.py"", line 214, in add_from_names_to_locals
+    imported = node.do_import_module()
+  File ""/usr/lib/python3.6/site-packages/astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/lib/python3.6/site-packages/astroid/scoped_nodes.py"", line 409, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 133, in ast_from_module_name
+    modname=modname, path=spec.location, error=ex))
+AttributeError: module 'astroid.interpreter._import.spec' has no attribute 'location'
+```
+
+### Expected behavior
+No traceback.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+1.5.2
+","start issue","Traceback for undefined symbol: spec_Type"
+"issue_closed","438","pycqa","astroid","PCManticore","2017-06-03 13:44:07","","closed issue","Traceback for undefined symbol: spec_Type"
+"issue_comment","438","pycqa","astroid","PCManticore","2017-06-03 13:44:07","This is not a pylint/astroid problem.","",""

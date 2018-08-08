@@ -1,0 +1,13 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","344","idan","oauthlib","hurrymaplelad","2015-05-20 21:45:20","I'd like to auth with Google and protect my oauth2 callback from CSRF using the state token, but I'm not sure how I should validate the state querystring arg returned by Google to my callback.
+
+I pass the generated state token into `WebApplication.prepare_request_uri()`, which works, and Google calls back with that token in the querystring.
+
+From my callback I call `WebApplication.prepare_request_body()` to request an access token.  I could pass the state token in here from the querystring, but the call to `parameters.prepare_token_request` does not validate it.  
+
+It looks like there's also `BaseClient.prepare_token_request`, which does validate `state`.  Should `WebApplication.prepare_request_body()` be calling this method instead?  Or should I call `WebAppClient.parse_request_uri_response()` before `WebApplication.prepare_request_body()` just for validation?
+
+On a related note, it looks strange to me that `clients/base.py` both [imports `prepare_token_request` from `parameters`](https://github.com/idan/oauthlib/blob/8624bfc87f0fa24548d01ee33de77fedd802d146/oauthlib/oauth2/rfc6749/clients/base.py#L16) and [defines its own `prepare_token_request`](https://github.com/idan/oauthlib/blob/8624bfc87f0fa24548d01ee33de77fedd802d146/oauthlib/oauth2/rfc6749/clients/base.py#L236).  Typo?
+
+In case it helps, I'm using flask-oauthlib which [doesn't appear pass](https://github.com/lepture/flask-oauthlib/blob/32e799bf795f9e49f7bb85c0262b5af29a0fd9a4/flask_oauthlib/client.py#L615) the state token along to `WebApplication.prepare_request_uri()`.  Opening a [separate issue](https://github.com/lepture/flask-oauthlib/issues/206) for them.
+","start issue","Missing csrf state token checks and duplicate `prepare_token_request`"

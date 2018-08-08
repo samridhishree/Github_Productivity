@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","177","pycqa","astroid","pylint-bot","2015-08-20 16:50:11","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, astroid can't understand it, because call contexts are improperly passed in the inference chain. 
+
+In this particular example, when chest is called, its call context will contain the arguments
+Name(a), Name(b), without the references to their original values.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+def chest(a):
+    return a * a
+
+def best(a, b):
+    return chest(a)
+
+def test(a, b, c):
+    return best(a, b)
+
+test(4, 5, 6) #@
+''')
+print(n)
+print(n.infered())
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/177
+","start issue","Call contexts aren't propagated properly"
+"issue_comment","177","pycqa","astroid","PCManticore","2016-01-09 16:03:10","Another example which should be handled
+
+```
+def foo(one, two, three, four, five):
+    pass
+
+
+def bar(*args):
+    foo(1, 2, 3, *args)
+
+bar(4, 5, 6, 7)
+```
+","",""
+"issue_comment","177","pycqa","astroid","deckar01","2016-12-21 20:03:57","Mentioned in https://github.com/PyCQA/pylint/issues/1225:
+
+```py
+def call(func):
+    return func('test')
+
+def simple():
+    return 'test'
+
+call(simple)
+```","",""

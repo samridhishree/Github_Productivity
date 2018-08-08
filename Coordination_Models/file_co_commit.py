@@ -13,18 +13,19 @@ from collections import defaultdict
 from itertools import combinations, product, chain
 import time
 import argparse
+import unicodedata
 
 
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--processed_commit_dir', help='Directory containing commit files processed for graphs',\
-					default='data/commits_processed_for_graph/')
+parser.add_argument('--commit_dir', help='Directory containing commit files processed for graphs',\
+					default='Sample_Data/congruence/raw_commits/')
 parser.add_argument('--output_pickle_dir', help='Output pickle file containing pairwise file co-commit counts',\
-					default='data/co_commit_adj_pickle/')
+					default='Sample_Data/congruence/co_commit_adj_pickle/')
 args, unknown = parser.parse_known_args()
 
-processed_commit_dir = args.processed_commit_dir
+commit_dir = args.commit_dir
 output_pickle_dir = args.output_pickle_dir
 
 try:
@@ -32,17 +33,26 @@ try:
 except:
     pass
 
-for filename in os.listdir(processed_commit_dir):
-	commit_file = os.path.join(processed_commit_dir, filename)
-	project_name = filename.split('_commitDep.csv')[0]
+def ConvertToFilesList(list_str):
+	#print list_str
+	files = ast.literal_eval(list_str)
+	files = files[0]
+	files = unicodedata.normalize('NFKD', files).encode('ascii', 'ignore')
+	if "[" not in files:
+		return []
+	files = ast.literal_eval(files)
+	return files
+
+
+for filename in os.listdir(commit_dir):
+	commit_file = os.path.join(commit_dir, filename)
+	project_name = filename.split('_commits.csv')[0]
 	co_commit_pick = os.path.join(output_pickle_dir, (project_name + '_co_commit.pickle'))
 
-	if os.path.isfile(commit_file) == True and os.path.isfile(co_commit_pick) == False:
+	if os.path.isfile(commit_file) == True:
 		start = time.time()
 		print "Processing for project: ", project_name
-		f = open(commit_file, 'rb')
-		reader = csv.reader(f)
-		next(reader, None)
+		data = pd.read_csv(os.path.join(commit_dir, filename))
 		co_commit_dict = defaultdict(int)
 		singletons = set()
 		all_files = set()
@@ -50,10 +60,14 @@ for filename in os.listdir(processed_commit_dir):
 		affected_pairs = []
 
 		#Get the list of files in each commit and edit their matrix entries
-		for row in reader:
+		for idx,row in data.iterrows():
 			files_affected = []
-			for i in range(7, len(row)):
-				file = row[i].strip().lower()
+			raw_files = row['paths']
+			if pd.isnull(row['paths']):
+				continue
+			files = ConvertToFilesList(raw_files)
+			for file in files:
+				file = file.strip().lower()
 				if(file.endswith('.py')):
 					all_files.add(file)
 					files_affected.append(file)
@@ -87,10 +101,9 @@ for filename in os.listdir(processed_commit_dir):
 		print "Saving as pickle for project :", project_name
 		with open(co_commit_pick, 'wb') as c_pickle:
 			pickle.dump(co_commit_dict, c_pickle)
-		#Save as csv
-		# df = pd.DataFrame.from_dict(co_commit_dict, orient='index')
-		# output_file = os.path.join(output_file_dir, (project_name + '_co_commit.csv'))
-		# df.to_csv(output_file)
+
+
+
 
 
 

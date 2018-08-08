@@ -1,0 +1,36 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","323","pycqa","astroid","anentropic","2016-03-11 15:09:20","After adding `--load-plugins pylint-django` to my pylint run I have started getting recursion error from astroid.
+
+I see you have a number of open issues about the recursion problem, and that a fix will need a significant rewrite which is planned for future version.
+
+So my question is: is there any way currently for me to work around this (and still get some use from the plugin), e.g. by telling pylint to ignore certain lines?
+
+And how to locate the code that has triggered the recursion error?  There is none of my source code in the stack trace or course, is there some way to find out what structure astroid was parsing when it occurred?
+
+Any kind of hints or suggestions of things to look for appreciated, I realise there's no solution at this stage.
+","start issue","recursion depth exceeded error - how to identify/workaround?"
+"issue_closed","323","pycqa","astroid","PCManticore","2016-03-18 19:00:36","","closed issue","recursion depth exceeded error - how to identify/workaround?"
+"issue_comment","323","pycqa","astroid","PCManticore","2016-03-11 21:45:47","Can you give me some source code for reproducing this issue with pylint-django? If you don't have these errors when you run pylint without the plugin, the cause might be the fact that pylint-django messes up the object hierarchies, introducing cycles or something like that, but in order to know for sure, I have to have a sample that I can work with.
+
+A potential work around though might be disabling the pylint pattern that can cause this error, if you have a meaningful traceback from which you could infer this. If not, there might be a trick for you to find out where it crashes, by running pylint with an init hook that sets a exception hook, in which you could try to walk the traceback's frames until you find the pattern (not sure if it works): `pylint .. --init-hook=""import sys, code; sys.excepthook = lambda exc, exc_type, tb, code=code: code.interact(local=locals())`
+","",""
+"issue_comment","323","pycqa","astroid","anentropic","2016-03-11 22:01:55","hi thanks for the reply... it's going to be very difficult to find the code that triggers it... I have a huge project and the stack trace gives no clue about what it was inspecting when the recursion occurred
+
+I have managed to narrow it down a little bit by making a custom plugin that selectively enables features from pylint_django... I can enable everything except the 'augmentations', so the problem is somewhere in here:
+https://github.com/landscapeio/pylint-django/blob/master/pylint_django/augmentations/__init__.py
+(I'm actually happy with this workaround for now, it has reduced my overall pylint violations quite a bit already)
+
+I haven't tried the exception hook yet though, thanks for the tip
+","",""
+"issue_comment","323","pycqa","astroid","PCManticore","2016-03-18 19:00:35","I think I found the issue and it seems to be something that's better fixed in pylint-django.
+
+Here https://github.com/landscapeio/pylint-django/blob/master/pylint_django/transforms/__init__.py#L28 they are replacing some of Django classes with classes that have some special attributes in order to satisfy some Django requirements with pylint, I presume. The problem is that just replacing the locals might not be always enough and this can lead to inconsistent classes that results in these kind of errors. I'm not sure what's their intention, but instead of patching the locals, they can return the new fake module that they created, so a simple `return fake` should do it. You could try to report this issue to them.
+","",""
+"issue_comment","323","pycqa","astroid","anentropic","2016-03-18 19:03:19","I don't think it's that part though... I am able to enable all the pylint_django 'transformations' in my custom plugin, it's something in their 'augmentations' that breaks it
+
+though maybe there is some interaction between the two parts
+","",""
+"issue_comment","323","pycqa","astroid","PCManticore","2016-03-19 00:02:16","You might be right, since I didn't have a way to reproduce, I tried running with pylint_django itself which crashed as expected, but that might have been a different crash than you had. At this point though we're pretty sure this is caused by pylint_django's patching of objects, so this has to be reported to their bug tracker.
+","",""
+"issue_comment","323","pycqa","astroid","PCManticore","2016-03-19 00:02:40","But if you can find a smaller reproducing case, I could try to help you pin the place where this occurs.
+","",""

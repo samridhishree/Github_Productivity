@@ -1,0 +1,96 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","44","idan","oauthlib","ib-lundgren","2012-06-15 09:11:59","Thought I'd get some discussion going on how to best approach the versatility of OAuth2 client profiles and token types. While OAuth 2 is a fair bit simpler than OAuth1 I still think having several Client classes would be advantageous. Mainly because each client comes with its own set of ""quirks"" in the request/response flow.  Also, unlike OAuth1 extensibility plays a major role in OAuth2 and I think it would be easy to add extension client classes this way. For example the [Google Service Accounts grant model](https://developers.google.com/accounts/docs/OAuth2ServiceAccount). Furthermore, having several clients make it more explicit that there are differences between them, this is very important from a security point of view because although they may look similar they are built on vastly different security premises (im looking at you auth code and implicit grant). 
+
+My idea for how these clients might look is based on thinly wrapping #18. The clients share enough functionality to work well of a base class with 3 polymorhpic methods. 
+
+```
+Client(object):
+    # the base client, has the ability to add ""bearer"" and ""mac"" tokens
+
+    def __init__(self, ....):
+        # sets up token type and related values
+
+    def add_token(self, uri, http_method=u'GET', body=None, headers=None):
+        # attaches tokens either to uri, auth header or body in the case of
+        # bearer tokens, and to auth header if mac token
+        # this is a very basic operation for both token types
+
+    def validate_token_params(self, ...):
+        # param validation is the same for all client profiles but highly
+        # recommended by the spec for security reasons
+
+    def prepare_token_uri(self, ...):
+        raise NotImplementedError(..)
+
+    def parse_token_uri_response(self, response):
+        # extracts and validates params from response
+        # params are added to self 
+        # abstract because it differs in implicit/auth code
+        raise NotImplementedError(..) 
+
+    def prepare_token_body(self, ...):
+        raise NotImplementedError(..)
+
+    def parse_token_body_response(self, response):
+        # extracts and validates params from response
+        # params are added to self   
+        # not abstract since its the same for all profiles
+
+ConfidentialClient(Client):
+    # follows the authorization code grant model
+    # overrides all abstract methods:
+    # prepare_token_uri, parse_token_uri_response, prepare_token_body
+
+PublicClient(Client):
+    # follows the implicit code grant model
+    # overrides prepare_token_uri & parse_token_uri_response
+
+CredentialsClient(Client):
+    # follows the client credentials grant model
+    # overrides prepare_token_body
+
+PasswordClient(Client):
+    # follows the resource owner password credentials grant
+    # overrides prepare_token_body
+```
+
+Any input on how to properly name the parse-and-populate methods would be awesome. Oh, and remember that the responses for OAuth2 are clearly defined and thus easily parsable =)
+","start issue","Designing OAuth2 client support"
+"issue_comment","44","idan","oauthlib","gulopine","2012-06-15 13:53:04","I like where this is headed. I guess I'll have to read the spec a few more times before I can have much useful feedback, but I'll at least point out that in the real world, responses for OAuth 2 aren't quite as easily parsable as the spec suggests, at least for access tokens. For example, Facebook and GitHub return data in a URL-encoded string, rather than JSON, and Facebook even misspells `expires_in` as `expires`. But still, with this approach, the base implementation can follow the spec, while subclasses can override as necessary for provider-specific quirks.
+","",""
+"issue_comment","44","idan","oauthlib","gulopine","2012-06-15 13:55:30","There's also wildly inconsistent support for passing `state` back and forth. I'm not sure where that fits into this approach, but it's worth noting in case it gets buried into a method somewhere. For most services that don't support it, it can be mimicked by adding it as a query parameter to `redirect_uri` but there's no good way to know in advance whether a service supports it properly.
+","",""
+"issue_comment","44","idan","oauthlib","ib-lundgren","2012-06-15 14:58:17","Interesting, I have mostly been reading the spec and have had little experience with OAuth 2 providers. I guess the inconsistency comes from early adoption, the first versions did in fact use url encoded strings. 
+
+The state parameter is optional and will be so in the client methods as well, so if they have dodgy support for it, it can simply be omitted. There might indeed be a need for special extensions that do not provide new grant types but rather patches provider specific quirks like those you mentioned. 
+
+On an unrelated note. Draft 27, that was published recently, is quite solid and will be submitted for RFC review. No major changes can therefore be introduced =) I have not checked the diff of 25 & 27 but doubt there is anything but fixed typos. 
+","",""
+"issue_comment","44","idan","oauthlib","gulopine","2012-06-15 16:32:26","Oddly enough, I've been dealing mostly with providers and haven't been focusing as much on the spec so far. Admittedly, we should be able to use Content-Type to determine how to parse the access token, so that shouldn't be a big deal. I might spare some time this weekend to see if I can come up with a working set of classes that work the way you've described here and see how it plays out. For what it's worth, I also have a fork of [requests](https://github.com/gulopine/requests) where I'll be adding support for whatever we come up with here, as well as trying to use all of that in [foauth.org](https://github.com/gulopine/foauth.org), so it won't be purely theoretical. :)
+","",""
+"issue_comment","44","idan","oauthlib","ib-lundgren","2012-06-15 17:35:30","Hrm I guess content-type could be used although it might be better to use provider specific extensions since url encoded responses are not valid OAuth 2 responses anymore and will not be in the RFC either. 
+
+Before I get all into OAuth 2 I was hoping to find my magic free time wand and send some :sparkles: over for @idan and @dgouldin who are both pretty swamped but really the brains behind this operation =) 
+
+When I do get started on OAuth 2 though my idea for the classes was to wrap the functionality provided by #18 as it already supports most of what I had in mind. #18  has not yet been merged but will try and get around to it after I've sorted OAuth 1 Server out.  It should not require much work but want to spend some time inspecting it nonetheless, mainly to see what stupid things 3 months ago me might have written. 
+
+Will be fun to see what you come up with. If you do create code for OAuthLib remember that OAuthLib should be in strict adherence to the spec, be agnostic of other libraries (ie requests), have a pretty dumb but usable interface (ie uri, body, headers instead of some fancy request object). Oh and unicode everywhere! 
+","",""
+"issue_comment","44","idan","oauthlib","ib-lundgren","2012-06-28 16:03:04","Drafted some Client classes based on the ideas presented here. Will try and find some time tomorrow to test them out.
+","",""
+"issue_comment","44","idan","oauthlib","ib-lundgren","2012-06-29 12:09:02","Made a few small tweaks, added initial tests for Client and WebApplicationClient. Hope to get tests in for UserAgentClient, PasswordCredentialsClient and NativeApplicationClient over the weekend. Will cook up OAuth2 support for requests as I go along and maybe a gist or two with examples =)
+","",""
+"issue_comment","44","idan","oauthlib","ib-lundgren","2012-07-09 21:03:51","An example of using oauthlib & requests to access your Google+ profile using the OAuth 2 Web Application workflow
+
+https://gist.github.com/3078882
+","",""
+"issue_comment","44","idan","oauthlib","whit537","2014-09-17 14:10:13","What's the status of this ticket? My first impression after reading this ticket and browsing the source is that most of this has been implemented. Yes? No?
+","",""
+"issue_comment","44","idan","oauthlib","ib-lundgren","2014-09-22 13:18:47","More or less yes. I'm still not that happy with the current state of OAuth 2 client support in oauthlib and thought I'd take a good look at it and see how it can be made better and what of requests-oauthlib can be ported over. Whether that is tracked here or in a new issue I don't really mind.
+","",""
+"issue_comment","44","idan","oauthlib","ib-lundgren","2014-09-25 16:28:55","Sketched out a few changes in https://github.com/idan/oauthlib/commit/6c14274ca7260c4eb849495d87a4c9f0d61daf53 and will try test them out more thoroughly next week. 
+
+Main addition is the addition of a few recommended prepare_x_request methods to interact with clients in a more consistent way. Also HTTPS and state checking.
+
+Might be easier to browse at http://oauthlib.readthedocs.org/en/latest/oauth2/clients/baseclient.html when its updated.
+","",""

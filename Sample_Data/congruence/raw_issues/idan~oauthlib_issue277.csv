@@ -1,0 +1,34 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","277","idan","oauthlib","RodneyRichardson","2014-10-07 14:02:42","When raising OAuth2Errors, the state should be set so that it ends up in the redirect_uri (see [RFC 6749, Section 4.1.2.1](http://tools.ietf.org/html/rfc6749#section-4.1.2.1))
+
+For example:
+
+``` python
+# oauth2/rfc6749/grant_types/authorization_code.py, Line 310:
+if not self.request_validator.validate_response_type(request.client_id,
+        request.response_type, request.client, request):
+    log.debug('Client %s is not authorized to use response_type %s.',
+              request.client_id, request.response_type)
+    raise errors.UnauthorizedClientError(request=request)
+```
+
+This should either change to:
+
+``` python
+    raise errors.UnauthorizedClientError(state=request.state, request=request)
+```
+
+...or OAuth2Error should extract the state from the request automatically
+
+``` python
+# oauth2/rfc6749/errors.py, Line 46:
+if request:
+    self.redirect_uri = request.redirect_uri
+    self.client_id = request.client_id
+    self.scopes = request.scopes
+    self.response_type = request.response_type
+    self.grant_type = request.grant_type
+    if not state:
+        self.state = request.state   
+```
+","start issue","OAuth2 Authorization Code: OAuth2Error does not always include state "

@@ -1,0 +1,49 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","45","idan","oauthlib","cmr","2012-07-05 20:16:29","@ib-lundgren
+
+I need an OAuth2 authorization server as well as a resource server, and no existing implementations exist besides some django-specific stuff. oauthlib looks like a worthy place to contribute one. I'm willing to do all of the work, as I need this to do my job, but I'd like some discussion. My initial thoughts after reading the spec:
+- There is leeway for lots of extensibility, which might be difficult to wrap
+- There isn't actually a lot that needs to be done
+
+Similar to the discussion of the client, the only thing that really needs to be done here is provide a nice API. I think an interface very similar to oauthlib.oauth1.rfc5849.Server would be fine.
+","start issue","OAuth2 Server Discussion"
+"issue_closed","45","idan","oauthlib","ib-lundgren","2013-03-27 19:04:38","","closed issue","OAuth2 Server Discussion"
+"issue_comment","45","idan","oauthlib","ib-lundgren","2012-07-05 21:46:58","Hey @cmr, awesome to see you are interested in contributing! I will try and help out as much as I can when I find free time.
+
+An API similar to OAuth1 would probably work fine and will likely turn out much simpler. There is as you say much less to be done, given that you use Bearer tokens. MAC tokens should probably be put off until the spec stabilize a bit. Not looked into SAML2 and JWT yet.
+
+Feel free to take a stab at an API and don't hesitate to dump any thoughts you have here on github. I think you can address the extensibility quite neatly by delegating depending on response_type and grant_type. This could also elegantly enable providers to tailor which authorization types they allow.
+
+```
+verify_request(self, uri, http_method, body, headers....):
+     ...
+     if grant_type:
+        return self.grant_type_verifiers.get(grant_type)(uri, http_method, ...)
+
+     if response_type:
+        return self.response_type_verifiers.get(response_type)(uri, http_method, ...)
+```
+
+Naturally this is just a very rough idea of what I had in mind. The grant/response types should be defined on the class level as opposed to instance level. It would be great if the three main endpoints, authorization, token and resource could be completely separated but I've not looked into this yet.
+
+Care should also be taken to get security right from the start, the spec mentions what you need to do and the why can be found in http://tools.ietf.org/html/draft-ietf-oauth-v2-threatmodel-06
+
+Looking forward to more discussion and maybe a pull request or two ;) 
+","",""
+"issue_comment","45","idan","oauthlib","ib-lundgren","2012-09-06 20:03:38","Thought I'd just update that I've been working a bit on #46, #47 and #48 the last few weeks and hope to find some time next week to push very much initial non-complete oauth 2 bearer token only oauth provider support.
+","",""
+"issue_comment","45","idan","oauthlib","mvantellingen","2012-10-03 13:42:52","Since we also need an oauth2 server I've started working on getting the oauth2 branch working. See first pull request at https://github.com/idan/oauthlib/pull/61
+
+It might be usefull to coordinate some stuff. I'm on irc #oauthlib (mvt, avail between 08:00 - 18:00 CEST)
+","",""
+"issue_comment","45","idan","oauthlib","ib-lundgren","2012-10-03 22:43:13","Sigh I should not be touching code or trying to manual merge after midnight. Not worked with git for a while so might even have screwed up a commit on master. Oh well, will look into that tomorrow.
+
+For now I've pushed the broken and in need of much work oauth 2 provider to the oauth2_provider branch. My next step was to  move the test from test_server into test_grant_types and I was planning on adding Mock.Mock (http://www.voidspace.org.uk/python/mock/) into the soup to make server testing more straightforward. Never got around to it however so feel free to dig in. Please ask away and I'll fill in any details but for now I need to get into bed before I revert us back to the stone ages.
+","",""
+"issue_comment","45","idan","oauthlib","ib-lundgren","2012-10-17 20:04:05","OAuth 2 Core and Bearer token RFCs are complete =) Will look into changes when time allows.
+
+http://www.rfc-editor.org/rfc/rfc6749.txt
+http://www.rfc-editor.org/rfc/rfc6750.txt
+","",""
+"issue_comment","45","idan","oauthlib","ib-lundgren","2013-03-27 19:04:38","Initial support is out with 0.4 =) Closing.
+","",""

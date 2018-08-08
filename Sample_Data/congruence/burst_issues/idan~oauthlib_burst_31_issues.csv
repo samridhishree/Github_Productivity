@@ -1,0 +1,59 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,276,idan,oauthlib,singingwolfboy,2014-10-05 13:25:55,"Followup to #265. Note that this does break backwards compatibility, so we should think carefully about making this change -- and if we decide to move forward with it, we should increment at least the minor version, and possibly the major version (1.0!).
+",start issue,"Dispatch a blinker signal on scope change, instead of raising a warning"
+1,issue_closed,276,idan,oauthlib,ib-lundgren,2014-10-23 18:43:57,,closed issue,"Dispatch a blinker signal on scope change, instead of raising a warning"
+2,pull_request_title,276,idan,oauthlib,singingwolfboy,2014-10-05 13:25:55,"Followup to #265. Note that this does break backwards compatibility, so we should think carefully about making this change -- and if we decide to move forward with it, we should increment at least the minor version, and possibly the major version (1.0!).
+",809553ccb71f5c046454e5ce2ac90ab0757729f0,"Dispatch a blinker signal on scope change, instead of raising a warning"
+3,pull_request_merged,276,idan,oauthlib,ib-lundgren,2014-10-23 18:43:57,"Dispatch a blinker signal on scope change, instead of raising a warning",2db139c0fb8c02435aee3942b3556251b6ddfb49,Pull request merge from singingwolfboy/oauthlib:scope-change-signal to idan/oauthlib:master
+4,issue_comment,276,idan,oauthlib,singingwolfboy,2014-10-13 13:00:54,"@ib-lundgren, @whit537, any feedback on this?
+",,
+5,issue_comment,276,idan,oauthlib,whit537,2014-10-13 18:35:45,"Interesting. Haven't seen the `blinker` library before, good find. I suppose it's a question for @ib-lundgren @idan whether to depend on `blinker` like this. As a user of requests, I'd be fine with this solution since it doesn't _require_ me to have `blinker` installed, but gives me an optional way to handle this case (scope change) if I want to.
+",,
+6,issue_comment,276,idan,oauthlib,ib-lundgren,2014-10-16 08:54:15,"Thanks for the large amount of work David! :cake:
+
+I think blinker can be pretty neat for monitoring / debugging / testing and
+don't mind it too much since we can default to not installing it (falling
+back on the no-op) and users who want it can install extra packages.
+
+I'm not sure I see how it would fit into a normal client work flow without
+being awkward. I think making the token a dict subclass with a
+scope_changed boolean property might be neater.
+
+```
+client = BackendApplicationClient(...)
+token = client.fetch_token(...)
+if token.scope_changed:
+     # uh oh we need to disable some features
+     for scope in token.scopes:
+           enable_feature_for_scope(scope)
+     for scope in token.unauthorized_scopes:
+           disable_feature_for_scope(scope)
+```
+
+The benefit of callbacks would be not having to check for scoped_changed
+but not sure how big a win that is. Maybe I'm missing something...
+
+On Monday, October 13, 2014, Chad Whitacre notifications@github.com wrote:
+
+> Interesting. Haven't seen the blinker library before, good find. I
+> suppose it's a question for @ib-lundgren https://github.com/ib-lundgren
+> @idan https://github.com/idan whether to depend on blinker like this.
+> As a user of requests, I'd be fine with this solution since it doesn't
+> _require_ me to have blinker installed, but gives me an optional way to
+> handle this case (scope change) if I want to.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/idan/oauthlib/pull/276#issuecomment-58935240.
+",,
+7,issue_comment,276,idan,oauthlib,ib-lundgren,2014-10-23 18:46:01,"Still have the warning enabled by default. Can be disabled with OAUTHLIB_RELAX_TOKEN_SCOPE. signals will be sent in either case.
+
+We can think about changing this default going into 1.0.
+",,
+8,pull_request_commit_comment,276,idan,oauthlib,singingwolfboy,2014-10-05 13:40:48,"Is it even necessary to include a `message` parameter here?
+",809553ccb71f5c046454e5ce2ac90ab0757729f0,"(22, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+9,pull_request_commit,276,idan,oauthlib,singingwolfboy,2014-10-05 13:21:55,"Dispatch a blinker signal on scope change, instead of raising a warning
+
+See https://github.com/idan/oauthlib/pull/265 for rationale.
+In brief: raising any exception blows the stack, which is
+inappropriate for a non-error state.",809553ccb71f5c046454e5ce2ac90ab0757729f0,

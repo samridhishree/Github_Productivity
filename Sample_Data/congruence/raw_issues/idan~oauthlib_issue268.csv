@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","268","idan","oauthlib","whit537","2014-09-17 14:29:53","Facebook uses URL-encoding instead of JSON for access token response bodies, and they use `expires` instead of `expires_in`. Fixes https://github.com/idan/oauthlib/issues/267.
+","start issue","work around Facebook's non-conformance"
+"issue_closed","268","idan","oauthlib","ib-lundgren","2014-09-22 14:35:52","","closed issue","work around Facebook's non-conformance"
+"pull_request_title","268","idan","oauthlib","whit537","2014-09-17 14:29:53","Facebook uses URL-encoding instead of JSON for access token response bodies, and they use `expires` instead of `expires_in`. Fixes https://github.com/idan/oauthlib/issues/267.
+","c49028af26b89ebdc08a72d3cebbf553fa0ddef6","work around Facebook's non-conformance"
+"pull_request_merged","268","idan","oauthlib","ib-lundgren","2014-09-22 14:35:52","work around Facebook's non-conformance","eae926ad1187fe4af178ee3e3bd513ca562ca981","Pull request merge from Unknown:facebook to idan/oauthlib:master"
+"issue_comment","268","idan","oauthlib","whit537","2014-09-17 15:52:43","Hmm ... Facebook also doesn't include a `token_type`, which is hard-required in [`validate_token_parameters`](https://github.com/idan/oauthlib/blob/8fcceae9ef2d6e3c0cdf38b12ac71bc538dd6432/oauthlib/oauth2/rfc6749/parameters.py#L315-L316). Raising an exception seems to me to violate the [robustness principle](http://en.wikipedia.org/wiki/Robustness_principle):
+
+> [C]ode that sends commands or data to other machines (or to other programs on the same machine) should conform completely to the specifications, but code that receives input should accept non-conformant input as long as the meaning is clear.
+
+In `Client` we [default](https://github.com/idan/oauthlib/blob/8fcceae9ef2d6e3c0cdf38b12ac71bc538dd6432/oauthlib/oauth2/rfc6749/clients/base.py#L34) to a token type of `Bearer`, and we [gracefully degrade](https://github.com/idan/oauthlib/blob/8fcceae9ef2d6e3c0cdf38b12ac71bc538dd6432/oauthlib/oauth2/rfc6749/clients/base.py#L182-L183) if `token_type` is not present in the params [passed](https://github.com/idan/oauthlib/blob/8fcceae9ef2d6e3c0cdf38b12ac71bc538dd6432/oauthlib/oauth2/rfc6749/clients/web_application.py#L272) to `_populate_attributes` after calling `parse_token_response` (under which we call `validate_token_parameters`). I can see raising if there is no access token: the meaning would not be clear in that case. For `token_type` I think we should raise only if the developer wants strict parsing.
+","",""
+"issue_comment","268","idan","oauthlib","whit537","2014-09-17 18:29:59","Okay! Ready for review. :-)
+","",""
+"issue_comment","268","idan","oauthlib","whit537","2014-09-17 18:30:27","cc: @ib-lundgren @idan @singingwolfboy @gulopine
+","",""
+"issue_comment","268","idan","oauthlib","singingwolfboy","2014-09-18 15:07:52","LGTM, but you should document the `OAUTHLIB_STRICT_TOKEN_TYPE` envvar somewhere.
+","",""
+"issue_comment","268","idan","oauthlib","ib-lundgren","2014-09-22 13:13:28","Looks good :) 
+
+Maybe add a comment in http://oauthlib.readthedocs.org/en/latest/oauth2/clients/client.html  (change docs as you like btw).
+","",""
+"issue_comment","268","idan","oauthlib","whit537","2014-09-22 14:08:12","@ib-lundgren It seemed better to add documentation to http://oauthlib.readthedocs.org/en/latest/oauth2/tokens/tokens.html. Look okay to you? :-)
+","",""
+"issue_comment","268","idan","oauthlib","whit537","2014-09-22 14:43:15","Yay! Thanks @ib-lundgren! :D
+","",""
+"pull_request_commit_comment","268","idan","oauthlib","ib-lundgren","2014-09-22 13:05:31","Maybe we should simply add token type Bearer here in non-strict mode. Ideally logging that so was done on DEBUG level.
+","c49028af26b89ebdc08a72d3cebbf553fa0ddef6","(41, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+"pull_request_commit_comment","268","idan","oauthlib","whit537","2014-09-22 13:36:53","I figured we could depend on the default behavior of the calling class, as described [above](https://github.com/idan/oauthlib/pull/268#issuecomment-55915122).
+","c49028af26b89ebdc08a72d3cebbf553fa0ddef6","(41, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+"pull_request_commit_comment","268","idan","oauthlib","ib-lundgren","2014-09-22 13:39:13","Fair enough.
+","c49028af26b89ebdc08a72d3cebbf553fa0ddef6","(41, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+"pull_request_commit","268","idan","oauthlib","whit537","2014-09-17 14:26:29","Failing test for URL-encoded access tokens
+
+Facebook doesn't use JSON, see https://github.com/idan/oauthlib/issues/267.","abf6bd5e9c413ad7f538f86604c0d1c29494882e",""
+"pull_request_commit","268","idan","oauthlib","whit537","2014-09-17 14:33:55","Implement URL-encoding fallback for access tokens","0a21ddfcdd0bfc108d7225d3074d58141259f519",""
+"pull_request_commit","268","idan","oauthlib","whit537","2014-09-17 15:02:13","Failing test for expires as alias for expires_in","d2937b275f23d7cb9c555c61ceb69fbebeace2ae",""
+"pull_request_commit","268","idan","oauthlib","whit537","2014-09-17 15:10:03","Support expires as an alias for expires_in","0d87ea236379023aa646a91df21e52c1c674dd6a",""
+"pull_request_commit","268","idan","oauthlib","whit537","2014-09-17 16:07:17","Failing test for token_type relaxation","3afd5cd84ee21312b0081850f7f4895c95bb121d",""
+"pull_request_commit","268","idan","oauthlib","whit537","2014-09-17 16:19:39","Relax token_type checking","0544857516745f4ba6c9829702253e17c9f77458",""
+"pull_request_commit","268","idan","oauthlib","whit537","2014-09-22 14:07:03","Add documentation of OAUTHLIB_STRICT_TOKEN_TYPE","c49028af26b89ebdc08a72d3cebbf553fa0ddef6",""

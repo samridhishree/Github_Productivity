@@ -1,0 +1,72 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","104","pycqa","astroid","pylint-bot","2015-06-02 11:59:01","Originally reported by: **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**
+
+---
+
+With this code:
+
+``` py
+def foo(arg):
+    pass
+
+foo('foo{}bar'.format(42))
+foo('const')
+```
+
+The first call is inferred as an empty string.
+
+I can reproduce this with pylint/astroid from tip and this pylint plugin:
+
+``` py
+import astroid
+from pylint import interfaces, checkers
+from pylint.checkers import utils
+
+
+class TestChecker(checkers.BaseChecker):
+
+    __implements__ = interfaces.IAstroidChecker
+    name = 'foo'
+    msgs = {
+        'E0000': ('Got called with empty string!', 'empty-string', None),
+    }
+    priority = -1
+
+    @utils.check_messages('bad-config-call')
+    def visit_callfunc(self, node):
+        if not hasattr(node, 'func'):
+            return
+        infer = utils.safe_infer(node.func)
+        if infer is None or infer.name != 'foo':
+            return
+        try:
+            arg = utils.get_argument_from_call(node, position=0)
+        except utils.NoSuchArgumentError:
+            return
+        arg = utils.safe_infer(arg)
+        if not isinstance(arg, astroid.Const):
+            return
+        if arg.value == '':
+            self.add_message('empty-string', node=node)
+
+
+def register(linter):
+    linter.register_checker(TestChecker(linter))
+```
+
+output:
+
+```
+$ PYTHONPATH=$PWD ./venv/bin/pylint foo.py --load-plugins=plugin
+No config file found, using default configuration
+************* Module foo
+[...]
+E:  4, 3: Got called with empty string! (empty-string)
+[...]
+```
+
+Assigning to PCManticore as discussed in IRC.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/104
+","start issue","String formatting is inferred as empty string"

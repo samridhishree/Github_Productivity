@@ -1,0 +1,22 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","67","aio-libs","aioredis","pryg-skok","2015-07-06 10:36:13","Hello,
+
+Can you please show me how to use one of SCAN command with aioredis? I understand how use with simple redis and without asyncio, but here I can't figure out how to iterate over elements.
+It would be very helpful.
+
+Thank you!
+","start issue","aioredis scan command example"
+"issue_closed","67","aio-libs","aioredis","pryg-skok","2015-07-07 08:57:19","","closed issue","aioredis scan command example"
+"issue_comment","67","aio-libs","aioredis","popravich","2015-07-06 12:27:18","Try like this:
+
+``` python
+cur = b'0'
+while cur:  # on first iteration `cur` evaluates to True value
+    cur, keys = yield from redis.scan(cur)
+    # at this point `cur` can be 0 (integer) marking end of scan so while loop will stop.
+    for key in keys:
+        print(key)
+```
+","",""
+"issue_comment","67","aio-libs","aioredis","pryg-skok","2015-07-07 08:57:19","Thank you very much. It works.
+","",""

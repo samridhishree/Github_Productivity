@@ -1,0 +1,124 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","31","aio-libs","aioredis","jettify","2014-07-20 21:38:34","Recently I've updated my python to  3.4.1 (debian testing switched to this version), as result every single test in _aioredis_ causes following warning (however no warning with python3.4):
+
+``` python
+Task was destroyed but it is pending!
+task: <Task pending _read_data() at /home/nick/sources/python/aioredis/aioredis/connection.py:78 wait_for=<Future pending cb=[Task._wakeup()]>>
+```
+
+I tried to run tests with  `PYTHONASYNCIODEBUG=1` and got following exception:
+
+``` python
+ pending _read_data() at /home/nick/sources/python/aioredis/aioredis/connection.py:78 wait_for=<Future pending cb=[Task._wakeup()]>>
+Task was destroyed but it is pending!
+source_traceback: Object created at (most recent call last):
+  File ""runtests.py"", line 290, in <module>
+    runtests()
+  File ""runtests.py"", line 273, in runtests
+    failfast=failfast).run(tests)
+  File ""/usr/lib/python3.4/unittest/runner.py"", line 168, in run
+    test(result)
+  File ""/usr/lib/python3.4/unittest/suite.py"", line 87, in __call__
+    return self.run(*args, **kwds)
+  File ""/usr/lib/python3.4/unittest/suite.py"", line 125, in run
+    test(result)
+  File ""/usr/lib/python3.4/unittest/case.py"", line 625, in __call__
+    return self.run(*args, **kwds)
+  File ""/usr/lib/python3.4/unittest/case.py"", line 577, in run
+    testMethod()
+  File ""tests/connection_test.py"", line 35, in test_global_loop
+    ('localhost', self.redis_port), db=0))
+  File ""/usr/lib/python3.4/asyncio/base_events.py"", line 239, in run_until_complete
+    self.run_forever()
+  File ""/usr/lib/python3.4/asyncio/base_events.py"", line 212, in run_forever
+    self._run_once()
+  File ""/usr/lib/python3.4/asyncio/base_events.py"", line 912, in _run_once
+    handle._run()
+  File ""/usr/lib/python3.4/asyncio/events.py"", line 96, in _run
+    self._callback(*self._args)
+  File ""/usr/lib/python3.4/asyncio/tasks.py"", line 298, in _wakeup
+    self._step(value, None)
+  File ""/usr/lib/python3.4/asyncio/tasks.py"", line 244, in _step
+    result = next(coro)
+  File ""/usr/lib/python3.4/asyncio/coroutines.py"", line 78, in __next__
+    return next(self.gen)
+  File ""/home/nick/sources/python/aioredis/aioredis/connection.py"", line 42, in create_connection
+    conn = RedisConnection(reader, writer, encoding=encoding, loop=loop)
+  File ""/home/nick/sources/python/aioredis/aioredis/connection.py"", line 63, in __init__
+    self._reader_task = asyncio.Task(self._read_data(), loop=self._loop)
+task: <Task pending _read_data() at /home/nick/sources/python/aioredis/aioredis/connection.py:78 wait_for=<Future pending cb=[Task._wakeup()]>>
+make: *** [test] Error
+```
+
+Any idea how to mute this warning?
+","start issue","In python3.4.1 all tests cause <Task pending _read_data() > warning."
+"issue_closed","31","aio-libs","aioredis","popravich","2014-07-24 06:39:58","","closed issue","In python3.4.1 all tests cause <Task pending _read_data() > warning."
+"issue_comment","31","aio-libs","aioredis","popravich","2014-07-21 06:34:43","Ok, I will look into
+","",""
+"issue_comment","31","aio-libs","aioredis","popravich","2014-07-24 06:39:58","Works fine with python 3.4.1 built from sources on Ubuntu 14.04. So will close for now.
+","",""
+"issue_comment","31","aio-libs","aioredis","rudyryk","2015-12-24 19:50:17","I see this issue on MacOS with latest dev version on Python 3.4.3 and 3.5.1
+
+Here's a simple snippet to reproduce from interactive shell:
+
+```
+import asyncio
+import aioredis
+loop = asyncio.get_event_loop()
+r = loop.run_until_complete(aioredis.create_redis(('localhost', 6379)))
+loop.run_until_complete(r.set('test', 1))
+x = loop.run_until_complete(r.get('test'))
+print(x)
+exit()
+```
+
+Here's the output:
+
+```
+Python 3.5.1 (default, Dec 24 2015, 21:41:53) 
+[GCC 4.2.1 Compatible Apple LLVM 7.0.2 (clang-700.1.81)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> 
+>>> import asyncio
+>>> import aioredis
+>>> loop = asyncio.get_event_loop()
+>>> r = loop.run_until_complete(aioredis.create_redis(('localhost', 6379)))
+>>> loop.run_until_complete(r.set('test', 1))
+True
+>>> x = loop.run_until_complete(r.get('test'))
+>>> print(x)
+b'1'
+>>> exit()
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisConnection._read_data() running at /Users/user/.virtualenvs/aborigen/src/aioredis/aioredis/connection.py:107> wait_for=<Future pending cb=[Task._wakeup()]> cb=[Future.set_result()]>
+```
+
+I've also tried to add `close()` command before exit, like that:
+
+```
+# ...
+print(x)
+r.close()
+exit()
+```
+
+but the error message still in place.
+","",""
+"issue_comment","31","aio-libs","aioredis","popravich","2015-12-24 19:54:13","Hi, in your case you sould use at least `r.close()`and at most:
+
+``` python
+r.close()
+loop.run_until_complete(r.wait_closed())
+```
+
+before `exit()` call
+","",""
+"issue_comment","31","aio-libs","aioredis","rudyryk","2015-12-24 19:57:29","Hi @popravich! That worked! Thanks a lot!
+
+Actually I start seeing these messages after some update on stopping server by Ctrl+C, now I have an idea what to do!
+","",""
+"issue_comment","31","aio-libs","aioredis","rudyryk","2015-12-24 20:43:24","@popravich BTW I didn't see mention about `wait_closed()` in introductory samples. I'd suggest to provide complete working sample from setting up connection to cleaning up in Getting Started docs section. What do you think?
+","",""
+"issue_comment","31","aio-libs","aioredis","popravich","2015-12-25 14:24:43","I'll add a note on `wait_close()`. Anyway, all (downloadable) examples in docs are runnable and have connections finalizations.
+","",""
+"issue_comment","31","aio-libs","aioredis","dellis23","2017-02-13 05:01:24","@popravich Very helpful, thanks.  It might be worth putting in the docs, for example here: http://aioredis.readthedocs.io/en/v0.3.0/api_reference.html  It's a bit confusing to see the ``Task was destroyed but it is pending!`` when just following the examples.","",""

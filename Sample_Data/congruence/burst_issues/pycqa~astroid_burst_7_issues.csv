@@ -1,0 +1,124 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,172,pycqa,astroid,pylint-bot,2015-08-20 14:54:59,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+The object.**new** decorator creates an instance under the hood.
+
+```
+#!python
+
+@object.__new__
+class A:
+   pass
+
+A #@
+
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/172
+",start issue,Understand object.__new__ decorator
+1,issue_closed,172,pycqa,astroid,PCManticore,2017-07-23 13:13:42,,closed issue,Understand object.__new__ decorator
+0,issue_title,178,pycqa,astroid,pylint-bot,2015-08-20 16:56:06,"Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+While working on my patch, I've lots of times had to resort to vars() and similar built-ins to get information about the state of node classes, inference contexts, and the like.  The `__repr__` and `__str__` methods for the node classes as currently written aren't adequate because they don't print out all the attributes.  Inference contexts don't have either and vars() also doesn't work because of slots.  dump() gives information about the nodes and some of their attributes, but doesn't play well with pdb (line breaks end up as '\n' literals, which makes the output hard to read) and is also not complete.  I think at a minimum, every object should have a method that will print out its complete (non-recursive) state in a format that pdb understands.  dump() should be changed to format correctly in pdb and possibly to include more information than it currently does.  Maybe the best way to do this is to add an optional parameter that gives a verbosity level?  For other recursive data structures, a pprint-equivalent would be good.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/178
+",start issue,Provide a way to print the complete state of astroid objects
+1,issue_closed,178,pycqa,astroid,pylint-bot,2015-12-09 05:54:35,,closed issue,Provide a way to print the complete state of astroid objects
+2,issue_comment,178,pycqa,astroid,pylint-bot,2015-09-05 14:38:10,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Are there other objects that need some form of legible representation other than nodes and contexts?  Should I use `__str__`, `__repr__`, both, or another method for complete-state representations?
+",,
+3,issue_comment,178,pycqa,astroid,pylint-bot,2015-09-05 14:57:29,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I think you could use `__str__` or maybe another method for complete-state representations. Usually when I try things with astroid, I do it in an interpreter session and it would be cumbersome to have the complete representation each time I do something like the following.
+
+```
+#!python
+
+>>> node = astroid.parse('...')
+>>> node
+# Oups, prints a lot of stuff, instead of printing the tree node.
+```
+",,
+4,issue_comment,178,pycqa,astroid,pylint-bot,2015-09-08 17:50:55,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+This is taking longer than I'd hoped to get right, mainly because the formatting is hard to get optimally legible.  How do you feel about my using the 3.4 functools.singledispatch library and the 2.7 backport on PyPi to handle the type dispatching in `as_string.dump`?  I've done some more refactoring of the fields, moving what I'd term as AST-dependent fields like `_style` and `locals` into `_other_other_fields` for lack of a better name.  I'm currently using repr_tree as the method, I may add another method if I can figure out a reasonable representation of the AST fields. 
+",,
+5,issue_comment,178,pycqa,astroid,pylint-bot,2015-09-08 17:53:44,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Sounds good! I'm fine with using singledispatch. 
+",,
+6,issue_comment,178,pycqa,astroid,pylint-bot,2015-09-24 18:38:31,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Does this needs to be open or can we consider it fixed?
+",,
+7,issue_comment,178,pycqa,astroid,pylint-bot,2015-09-25 03:50:20,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Are there any other important cases of objects with state in astroid?  I did the ones I know about, but I'm not sure if there are any others.  If there aren't, I'd say this is finished.
+",,
+8,issue_comment,178,pycqa,astroid,pylint-bot,2015-09-25 05:55:10,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I think it's done. There's still the CallContext object, but we have #194 for it.
+",,
+0,issue_title,176,pycqa,astroid,pylint-bot,2015-08-20 16:42:17,"Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+In debugging, I noticed that on Python 2 in certain circumstances it's possible for exceptions in the inference mechanisms to end up losing the traceback up to the point they're raised.  (Python3 always chains exceptions that are raised while processing another exception, I think.)  The best way I know of to do this is probably with six.reraise, but I'm open to other suggestions.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/176
+",start issue,Preserve tracebacks on Python 2
+1,issue_closed,176,pycqa,astroid,pylint-bot,2015-12-09 05:54:33,,closed issue,Preserve tracebacks on Python 2
+2,issue_comment,176,pycqa,astroid,pylint-bot,2015-08-20 14:43:22,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+That sounds good, there are a lot of places where exceptions are reraised, without considering the loss of the traceback. 
+",,
+3,issue_comment,176,pycqa,astroid,pylint-bot,2015-08-20 14:50:46,"_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+I'm aware of `raise
+ObjectNotFound(name).with_traceback(sys.exc_info()[-1])` (py3) or `raise
+ObjectNotFound(name), None, sys.exc_info()[-1]` (py2)
+",,
+4,issue_comment,176,pycqa,astroid,pylint-bot,2015-09-05 14:31:56,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+My problem when attempting this has turned out to be that I don't understand the code paths well enough to know where exceptions can be raised ultimately within an `except` block.  I can simply try to change all the places where exceptions are being raised, or if anyone has more understanding of the code paths, I could try to focus on those.
+",,
+5,issue_comment,176,pycqa,astroid,pylint-bot,2015-09-05 15:02:17,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+We could focus only on the places where exceptions are being raised, since otherwise we might have tracebacks from the entire inference chain and I'm not sure how useful that would be. In that case, something as oslo.excutils.save_and_reraise_exception could be used: http://docs.openstack.org/developer/oslo.utils/api/excutils.html#oslo_utils.excutils.save_and_reraise_exception
+",,
+6,issue_comment,176,pycqa,astroid,pylint-bot,2015-09-26 12:36:05,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Fixed by https://bitbucket.org/logilab/astroid/pull-requests/88/use-sixreraise-to-avoid-losing-tracebacks
+",,

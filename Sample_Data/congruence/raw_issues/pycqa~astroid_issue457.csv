@@ -1,0 +1,81 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","457","pycqa","astroid","mplanchard","2017-10-14 02:27:22","### Steps to reproduce
+
+Run the following:
+
+```python
+from astroid import extract_node
+n = extract_node('''
+class A:
+
+    @classmethod
+    def new(cls):
+        return cls()
+
+class B(A):
+    @classmethod
+    def new(cls):
+        inst = super().new()
+        return inst
+
+B.new()
+''')
+print(next(n.infer()))
+```
+
+### Current Behavior
+
+Outputs `Instance of .A`
+
+### Expected behavior
+
+In Python, `B.new()` is an instance of B. However, the above prints `Instance of .A`, so this should print `Instance of .B`. Digging in, this seems to be due to the inferred type of the return of the call to `super().new()` from `B.new()` being an instance of A, rather than an instance of B.
+
+This leads to bugs like pycqa/pylint#981, where the returns from overridden constructor methods are inferred to be the wrong type.
+
+
+### Version Tested
+
+1.5.3
+
+
+### What I have done
+
+I have managed to get the above code snippet to output `Instance of .B` by updating the following section of `objects.py`: https://github.com/PyCQA/astroid/blob/7bfb5e83b162d2126c9929b6d863724176269b6d/astroid/objects.py#L154-L167
+
+I have updated it to read as follows, with the reasoning that B's classmethod is really calling A's new() method with its class being passed to `super()`, not its instance:
+
+```python
+                # We can obtain different descriptors from a super depending
+                # on what we are accessing and where the super call is.
+                if self._scope.type == 'classmethod' and inferred.type == 'classmethod':
+                    yield bases.BoundMethod(inferred, self.type)
+                elif inferred.type == 'classmethod':
+                    yield bases.BoundMethod(inferred, cls)
+                elif self._scope.type == 'classmethod' and inferred.type == 'method':
+                    yield inferred
+                elif self._class_based or inferred.type == 'staticmethod':
+                    yield inferred
+                elif bases._is_property(inferred):
+                    # TODO: support other descriptors as well.
+                    for value in inferred.infer_call_result(self, context):
+                        yield value
+                else:
+                    yield bases.BoundMethod(inferred, cls)
+```
+
+This breaks one test in the test suite:
+
+```
+======================================================================
+FAIL: test_super_bound_model (astroid.tests.unittest_objects.SuperTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/Users/Nautilus/Documents/Programming/astroid/astroid/tests/unittest_objects.py"", line 285, in test_super_bound_model
+    self.assertEqual(fourth.bound.name, 'First')
+AssertionError: 'Super_Type_Type' != 'First'
+- Super_Type_Type
++ First
+```
+
+Currently, I'm not certain if what I'm doing is correct. I intend to investigate further, to fix the broken test, and to add a test that illustrates the current pathological behavior. I don't know if I will have time this weekend (and I also don't really know what I'm doing!), so assistance is definitely welcome.","start issue","Incorred super() resolution for classmethods calling classmethods that return instances (constructors)"

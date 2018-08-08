@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","284","idan","oauthlib","garcianavalon","2014-10-24 10:48:17","Hi!
+In the documentation found here https://oauthlib.readthedocs.org/en/latest/oauth2/endpoints/token.html we can read the following bit:
+`# body will contain the token in json format and expiration from now`
+`# in seconds.`
+`{`
+    `'access_token': 'sldafh309sdf',`
+    `'refresh_token': 'alsounguessablerandomstring',`
+    `'expires_in': 3600,`
+    `'scopes': [`
+        `'https://example.com/userProfile',`
+        `'https://example.com/pictures'`
+    `],`
+    `'token_type': 'Bearer'`
+`}`
+But the returned body doesn't have a 'scopes' key, it has 'scope'. Furthermore, the value is not a list of strings, one string per each scope, but just a string with the scopes separeted by spaces.  
+Cheking the code, in [/oauth2/rfc6749/tokens.py](https://github.com/idan/oauthlib/blob/4a14f204908eb7f6fb9ac3a0ece5730b3d4146cb/oauthlib/oauth2/rfc6749/tokens.py) lines 216 and 217 I found:
+`if request.scopes is not None:`
+    `token['scope'] = ' '.join(request.scopes)`
+Which is the cause of the issue. 
+
+The fix should be to change either the documentation or this line so they match. That decission is yours but I could help fixing one of both if needed.
+Cheers!
+","start issue","Documentation error in Docs » OAuth 2.0 » Provider Endpoints » Token creation"
+"issue_closed","284","idan","oauthlib","ib-lundgren","2014-10-27 14:06:13","","closed issue","Documentation error in Docs » OAuth 2.0 » Provider Endpoints » Token creation"
+"issue_comment","284","idan","oauthlib","ib-lundgren","2014-10-24 13:50:13","The current implementation is working as intended but the documentation should be updated.
+
+As of next release...
+- On the provider side you, e.g. in `validator.save_bearer_token`, can use `token.scopes` to access this list of scope strings.
+- On the client side side you can first load the dict with json.loads and then use `oauthlib.oauth.OAuth2Token` to access the scope as a list. (This will happen automatically in extensions like requests-oauthlib). 
+
+```
+>>> from oauthlib.oauth2 import OAuth2Token
+>>> token = OAuth2Token(json.loads(request_body))
+['https://example.com/userProfile', 'https://example.com/pictures']
+```
+
+If you fancy updating the docs that'd be awesome :)
+","",""
+"issue_comment","284","idan","oauthlib","garcianavalon","2014-10-27 08:01:44","Hey! 
+Thanks for your answer. I'll update de docs to show the current behavior ;)
+","",""

@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","257","pycqa","astroid","pylint-bot","2015-11-14 06:41:13","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+Aside from the distinction between unbound methods and functions being eliminated on Python 3, these classes aren't doing very much at the moment.
+- UnboundMethod overloads getattr and igetattr to return special values for `im_func`.  This is both incorrect, because on Python 3 `im_func` is replaced by `__func__`, and incomplete, because there's another special attribute `__self__` that's not handled.
+- Both have special cases in infer_call_result to _specifically_ detect when they're being called on `object.__new__`and `type.__new__`.  I would argue this should be done by having special nodes for `object` and `type` with other special nodes for their methods; then, the code that's currently living in the code for all methods could live in either methods of the new nodes or in functions dispatching on those types.  Either way would reduce the overhead for every getattr or igetattr call made on every on method as well as improving the clarity of the code.
+- There are some miscellaneous methods that are easily replaced by type dispatch or are already completely unnecessary.
+
+After removing this, the only important functionality remaining on either of these classes is the code that handles context binding in BoundMethod.infer_call_result:
+
+``` python
+        if context is None:
+            context = contextmod.InferenceContext()
+        context = context.clone()
+        context.boundnode = self.bound
+```
+
+There might still need to be a Method object, but if so it will have pretty much that one method.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/257
+","start issue","Refactor UnboundMethod and BoundMethod"
+"issue_closed","257","pycqa","astroid","PCManticore","2016-02-27 17:59:08","","closed issue","Refactor UnboundMethod and BoundMethod"
+"issue_comment","257","pycqa","astroid","PCManticore","2016-02-23 22:58:39","@ceridwen are you planning to tackle this or can I take it if not?
+","",""
+"issue_comment","257","pycqa","astroid","ceridwen","2016-02-24 03:32:20","It's not on my short list, so go ahead.
+","",""

@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","252","pycqa","astroid","pylint-bot","2015-11-11 00:31:58","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+Unfortunately, I've introduced an infinite recursion that's occurring in a lot of the tests on Python 2.  There has to be a base case here, but I'm not sure what it is.
+
+``` python
+  File ""astroid/scoped_nodes.py"", line 155, in locals
+    return MappingProxyType(get_locals(self))
+  File ""~/code/astroid/.tox/py27/local/lib/python2.7/site-packages/singledispatch.py"", line 210, in wrapper
+    return dispatch(args[0].__class__)(*args, **kw)
+  File ""astroid/scoped_nodes.py"", line 1874, in scoped_node
+    _get_locals(n, locals_, node)
+  File ""~/code/astroid/.tox/py27/local/lib/python2.7/site-packages/singledispatch.py"", line 210, in wrapper
+    return dispatch(args[0].__class__)(*args, **kw)
+  File ""astroid/scoped_nodes.py"", line 1949, in locals_import_from
+    imported = node.do_import_module()
+  File ""astroid/mixins.py"", line 116, in do_import_module
+    if mymodule.relative_to_absolute_name(modname, level) == mymodule.name:
+  File ""astroid/scoped_nodes.py"", line 515, in relative_to_absolute_name
+    if self.absolute_import_activated() and level is None:
+  File ""astroid/scoped_nodes.py"", line 491, in absolute_import_activated
+    return self._absolute_import_activated
+  File ""astroid/decorators.py"", line 79, in __get__
+    val = self.wrapped(inst)
+  File ""astroid/scoped_nodes.py"", line 483, in _absolute_import_activated
+    for stmt in self.locals.get('absolute_import', ()):
+  File ""astroid/scoped_nodes.py"", line 155, in locals
+    return MappingProxyType(get_locals(self))
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/252
+","start issue","[modular-locals bugs] Python 2 infinite recursion"
+"issue_closed","252","pycqa","astroid","pylint-bot","2015-12-09 05:55:51","","closed issue","[modular-locals bugs] Python 2 infinite recursion"
+"issue_comment","252","pycqa","astroid","pylint-bot","2015-11-14 05:10:09","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Fixed in 3e3b3e936b69 by using the new future_imports property.
+","",""

@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","495","idan","oauthlib","Diaoul","2017-10-27 12:24:12","I use the WebApplication client and in [`prepare_request_body`](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/clients/web_application.py#L88-L89) I noticed the `client_id` parameter is never used. However [`self.client_id`](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/clients/web_application.py#L127-L128) is always passed down to `prepare_token_request` and thus always included in the body.
+
+An unused parameter doesn't look good but maybe this is intended, I've only quickly read the RFC 6749. If this is the case it should at least be stated in the docstring.
+
+The server here (I guess OpenAM) rejects queries when they contain the client_id in the body.","start issue","Client id always included in body of token request"
+"issue_comment","495","idan","oauthlib","duaneking","2017-10-31 17:29:31","Oauth2 is a cluster; you can ""follow the spec"" and still get incompatible implementations... by design.
+
+I'm not sure what the original intent was here; the OAUTH2 spec explicitly states that the format of the token itself is out of scope yet in this case sending that may help with auth in some way; Still, if it's not used it shouldn't be sent.
+
+Does removing this break any of the big examples?
+","",""
+"issue_comment","495","idan","oauthlib","Diaoul","2017-10-31 23:47:27","Sorry to disappoint but I have absolutely no idea... I only started using oauthlib a few days ago in my specific scenario at work.
+
+I'm not sure how the `client_id` would be used by the server as it already gets it from HTTP basic authentication.","",""
+"issue_comment","495","idan","oauthlib","Diaoul","2017-11-14 17:00:06","Do you have a test suite that I could run to help speed things up on this matter? In any case, the unused parameter should be used instead of `self.client_id`.","",""
+"issue_comment","495","idan","oauthlib","Diaoul","2017-11-14 17:10:32","Just realized that [the doc](http://oauthlib.readthedocs.io/en/stable/oauth2/clients/webapplicationclient.html#oauthlib.oauth2.WebApplicationClient.prepare_request_body) of this function is wrong but also doctests:
+
+```python
+>>> from oauthlib.oauth2 import WebApplicationClient
+>>> client = WebApplicationClient('your_id')
+>>> client.prepare_request_body(code='sh35ksdf09sf')
+'grant_type=authorization_code&code=sh35ksdf09sf'
+>>> client.prepare_request_body(code='sh35ksdf09sf', foo='bar')
+'grant_type=authorization_code&code=sh35ksdf09sf&foo=bar'
+```
+
+Here is when I run it:
+
+```python
+>>> from oauthlib.oauth2 import WebApplicationClient
+>>> client = WebApplicationClient('your_id')
+>>> client.prepare_request_body(code='sh35ksdf09sf')
+'grant_type=authorization_code&client_id=your_id&code=sh35ksdf09sf'
+>>> client.prepare_request_body(code='sh35ksdf09sf', foo='bar')
+'grant_type=authorization_code&client_id=your_id&foo=bar&code=sh35ksdf09sf'
+```","",""
+"issue_comment","495","idan","oauthlib","duaneking","2017-11-15 21:47:47","When you modify that:
+
+Do the tests run successfully and all pass?
+What is the change in test coverage?","",""
+"issue_comment","495","idan","oauthlib","Diaoul","2017-11-28 12:54:39","It only failed on [`test_request_body`](https://github.com/idan/oauthlib/blob/master/tests/oauth2/rfc6749/clients/test_web_application.py#L41) which is to be expected.","",""

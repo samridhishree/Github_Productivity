@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","236","pycqa","astroid","pylint-bot","2015-10-30 10:50:16","Originally reported by: **Laura Médioni (BitBucket: [lmedioni](http://bitbucket.org/lmedioni), GitHub: @lmedioni?)**
+
+---
+
+It would be good to have support for inference on an IfExp node.
+
+For example:
+
+```
+foo = True if something else False
+```
+
+An InferenceError is currently raised when calling inferred() on the right part of the assign node.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/236
+","start issue","Add support for inference on IfExp nodes"
+"issue_comment","236","pycqa","astroid","pylint-bot","2015-10-30 10:06:28","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This is something that will be part of a larger implementation for understanding flow control in astroid (https://bitbucket.org/logilab/astroid/issues/213/draft-a-plan-for-having-control-flow), but I think we can start having an implementation for IfExp before that, since the challenges that come with a flow control understanding (path sensitiveness and things like that) don't come up at all for this example. As an implementation, it could be similar to the implementation of the bool builtin (astroid.brain.builtin_inference): infer what the test returns, call the result's bool_value method and depending on its result, return either one or the other branch.
+","",""
+"issue_comment","236","pycqa","astroid","pylint-bot","2015-10-30 10:10:07","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+IMO it should be even simpler than that : return both possible values
+","",""
+"issue_comment","236","pycqa","astroid","pylint-bot","2015-10-30 10:14:04","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+If we can infer the test, why not choosing the one we know is going to be taken? If not, yes, we can return both of them.
+","",""
+"issue_comment","236","pycqa","astroid","pylint-bot","2015-10-30 10:40:07","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+sounds good. I was thinking about the case where no context is provided
+","",""

@@ -1,0 +1,105 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","314","pycqa","astroid","PCManticore","2016-02-04 17:21:34","The old way consisted in having the parameter names, their defaults and their annotations separated in different components of the Arguments node. We introduced a new Param node, which holds
+the name of a parameter, its default value and its annotation. If any of the last two values are missing, then that slot will be filled with a new node kind, Empty, which is used for specifying the
+lack of something (None could have been used instead, but that means having non-AST nodes in the Arguments node). We're also having support for positional only arguments, for the moment only in raw_building, but we can add later on for extension modules and other builtins.  I decided to add a flag to the Param nodes which describes it as being positional only or not, because introducing another object to the Arguments node would mean to iterate over both lists (.args and .positional_only_args) when wanting to process all the parameters of a function, so this seems way easier to me to manage.
+
+Close #215
+
+@ceridwen Please do a review when you'll get some time.
+","start issue","Changed the way how parameters are being built"
+"issue_closed","314","pycqa","astroid","PCManticore","2016-02-13 23:25:35","","closed issue","Changed the way how parameters are being built"
+"pull_request_title","314","pycqa","astroid","PCManticore","2016-02-04 17:21:34","The old way consisted in having the parameter names, their defaults and their annotations separated in different components of the Arguments node. We introduced a new Param node, which holds
+the name of a parameter, its default value and its annotation. If any of the last two values are missing, then that slot will be filled with a new node kind, Empty, which is used for specifying the
+lack of something (None could have been used instead, but that means having non-AST nodes in the Arguments node). We're also having support for positional only arguments, for the moment only in raw_building, but we can add later on for extension modules and other builtins.  I decided to add a flag to the Param nodes which describes it as being positional only or not, because introducing another object to the Arguments node would mean to iterate over both lists (.args and .positional_only_args) when wanting to process all the parameters of a function, so this seems way easier to me to manage.
+
+Close #215
+
+@ceridwen Please do a review when you'll get some time.
+","6d2529632bae545ff7564501cac14316d5ea9204","Changed the way how parameters are being built"
+"pull_request_merged","314","pycqa","astroid","PCManticore","2016-02-13 23:25:35","Changed the way how parameters are being built","1d86b6bf87e3551b6f731664b97f356d0c15fbac","Pull request merge from PyCQA/astroid:arguments-215 to PyCQA/astroid:2.0"
+"issue_comment","314","pycqa","astroid","ceridwen","2016-02-11 17:22:30","I would use ""Parameter"" as the name for the new node rather than ""Param.""  I don't like shortening names into non-words unless it's necessary, and I don't think it is here.  For instance, inspect/funcsigs calls their parameter object ""Parameter.""
+
+For the implementation of Empty, I was planning to have `__bool__` return False, like None is treated as False.  This will save a lot of refactoring work changing boolean checks to type checks and preserve backwards compatibility for the plugins.  Empty should be a singleton object: there's no reason to consume additional memory or time by creating a new object every time we need an Empty node, since all of them are identical anyways.  I'd call the underlying type `_Empty` or  `_EmptyType` or `EmptyType` (by analogy with NoneType) and then instantiate the object once in node_classes.py.
+","",""
+"issue_comment","314","pycqa","astroid","PCManticore","2016-02-11 17:26:17","Thanks, these make sense! I'll update the PR.
+","",""
+"issue_comment","314","pycqa","astroid","ceridwen","2016-02-11 19:45:56","I think that our handling of positional-only and keyword-only arguments ought to be consistent: there should be another field in Arguments nodes to hold positional-only arguments like `kwonlyargs`, or keyword-only arguments should be flagged in the Parameter nodes like the positional-only arguments are.  Doing one with a flag in Parameters and the other with a field in Arguments is going to lead to confusion later, even though Python handles these parameters differently (positional-only parameters are only possible in C, keyword-only arguments are available in pure Python).
+","",""
+"issue_comment","314","pycqa","astroid","PCManticore","2016-02-13 14:28:27","Thanks for the review. Here's the updated version. I dropped the positional_only attribute from the Parameter node and went with separate lists of arguments, but I also included a new attribute in the Arguments node, positional_and_keyword, which holds both positional only and positional_or_keyword arguments. That's because when processing the arguments we're interested in both, while trying to separate their processing from kwonlyargs, so whenever .args.args was used, it got replaced with positional_and_keyword list. Decided not to subclass ParameterVisitor from ast.NodeVisitor, it's not a big deal for now and we're planning to change it anyway.
+","",""
+"issue_comment","314","pycqa","astroid","ceridwen","2016-02-13 18:15:42","I added a few final comments, otherwise looks good to me.
+","",""
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-11 17:28:58","Since we're now going to have two objects named Parameter (the astroid node and the inspect/funcsigs.Parameter), I'd rewrite this to say something like, ""Generates an iterator of Parameter nodes from an iterator of inspect/funcsigs.Parameter objects.""
+","6d2529632bae545ff7564501cac14316d5ea9204","(None, '', u'astroid/raw_building.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-11 17:29:30","This docstring should also be expanded similarly.
+","6d2529632bae545ff7564501cac14316d5ea9204","(None, '', u'astroid/raw_building.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-11 19:26:52","This will hopefully be irrelevant soon, but I don't understand this comment, so you should probably expand it.
+","6d2529632bae545ff7564501cac14316d5ea9204","(None, '', u'astroid/raw_building.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-11 19:57:43","This is a quibble but this could probably be a subclass of `ast.NodeVisitor`.  In the future, I'd like to reorganize the rebuilder to make it so that the main visitor contains only methods corresponding to the standard library AST's nodes, and move all other nodes to independent functions or something else here.  We might also consider if using the `ast.NodeVisitor` is appropriate for the main visitor: it might offer better forward compatibility when the CPython developers change something in the standard library AST.  On the other hand, it wouldn't work with turning the visitor methods into generators, which I proposed to prevent it from overflowing the call stack and which might also speed it up.  If we're going to end up moving to another parser like 2to3 or Dropbox's altered version of the CPython parser, all this is moot, though.
+","6d2529632bae545ff7564501cac14316d5ea9204","(12, '', u'astroid/tree/rebuilder.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-13 18:09:51","This comment could be expanded to clarify what this code is doing.  (I'm not clear on its purpose.)
+","6d2529632bae545ff7564501cac14316d5ea9204","(14, '', u'astroid/test_utils.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-13 18:11:09","Why is this test only run on 3.4?  Shouldn't it at least run on 3.5 as well?
+","6d2529632bae545ff7564501cac14316d5ea9204","(60, '', u'astroid/tests/unittest_python3.py')"
+"pull_request_commit_comment","314","pycqa","astroid","PCManticore","2016-02-13 18:12:23","That's the minimum.
+","6d2529632bae545ff7564501cac14316d5ea9204","(60, '', u'astroid/tests/unittest_python3.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-13 18:13:36","This should be a read-only property to avoid the possibility of these attributes getting unsynchronized from one another.  If we ever make the nodes immutable, that would also fix the problem.
+","6d2529632bae545ff7564501cac14316d5ea9204","(105, '', u'astroid/tree/node_classes.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-13 18:15:12","Ah, my mistake.  That works then.
+","6d2529632bae545ff7564501cac14316d5ea9204","(60, '', u'astroid/tests/unittest_python3.py')"
+"pull_request_commit_comment","314","pycqa","astroid","PCManticore","2016-02-13 18:18:06","I'm not keen on making this a property for now. It's used in a lot of places in astroid and I don't want to append these lists all the time I'm using positional_and_keyword. The exposed problem (arguments getting unsynchronized) shouldn't happen, since the nodes should be immutable, at least recommending to do so (if someone wants to add a new argument, it should create a new Arguments node instead).
+","6d2529632bae545ff7564501cac14316d5ea9204","(105, '', u'astroid/tree/node_classes.py')"
+"pull_request_commit_comment","314","pycqa","astroid","ceridwen","2016-02-13 20:06:20","I'm fully onboard with making nodes immutable, I just wasn't sure if that was your plan.  If we do make nodes immutable, though, I'd like to add programmatic safety to ensure they're immutable, replacing mutable structures like lists with tuples, for instance, and documentation.  None of this is urgent, so leaving this as-is is fine as long as we're planning to push for immutability in 2.0.
+
+On February 13, 2016 1:18:07 PM EST, Claudiu Popa notifications@github.com wrote:
+
+> > ## \-        self.kwonly_annotations = []
+> > -    def postinit(self, args, defaults, kwonlyargs, kw_defaults,
+> > -                 annotations, kwonly_annotations,
+> >   varargannotation=None,
+> > -                 kwargannotation=None):
+> > -        self.args = args
+> > -        self.defaults = defaults
+> > -        self.kwonlyargs = kwonlyargs
+> > -        self.kw_defaults = kw_defaults
+> > -        self.annotations = annotations
+> > -        self.varargannotation = varargannotation
+> > -        self.kwargannotation = kwargannotation
+> > -        self.kwonly_annotations = kwonly_annotations
+> > -        self.keyword_only = keyword_only
+> > -        self.positional_only = positional_only
+> > -        self.positional_and_keyword = self.args +
+> >   self.positional_only
+> 
+> I'm not keen on making this a property for now. It's used in a lot of
+> places in astroid and I don't want to append these lists all the time
+> I'm using positional_and_keyword. The exposed problem (arguments
+> getting unsynchronized) shouldn't happen, since the nodes should be
+> immutable, at least recommending to do so (if someone wants to add a
+> new argument, it should create a new Arguments node instead).
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/PyCQA/astroid/pull/314/files#r52831455
+
+## 
+
+Sent from my Android device with K-9 Mail. Please excuse my brevity.
+","6d2529632bae545ff7564501cac14316d5ea9204","(105, '', u'astroid/tree/node_classes.py')"
+"pull_request_commit_comment","314","pycqa","astroid","PCManticore","2016-02-13 23:25:28","That's the plan. :-)
+","6d2529632bae545ff7564501cac14316d5ea9204","(105, '', u'astroid/tree/node_classes.py')"
+"pull_request_commit","314","pycqa","astroid","PCManticore","2016-02-01 11:53:36","Changed the way how parameters are being built
+
+The old way consisted in having the parameter names, their
+defaults and their annotations separated in different components
+of the Arguments node. We introduced a new Param node, which holds
+the name of a parameter, its default value and its annotation.
+If any of the last two values are missing, then that slot will be
+filled with a new node kind, Empty, which is used for specifying the
+lack of something (None could have been used instead, but that means having
+non-AST nodes in the Arguments node).
+We're also having support for positional only arguments, for the moment
+only in raw_building.
+
+Close #215","6d2529632bae545ff7564501cac14316d5ea9204",""

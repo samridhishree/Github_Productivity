@@ -1,0 +1,68 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","227","pycqa","astroid","pylint-bot","2015-10-26 09:47:59","Originally reported by: **Antony Lee (BitBucket: [anntzer](http://bitbucket.org/anntzer), GitHub: @anntzer?)**
+
+---
+
+```
+$ pip install --user --upgrade --no-deps -vvv hg+ssh://hg@bitbucket.org/logilab/astroid
+<... elided>
+      File ""/home/antony/.local/lib/python3.5/site-packages/astroid/tests/unittest_raw_building.py"", line 62
+        def f(a, (b, (c, d))):
+                 ^
+    SyntaxError: invalid syntax
+
+  Removing source in /tmp/pip-h9nj9jv_-build
+Successfully installed astroid-1.4.0
+Cleaning up...
+```
+
+Actually the installation seems to be fine, so it's rather benign.
+
+However, pylint doesn't like it:
+
+```
+$ touch /tmp/foo.py
+$ pylint /tmp/foo.py
+Warning: option profile is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option comment is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option ignore-iface-methods is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option required-attributes is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option zope is obsolete and it is slated for removal in Pylint 1.6.
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==1.5.0', 'console_scripts', 'pylint')()
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 1311, in __init__
+    linter.check(args)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 734, in check
+    self._do_check(files_or_modules)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 861, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 919, in check_astroid_module
+    tokens = utils.tokenize_module(ast_node)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/utils.py"", line 150, in tokenize_module
+    with module.stream() as stream:
+  File ""/home/antony/.local/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 390, in stream
+    return self._get_stream()
+  File ""/home/antony/.local/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 376, in _get_stream
+    if self.file_bytes is not None:
+AttributeError: 'Module' object has no attribute 'file_bytes'
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/227
+","start issue","tip issues on Python3.5"
+"issue_closed","227","pycqa","astroid","pylint-bot","2015-12-09 05:55:28","","closed issue","tip issues on Python3.5"
+"issue_comment","227","pycqa","astroid","pylint-bot","2015-10-26 09:28:18","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This seems that you installed a under-development bookmark. Could you try to do a clone instead and before running python setup.py install, do a hg update @? That's the default bookmark which should be working under all conditions. Unfortunately pip doesn't handle this bookmark thingy properly. The problem with raw_building is actually from another under-development bookmark.
+","",""
+"issue_comment","227","pycqa","astroid","pylint-bot","2015-10-26 18:46:27","_Original comment by_ **Antony Lee (BitBucket: [anntzer](http://bitbucket.org/anntzer), GitHub: @anntzer?)**:
+
+---
+
+That works, thanks.
+","",""

@@ -1,0 +1,47 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","92","pycqa","astroid","pylint-bot","2015-04-16 10:17:43","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+We could understand the return value of a lambda or a function, where the value is nothing but the vararg of the function, if we have a context and a callcontext at our disposal. For instance, this code should yield (1, 2, 3), not [] as it is right now.
+
+```
+#!python
+
+from astroid.builder import AstroidBuilder as ab
+b = ab()
+n = b.string_build('''
+a = lambda *args: args
+f = a(1, 2, 3)
+''')
+f = n['f']
+print(next(f.infer()).elts) # returns []
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/92
+","start issue","Understand lambda *args: args"
+"issue_closed","92","pycqa","astroid","pylint-bot","2015-12-09 05:53:20","","closed issue","Understand lambda *args: args"
+"issue_comment","92","pycqa","astroid","pylint-bot","2015-04-16 08:18:07","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This will fix a false positive with this code:
+
+```
+#!python
+
+from decimal import Decimal
+d = Decimal(2)
+a, b, c = d.as_tuple()
+
+```
+
+Pylint will emit an unbalanced-tuple-unpacking here, because it infers the fact that as_tuple returns an empty tuple.
+","",""
+"issue_comment","92","pycqa","astroid","pylint-bot","2015-09-10 22:02:25","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Fixed by 0b422f439e36682228646743fe1891b08ab49295
+","",""

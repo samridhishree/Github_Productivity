@@ -1,0 +1,107 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","157","pycqa","astroid","pylint-bot","2015-07-10 16:42:47","Originally reported by: **h w (BitBucket: [vvh](http://bitbucket.org/vvh), GitHub: @vvh?)**
+
+---
+
+Hi,
+
+with pylint 1.1.0 and  astroid 1.0.1 I can check the following code snippet:
+
+```
+#!python
+import posix_ipc
+
+class MyQueue(posix_ipc.MessageQueue):
+    def __init__(self, p_name = ""/MyQueue"", p_flags = posix_ipc.O_CREAT, p_mode = 0o600, p_max_messages = 10, p_max_message_size = 8192, p_read = True, p_write = True):
+        posix_ipc.MessageQueue.__init__(self, p_name, p_flags, p_mode, p_max_messages, p_max_message_size, p_read, p_write)
+
+
+def main():
+    l_myq = MyQueue()
+    del l_myq
+
+
+if __name__ == '__main__':
+    main()
+```
+
+The pylint returns:
+
+```
+#!bash
+
+$ pylint --disable C,R --reports=no pylint-posix_ipc.py
+No config file found, using default configuration
+$
+```
+
+With the recent versions (astroid 1.3.6 and pylint 1.4.4) I get the following errors:
+
+```
+#!bash
+
+$ pylint --disable C,R --reports=no pylint-posix_ipc.py
+No config file found, using default configuration
+************* Module pylint-posix_ipc
+E:  3,14: Module 'posix_ipc' has no 'MessageQueue' member (no-member)
+E:  4,54: Module 'posix_ipc' has no 'O_CREAT' member (no-member)
+E:  5, 8: Module 'posix_ipc' has no 'MessageQueue' member (no-member)
+$
+```
+
+It look like that astroid/pylint no longer detects members of the posix_ipc module. I use Python 3.3.2+.
+
+Any ideas?
+
+Thank you!
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/157
+","start issue","Since astroid 1.1.0 posix_ipc module can't checked."
+"issue_closed","157","pycqa","astroid","pylint-bot","2015-12-09 05:54:16","","closed issue","Since astroid 1.1.0 posix_ipc module can't checked."
+"issue_comment","157","pycqa","astroid","pylint-bot","2015-07-10 14:45:12","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+What is posix_ipc?
+","",""
+"issue_comment","157","pycqa","astroid","pylint-bot","2015-07-10 14:49:45","_Original comment by_ **h w (BitBucket: [vvh](http://bitbucket.org/vvh), GitHub: @vvh?)**:
+
+---
+
+It is a python module:
+
+[posix_ipc python module](https://pypi.python.org/pypi/posix_ipc)
+
+[posix_ipc Homepage](http://semanchuk.com/philip/posix_ipc/)
+","",""
+"issue_comment","157","pycqa","astroid","pylint-bot","2015-07-10 14:50:43","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I see that it's an extension module. Try using this instead and check if it works:
+
+`pylint file.py --extension-pkg-whitelist=posix_ipc`
+","",""
+"issue_comment","157","pycqa","astroid","pylint-bot","2015-07-10 14:55:07","_Original comment by_ **h w (BitBucket: [vvh](http://bitbucket.org/vvh), GitHub: @vvh?)**:
+
+---
+
+Perfect - it works.
+
+Sorry for creating a ticket, I couldn't find a forum and I got no respond on IRC.
+","",""
+"issue_comment","157","pycqa","astroid","pylint-bot","2015-07-10 14:56:02","_Original comment by_ **h w (BitBucket: [vvh](http://bitbucket.org/vvh), GitHub: @vvh?)**:
+
+---
+
+With
+
+```
+#!python
+
+--extension-pkg-whitelist=posix_ipc
+```
+
+then it works.
+","",""

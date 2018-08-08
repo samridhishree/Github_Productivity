@@ -1,0 +1,26 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","100","aio-libs","aioredis","HaySayCheese","2015-12-06 01:16:55","If timeout is specified - it will be ignored and, as a result, - the coroutine potentially will never be done.
+
+Example:
+
+```
+await redis.blpop('non existent list', 10)
+```
+
+What should be done:
+Coroutine should be unblocked after 10 seconds if list is empty or does not exists.
+
+What really happens:
+Coroutine continues to wait for list creation or first element.
+","start issue","Blocking operations (such as blpop) does not works properly with timeout parameter "
+"issue_closed","100","aio-libs","aioredis","popravich","2015-12-06 11:39:43","","closed issue","Blocking operations (such as blpop) does not works properly with timeout parameter "
+"issue_comment","100","aio-libs","aioredis","popravich","2015-12-06 11:39:43","Please read docs carefully, the `timeout` parameter is keyword only, so the call must look like this:
+
+``` python
+await redis.blpop('non existent list', timeout=10)
+```
+
+in your case you wait for two lists: `non existent list` and `10`
+","",""
+"issue_comment","100","aio-libs","aioredis","HaySayCheese","2015-12-09 16:54:36","oops! Sorry, and thanks a lot ;)
+","",""

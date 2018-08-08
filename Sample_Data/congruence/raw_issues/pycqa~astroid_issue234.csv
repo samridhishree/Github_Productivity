@@ -1,0 +1,215 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","234","pycqa","astroid","pylint-bot","2015-10-29 15:38:22","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+Since I reworked the code for buiding ASTs from objects, the parent of the node corresponding to None is now an Assign node rather than the builtins module directly, which causes the second of the following asserts to fail.
+
+``` python
+    def assert_classes_equal(self, cls, other):
+        self.assertEqual(cls.name, other.name)
+        self.assertEqual(cls.parent, other.parent)
+        self.assertEqual(cls.qname(), other.qname())
+```
+
+Since nodes will no longer hold their parents after the zipper patch, this test needs to be changed anyway.  This may need to be part of a more comprehensive change aimed at these temporary inference objects, since at the moment a ClassDef node that isn't an actual child of a module won't be able to calculate a qname at all, but for now I think removing the parent check is probably best since I'm going to have to revisit it anyway.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/234
+","start issue","[modular_locals bugs] unittest_helpers, test_object_type"
+"issue_closed","234","pycqa","astroid","pylint-bot","2015-12-09 05:55:34","","closed issue","[modular_locals bugs] unittest_helpers, test_object_type"
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 14:45:15","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+What do you mean that nodes will no longer hold their parents after the zipper patch, you mean that the parent attribute will not exist anymore? 
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 14:46:38","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Yes.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 14:48:38","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Why? That's definitely not ideal, since it leads to a lot of breaking in the API. Wasn't the discussion about providing a property which does an underlying up() call?
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 14:59:13","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+To clarify my point: there _will_ be a parent property that does exactly that for nodes that are children of a parent node.  The problem is specifically limited to nodes that are created using helpers._build_proxy_class() or similar code.  At the moment, it's done like this:
+
+``` python
+def _build_proxy_class(cls_name, builtins):
+    return nodes.ClassDef(name=cls_name, parent=builtins)
+```
+
+This creates a node with a reference to its parent but that's not a child of any other node at all.  With the zipper patch, parent will become a property and a node that's not the child of anything won't _have_ a parent.  My suggested solution, without having traced the use of nodes created by _build_proxy_class or similar code, is to create a special proxy object that has only the attributes that are being created in _build_proxy_class, since the ClassDef node that it's currently generating doesn't have most of the attributes of a real ClassDef node anyway.  If it's essential that it be a real ClassDef node, the only way to do it will be to be to change the parent too.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 15:10:24","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+I don't know if that's essential, but it seems important that nodes created
+from living object behave like any others so they have not te be specially
+handled in pylint. In the case of ""fake"" ClassDefs that are injected in the
+builtin module, it seems right to me that their parent is the 'builtin'
+module. That being said, I've to admit I've not closely enough followed the
+zipper thing to have a stronger opinion.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 16:16:19","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I spent considerable effort in the raw_building changes to make sure the nodes built from live objects are the same as nodes constructed by using the builtin parser and then converting to an astroid AST.  I'm reasonably sure that the ASTs it makes now are accurate than before, and it's certainly true that I fixed bugs and corner cases where I know it wasn't working right: for instance, it crashed on most Python 3 standard library modules before, but now it doesn't.  The AST for the node for None in builtins is now this:
+
+``` python
+      Assign(
+         targets=[AssignName(name='None')],
+         value=Singleton(value=None)),
+```
+
+The Assign node is a child of the builtins Module node.
+
+On this test, replacing parent with root() fixes the second assert but not the third.  This isn't really surprising to me:
+
+``` python
+>>> None.__qualname__
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+AttributeError: 'NoneType' object has no attribute '__qualname__'
+```
+
+What is object_type() used for?  This test is checking that builtin types are (very) loosely the same as stuff made by object_type, but by making raw_building more accurate I also made it so that object_type's output is no longer the same.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 16:32:01","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+object_type is used to implement the `type` builtin, which means that it's used for inferring type calls, as well as used in a couple of other places in the inference.  
+
+The tests verifies some assumption about what type(obj) will return, by verifying that they are roughly similar.  Now, not all capabilities are one to one mappings for their counterpart in Python, which is the case for qname, even though it None doesn't have `__qualname__`, we want to have a sanctioned way of retrieving the entire path to that object, which qname already does for us, so in this case I'm not sure we should remove it.
+
+Another thing with the AST of None, I think it's not strictly the same as what would have happen if it where in pure Python, at least on Python 3 though, where you can't assign these names (None, True, False). This will cause problems for instance when trying to add a check in Python 2, in Pylint, for verifying that they are rebound to other objects, since now you don't know if they were written like this in the source code or if that's something that the underlying library does. I think for these objects (None, True, False, are there any other singleton objects) we should find another way to represent the AST. Not sure what though, maybe introducing another node, that represents a symbolic creation?
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 17:00:31","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Thanks.  Maybe instead of my asking and you replying here where no one will look for it, maybe I could just ask you to drop a quick docstring in the appropriate function?
+
+I'm not sure I understand your comments about Python 2/3 and Pylint.  On Python 2, you _can_ assign to these special names, it's just a very bad idea.  Does Pylint not currently complain about this?  On Python 3, these are keywords so you can't assign to them.
+
+I'm open to considering a different representation, but I'm not sure what either.  The singletons I know about are True, False, None, NotImplemented, and Ellipsis, which is special because it has its own syntactic form.  That said, if we're talking about special representations, we should probably also include GeneratorType, which is currently being inserted into the builtins module by hand, and ask if there are any other types that need handling. 
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 17:16:31","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yes, please let me know where should I write it.
+
+Nope, we currently have no check for this, but we should add one. 
+
+Since I don't know any other project from where to take inspiration from, how about something like Symbol(name='None', value=Singleton(None))? When encountered, we'll know that it creates an unique object with that name and that value, which can never be reassigned. It shouldn't probably have any string representation, but I'm not sure right now what other restrictions should it have.
+
+Yes, we could add more types, especially the ones created by object_type itself. Then, object_type could only retrieve the _proxied attribute of the said object (for instance, for FunctionDef it could retrieve a ClassDef(function), while this would be different for Bound and UnboundMethods). What do you think?
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 18:10:07","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Could you put what you said above about object_type's functionality in its docstring, please?
+
+I think that your solution is good.  How about calling what you called Symbol ""Keyword,"" ""ReservedWord"", or ""ReservedName""?  The Python documentation calls reserved words keywords (see https://docs.python.org/2/library/keyword.html).  We could use NameConstant instead if we want consistency with the stdlib AST module.  Note that weirdly, Ellipsis and NotImplemented are not keywords on Python 3 though they should be.
+
+I also like the idea of handling more of the types.  I'll have to think about how exactly to implement it though.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-29 18:13:16","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Will do. NameConstant sounds the best, don't know how I omitted that. 
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-10-30 17:24:23","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+After I spent some time thinking about it, here's the fundamental problem with the way things are working at the moment: the _proxied attribute of nodes is supposed to point to another AST that represents the type of the object the node represents.  However, there don't exist ASTs representing all the types in builtins or anywhere else: for instance, NoneType and NotImplementedType.  Without an AST to proxy to, lookups can fail.  I think the best solution to this is to create a mapping of types to ASTs representing types.  Also, we should reconsider naming _proxied to something representing what it actually is, in this case, the type of the object the node represents.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-11-03 21:33:33","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+When I was rewriting _object_type to use the new builtins AST (#241) , I noticed that there's a problem: the names of these types are different on different implementations while object_type hard-codes the CPython names for them.  My suggested fix is to call them by the names they're exported by in the types module, so FunctionType, MethodType, etc.  However, this causes the test_object_type and test_object_type_classes_and_functions tests to fail because they use introspection to find the intrinsic names of the types.  How should I change these tests to make sure they work in an implementation-independent way?
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-11-03 21:51:49","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Actually, the problem is worse than I realized: because Const._proxied is using introspection to look up the type name in the builtins mock AST, this also has to be changed.  Unfortunately, this is going to require a global solution.  We need to either create our own names for the types and use those consistently, or we need to use introspection consistently.  I can make a decision if you don't care, just tell me if I should go ahead.  Are there any other locations where things are using introspection to find type names or where type names are hard-coded?  I need to fix them all at the same time.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-11-03 22:00:24","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+It seems to me that using introspection consistently would require less
+work in the long run, but that's not a strong opinion.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-11-04 07:39:46","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Using our own names for the types might be misleading, since they'll be different from Python. I also agree with Sylvain here, using introspection consistently might require less work in the long run. Why Const._proxied needs to be changed, though, if it needs introspection to look up the type name? Because they can be different on other implementations?
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-11-04 17:04:17","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I switched _object_type to use introspection in 43cb866783ba and changed the test.
+
+```
+
+    def test_object_type(self):
+        pairs = [
+            ('1', self._extract('int')),
+            ('[]', self._extract('list')),
+            ('{1, 2, 3}', self._extract('set')),
+            ('{1:2, 4:3}', self._extract('dict')),
+            ('type', self._extract('type')),
+            ('object', self._extract('type')),
+            ('object()', self._extract('object')),
+            ('lambda: None', self._extract('function')),
+            ('len', self._extract('builtin_function_or_method')),
+            ('None', self._extract('NoneType')),
+            ('import sys\nsys#@', self._extract('module')),
+        ]
+        for code, expected in pairs:
+            node = test_utils.extract_node(code)
+            objtype = helpers.object_type(node)
+            self.assert_classes_equal(objtype, expected)
+```
+
+This is still not finished because it's using CPython names, and it's still failing with the following error:
+
+``` python
+ERROR: test_object_type_classes_and_functions (unittest_helpers.TestHelpers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/cara/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_helpers.py"", line 115, in test_object_type_classes_and_functions
+    self.assert_classes_equal(node_type, expected_type)
+  File ""/home/cara/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_helpers.py"", line 47, in assert_classes_equal
+    self.assertEqual(cls.name, other.name)
+AttributeError: 'NoneType' object has no attribute 'name'
+```
+
+I honestly don't understand why.  I will have to investigate when I get back.
+","",""
+"issue_comment","234","pycqa","astroid","pylint-bot","2015-11-04 23:29:52","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Fixed by 04ecfa507e70: introspection is now used consistently in _object_type and the tests.
+","",""

@@ -1,0 +1,99 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","229","pycqa","astroid","pylint-bot","2015-10-27 15:42:56","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+_nose is inserting live objects directly into locals, without using EmptyNodes, in _nose_tools_trivial_transform and _nose_tools_transform.  Should I just use EmptyNodes to build these ASTs or could I introspect the functions to get FunctionDef nodes and put those into the AST instead?
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/229
+","start issue","Malformed AST in brain/_nose"
+"issue_closed","229","pycqa","astroid","pylint-bot","2015-12-09 05:55:30","","closed issue","Malformed AST in brain/_nose"
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-27 15:52:11","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yes, for the enum this should be changed.
+
+The issue with nose is a little bit trickier. Basically the code from the nose transforms tries to mimick a behavior where the methods of an unittest.TestCase instance are retrieved and passed into globals as functions, even though they are underlying methods with an implicit self argument already passed in. This is the exact code they're using.
+
+```
+#!python
+
+class Dummy(unittest.TestCase):
+    def nop():
+        pass
+_t = Dummy('nop')
+
+for at in [ at for at in dir(_t)
+            if at.startswith('assert') and not '_' in at ]:
+    pepd = pep8(at)
+    vars()[pepd] = getattr(_t, at)
+    __all__.append(pepd)
+
+```
+
+Now there is a problem if you insert only a FunctionDef node, because now you have to find a way for handling the self argument. Because they're methods in disguise, just putting functions in the AST will lead to false positives in pylint, which considers that a function call with one of these functions either lacks an extra argument or it has too many.
+
+I don't think that it works with EmptyNodes at all, I think we'll use capabilities, by not being able to introspect the arguments anymore, but I might be wrong and needs testing.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-27 15:52:41","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Also, the issue should be split into two issues, since handling each of the cases require a different approach.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-27 21:39:31","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I can use EmptyNodes to preserve the current behavior (a locals dictionary that contains the bound methods themselves), so I'm going to do that for now.  There is probably a better solution for the long run.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-27 22:07:55","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Would it be possible to use a technique similar to the one that multiprocessing_transform() uses here?
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-28 00:05:21","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Probably, seems to solve similar needs.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-28 00:07:30","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+But in fact they do the same thing basically, putting BoundMethods in a module. The difference is that one is putting them explicitly in .locals, while the other is relying on `__setitem__` to delegate to locals.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-28 02:53:33","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+They're similar enough that there should probably be one shared function for doing this, somewhere.  Note that there is one difference between the current implementations: _nose.py is storing actual method objects, while multiprocessing_transform() is storing BoundMethod objects containing ASTs.  I switched both to using EmptyNodes in 4ae02a64aa57, but there's still some pattern duplication there.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-28 07:48:11","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+What do you mean by actual method objects and objects containing ASTs? They both store BoundMethods with underlying FunctionDef objects, since methods() returns functions which aren't yet bound, not BoundMethods per se.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-10-29 02:08:53","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Oh, I was confused.  When I was debugging these earlier, I thought the nose functions were storing the actual method, not a BoundMethod.  I think my comments about duplication stand, though.
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-11-03 15:34:29","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Is this issue still relevant?
+","",""
+"issue_comment","229","pycqa","astroid","pylint-bot","2015-11-03 16:35:49","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Primary issue fixed by 4ae02a6, which uses EmptyNodes for nose.
+","",""

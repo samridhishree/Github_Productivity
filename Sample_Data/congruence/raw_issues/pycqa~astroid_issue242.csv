@@ -1,0 +1,31 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","242","pycqa","astroid","pylint-bot","2015-11-03 17:56:43","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+Rename changes the field names but brain_stdlib doesn't handle this.
+
+``` python
+>>> from astroid import test_utils
+>>> result = test_utils.extract_node('''
+... from collections import namedtuple
+... namedtuple('a', 'a a a', rename=True)(1, 2, 3) #@
+... ''')
+>>> result
+<Call l.3 at 0x7fa004acd6a0>
+>>> next(result.infer())
+<Instance of .a at 0x140325316097248>
+>>> i = next(result.infer())
+>>> i.instance_attrs
+{'a': [<EmptyNode.a l.3 at 0x7fa004ae3b70>]}
+>>> from collections import namedtuple
+>>> n = namedtuple('a', 'a a a', rename=True)
+>>> dir(n)
+['_1', '_2', '__add__', '__class__', '__contains__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__getstate__', '__gt__', '__hash__', '__init__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmul__', '__setattr__', '__sizeof__', '__slots__', '__str__', '__subclasshook__', '_asdict', '_fields', '_make', '_replace', '_source', 'a', 'count', 'index']
+>>> namedtuple('a', 'a a a', rename=True)(1, 2, 3) 
+a(a=1, _1=2, _2=3)
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/242
+","start issue","Inference on namedtuples called with rename=True won't give all the fields"

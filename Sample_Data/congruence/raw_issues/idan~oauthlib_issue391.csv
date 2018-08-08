@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","391","idan","oauthlib","vrehak","2015-09-04 13:53:15","Our PHP OAuth2 server responds to token request with
+{""access_token"":""20fdab98f6518335db837c2039125ae16b523eb86"",""expires_in"":""7200"",""token_type"":""Bearer"",""scope"":null}
+
+Without this fix, parse_token_response fails with:
+  File ""/usr/local/lib/python2.7/dist-packages/oauthlib/oauth2/rfc6749/tokens.py"", line 32, in **init**
+    self._new_scope = set(utils.scope_to_list(params['scope']))
+TypeError: 'NoneType' object is not iterable
+
+The reason is that scope_to_list returns None for this case and set(None) results in TypeError. It feels logical to me that scope_to_list should always return a list.
+","start issue","Fix for null scope"
+"issue_closed","391","idan","oauthlib","thedrow","2017-04-03 09:33:42","","closed issue","Fix for null scope"
+"pull_request_title","391","idan","oauthlib","vrehak","2015-09-04 13:53:15","Our PHP OAuth2 server responds to token request with
+{""access_token"":""20fdab98f6518335db837c2039125ae16b523eb86"",""expires_in"":""7200"",""token_type"":""Bearer"",""scope"":null}
+
+Without this fix, parse_token_response fails with:
+  File ""/usr/local/lib/python2.7/dist-packages/oauthlib/oauth2/rfc6749/tokens.py"", line 32, in **init**
+    self._new_scope = set(utils.scope_to_list(params['scope']))
+TypeError: 'NoneType' object is not iterable
+
+The reason is that scope_to_list returns None for this case and set(None) results in TypeError. It feels logical to me that scope_to_list should always return a list.
+","3e0a4400088c1cb4b6f0e524355755ead2f88704","Fix for null scope"
+"issue_comment","391","idan","oauthlib","thedrow","2015-10-25 11:11:06","I'll have to check if this was done for a reason. I'll get back to you.
+","",""
+"issue_comment","391","idan","oauthlib","lig","2016-01-15 13:31:16","Hello! I have exactly the same issue with PHP OAuth2 provider used in SugarCRM.
+","",""
+"issue_comment","391","idan","oauthlib","thedrow","2016-01-16 08:02:33","I think we uncovered a different bug here.
+
+> If the client omits the scope parameter when requesting
+>    authorization, the authorization server MUST either process the
+>    request using a pre-defined default value or fail the request
+>    indicating an invalid scope.  The authorization server SHOULD
+>    document its scope requirements and default value (if defined).
+> The scope can't be empty. If the default scope is empty the server should report an error.
+> See http://tools.ietf.org/html/rfc6749#section-3.3
+","",""
+"issue_comment","391","idan","oauthlib","lig","2016-01-16 12:00:54","@thedrow the quest is does `null` stands for ""empty""?
+","",""
+"issue_comment","391","idan","oauthlib","thedrow","2016-01-16 18:00:17","@lig Yes, I believe it is.
+","",""
+"issue_comment","391","idan","oauthlib","thedrow","2017-04-03 09:33:42","Right we need to provide a default scope. I'll open an issue about it.","",""
+"pull_request_commit","391","idan","oauthlib","vrehak","2015-09-04 13:46:56","Fix for null scope","3e0a4400088c1cb4b6f0e524355755ead2f88704",""

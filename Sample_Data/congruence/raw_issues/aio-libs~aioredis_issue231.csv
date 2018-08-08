@@ -1,0 +1,112 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","231","aio-libs","aioredis","argaen","2017-05-16 17:51:22","Hi, after an issue that was opened in https://github.com/argaen/aiocache/issues/196 I've been investigating concurrency issues with both aiomcache and aioredis.
+
+TLDR: When load testing the pools with timeouts, once the test is done the pool doesn't recover and keeps failing.
+
+I've been working on aiomcache implementation to fix this https://github.com/aio-libs/aiomcache/pull/46 and performs good enough. Amount of 200s is really high and server keeps working after the load test `ab -n 5000 -c 100 http://127.0.0.1:8080/`.
+
+Here are some numbers:
+
+**aiomcache**
+```python
+Concurrency Level:      100
+Time taken for tests:   5.345 seconds
+Complete requests:      5000
+Failed requests:        0
+Total transferred:      935000 bytes
+HTML transferred:       180000 bytes
+Requests per second:    935.44 [#/sec] (mean)
+Time per request:       106.901 [ms] (mean)
+Time per request:       1.069 [ms] (mean, across all concurrent requests)
+Transfer rate:          170.83 [Kbytes/sec] received
+```
+
+**aioredis**
+```python
+Concurrency Level:      100
+Time taken for tests:   10.578 seconds
+Complete requests:      5000
+Failed requests:        4843
+   (Connect: 0, Receive: 0, Length: 4843, Exceptions: 0)
+Non-2xx responses:      4843
+Total transferred:      741280 bytes
+HTML transferred:       5652 bytes
+Requests per second:    472.68 [#/sec] (mean)
+Time per request:       211.559 [ms] (mean)
+Time per request:       2.116 [ms] (mean, across all concurrent requests)
+Transfer rate:          68.44 [Kbytes/sec] received
+```
+
+Even worse, in my case all requests keep failing when the test has finished.
+
+This is the script I've been using for the load testing:
+
+```python
+import uuid
+import logging
+import asyncio
+import aiocache
+
+from aiohttp import web
+
+logger = logging.getLogger(__name__)
+
+
+class CacheManager:
+    def __init__(self):
+        # self.cache = aiocache.MemcachedCache(pool_size=4)
+        self.cache = aiocache.RedisCache(pool_max_size=4)
+
+    async def get(self, key):
+        return await self.cache.get(key, timeout=0.1)
+
+    async def set(self, key, value):
+        return await self.cache.set(key, value, timeout=0.1)
+
+
+async def handler_get(req):
+    try:
+        data = await req.app['cache'].get('testkey')
+        if data:
+            return web.Response(text=data)
+        data = str(uuid.uuid4())
+        await req.app['cache'].set('testkey', data)
+        return web.Response(text=str(data))
+    except asyncio.TimeoutError:
+        data = str(uuid.uuid4())
+        await req.app['cache'].set('testkey', data)
+        return web.Response(status=404)
+
+
+if __name__ == '__main__':
+    app = web.Application()
+    app['cache'] = CacheManager()
+    app.router.add_route('GET', '/', handler_get)
+    web.run_app(app)
+```
+
+Requirements:
+
+```
+-e git+git@github.com:argaen/aiocache.git@f7fa8e71508203fa108acd89369e7d13e0403b4d#egg=aiocache
+-e git+git@github.com:aio-libs/aiomcache.git@ff4dbc18145fd3e99c1623879fa3c506616510fa#egg=aiomcache
+aioredis==0.3.1
+aiohttp==2.0.7
+```
+
+I have aiocache in the middle because it allows me to swap easily between one aioredis and aiomcache.
+
+Now some extra observations:
+
+- aioredis behaves well when there is no task cancellation
+- aioredis performs ""better"" when pool_size is 1 (and I can keep querying the server after the load test). If I move it to anything higher than 1, then crashes forever.
+
+If its OK, I will work on fixing it once you or someone else confirms the same problem I'm seeing.
+","start issue","When load testing the pools with timeouts, once the test is done the pool doesn't recover and keeps failing"
+"issue_comment","231","aio-libs","aioredis","popravich","2017-05-17 08:13:05","Yes, I followed the aiocache/aiomcache issue discussion, but I need to take a deep look into this in terms of aioredis.","",""
+"issue_comment","231","aio-libs","aioredis","popravich","2017-05-18 12:56:47","Ok, I've found the issue causing loop to stuck, it is releated to `asyncio.Lock` deadlock — https://github.com/python/cpython/pull/1031.
+`pool.acquire()` gets a lock to get or create new connection.
+When lock is released next lock waiter is waked up, however if this waiter's task gets cancelled at the same time (with timeout) no more lock waiters are waked up, we end up with a deadlock.","",""
+"issue_comment","231","aio-libs","aioredis","argaen","2017-05-18 16:21:34","Ahhh good catch there. Thanks for having a look at it!","",""
+"issue_comment","231","aio-libs","aioredis","jiamo","2017-06-05 17:56:24","Are we need to wait until the python stdlib upgrade? Any suggestion to fix it on a production env?","",""
+"issue_comment","231","aio-libs","aioredis","pfreixes","2017-06-08 07:09:32","A pain in the ass but finally a patch inside of aioredis https://github.com/aio-libs/aioredis/pull/241 /cc @popravich ","",""

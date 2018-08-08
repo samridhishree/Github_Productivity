@@ -1,0 +1,273 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,428,pycqa,astroid,garrybodsworth,2017-04-28 15:15:15,"### Steps to reproduce
+1. This is running a moderate sized Python3 codebase in Pylint and I can't determine what code is exercising this issue.  But the call stack is:
+```
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/usr/lib/python3.5/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/lib/python3.5/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""/usr/lib/python3.5/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File ""/usr/lib/python3.5/site-packages/pylint/checkers/variables.py"", line 1144, in visit_importfrom
+    module = node.do_import_module(name_parts[0])
+  File ""/usr/lib/python3.5/site-packages/astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 409, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/lib/python3.5/site-packages/astroid/manager.py"", line 154, in ast_from_module_name
+    return self.ast_from_file(found_spec.location, modname, fallback=False)
+  File ""/usr/lib/python3.5/site-packages/astroid/manager.py"", line 80, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/lib/python3.5/site-packages/astroid/builder.py"", line 152, in file_build
+    return self._post_build(module, encoding)
+  File ""/usr/lib/python3.5/site-packages/astroid/builder.py"", line 172, in _post_build
+    self.delayed_assattr(delayed)
+  File ""/usr/lib/python3.5/site-packages/astroid/builder.py"", line 231, in delayed_assattr
+    for inferred in node.expr.infer():
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/inference.py"", line 237, in infer_attribute
+    for owner in self.expr.infer(context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 82, in wrapped
+    generator = _func(node, context, **kwargs)
+  File ""/usr/lib/python3.5/site-packages/astroid/inference.py"", line 764, in infer_assign
+    stmts = list(self.assigned_stmts(context=context))
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/protocols.py"", line 511, in with_assigned_stmts
+    obj = obj.elts[index]
+TypeError: 'Uninferable' object does not support indexing
+```
+2. 
+3. 
+
+### Current behavior
+Exception: `TypeError: 'Uninferable' object does not support indexing`
+
+### Expected behavior
+No exception - possibly show an error - not sure.
+
+I can fix the code by changing the code on this line https://github.com/PyCQA/astroid/blob/master/astroid/protocols.py#L512
+to:
+```
+except (IndexError, TypeError):
+```
+
+I'm not sure why the error is occurring so have not created a pull request for it.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+1.5.2
+
+This problem started occurring in PyLint 1.7.0 but doesn't happen in 1.6.5",start issue,TypeError: 'Uninferable' object does not support indexing
+1,issue_closed,428,pycqa,astroid,PCManticore,2017-05-22 12:58:29,,closed issue,TypeError: 'Uninferable' object does not support indexing
+2,issue_comment,428,pycqa,astroid,rogalski,2017-05-15 05:31:55,#429 will fix this.,,
+3,issue_comment,428,pycqa,astroid,PCManticore,2017-05-22 12:58:29,This should be fixed after #429 ,,
+0,issue_title,433,pycqa,astroid,rogalski,2017-05-14 13:19:07,Closes PyCQA/pylint#782,start issue,threading.X objects are now correctly recognised as ctx managers
+1,issue_closed,433,pycqa,astroid,PCManticore,2017-05-22 12:53:35,,closed issue,threading.X objects are now correctly recognised as ctx managers
+2,pull_request_title,433,pycqa,astroid,rogalski,2017-05-14 13:19:07,Closes PyCQA/pylint#782,acd0d5e051400b3a65b73c4df5145078675159a2,threading.X objects are now correctly recognised as ctx managers
+3,pull_request_merged,433,pycqa,astroid,PCManticore,2017-05-22 12:53:35,threading.X objects are now correctly recognised as ctx managers,386fe2baabfc1ef2848211c3140521fa314d8748,Pull request merge from rogalski/astroid:threading-thread to PyCQA/astroid:master
+4,pull_request_commit,433,pycqa,astroid,rogalski,2017-05-14 13:18:59,"threading.X objects are now correctly recognised as ctx managers
+
+Closes PyCQA/Pylint#782",acd0d5e051400b3a65b73c4df5145078675159a2,
+0,issue_title,435,pycqa,astroid,rustyhowell,2017-05-15 17:25:51,"pylint is not correctly detecting members in several modules in my project, including netifaces.py.  My code works great and the python interpreter can find the alleged missing members just fine. But pylint cannot. I am using the same virtualenv to run pylint and my code. 
+* Python 3.5.2
+* pytlint 1.7.1
+*  asteroid 1.5.2
+*  netifaces 0.10.5
+* Ubuntu 16.04 LTS x86_64
+
+### Steps to reproduce
+Using Python 3.5.2, create main.py with the following contents:
+```
+~$ cat main.py
+import netifaces
+a = netifaces.gateway()
+b = netifaces.AF_INET
+```
+Run pylint on this small module:
+
+`~$ pylint main.py `
+
+
+### Current behavior
+```
+pylint_test$ pylint --disable=all --enable=E main.py 
+No config file found, using default configuration
+************* Module main
+E:  4, 4: Module 'netifaces' has no 'gateways' member (no-member)
+E:  5, 4: Module 'netifaces' has no 'AF_INET' member (no-member)
+```
+### Expected behavior
+* Pylint should properly detect members in netifaces.py (and other similarly structured modules)
+
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+astroid version == 1.5.2
+
+",start issue,Pylint reports no-member for C-extension module
+1,issue_closed,435,pycqa,astroid,PCManticore,2017-05-22 13:02:32,,closed issue,Pylint reports no-member for C-extension module
+2,issue_comment,435,pycqa,astroid,rogalski,2017-05-15 17:45:34,"[It's C extension](https://bitbucket.org/al45tair/netifaces/src/master/netifaces.c), consider running it after setting `extension-pkg-whitelist=netifaces `
+",,
+3,issue_comment,435,pycqa,astroid,PCManticore,2017-05-22 13:02:32,This works with extension-pkg-whitelist,,
+0,issue_title,438,pycqa,astroid,poncovka,2017-05-22 16:01:48,"When we run `pylint` on a code that imports `rpm` package, we get tracebacks, because `rpm` has undefined symbol `spec_Type`. I have reported it to `rpm`, but maybe it could be fixed also here.
+
+### Steps to reproduce
+
+Environment:
+* Fedora 27 (Rawhide)
+* python 3.6.1
+* pylint 1.7.1
+* python3-astroid 1.5.2
+* python3-rpm 4.13.0.1
+
+Prepared file for testing:
+```
+> cat test.py
+import rpm
+```
+
+### Current behavior
+Current output from pylint:
+```
+pylint test.py
+No config file found, using default configuration
+************* Module test
+C:  1, 0: Missing module docstring (missing-docstring)
+Traceback (most recent call last):
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 129, in ast_from_module_name
+    module = modutils.load_module_from_name(modname)
+  File ""/usr/lib/python3.6/site-packages/astroid/modutils.py"", line 190, in load_module_from_name
+    return load_module_from_modpath(dotted_name.split('.'), path, use_sys)
+  File ""/usr/lib/python3.6/site-packages/astroid/modutils.py"", line 233, in load_module_from_modpath
+    module = imp.load_module(curname, mp_file, mp_filename, mp_desc)
+  File ""/usr/lib64/python3.6/imp.py"", line 242, in load_module
+    return load_dynamic(name, filename, file)
+  File ""/usr/lib64/python3.6/imp.py"", line 342, in load_dynamic
+    return _load(spec)
+  File ""<frozen importlib._bootstrap>"", line 675, in _load
+  File ""<frozen importlib._bootstrap>"", line 648, in _load_unlocked
+  File ""<frozen importlib._bootstrap>"", line 560, in module_from_spec
+  File ""<frozen importlib._bootstrap_external>"", line 922, in create_module
+  File ""<frozen importlib._bootstrap>"", line 205, in _call_with_frames_removed
+ImportError: /usr/lib64/python3.6/site-packages/rpm/_rpms.cpython-36m-x86_64-linux-gnu.so: undefined symbol: spec_Type
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 11, in <module>
+    load_entry_point('pylint==1.7.1', 'console_scripts', 'pylint')()
+  File ""/usr/lib/python3.6/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/lib/python3.6/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/lib/python3.6/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""/usr/lib/python3.6/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File ""/usr/lib/python3.6/site-packages/pylint/checkers/variables.py"", line 1129, in visit_import
+    module = next(node.infer_name_module(parts[0]))
+  File ""/usr/lib/python3.6/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.6/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.6/site-packages/astroid/inference.py"", line 193, in infer_import
+    yield self.do_import_module(name)
+  File ""/usr/lib/python3.6/site-packages/astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/lib/python3.6/site-packages/astroid/scoped_nodes.py"", line 409, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 154, in ast_from_module_name
+    return self.ast_from_file(found_spec.location, modname, fallback=False)
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 80, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/lib/python3.6/site-packages/astroid/builder.py"", line 152, in file_build
+    return self._post_build(module, encoding)
+  File ""/usr/lib/python3.6/site-packages/astroid/builder.py"", line 169, in _post_build
+    self.add_from_names_to_locals(from_node)
+  File ""/usr/lib/python3.6/site-packages/astroid/builder.py"", line 214, in add_from_names_to_locals
+    imported = node.do_import_module()
+  File ""/usr/lib/python3.6/site-packages/astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/lib/python3.6/site-packages/astroid/scoped_nodes.py"", line 409, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/lib/python3.6/site-packages/astroid/manager.py"", line 133, in ast_from_module_name
+    modname=modname, path=spec.location, error=ex))
+AttributeError: module 'astroid.interpreter._import.spec' has no attribute 'location'
+```
+
+### Expected behavior
+No traceback.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+1.5.2
+",start issue,Traceback for undefined symbol: spec_Type
+1,issue_closed,438,pycqa,astroid,PCManticore,2017-06-03 13:44:07,,closed issue,Traceback for undefined symbol: spec_Type
+2,issue_comment,438,pycqa,astroid,PCManticore,2017-06-03 13:44:07,This is not a pylint/astroid problem.,,
+0,issue_title,429,pycqa,astroid,rogalski,2017-05-10 19:23:03,"Closes PyCQA/pylint#1463
+
+### TODO
+- [x] write a test case
+- [x] implement a fix
+- [x] simplify a test case to absolute minimum",start issue,Fix an inference for trying to unpack Uninferable value in context manager
+1,issue_closed,429,pycqa,astroid,PCManticore,2017-05-22 12:56:12,,closed issue,Fix an inference for trying to unpack Uninferable value in context manager
+2,pull_request_title,429,pycqa,astroid,rogalski,2017-05-10 19:23:03,"Closes PyCQA/pylint#1463
+
+### TODO
+- [x] write a test case
+- [x] implement a fix
+- [x] simplify a test case to absolute minimum",bcf534288881fc1ea19caba0afa2796556dbb161,Fix an inference for trying to unpack Uninferable value in context manager
+3,pull_request_merged,429,pycqa,astroid,PCManticore,2017-05-22 12:56:12,Fix an inference for trying to unpack Uninferable value in context manager,62d9f8debf26f221b0a552600d651f2b24542eef,Pull request merge from rogalski/astroid:uninferable_with_stmt to PyCQA/astroid:master
+4,issue_comment,429,pycqa,astroid,PCManticore,2017-05-13 13:02:01,@rogalski a more simple test case would be wonderful to have. I'm not sure what triggers the problem just by looking over this test case.,,
+5,pull_request_commit,429,pycqa,astroid,rogalski,2017-05-10 19:20:03,"Fix an inference for trying to unpack Uninferable value in context manager
+
+Closes PyCQA/pylint#1463",6e383a01826152a624611e4bbcc3cb30de500f3d,
+6,pull_request_commit,429,pycqa,astroid,rogalski,2017-05-14 08:32:06,make test case a minimal,8ed088f88314ba0728be4c724f8b87048d56211f,
+7,pull_request_commit,429,pycqa,astroid,rogalski,2017-05-14 08:32:37,Merge remote-tracking branch 'PyCQA/master' into uninferable_with_stmt,aba0cb16d3587b69102f45c7d796b6802a562d5f,
+8,pull_request_commit,429,pycqa,astroid,rogalski,2017-05-14 08:33:44,Add changelog entry,9a2d619c6a465da62a344ca2c85eb552f1101dc5,
+9,pull_request_commit,429,pycqa,astroid,rogalski,2017-05-14 08:59:12,actual minimum test case,20e20b2918dd9e7912db545945bb8faeb1d75f4a,
+10,pull_request_commit,429,pycqa,astroid,PCManticore,2017-05-22 12:55:49,Merge branch 'master' into uninferable_with_stmt,bcf534288881fc1ea19caba0afa2796556dbb161,
+0,issue_title,432,pycqa,astroid,rogalski,2017-05-14 08:38:04,,start issue,tox.ini: do not force interpreter version when trying to run pylint
+1,issue_closed,432,pycqa,astroid,PCManticore,2017-05-22 12:53:46,,closed issue,tox.ini: do not force interpreter version when trying to run pylint
+2,pull_request_title,432,pycqa,astroid,rogalski,2017-05-14 08:38:04,,486631aa63978b0fe9a81d7d8bba25e48d639cad,tox.ini: do not force interpreter version when trying to run pylint
+3,pull_request_merged,432,pycqa,astroid,PCManticore,2017-05-22 12:53:45,tox.ini: do not force interpreter version when trying to run pylint,3fe2b276e01ca2c09675dffa789b839086f88587,Pull request merge from rogalski/astroid:pylint_do_not_force_interpreter_version to PyCQA/astroid:master
+4,pull_request_commit,432,pycqa,astroid,rogalski,2017-05-14 08:37:55,tox.ini: do not force interpreter version when trying to run pylint,486631aa63978b0fe9a81d7d8bba25e48d639cad,

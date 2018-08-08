@@ -1,0 +1,78 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","127","aio-libs","aioredis","Artimi","2016-05-30 19:27:44","Hi,
+
+I would like to use pubsub where I dynamically add and remove channels to subscriber. Subscriber then should listen to all of them and wait for first incoming message from whichever channel. Basically, I want to have some object like this:
+
+``` python
+import asyncio
+import aioredis
+
+class RedisSubscriber:
+    @asyncio.coroutine
+    async def connect(self):
+        self._connection = await aioredis.create_redis(('localhost', 6379))
+
+    @asyncio.coroutine
+    async def subscribe(self, channel):
+        await self._connection.subscribe(channel)
+
+    @asyncio.coroutine
+    async def get(self):
+        channel, reply = await self._connection.listen()  # this is made up
+        return channel, reply
+```
+
+I want to just call `get` in loop and get replies with their channels even when I add new channels to subscribe after `get` was called. Is something similar possible with `aioredis`?
+","start issue","Pubsub with listen to all subscribed channels?"
+"issue_closed","127","aio-libs","aioredis","popravich","2017-01-17 09:56:25","","closed issue","Pubsub with listen to all subscribed channels?"
+"issue_comment","127","aio-libs","aioredis","popravich","2016-05-31 16:40:45","Hi, @Artimi 
+You can simply create one subscriber and subscribe to pattern `*`
+and you'll receive all messages for all channels (including channel name to which message is published) 
+","",""
+"issue_comment","127","aio-libs","aioredis","popravich","2016-05-31 16:42:44","See [this test](https://github.com/aio-libs/aioredis/blob/master/tests/pubsub_commands_test.py#L70-L83) for example
+","",""
+"issue_comment","127","aio-libs","aioredis","Artimi","2016-06-02 19:40:56","Hi @popravich 
+Thank you for response. I now see that my question is misleading. In my setup I want several subscribers that will listen to subset of channels available in pubsub. For example I will have channels `1, 2, 3, 4` and two subscribers like this:
+
+```
+s1: 1, 2
+s2: 4
+```
+
+I could subscribe to more channels and listen to all of them with `asyncio.gather` but I would need to somehow reset `get` function from my example.
+","",""
+"issue_comment","127","aio-libs","aioredis","bharling","2016-10-29 12:16:05","+1 from me, It would be nice to have a way to just subscribe a single listener coroutine to a dynamic set of channels and receive all messages on those channels without needing to specify which we're listening to. 
+
+In my project, I have a separate system managing which channels are subscribed by a given listening coroutine and it won't know in advance what those channels are. The subscriptions are also added and removed fairly frequently. 
+
+redis-py does allow this I think? ( example linked below ). In their implementation there appears to just be a 'pubsub' object that is channel agnostic and can subscribe and unsubscribe to any number of channels as needed. This is the behaviour I'm looking for really, but in async 👍 
+
+https://gist.github.com/jobliz/2596594
+","",""
+"issue_comment","127","aio-libs","aioredis","khazhyk","2016-11-05 21:04:19","+1, I passed on this library earlier due to lack of being able to subscribe to multiple patterns on a single listener. Listening to '*' is not ideal, and having to have many channel listeners is also not ideal. A system where a subscriber can subscribe to multiple explicit channels (and only those channels) would be great. 
+","",""
+"issue_comment","127","aio-libs","aioredis","popravich","2017-01-11 14:38:20","Hi @Artimi, @bharling, @khazhyk 
+Sorry for long silence.
+I have just made a new release `v0.3.0` including requested pub/sub feature — aioredis.pubsub.Receiver.
+It can be used as follows:
+```python
+from aioredis.pubsub import Receiver
+
+mpsc = Receiver()
+
+async def single_reader():
+    while await mpsc.wait_message():
+        sender, message = await mpsc.get()
+        print(""Got message {!r} from {!r}"", message, sender.name)
+# run reader
+asyncio.ensure_future(single_reader())
+# use mpsc to add channles
+await redis.subscribe(
+    mpsc.channel('channel:1'),
+    mpsc.channel('channel:3'))
+# ...and/or patterns
+await redis.psubscribe(mpsc.channel('patt*'))
+```
+","",""
+"issue_comment","127","aio-libs","aioredis","popravich","2017-01-17 09:56:25","I'm closing this, if you find any issues using this please open a new one.","",""
+"issue_comment","127","aio-libs","aioredis","bharling","2017-02-08 16:55:07","Thanks - missed your reply, but thanks for the fix, will have a look when i get a chance","",""

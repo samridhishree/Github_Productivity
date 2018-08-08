@@ -1,0 +1,74 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","80","idan","oauthlib","floppym","2012-11-18 04:24:00","","start issue","Don't install the tests package or subpackages."
+"issue_closed","80","idan","oauthlib","ib-lundgren","2012-11-18 18:51:53","","closed issue","Don't install the tests package or subpackages."
+"pull_request_title","80","idan","oauthlib","floppym","2012-11-18 04:24:00","","c2505585c05929035fde77ce05bbf45b5e04be89","Don't install the tests package or subpackages."
+"pull_request_merged","80","idan","oauthlib","ib-lundgren","2012-11-18 18:51:53","Don't install the tests package or subpackages.","b97efc8d623c295bc807977bf7e7c9d9330a4a42","Pull request merge from floppym/oauthlib:master to idan/oauthlib:master"
+"issue_comment","80","idan","oauthlib","Arfrever","2012-11-18 04:27:06","Or just exclude=('docs', 'tests*').
+","",""
+"issue_comment","80","idan","oauthlib","ib-lundgren","2012-11-18 18:23:08","Sensing a bit of an interest conflict here as #35 asked for the opposite in order to run tests at build time for debian. I'm fairly ignorant as far as packaging goes so please educate me, apart from it not being needed for normal users, what other reasons exist for excluding the tests here? 
+
+@idan, @dgouldin, @kennethreitz, @eriolv, @warsaw, do you have any suggestions?
+","",""
+"issue_comment","80","idan","oauthlib","floppym","2012-11-18 18:42:24","I think they just want you to ship the files in the tarball, which is fine. I've added a line to MANIFEST.in for that.
+
+They definitely should not be _installed_ (setup.py install), since that causes a weird ""tests"" package to be copied in to the python sitedir. If multiple python projects were to do this, you would end up with files clobbering each other, as in the bug report below.
+
+https://bugs.gentoo.org/show_bug.cgi?id=443658
+","",""
+"issue_comment","80","idan","oauthlib","eriol","2012-11-18 18:51:04","Hello,
+yes I'm perfectly fine with solution proposed by floppym: tests should not be installed, only shipped in the source tarball.
+
+Sorry for proposing the wrong thing to do in my previous report!
+
+Cheers,
+Daniele Tricoli
+","",""
+"issue_comment","80","idan","oauthlib","ib-lundgren","2012-11-18 18:51:36","Makes sense, thanks for clarifying. I'll push this to PyPI later tonight or tomorrow. 
+
+Thanks a lot for making oauthlib available in gentoo! And feel free to send PRs or open issues for anything you might run into.
+","",""
+"issue_comment","80","idan","oauthlib","warsaw","2012-11-18 20:26:20","On Nov 18, 2012, at 10:23 AM, Ib Lundgren wrote:
+
+> Sensing a bit of an interest conflict here as #35 asked for the opposite in
+> order to run tests at build time for debian. I'm fairly ignorant as far as
+> packaging goes so please educate me, apart from it not being needed for
+> normal users, what other reasons exist for excluding the tests here?
+> 
+> @idan, @dgouldin, @kennethreitz, @eriolv, @warsaw, do you have any
+> suggestions?
+
+In general, I do support including the tests in the source tarball, and in the
+distro package.  The key thing of course, is that the tests should live in a
+subpackage of the main package, e.g. oauthlib.tests, so there's no namespace
+pollution.  Ideally then `pythonX setup.py test` or `pythonX -m unittest
+discover` would run all the tests.
+","",""
+"issue_comment","80","idan","oauthlib","ib-lundgren","2012-11-19 18:34:23","Pushed to PyPI now, sorry for the trouble with 443658.
+
+Is the general consensus that it would be better to have tests as a subpackage instead? If so then I'll move them there before next push.
+","",""
+"issue_comment","80","idan","oauthlib","Arfrever","2012-11-19 18:44:39","I prefer tests in separate directory (as it is now) instead as a subpackage.
+","",""
+"issue_comment","80","idan","oauthlib","warsaw","2012-11-19 19:17:19","On Nov 19, 2012, at 10:34 AM, Ib Lundgren wrote:
+
+> Pushed to PyPI now, sorry for the trouble with 443658.
+> 
+> Is the general consensus that it would be better to have tests as a
+> subpackage instead? If so then I'll move them there before next push.
+
+I don't know if you _can_ get general consensus ;) but I do prefer them as a
+subpackage.  For downstream consumers, it's easy enough to include them and
+run the tests, or remove them from distro packaging.  As I mentioned though, I
+personally prefer to include them since they can provide assurances for the
+ultimate user (who can usually run the tests locally if necessary, e.g. to
+debug any local failures they might see), and often useful examples of how to
+use the library.
+
+TL;DR: +1 for including them in a subpackage.
+","",""
+"issue_comment","80","idan","oauthlib","floppym","2012-11-19 19:56:54","I don't mind either way.
+
+If it is moved to a subpackage, just make sure that they are kept working and function in all supported versions of python. Installing broken code on the end-user's system is never good.
+","",""
+"pull_request_commit","80","idan","oauthlib","floppym","2012-11-18 04:22:50","Don't install the tests package or subpackages.","949c3c9ed6caabd69909400a16c6a93647fcc1eb",""
+"pull_request_commit","80","idan","oauthlib","floppym","2012-11-18 18:37:57","Include tests in the source tarball","c2505585c05929035fde77ce05bbf45b5e04be89",""

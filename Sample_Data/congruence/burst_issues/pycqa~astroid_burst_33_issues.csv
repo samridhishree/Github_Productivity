@@ -1,0 +1,105 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,453,pycqa,astroid,hugovk,2017-10-12 06:14:29,,start issue,Update classifiers
+1,issue_closed,453,pycqa,astroid,PCManticore,2017-10-12 07:20:59,,closed issue,Update classifiers
+2,pull_request_title,453,pycqa,astroid,hugovk,2017-10-12 06:14:29,,6523045937c1e84725e6a322c7838cb91c7b35e6,Update classifiers
+3,pull_request_merged,453,pycqa,astroid,PCManticore,2017-10-12 07:20:59,Update classifiers,8fc39027df6b67006a5f0856e3f0869814522330,Pull request merge from Unknown:patch-1 to PyCQA/astroid:master
+4,issue_comment,453,pycqa,astroid,PCManticore,2017-10-12 07:20:53,Thanks!,,
+5,pull_request_commit,453,pycqa,astroid,hugovk,2017-10-12 06:14:14,Update classifiers,6523045937c1e84725e6a322c7838cb91c7b35e6,
+0,issue_title,455,pycqa,astroid,hugovk,2017-10-12 07:59:32,"Resolves https://github.com/PyCQA/astroid/issues/454.
+
+This test was added in commit c2e8ca524793905018e0e4adc5e29e1d3b0446c6 to fix #172, but it's never been passing.
+
+Rather than having all CI builds failing, I recommend removing this test so the CI can be of more use for future PRs. And then revisit the test to make sure the fix for #172 is working as expected.
+
+Here's the failing commit to fix #172:
+https://travis-ci.org/hugovk/astroid/builds/286902750
+
+And here's the passing commit (except for pylint) before that one:
+https://travis-ci.org/hugovk/astroid/builds/286903238",start issue,Mark test which has never passed as an expected failure
+1,issue_closed,455,pycqa,astroid,PCManticore,2017-10-12 09:03:51,,closed issue,Mark test which has never passed as an expected failure
+2,pull_request_title,455,pycqa,astroid,hugovk,2017-10-12 07:59:32,"Resolves https://github.com/PyCQA/astroid/issues/454.
+
+This test was added in commit c2e8ca524793905018e0e4adc5e29e1d3b0446c6 to fix #172, but it's never been passing.
+
+Rather than having all CI builds failing, I recommend removing this test so the CI can be of more use for future PRs. And then revisit the test to make sure the fix for #172 is working as expected.
+
+Here's the failing commit to fix #172:
+https://travis-ci.org/hugovk/astroid/builds/286902750
+
+And here's the passing commit (except for pylint) before that one:
+https://travis-ci.org/hugovk/astroid/builds/286903238",eef6a7628da0ccbf6f659e0156a98a86d92ed387,Mark test which has never passed as an expected failure
+3,pull_request_merged,455,pycqa,astroid,PCManticore,2017-10-12 09:03:51,Mark test which has never passed as an expected failure,08db26f34395e2c52023a5d33139975ff47ba8af,Pull request merge from Unknown:rm-failing-test to PyCQA/astroid:master
+4,issue_comment,455,pycqa,astroid,PCManticore,2017-10-12 09:04:15,"Thanks @hugovk ! The build still fails, but due to some pylint warnings",,
+5,pull_request_commit_comment,455,pycqa,astroid,PCManticore,2017-10-12 08:39:05,"Rather than removing it entirely, this test should be marked as expected failure. ",eef6a7628da0ccbf6f659e0156a98a86d92ed387,"(None, '', u'astroid/tests/unittest_inference.py')"
+6,pull_request_commit_comment,455,pycqa,astroid,hugovk,2017-10-12 08:53:12,"@PCManticore Thanks, updated.",eef6a7628da0ccbf6f659e0156a98a86d92ed387,"(None, '', u'astroid/tests/unittest_inference.py')"
+7,pull_request_commit,455,pycqa,astroid,hugovk,2017-10-12 08:52:24,Mark failing test as expected failure,eef6a7628da0ccbf6f659e0156a98a86d92ed387,
+0,issue_title,452,pycqa,astroid,hippo91,2017-10-08 16:00:05,"This PR tries to solve ``pylint`` false positive ``no-member`` messages as encountered in PyCQA/pylint#779 and PyCQA/pylint#1477. 
+A high number of false positive ``no-member`` messages, emitted when ``numpy`` is used, are due to the fact that three ``numpy`` modules are written in c and thus can't be correctly parsed by ``astroid`` (i.e they end up being built as a *stub* module):
+
+  - ``numpy.core.umath``;
+  - ``numpy.core.multiarray``;
+  - ``numpy.random.mtrand``.
+
+Instead of listing all missing members in ``brain_numpy.py``, as it was done in PR #449 (for ``numpy.core.umath``), it seems more efficient to allow those three modules to be dynamically loaded by ``astroid``. The main lock avoiding this was the ``_can_load_extension`` method of ``AstroidManager``. I added a test to know if the module to be loaded is one of the three listed above. If it is the case then ``_can_load_extension`` returns ``True``.
+
+I also cleaned up ``brain_numpy.py`` but i added in it, the members of ``numpy.core.numerictypes`` that 
+are not correctly handled by ``astroid`` (although it is not very obvious why). 
+
+I wanted to add a unit test to ensure all ``numpy`` members are correctly detected but i don't really now how to do this in a clean way. @PCManticore, if this PR seems to be interesting,  can you explain me a little bit how to do add unit tests please?
+",start issue,Proposal for fighting against pylint false positive ``no-member`` messages when code uses ``numpy``
+1,issue_closed,452,pycqa,astroid,PCManticore,2017-10-12 07:41:49,,closed issue,Proposal for fighting against pylint false positive ``no-member`` messages when code uses ``numpy``
+2,pull_request_title,452,pycqa,astroid,hippo91,2017-10-08 16:00:05,"This PR tries to solve ``pylint`` false positive ``no-member`` messages as encountered in PyCQA/pylint#779 and PyCQA/pylint#1477. 
+A high number of false positive ``no-member`` messages, emitted when ``numpy`` is used, are due to the fact that three ``numpy`` modules are written in c and thus can't be correctly parsed by ``astroid`` (i.e they end up being built as a *stub* module):
+
+  - ``numpy.core.umath``;
+  - ``numpy.core.multiarray``;
+  - ``numpy.random.mtrand``.
+
+Instead of listing all missing members in ``brain_numpy.py``, as it was done in PR #449 (for ``numpy.core.umath``), it seems more efficient to allow those three modules to be dynamically loaded by ``astroid``. The main lock avoiding this was the ``_can_load_extension`` method of ``AstroidManager``. I added a test to know if the module to be loaded is one of the three listed above. If it is the case then ``_can_load_extension`` returns ``True``.
+
+I also cleaned up ``brain_numpy.py`` but i added in it, the members of ``numpy.core.numerictypes`` that 
+are not correctly handled by ``astroid`` (although it is not very obvious why). 
+
+I wanted to add a unit test to ensure all ``numpy`` members are correctly detected but i don't really now how to do this in a clean way. @PCManticore, if this PR seems to be interesting,  can you explain me a little bit how to do add unit tests please?
+",84d31285f9925637a207839d7ae82bfded9a3c71,Proposal for fighting against pylint false positive ``no-member`` messages when code uses ``numpy``
+3,issue_comment,452,pycqa,astroid,PCManticore,2017-10-12 07:41:49,"I'm sorry but I cannot agree with this. C extensions cannot be loaded for a reason, which is that it creates a security risk, which is why they have to be exempted with ``--extension-pkg-whitelist``. The problem with `numpy` though stems from the fact that it's relying heavily on dynamic features, such as generating members dynamically, which cannot be inferred correctly by pylint. What we need to do is to introduce proper hints through brain modules for these inner modules where numpy uses those dynamic features.",,
+4,issue_comment,452,pycqa,astroid,hippo91,2017-10-14 08:57:38,"Ok, thanks @PCManticore for these explanation!
+I will try to make something in brain_numpy.py to handle those dynamic features.",,
+5,pull_request_commit,452,pycqa,astroid,hippo91,2017-10-08 14:57:48,Add of a test inside _can_load_extension to allow numpy c modules to be dynamically loaded,e4f08be3fb9d3eefaba64b94f671f67bf0a75f80,
+6,pull_request_commit,452,pycqa,astroid,hippo91,2017-10-08 14:58:48,Cleaning up brain for numpy just keeping the essential,84d31285f9925637a207839d7ae82bfded9a3c71,
+0,issue_title,454,pycqa,astroid,hugovk,2017-10-12 06:24:44,"### Steps to reproduce
+1. Test latest master (eg. on Travis CI or Appveyor)
+
+### Current behavior
+```
+FAIL: test_object_dunder_new_is_inferred_if_decorator (unittest_inference.ObjectDunderNewTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/travis/build/PyCQA/astroid/.tox/py27/lib/python2.7/site-packages/astroid/tests/unittest_inference.py"", line 4269, in test_object_dunder_new_is_inferred_if_decorator
+    self.assertIsInstance(inferred, Instance)
+AssertionError: <ClassDef.instance l.2 at 0x7f9fdf2f8290> is not an instance of <class 'astroid.bases.Instance'>
+```
+
+### Expected behavior
+Tests pass.
+
+### More info
+
+I think https://travis-ci.org/PyCQA/astroid/builds/257015909 is the first failing build, from commit https://github.com/PyCQA/astroid/commit/e348d6396a6849cc2b73397dce92c3d1a7921802.
+
+Tip: rather than committing directly to master, always create a PR, that way you can see if the new changes pass or fail the CI before merging.
+
+",start issue,Tests: AssertionError: <ClassDef.instance l.2 at 0x7f9fdf2f8290> is not an instance of <class 'astroid.bases.Instance'>
+1,issue_closed,454,pycqa,astroid,PCManticore,2017-10-12 08:40:14,,closed issue,Tests: AssertionError: <ClassDef.instance l.2 at 0x7f9fdf2f8290> is not an instance of <class 'astroid.bases.Instance'>
+2,issue_comment,454,pycqa,astroid,hugovk,2017-10-12 07:49:24,"On further investigation, commit c2e8ca524793905018e0e4adc5e29e1d3b0446c6 to fix #172, which introduced that test, has been failing from the start.
+
+Here's the failing commit to fix #172:
+https://travis-ci.org/hugovk/astroid/builds/286902750
+
+And here's the passing commit (except for pylint) before that one:
+https://travis-ci.org/hugovk/astroid/builds/286903238
+
+In the short term, I suggest at least removing the test so the CI is useful for new PRs. And then revisit the test to make sure the fix for #172 is working as expected.
+
+",,
+3,issue_comment,454,pycqa,astroid,PCManticore,2017-10-12 08:40:14,"This is caused by https://github.com/PyCQA/astroid/issues/444. The PR looks good to me, plus we also track the error in the linked issue.",,

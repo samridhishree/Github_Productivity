@@ -1,0 +1,32 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","351","pycqa","astroid","rogalski","2016-07-23 22:07:41","### Steps to reproduce
+
+```
+def test_namedtuple_instance_attrs(self):
+    result = builder.extract_node('''
+    from collections import namedtuple
+    namedtuple('a', 'def class', rename=True)(1, 2) #@
+    ''')
+    inferred = next(result.infer())
+    for name, attr in inferred.instance_attrs.items():
+        self.assertEqual(attr[0].attrname, name)
+```
+### Current behavior
+
+Test passed.
+### Expected behavior
+
+Test fails, since created tuple has renamed fields.
+
+```
+>>> from collections import namedtuple
+>>> namedtuple('a', 'def class', rename=True)(1, 2)
+a(_0=1, _1=2)
+```
+
+Astroid version: repository tip.
+","start issue","namedtuple: rename keyword argument is not handled properly"
+"issue_closed","351","pycqa","astroid","rogalski","2017-04-02 17:32:49","","closed issue","namedtuple: rename keyword argument is not handled properly"
+"issue_comment","351","pycqa","astroid","PCManticore","2016-07-26 17:45:06","Yes, we could support this field as well. Will look into your pull request soon (probably I won't have time today)
+","",""
+"issue_comment","351","pycqa","astroid","rogalski","2017-03-27 20:22:25","#415 contain a fix.","",""

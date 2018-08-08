@@ -1,0 +1,46 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","214","pycqa","astroid","pylint-bot","2015-10-15 03:05:58","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+At the moment, Instance is used for instances of classes and instances of other built-in types (lists, dicts) are subclasses of it.  This leads to cases where code has to type-test using type identity rather than isinstance, for instance, and makes it impossible to customize the behavior of class instances.  Instance should probably be a superclass, containing code common to all instances, and ClassInstance should be a subclass.  This will probably also make it easier to subclass Instance to build code for other types coded in C.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/214
+","start issue","Instance should be a superclass, ClassInstance should be a subclass"
+"issue_closed","214","pycqa","astroid","pylint-bot","2015-12-09 05:55:17","","closed issue","Instance should be a superclass, ClassInstance should be a subclass"
+"issue_comment","214","pycqa","astroid","pylint-bot","2015-10-20 13:37:43","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yes, this sounds good to me.
+","",""
+"issue_comment","214","pycqa","astroid","pylint-bot","2015-11-03 16:08:52","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I'm currently doing this change in bookmark 2.0.
+","",""
+"issue_comment","214","pycqa","astroid","pylint-bot","2015-11-07 12:43:05","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Separate class instances and builtin instances into two concepts
+
+One problem with handling both concepts with a single class leads
+to type-testing using type identity rather than using isinstance, since
+builtin instances uses the same base class as class instances (even though
+this is fairly fuzzy). With two classes instead, we can easily distinguish
+between these cases.
+
+The commit includes two new virtual base classes, Instance and BuiltinInstance
+and separates the Instance class into BaseInstance and Instance, also
+changing in some places the use of type-identity testing with isinstance testing.
+Closes issue #214.
+","",""
+"issue_comment","214","pycqa","astroid","pylint-bot","2015-11-07 12:44:54","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This should be fixed, but the solution is somewhat temporary. I don't like that BaseInstance has the entire lookup mechanism, but that will be changed when the lookup will be improved in #93.
+","",""

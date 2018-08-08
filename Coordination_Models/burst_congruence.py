@@ -19,36 +19,37 @@ from collections import defaultdict, OrderedDict
 from itertools import groupby, combinations
 from datetime import datetime
 from dateutil import relativedelta
-import argaprse
+import argparse
+import unicodedata
 
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--fct_adjacency_dir', help='Directory containing 2D adjacency matrix (output of: reformat_adjacency.py)',\
-	default='data/reformatted_co_commit_adj/')
+	default='Sample_Data/congruence/reformatted_co_commit_adj/')
 parser.add_argument('--user_file_pickle_dir', help='Directory containing the user-file membership (output of: people_file_dict.py)',\
-	default='data/people_file_dict/')
+	default='Sample_Data/congruence/user_file_dict/')
 parser.add_argument('--user_mod_fct', help='Directory containing user module membership (output of: people_module_dict.py)',\
-	default='data/people_module_dict/')
+	default='Sample_Data/congruence/user_module_dict/')
 parser.add_argument('--bursty_commits_dir', help='Directory containing the per project per burst commits (output of: extract_burst_commits.py)',\
-	default='data/bursty_commits/')
+	default='Sample_Data/congruence/burst_commits/')
 parser.add_argument('--bursty_issues_dir', help='Directory containing active issues per burst per project (output of: extract_burst_issues.py)',\
-	default='data/bursty_issues/')
+	default='Sample_Data/congruence/burst_issues/')
 parser.add_argument('--project_bursts_pickle', help='Pickled list of bursts per project (output of: HMM/extract_daily_bursts.py)',\
-	default='results/daily_bursts.pickle')
+	default='Sample_Data/HMM/results/daily_bursts.pickle')
 parser.add_argument('--file_mod_pickle_dir', help='Directory containing the file module membership (output of: file_module_dict.py)',\
-	default='data/file_module_dict/')
+	default='Sample_Data/congruence/file_module_dict/')
 parser.add_argument('--user_experience_pickle_dir', help='Directory containing component experience \
 	per user for each project (output of: people_component_experience.py)',\
-	default='data/component_exp/')
+	default='Sample_Data/congruence/component_exp/')
 parser.add_argument('--participation_csv', help='Input csv file containing the participation information for the users of the project',\
-	default='data/participation.csv')
+	default='Sample_Data/HMM/participation.csv')
 parser.add_argument('--output_csv_dir', help='Output directory to hold project wise computed metrics for each burst',\
-	default='results/conguence_outputs/output_csv/')
+	default='Sample_Data/congruence/congruence_outputs/output_csv/')
 parser.add_argument('--output_pickle_dir', help='Output directory to hold te computed metric as pickled dataframes',\
-	default='results/conguence_outputs/output_pickle/')
+	default='Sample_Data/congruence/congruence_outputs/output_pickle/')
 parser.add_argument('--output_csv_req_metrics', help='Output directory to hold the requirement matrices',\
-	default='results/conguence_outputs/output_requirements/')
+	default='Sample_Data/congruence/congruence_outputs/output_requirements/')
 
 args, unknown = parser.parse_known_args()
 
@@ -124,6 +125,16 @@ def fill_diagonal(df, val):
 	for i in df.index:
 		df.loc[i,i] = val
 	return df
+
+# There are 2 level lists. First literal eval gives the unicode that is converted to a string for the second literal eval
+def ConvertToFilesList(list_str):
+	files = ast.literal_eval(list_str)
+	files = files[0]
+	files = unicodedata.normalize('NFKD', files).encode('ascii', 'ignore')
+	if "[" not in files:
+		return []
+	files = ast.literal_eval(files)
+	return files
 
 def ConvertStringToTime(str_time):
 	str_time = str_time.split('+')[0]
@@ -317,17 +328,20 @@ def CalculateAndStoreCongruence(project_name, bursts):
 			if os.path.isfile(commit_file) == True and os.path.isfile(issue_file) == True:
 				commits = pd.read_csv(open(commit_file,'rU'))#, encoding='utf-8')
 				issues = pd.read_csv(open(issue_file,'rU'))#, encoding='utf-8')
+				issues = issues[issues['time'] != 'time']
 				issue_events_in_burst = GetIssueInBurst(issues, burst[0], burst[1])
 				valid_issues = GetValidIssueCommentsForBurst(issue_events_in_burst)
 				
 				#Commits
 				all_files = commits['paths']
 				all_files.fillna('', inplace=True)
+				files_modified = set()
 				for files_commited in list(all_files):
 					if str(files_commited) == '':
 						continue
-					files_commited = ast.literal_eval(files_commited)
-					for file in files_commited[0]:
+					files_commited = ConvertToFilesList(files_commited)
+					#print "files_commited = ", files_commited
+					for file in files_commited:
 						if file.endswith('.py'):
 							file = file.lower()
 							files_modified.add(file)
@@ -359,7 +373,6 @@ def CalculateAndStoreCongruence(project_name, bursts):
 				all_users = set(map(lambda x: x.lower(), all_users))
 				
 				files_modified = list(files_modified)
-				print "files modified = ", files_modified
 				comp_experience = 0.0
 				avg_comp_experience = 0.0
 				if len(files_modified) > 0 and len(commiting_users) > 1: #and len(commiting_users) > 0:
@@ -500,7 +513,7 @@ def CalculateAndStoreCongruence(project_name, bursts):
 
 				# Calculate Tenure
 				parts = project_name.split('_')
-				roject_owner = parts[0].lower()
+				project_owner = parts[0].lower()
 				project = ' '.join(parts[1:]).lower()
 				valid_participation = all_participation.loc[all_participation['owner'] == project_owner]
 				valid_participation_1 = valid_participation.loc[valid_participation['project'] == project]

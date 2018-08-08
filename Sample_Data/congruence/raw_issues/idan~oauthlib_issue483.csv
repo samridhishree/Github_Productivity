@@ -1,0 +1,20 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","483","idan","oauthlib","duk3luk3","2017-08-30 02:55:16","Hello,
+
+when the OAuth2 client receives a refresh_token from a grant, it [saves it on its own instance](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/clients/base.py#L469).
+
+[`prepare_refresh_token_request`](https://github.com/idan/oauthlib/blob/612ac5b0f606e689b86d6918884391cb8e07c060/oauthlib/oauth2/rfc6749/clients/base.py#L273-L302) completely ignores that, taking the refresh_token from the parameters passed in only.
+
+This leads to having to write code like this:
+
+```python
+url, headers, body = self._client.prepare_refresh_token_request(
+    self._settings.baseUrl + self._settings.accessTokenUri,
+    client_id=self._settings.clientId,
+    refresh_token=self_client.refresh_token
+)
+```
+
+Why is that so?","start issue","OAuth2 Client does not use own refresh_token in prepare_refresh_token_request"
+"issue_closed","483","idan","oauthlib","duk3luk3","2017-08-30 03:19:36","","closed issue","OAuth2 Client does not use own refresh_token in prepare_refresh_token_request"
+"issue_comment","483","idan","oauthlib","duk3luk3","2017-08-30 03:19:35","Nevermind, the refresh token gets added in `prepare_refresh_body`. Sorry for the noise.","",""

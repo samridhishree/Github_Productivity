@@ -1,0 +1,95 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","161","aio-libs","aioredis","p1otr","2016-11-05 18:52:55","
+============================= test session starts ==============================
+platform linux -- Python 3.5.2+, pytest-3.0.3, py-1.4.31, pluggy-0.4.0 -- /usr/bin/python3.5
+cachedir: ../../../.cache
+rootdir: /src/python-modules/aioredis, inifile: setup.cfg
+plugins: mock-1.3.0, cov-2.4.0, betamax-0.8.0
+collecting ... collected 255 items
+
+tests/connection_test.py::test_global_loop PASSED
+tests/multi_exec_test.py::test_global_loop FAILED
+tests/pool_test.py::test_global_loop PASSED
+
+=================================== FAILURES ===================================
+_______________________________ test_global_loop _______________________________
+
+    def test_global_loop():
+        conn = mock.Mock()
+        # Needs to return yourself in get_atomic_connection()
+        conn.get_atomic_connection.side_effect = \
+            asyncio.coroutine(lambda: conn)
+        try:
+            old_loop = asyncio.get_event_loop()
+        except (AssertionError, RuntimeError):
+            old_loop = None
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        tr = MultiExec(conn, commands_factory=Redis)
+        assert tr._loop is loop
+
+        def make_fut(cmd, *args, **kw):
+            fut = create_future(asyncio.get_event_loop())
+            if cmd == 'PING':
+                fut.set_result(b'QUEUED')
+            elif cmd == 'EXEC':
+                fut.set_result([b'PONG'])
+            else:
+                fut.set_result(b'OK')
+            return fut
+
+        conn.execute.side_effect = make_fut
+        conn.closed = False
+        conn._transaction_error = None
+
+        @asyncio.coroutine
+        def go():
+            tr.ping()
+            res = yield from tr.execute()
+            assert res == [b'PONG']
+>       loop.run_until_complete(go())
+
+tests/multi_exec_test.py:43:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/lib/python3.5/asyncio/base_events.py:446: in run_until_complete
+    return future.result()
+/usr/lib/python3.5/asyncio/futures.py:292: in result
+    raise self._exception
+/usr/lib/python3.5/asyncio/tasks.py:239: in _step
+    result = coro.send(None)
+tests/multi_exec_test.py:41: in go
+    res = yield from tr.execute()
+aioredis/commands/transaction.py:245: in _do_execute
+    conn = yield from self._conn.get_atomic_connection()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (), kw = {}, res = <Mock id='139833639395112'>
+
+    @functools.wraps(func)
+    def coro(*args, **kw):
+        res = func(*args, **kw)
+        if (futures.isfuture(res) or inspect.isgenerator(res) or
+            isinstance(res, CoroWrapper)):
+>           res = yield from res
+E           TypeError: 'Mock' object is not iterable
+
+/usr/lib/python3.5/asyncio/coroutines.py:209: TypeError","start issue","test_global_loop fails with TypeError: 'Mock' object is not iterable"
+"issue_closed","161","aio-libs","aioredis","popravich","2016-11-07 13:23:10","","closed issue","test_global_loop fails with TypeError: 'Mock' object is not iterable"
+"issue_comment","161","aio-libs","aioredis","popravich","2016-11-06 20:40:03"," sorry, can not repeat this error
+","",""
+"issue_comment","161","aio-libs","aioredis","p1otr","2016-11-06 21:24:07","which pytest/cov/mock versions do you use?
+
+I have similar error with aiohttp, BTW
+","",""
+"issue_comment","161","aio-libs","aioredis","p1otr","2016-11-06 21:30:09","actually... which interpreter version did you test with? It fails for me with 3.5 and doesn't with 3.4 (well, it does but with a completely different error)
+","",""
+"issue_comment","161","aio-libs","aioredis","popravich","2016-11-07 08:31:29","I can't repeat this error in any environment I use.
+For packages version you can check travis:
+https://travis-ci.org/aio-libs/aioredis/jobs/170077286#L307
+","",""
+"issue_comment","161","aio-libs","aioredis","popravich","2016-11-07 13:26:13","Ok, the problem was in `asyncio` + `Mock` combination — in newer asyncio there is
+`asyncio.futures.isfuture(a)` function used instead of `isinstance(a, asyncio.futures.Future)`.
+That function just checks private attribute which in case of Mock is automagaically added
+(new mock created).
+","",""

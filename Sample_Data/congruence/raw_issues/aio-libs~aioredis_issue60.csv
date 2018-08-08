@@ -1,0 +1,14 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","60","aio-libs","aioredis","benjolitz","2015-04-23 16:02:41","Asyncio-redis is a fairly complete and mature asynchronous redis implementation. I'm curious as to what sets aioredis apart from it?
+
+https://github.com/jonathanslenders/asyncio-redis
+","start issue","Differences between aioredis and asyncio-redis"
+"issue_closed","60","aio-libs","aioredis","popravich","2015-06-16 10:17:05","","closed issue","Differences between aioredis and asyncio-redis"
+"issue_comment","60","aio-libs","aioredis","popravich","2015-04-23 17:55:33","Oh, well)
+- First of all I tried to make it simplier -- asyncio_redis implements `asyncio.Protocol` (lots of code) vs aioredis uses `asyncio.StreamReader`/`StreamWriter` (no protocol code; just _read & send_);
+- At the moment when I started aioredis asyncio-redis had no `hiredis` parser.
+- asyncio_redis API forces end-user to work with one type of data, ie only bytes or only unicode or etc. So you would receive an error trying to mix data types, say `set('unicode_key', b'encoded_bytes_data')`.
+- asyncio-redis has no way to execute raw command; aioredis provides `execute` method so you'll be able to use new redis commands before their shortcuts/API implemented by client lib. 
+- ""automatic reconnections"", well, in asyncio-redis if the server has gone away would reconnect, reconnect and reconnect. I mean reconnection is done as soon as connection is lost which is bad. For instance we had functional tests infrastructure where we were starting & shutting down standalone redis server instance so after all tests we had several hundreds of spamy errored 'reconnect' messages.
+- aioredis doesn't have pub/sub yet, but it is in progress and will be implemented soon.
+","",""

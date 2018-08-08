@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","138","idan","oauthlib","epiphone","2013-04-20 21:33:02","On the documentation for function validate_timestamp_and_nonce it reads
+
+```
+""...If invalid then immediately fail the request by returning False. If the
+nonce/timestamp pair has been used before and you may just have detected
+a replay attack. Therefore it is an essential part of OAuth security that you
+not allow nonce/timestamp reuse"".
+```
+
+However, the sample code returns True if a Nonce with given parameters is found. Wouldn't this indicate a possible replay attack? Or have I misunderstood something?
+
+The sample code:
+
+``` python
+nonces_and_timestamps_database = [
+   (u'foo', 1234567890, u'rannoMstrInghere', u'bar')
+]
+
+def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+   request_token=None, access_token=None):
+
+   return ((client_key, timestamp, nonce, request_token or access_token)
+            in self.nonces_and_timestamps_database)
+```
+","start issue","OAuth 1 Provider - Confusion with timestamp and nonce validation"
+"issue_closed","138","idan","oauthlib","ib-lundgren","2013-05-29 15:06:39","","closed issue","OAuth 1 Provider - Confusion with timestamp and nonce validation"
+"issue_comment","138","idan","oauthlib","ib-lundgren","2013-04-22 14:25:13","You are completely right and the example should say 'not in' instead of 'in'. I'll try and update that today unless you beat me to it with a PR =)
+","",""

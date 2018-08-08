@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","470","idan","oauthlib","sladebot","2017-03-30 21:16:01","I am using Flask-OAuthlib which uses the `oauthlib`, after granting permissions it tries to check if `redirect_uri` is present in `request` while trying to fetch the auth token. The `redirect_uri` should be optional according to RFC - https://tools.ietf.org/html/rfc6749#section-4.1.1. 
+
+This is where it breaks - 
+
+```# REQUIRED, if the ""redirect_uri"" parameter was included in the
+      # authorization request as described in Section 4.1.1, and their
+      # values MUST be identical.
+      if not self.request_validator.confirm_redirect_uri(request.client_id, request.code,
+                                                         request.redirect_uri, request.client):
+          log.debug('Redirect_uri (%r) invalid for client %r (%r).',
+                    request.redirect_uri, request.client_id, request.client)
+          raise errors.AccessDeniedError(request=request)```","start issue","Mandatory check for redirect_uri happening while authorizing request"
+"issue_comment","470","idan","oauthlib","wiliamsouza","2017-09-10 23:00:15","This is OPTIONAL but  in section 3.1.2 Redirection Endpoint https://tools.ietf.org/html/rfc6749#section-3.1.2 describe how authorization server should handle it:
+
+```
+The authorization server redirects the user-agent to the
+   client's redirection endpoint previously established with the
+   authorization server during the client registration process or when
+   making the authorization request.
+```
+I see two workflow here:
+
+1 . If the request contain the `redirect_uri` make sure it is valid checking values stored during the registration process. 
+2. If the request do not contain `redirect_uri` use the default one stored during  registration process.
+
+Have you tried with the two options stated bellow?","",""

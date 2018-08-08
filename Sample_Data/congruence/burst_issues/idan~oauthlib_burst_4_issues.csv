@@ -1,0 +1,189 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,18,idan,oauthlib,ib-lundgren,2012-03-31 09:37:33,"Methods for preparing requests and parsing responses. They are all related to different client profiles although many of these profiles share functionality.
+
+The reason I have included parsing methods too is simply to have a convenient way to get from uri or json response body to a dict of parameters for validation. The client validation is quite basic but strongly recommended by the spec to avoid CSRF and open redirection. The server validation (on its way) will contain more tricky parts.
+
+A 10k overview of the 4 auth workflows (extensions not yet supported):
+
+Authorization Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'code',...)
+   # redirect user to uri, similar to oauth 1
+   # user returns, params added to redirection uri query
+   params = parse_grant_uri(redirection_uri)
+   if validate_grant_params(params):
+       body = prepare_token_request(u'authorization_code')
+       # send post request to token endpoint
+       params = parse_token_body(response.content)
+       if validate_token_params(params):
+            # everything worked, we now have an access token
+            print params.get(u'access_token')
+```
+
+Implicit Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'token',...)
+   # redirect user, similar to oauth 1
+   # user returns, params added to redirection uri fragment
+   params = parse_token_uri(redirection_uri)
+   if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')    
+```
+
+Resource Owner Password Credentials Grant:
+
+```
+ body = prepare_token_request(u'password', username=username, 
+                              password=password)
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Client Credentials Grant: 
+
+```
+ body = prepare_token_request(u'client_credentials')
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Some method renaming might be necessary. Tests also included.
+",start issue,OAuth 2 parameter handlers
+1,issue_closed,18,idan,oauthlib,ib-lundgren,2012-06-28 12:35:05,,closed issue,OAuth 2 parameter handlers
+2,pull_request_title,18,idan,oauthlib,ib-lundgren,2012-03-31 09:37:33,"Methods for preparing requests and parsing responses. They are all related to different client profiles although many of these profiles share functionality.
+
+The reason I have included parsing methods too is simply to have a convenient way to get from uri or json response body to a dict of parameters for validation. The client validation is quite basic but strongly recommended by the spec to avoid CSRF and open redirection. The server validation (on its way) will contain more tricky parts.
+
+A 10k overview of the 4 auth workflows (extensions not yet supported):
+
+Authorization Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'code',...)
+   # redirect user to uri, similar to oauth 1
+   # user returns, params added to redirection uri query
+   params = parse_grant_uri(redirection_uri)
+   if validate_grant_params(params):
+       body = prepare_token_request(u'authorization_code')
+       # send post request to token endpoint
+       params = parse_token_body(response.content)
+       if validate_token_params(params):
+            # everything worked, we now have an access token
+            print params.get(u'access_token')
+```
+
+Implicit Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'token',...)
+   # redirect user, similar to oauth 1
+   # user returns, params added to redirection uri fragment
+   params = parse_token_uri(redirection_uri)
+   if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')    
+```
+
+Resource Owner Password Credentials Grant:
+
+```
+ body = prepare_token_request(u'password', username=username, 
+                              password=password)
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Client Credentials Grant: 
+
+```
+ body = prepare_token_request(u'client_credentials')
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Some method renaming might be necessary. Tests also included.
+",6f05096efb7d423e8e529a3efd3854b2f4a030ab,OAuth 2 parameter handlers
+3,issue_comment,18,idan,oauthlib,kennethreitz,2012-03-31 09:39:13,"Ib's a machine :)
+",,
+4,issue_comment,18,idan,oauthlib,ib-lundgren,2012-06-28 12:35:05,"Cleaned up and commited into master =)
+",,
+5,issue_comment,18,idan,oauthlib,kennethreitz,2012-06-28 13:37:59,":sparkles: :cake: :sparkles:
+",,
+6,pull_request_commit,18,idan,oauthlib,ib-lundgren,2012-03-31 09:03:17,OAuth 2 parameter handlers,6f05096efb7d423e8e529a3efd3854b2f4a030ab,
+0,issue_title,14,idan,oauthlib,ib-lundgren,2012-03-31 09:05:35,"Added 'test' prefix to make the test run using normal test discovery and nosetests. Fixed a small assert error.
+",start issue,generate_token test was not running
+1,issue_closed,14,idan,oauthlib,dgouldin,2012-03-31 23:39:32,,closed issue,generate_token test was not running
+2,pull_request_title,14,idan,oauthlib,ib-lundgren,2012-03-31 09:05:35,"Added 'test' prefix to make the test run using normal test discovery and nosetests. Fixed a small assert error.
+",cf8d28ce21c71cebda6f82a6d58dc7c3f1d742cf,generate_token test was not running
+3,pull_request_merged,14,idan,oauthlib,dgouldin,2012-03-31 23:39:32,generate_token test was not running,b5e5407a096a20d1a16561b3ced8927c32b3dd13,Pull request merge from ib-lundgren/oauthlib:test_tokengen to idan/oauthlib:master
+4,pull_request_commit,14,idan,oauthlib,ib-lundgren,2012-03-31 08:46:01,generate_token test was not running,cf8d28ce21c71cebda6f82a6d58dc7c3f1d742cf,
+0,issue_title,17,idan,oauthlib,ib-lundgren,2012-03-31 09:14:00,"In OAuth 2 you can pass tokens in several ways where the most common one is Bearer. MAC tokens adds signatures in a similar fashion to OAuth 1. Extensions are also allowed but not included in this pull request.
+
+Short examples of what these tokens look like can be found in the comments. Tests also included and verified against the Bearer and MAC spec respectively. 
+
+http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
+http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
+",start issue,Bearer and MAC token support
+1,issue_closed,17,idan,oauthlib,idan,2012-04-11 09:47:12,,closed issue,Bearer and MAC token support
+2,pull_request_title,17,idan,oauthlib,ib-lundgren,2012-03-31 09:14:00,"In OAuth 2 you can pass tokens in several ways where the most common one is Bearer. MAC tokens adds signatures in a similar fashion to OAuth 1. Extensions are also allowed but not included in this pull request.
+
+Short examples of what these tokens look like can be found in the comments. Tests also included and verified against the Bearer and MAC spec respectively. 
+
+http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-18
+http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01
+",cb7587f7674db5d00df3a6134ad815fa03e2e7e6,Bearer and MAC token support
+3,pull_request_merged,17,idan,oauthlib,idan,2012-04-11 09:47:12,Bearer and MAC token support,71be242f2f7c365eb42310a68153f2ac33d89d03,Pull request merge from ib-lundgren/oauthlib:oauth2_tokens to idan/oauthlib:master
+4,issue_comment,17,idan,oauthlib,idan,2012-04-11 09:47:06,"Looks good!
+
+Only comment that I have is that the methods no longer have docstrings indicating which part of the spec they fulfill.
+",,
+5,pull_request_commit,17,idan,oauthlib,ib-lundgren,2012-03-31 09:01:07,Bearer and MAC token support,cb7587f7674db5d00df3a6134ad815fa03e2e7e6,
+0,issue_title,15,idan,oauthlib,ib-lundgren,2012-03-31 09:06:10,"Added the namespace oauth2_draft25 to oauthlib and tests.
+",start issue,OAuth 2 draft 25 initial
+1,issue_closed,15,idan,oauthlib,dgouldin,2012-03-31 23:40:41,,closed issue,OAuth 2 draft 25 initial
+2,pull_request_title,15,idan,oauthlib,ib-lundgren,2012-03-31 09:06:10,"Added the namespace oauth2_draft25 to oauthlib and tests.
+",1f0a93f4ed8afedd3ea7c4e6510f23d5ebddd4e7,OAuth 2 draft 25 initial
+3,pull_request_merged,15,idan,oauthlib,dgouldin,2012-03-31 23:40:41,OAuth 2 draft 25 initial,b1f69004397421bc92ec7adbd4b59a3580a12339,Pull request merge from ib-lundgren/oauthlib:oauth2_namespace to idan/oauthlib:master
+4,issue_comment,15,idan,oauthlib,dgouldin,2012-03-31 23:40:36,"Thanks for the small, atomic pull requests, but they don't have to be quite _this_ small. ;)
+",,
+5,pull_request_commit,15,idan,oauthlib,ib-lundgren,2012-03-31 08:51:24,OAuth 2 draft 25 initial,1f0a93f4ed8afedd3ea7c4e6510f23d5ebddd4e7,
+0,issue_title,16,idan,oauthlib,ib-lundgren,2012-03-31 09:09:20,"Mostly migrated utility methods from OAuth 1 utils.py.
+
+New methods are:
+
+add_params_to_uri which takes add_params_to_qs one step further.
+host_from_uri which extract host from URI and splits it in domain + port, might need renaming. Used for OAuth2 bearer tokens.
+
+Tests also included.
+",start issue,Utility methods for OAuth2
+1,issue_closed,16,idan,oauthlib,idan,2012-04-11 10:04:26,,closed issue,Utility methods for OAuth2
+2,pull_request_title,16,idan,oauthlib,ib-lundgren,2012-03-31 09:09:20,"Mostly migrated utility methods from OAuth 1 utils.py.
+
+New methods are:
+
+add_params_to_uri which takes add_params_to_qs one step further.
+host_from_uri which extract host from URI and splits it in domain + port, might need renaming. Used for OAuth2 bearer tokens.
+
+Tests also included.
+",0144e370874e8525b955eb007a90c205e5df7559,Utility methods for OAuth2
+3,pull_request_merged,16,idan,oauthlib,idan,2012-04-11 10:04:26,Utility methods for OAuth2,d7efe3adf99f442e913655867aa6f6fa392a6371,Pull request merge from ib-lundgren/oauthlib:oauth2_utils to idan/oauthlib:master
+4,issue_comment,16,idan,oauthlib,dgouldin,2012-04-07 21:07:44,"In the name of DRY, are there utils that can be abstracted out of both oauth 1 and 2 and put in a base utils module?  This would probably require restructuring of the oauth 1 rfc code into its own package, but honestly I'd prefer it that way anyway.
+",,
+5,issue_comment,16,idan,oauthlib,idan,2012-04-11 10:04:11,"Merging this for now, we can abstract and improve as we go.
+",,
+6,pull_request_commit,16,idan,oauthlib,ib-lundgren,2012-03-31 08:59:22,Utility methods for OAuth2,0144e370874e8525b955eb007a90c205e5df7559,

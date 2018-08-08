@@ -1,0 +1,75 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","186","idan","oauthlib","scfarley","2013-06-28 17:18:10","Catch IndexError when calling parse_keqv_list in
+parse_authorization_header.  parse_keqv_list could raise an IndexError
+exception if the header has an incomplete key=value pair.  Some examples
+of this are a broken OAuth header (e.g., OAuth oauth_nonce=) and client
+code that attempts to use IWA for authentication (i.e., Negotiate
+b2F1dGhsaWI=).  IWA uses Base64 which may end with an ""="".
+
+Add unit tests for bad authorization headers raising ValueError.
+","start issue","Fix parse_authorization_header to catch IndexError"
+"issue_closed","186","idan","oauthlib","ib-lundgren","2013-07-09 17:03:09","","closed issue","Fix parse_authorization_header to catch IndexError"
+"pull_request_title","186","idan","oauthlib","scfarley","2013-06-28 17:18:10","Catch IndexError when calling parse_keqv_list in
+parse_authorization_header.  parse_keqv_list could raise an IndexError
+exception if the header has an incomplete key=value pair.  Some examples
+of this are a broken OAuth header (e.g., OAuth oauth_nonce=) and client
+code that attempts to use IWA for authentication (i.e., Negotiate
+b2F1dGhsaWI=).  IWA uses Base64 which may end with an ""="".
+
+Add unit tests for bad authorization headers raising ValueError.
+","adb64a0835aeb5e1cbf49952cd25a2510dae70bb","Fix parse_authorization_header to catch IndexError"
+"pull_request_merged","186","idan","oauthlib","ib-lundgren","2013-07-09 17:03:09","Fix parse_authorization_header to catch IndexError","013c427d13af67bf3ab98a4fe90f4b7e308a5e2e","Pull request merge from Unknown:master to idan/oauthlib:master"
+"issue_comment","186","idan","oauthlib","ib-lundgren","2013-06-30 19:16:28","Thanks for the PR @scfarley. Catching index error for malformed auth header is a great start. I think we can easily improve the resilience even more by returning an empty list if the Authorization header does not start with 'OAuth'. 
+
+```
+if authorization_header.startswith(auth_scheme):
+    authorization_header = authorization_header.replace(auth_scheme, '', 1)
+    items = parse_http_list(authorization_header)
+    try:
+        return list(parse_keqv_list(items).items())
+    except (IndexError, ValueError):
+        raise ValueError('Malformed authorization header')
+else:
+    return []
+```
+","",""
+"issue_comment","186","idan","oauthlib","scfarley","2013-07-01 15:24:54","I agree with having it return sooner if the header does not start with ""OAuth "".  However, would it better to raise ValueError in this case anyway?  In oauthlib's view, it is malformed even if it is valid for a different scheme.
+","",""
+"issue_comment","186","idan","oauthlib","ib-lundgren","2013-07-02 14:55:37","Yes ValueError would be better. I thought the spec mentioned only include parameters if OAuth auth header is present, but reading it now it is clear that it is for any auth header so an error is correct. Fancy updating the PR? Cheers
+","",""
+"issue_comment","186","idan","oauthlib","scfarley","2013-07-05 17:28:27","Since I noticed that the RFC does not require case-sensitivity with the scheme, my fixes include changes for that.
+","",""
+"issue_comment","186","idan","oauthlib","ib-lundgren","2013-07-06 17:56:24","Looks good :) Please change auth scheme var to lower case and drop the .lower() on comparison. Oh and add a test to make sure it works with with headers shorter than len(auth_scheme) 
+","",""
+"issue_comment","186","idan","oauthlib","scfarley","2013-07-09 18:42:25","Did you still want me to change the scheme variable to lower case and drop the lower() calls?  One of the tests in the first commit is one character shorter than len(auth_scheme).
+","",""
+"issue_comment","186","idan","oauthlib","ib-lundgren","2013-07-09 20:08:54","I sorted it out quickly just after merging. Thanks again for the PR :)
+On Jul 9, 2013 7:42 PM, ""Sean Farley"" notifications@github.com wrote:
+
+> Did you still want me to change the scheme variable to lower case and drop
+> the lower() calls? One of the tests in the first commit is one character
+> shorter than len(auth_scheme).
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/186#issuecomment-20696017
+> .
+","",""
+"pull_request_commit","186","idan","oauthlib","sean-dev@farley.org","2013-06-28 14:56:30","Improve resilience to bad authorization headers
+
+Catch IndexError when calling parse_keqv_list in
+parse_authorization_header.  parse_keqv_list could raise an IndexError
+exception if the header has an incomplete key=value pair.  Some examples
+of this are a broken OAuth header (e.g., OAuth oauth_nonce=) and client
+code that attempts to use IWA for authentication (i.e., Negotiate
+b2F1dGhsaWI=).  IWA uses Base64 which may end with an ""="".
+
+Add unit tests for bad authorization headers raising ValueError.","349d9f398afd58cc993f207c4035b85e2bf86b26",""
+"pull_request_commit","186","idan","oauthlib","sean-dev@farley.org","2013-07-05 16:59:37","Validate authentication header prior to parsing
+
+Before attempting to parse the authentication header as if it OAuth,
+raise ValueError if the header does not even begin with ""OAuth "".  Also,
+make the check case insensitive in accordance with RFC 5849 section
+3.5.1.
+
+References #186.","a950f0880fa77fd80020769a5ff3f7e52b7a8b89",""
+"pull_request_commit","186","idan","oauthlib","sean-dev@farley.org","2013-07-05 17:20:02","Use case-insensitive removal of scheme from header","adb64a0835aeb5e1cbf49952cd25a2510dae70bb",""

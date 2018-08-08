@@ -1,0 +1,56 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","425","pycqa","astroid","xmo-odoo","2017-04-24 16:42:05","### Steps to reproduce
+Title's a bit of a mouthful but explains it all, in the following snippet:
+```python
+class A:
+    @b(lambda self: self.c)
+    def d(self):
+        pass
+```
+The `self` inside the `lambda` is inferred as an instance of `d` (the method) rather than `A` (the class).
+
+Now this is problematic because PyLint's Python3 checker [wonders if an attribute is an instance of StandardException](https://github.com/PyCQA/pylint/blob/master/pylint/checkers/python3.py#L770), and does so by [looking at the node's ancestors](https://github.com/PyCQA/pylint/blob/master/pylint/checkers/utils.py#L456), assuming the node is a proper instance that should yield the base classes of the parent class.
+
+Except here the ""parent class"" is a FunctionDef which does not have an `ancestors` attribut, and PyLint thus crashes:
+```
+Traceback (most recent call last):
+  File ""bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""lib/python2.7/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""lib/python2.7/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""lib/python2.7/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""lib/python2.7/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""lib/python2.7/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""lib/python2.7/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""lib/python2.7/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""lib/python2.7/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""lib/python2.7/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""lib/python2.7/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""lib/python2.7/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""lib/python2.7/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File ""lib/python2.7/site-packages/pylint/checkers/python3.py"", line 771, in visit_attribute
+    utils.inherit_from_std_ex(inferred)):
+  File ""lib/python2.7/site-packages/pylint/checkers/utils.py"", line 457, in inherit_from_std_ex
+    for parent in node.ancestors(recurs=True))
+  File ""lib/python2.7/site-packages/astroid/bases.py"", line 71, in __getattr__
+    return getattr(self._proxied, name)
+AttributeError: 'FunctionDef' object has no attribute 'ancestors'
+```
+### Expected behavior
+Not crashing pylint.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+1.5.2
+","start issue","Lethal inference error on `self` parameter of lambda argument to a method decorator"

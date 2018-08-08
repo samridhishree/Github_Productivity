@@ -1,0 +1,70 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","378","pycqa","astroid","Scal-jbb","2016-12-14 23:30:45","```
+$ tree
+.
+├── foo
+│   ├── bar
+│   │   └── __init__.py
+│   └── __init__.py
+└── setup.py
+
+$ cat setup.py
+import setuptools
+setuptools.setup(
+    name='foo.bar',
+    packages=setuptools.find_packages(),
+    namespace_packages=['foo'],
+)
+
+$ cat foo/__init__.py
+__import__('pkg_resources').declare_namespace(__name__)
+
+$ cat foo/bar/__init__.py
+
+$ python --version
+Python 3.5.2+
+
+$ pip freeze
+astroid==1.4.8
+foo.bar==0.0.0
+isort==4.2.5
+lazy-object-proxy==1.2.2
+mccabe==0.5.3
+pylint==1.6.4
+six==1.10.0
+wrapt==1.10.8
+
+$ pylint foo.bar
+No config file found, using default configuration
+Traceback (most recent call last):
+  File ""/home/torok/.virtualenvs/foo.bar/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/pylint/lint.py"", line 1310, in __init__
+    linter.check(args)
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/pylint/lint.py"", line 732, in check
+    self._do_check(files_or_modules)
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/pylint/lint.py"", line 843, in _do_check
+    for descr in self.expand_files(files_or_modules):
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/pylint/lint.py"", line 877, in expand_files
+    self.config.black_list_re)
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/pylint/utils.py"", line 832, in expand_modules
+    filepath = file_from_modpath(modname.split('.'))
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/astroid/modutils.py"", line 324, in file_from_modpath
+    return file_info_from_modpath(modpath, path, context_file)[0]
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/astroid/modutils.py"", line 369, in file_info_from_modpath
+    return _file_from_modpath(modpath, path, context)
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/astroid/modutils.py"", line 582, in _file_from_modpath
+    mtype, mp_filename = _module_file(modpath, path)
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/site-packages/astroid/modutils.py"", line 670, in _module_file
+    stream, mp_filename, mp_desc = imp.find_module(modname, path)
+  File ""/home/torok/.virtualenvs/foo.bar/lib/python3.5/imp.py"", line 270, in find_module
+    ""not {}"".format(type(path)))
+RuntimeError: 'path' must be None or a list, not <class '_frozen_importlib_external._NamespacePath'>
+```
+
+I don't have a problem with Python 3.4.4.","start issue","find_module() fails for a namespace module (declared by setuptools) with python 3.5+"
+"issue_closed","378","pycqa","astroid","PCManticore","2016-12-18 10:29:25","","closed issue","find_module() fails for a namespace module (declared by setuptools) with python 3.5+"
+"issue_comment","378","pycqa","astroid","PCManticore","2016-12-18 10:29:25","Thanks, this is now fixed in astroid==1.4.9, as well as in the master branch.","",""
+"issue_comment","378","pycqa","astroid","Scal-jbb","2016-12-19 07:14:57","Thx","",""

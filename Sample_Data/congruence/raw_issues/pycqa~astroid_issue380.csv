@@ -1,0 +1,93 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","380","pycqa","astroid","sscherfke","2016-12-15 13:51:19","While playing around with the lastest pylint/astroid versions (pylint@ea4273c, astroid@cc608e6) I hit a bug that caused a `TypeError` on Python 3.5. With the Python 3.6 RC it worked nicely and as expected.
+
+### Steps to reproduce
+1. `mktmpenv -p /usr/bin/python3.5`
+2. `pip install git+https://github.com/PyCQA/astroid git+https://github.com/PyCQA/pylint`
+3. `echo -e ""import os.path\nWTF = os.path.dirname(__file__)"" > /tmp/wtf.py`
+4. `pylint /tmp/wtf.py`
+
+If you remove the `WTF = ` in step 3, it won't trigger the bug.
+
+### Current behavior
+```
+Traceback (most recent call last):
+  File ""/localhome/stefan/emsconda/bin/pylint"", line 6, in <module>
+    sys.exit(pylint.run_pylint())
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/utils.py"", line 997, in walk
+    self.walk(child)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/utils.py"", line 997, in walk
+    self.walk(child)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/utils.py"", line 994, in walk
+    cb(astroid)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/checkers/base.py"", line 1240, in visit_assignname
+    if isinstance(utils.safe_infer(ass_type.value), astroid.ClassDef):
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/pylint/checkers/utils.py"", line 753, in safe_infer
+    value = next(inferit)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/inference.py"", line 105, in infer_call
+    for inferred in callee.infer_call_result(self, callcontext):
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 962, in infer_call_result
+    for inferred in returnnode.value.infer(context):
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/inference.py"", line 259, in infer_subscript
+    assigned = value.getitem(index_value, context)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/node_classes.py"", line 1249, in getitem
+    index_value = _infer_slice(index, context=context)
+  File ""/localhome/stefan/emsconda/lib/python3.5/site-packages/astroid/node_classes.py"", line 171, in _infer_slice
+    raise TypeError('Could not infer slice used in subscript.')
+TypeError: Could not infer slice used in subscript.
+```
+
+### Expected behavior
+```
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+```
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+```
+$ python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""
+1.5.0
+$ pylint --version
+pylint 2.0.0, 
+astroid 1.5.0
+Python 3.5.2 (default, Nov 26 2016, 22:32:54) 
+[GCC 6.2.1 20160916 (Red Hat 6.2.1-2)]
+```","start issue","""TypeError: Could not infer slice used in subscript."" on py35 but not on py36"
+"issue_closed","380","pycqa","astroid","PCManticore","2016-12-18 13:07:33","","closed issue","""TypeError: Could not infer slice used in subscript."" on py35 but not on py36"
+"issue_comment","380","pycqa","astroid","PCManticore","2016-12-15 13:53:27","You have to use astroid==1.5.0, taken from astroid's master, in lieu of 1.4.8.","",""
+"issue_comment","380","pycqa","astroid","sscherfke","2016-12-15 14:00:40","Oh, I have been using the latest astroid version. The output was just an error were I tried to see if it might work with astroid 1.4.8. Gonna update the issue with the correct output.
+
+Edit: Updated the issue with the correct versions","",""
+"issue_comment","380","pycqa","astroid","PCManticore","2016-12-18 13:07:33","Should be fixed by https://github.com/PyCQA/astroid/commit/9f8e6f074ba7d9d060355a67a22c30a0c2cb44fd","",""
+"issue_comment","380","pycqa","astroid","sscherfke","2016-12-18 13:11:38","Thx, gonna test it tomorrow.","",""
+"issue_comment","380","pycqa","astroid","sscherfke","2016-12-19 13:23:10","Looks good so far. :)","",""

@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","435","pycqa","astroid","rustyhowell","2017-05-15 17:25:51","pylint is not correctly detecting members in several modules in my project, including netifaces.py.  My code works great and the python interpreter can find the alleged missing members just fine. But pylint cannot. I am using the same virtualenv to run pylint and my code. 
+* Python 3.5.2
+* pytlint 1.7.1
+*  asteroid 1.5.2
+*  netifaces 0.10.5
+* Ubuntu 16.04 LTS x86_64
+
+### Steps to reproduce
+Using Python 3.5.2, create main.py with the following contents:
+```
+~$ cat main.py
+import netifaces
+a = netifaces.gateway()
+b = netifaces.AF_INET
+```
+Run pylint on this small module:
+
+`~$ pylint main.py `
+
+
+### Current behavior
+```
+pylint_test$ pylint --disable=all --enable=E main.py 
+No config file found, using default configuration
+************* Module main
+E:  4, 4: Module 'netifaces' has no 'gateways' member (no-member)
+E:  5, 4: Module 'netifaces' has no 'AF_INET' member (no-member)
+```
+### Expected behavior
+* Pylint should properly detect members in netifaces.py (and other similarly structured modules)
+
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+astroid version == 1.5.2
+
+","start issue","Pylint reports no-member for C-extension module"
+"issue_closed","435","pycqa","astroid","PCManticore","2017-05-22 13:02:32","","closed issue","Pylint reports no-member for C-extension module"
+"issue_comment","435","pycqa","astroid","rogalski","2017-05-15 17:45:34","[It's C extension](https://bitbucket.org/al45tair/netifaces/src/master/netifaces.c), consider running it after setting `extension-pkg-whitelist=netifaces `
+","",""
+"issue_comment","435","pycqa","astroid","PCManticore","2017-05-22 13:02:32","This works with extension-pkg-whitelist","",""

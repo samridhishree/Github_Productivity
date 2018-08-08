@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","66","aio-libs","aioredis","JanBednarik","2015-07-02 20:34:06","When I use `channel.wait_message()` I'm losing pub/sub messages.
+
+It's easy to replicate this bug. Run in one terminal window subscribing script:
+
+``` python
+import aioredis
+import asyncio
+
+@asyncio.coroutine
+def main():
+    red = yield from aioredis.create_redis(('localhost', 6379))
+    channel, = yield from red.subscribe('foo')
+    num = 0
+    while (yield from channel.wait_message()):
+        msg = yield from channel.get()
+        print(num, msg)
+        num += 1
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+```
+
+In second one terminal window run publishing script:
+
+``` python
+import aioredis
+import asyncio
+
+@asyncio.coroutine
+def main():
+    red = yield from aioredis.create_redis(('localhost', 6379))
+    for i in range(100000):
+        yield from red.publish('foo', i)
+        print(i)
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+```
+
+Publishing script will finish with `99999` but subscribing script with much less number (e.g. `80340`).
+
+If you change `while (yield from channel.wait_message()):` to `while True:` in subscribing script it will finish with `99999` without any problem.
+
+Python 3.4.3
+OS X 10.10.3
+","start issue","Losing pub/sub messages while using channel.wait_message()"
+"issue_closed","66","aio-libs","aioredis","popravich","2015-07-03 10:22:39","","closed issue","Losing pub/sub messages while using channel.wait_message()"
+"issue_comment","66","aio-libs","aioredis","popravich","2015-07-03 08:16:19","Thanks for the report. I will look into.
+","",""

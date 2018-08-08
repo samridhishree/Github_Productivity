@@ -1,0 +1,100 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","270","pycqa","astroid","pylint-bot","2015-11-29 20:39:13","Originally reported by: **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**
+
+---
+
+After updating astroid from 1.3.8 to 1.4.0 and pylint from 1.4.4 to 1.5.0, with this code:
+
+``` python
+def foo(arg):
+    bar = [arg] * 2
+```
+
+I get:
+
+```
+Traceback (most recent call last):
+  File ""/usr/lib64/python3.5/runpy.py"", line 170, in _run_module_as_main
+    ""__main__"", mod_spec)
+  File ""/usr/lib64/python3.5/runpy.py"", line 85, in _run_code
+    exec(code, run_globals)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/__main__.py"", line 3, in <module>
+    pylint.run_pylint()
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/lint.py"", line 1315, in __init__
+    linter.check(args)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/lint.py"", line 734, in check
+    self._do_check(files_or_modules)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/lint.py"", line 865, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/lint.py"", line 945, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/utils.py"", line 935, in walk
+    cb(astroid)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/pylint/checkers/base.py"", line 1946, in visit_assign
+    if var_type == astroid.YES or var_type.as_string() == 'None':
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/astroid/bases.py"", line 611, in as_string
+    return to_code(self)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/astroid/as_string.py"", line 79, in __call__
+    return node.accept(self)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/astroid/bases.py"", line 395, in accept
+    return func(self)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint/lib/python3.5/site-packages/astroid/as_string.py"", line 341, in visit_list
+    return '[%s]' % ', '.join([child.accept(self) for child in node.elts])
+TypeError: sequence item 0: expected str instance, _Yes found
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/270
+","start issue","TypeError in visit_list (1.3.8 -> 1.4.0 regression)"
+"issue_closed","270","pycqa","astroid","pylint-bot","2015-12-09 05:56:05","","closed issue","TypeError in visit_list (1.3.8 -> 1.4.0 regression)"
+"issue_comment","270","pycqa","astroid","pylint-bot","2015-11-29 20:16:33","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Add support for handling Uninferable nodes when calling as_string
+
+Some object, for instance List or Tuple can have, after inference,
+Uninferable as their elements, happening when their components
+weren't couldn't be inferred properly. This means that as_string
+needs to cope with expecting Uninferable nodes part of the other
+nodes coming for a string transformation. The patch adds a visit
+method in AsString and `accept` on Yes / Uninferable nodes.
+Closes issue #270.
+","",""
+"issue_comment","270","pycqa","astroid","pylint-bot","2015-11-29 20:34:27","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Add support for handling Uninferable nodes when calling as_string
+
+Some object, for instance List or Tuple can have, after inference,
+Uninferable as their elements, happening when their components
+weren't couldn't be inferred properly. This means that as_string
+needs to cope with expecting Uninferable nodes part of the other
+nodes coming for a string transformation. The patch adds a visit
+method in AsString and `accept` on Yes / Uninferable nodes.
+Closes issue #270.
+","",""
+"issue_comment","270","pycqa","astroid","pylint-bot","2015-12-01 06:20:07","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+this has nothing to do with what''s discussed here beside that it appears
+in the traceback. I see ""var_type.as_string() == 'None'"" appearing, and it
+seems to me that it shouldn't be the proper way to check that you've a node
+representing node. Unless I'm missing something ?
+","",""
+"issue_comment","270","pycqa","astroid","pylint-bot","2015-12-01 07:24:47","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I don't think I understand. This problem was caused by a change in the inference, where the elements of a sequence couldn't be determined when doing multiplication, so that `[unknown, unknown] * 2` became a list of for YES / Uninferable nodes after inferring the binary operation. as_string wasn't aware of this and crashed.
+
+Indeed, var_type.as_string() == 'None' doesn't strike me as well as a proper way to do this check, it is coming from the new redefined-variable-type checker though. 
+","",""

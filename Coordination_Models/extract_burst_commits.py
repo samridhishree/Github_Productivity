@@ -18,9 +18,9 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--raw_commits_dir', help='Directory with project-wise commit files', default='data/raw_commits/')
-parser.add_argument('--output_dir', help='Directory containing commits per burst per project', default='data/bursty_commits/')
-parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='results/daily_bursts.pickle')
+parser.add_argument('--raw_commits_dir', help='Directory with project-wise commit files', default='Sample_Data/congruence/raw_commits/')
+parser.add_argument('--output_dir', help='Directory containing commits per burst per project', default='Sample_Data/congruence/burst_commits/')
+parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='Sample_Data/HMM/results/daily_bursts.pickle')
 args, unknown = parser.parse_known_args()
 
 

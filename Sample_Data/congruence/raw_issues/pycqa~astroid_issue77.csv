@@ -1,0 +1,46 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","77","pycqa","astroid","pylint-bot","2015-01-27 06:55:14","Originally reported by: **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**
+
+---
+
+This file causes pylint to crash:
+
+```
+class C(object): pass                                                                                                                                  
+class D(C, object): pass                                                                                                                               
+class B(object, C): pass                                                                                                                               
+class A(B, D): pass                                                                                                                                    
+```
+
+This is the trace:
+
+```
+  File ""/nail/home/buck/pg/3/virtualenv_run/lib/python2.6/site-packages/pylint/checkers/utils.py"", line 532, in unimplemented_abstract_methods
+    mro = reversed(node.mro())
+  File ""/nail/home/buck/pg/3/virtualenv_run/lib/python2.6/site-packages/astroid/scoped_nodes.py"", line 1459, in mro
+    return _c3_merge(unmerged_mro)
+  File ""/nail/home/buck/pg/3/virtualenv_run/lib/python2.6/site-packages/astroid/scoped_nodes.py"", line 77, in _c3_merge
+    for subsequence in sequences]
+ValueError: zero length field name in format
+```
+
+This example was made by repeatedly simplifying the inheritance structure of `sqlalchemy.Column`, which causes pylint to crash similarly:
+
+```
+from sqlalchemy import Column                                                                                                                          
+
+Column()                                                                                                                                               
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/77
+","start issue","error in mro"
+"issue_closed","77","pycqa","astroid","pylint-bot","2015-12-09 05:52:58","","closed issue","error in mro"
+"issue_comment","77","pycqa","astroid","pylint-bot","2015-01-27 06:19:20","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
+Invalid. 
+
+This was caused by my incomplete patch to re-add py26 support.
+","",""

@@ -1,0 +1,91 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","285","aio-libs","aioredis","yangbo1024","2017-08-15 12:33:18","pool = await aioredis.create_redis_pool((host, port), db=db, password=password, minsize=2, maxsize=3)
+
+on coroutine run a while 1 loop to brpop, some 5 other coroutines run a same function, just call eval, then the whole pool may blocked
+
+CODE:
+
+```
+
+
+LOCK_SCRIPT = b""""""
+redis.call(""lpush"", KEYS[1], KEYS[2])
+if redis.call(""llen"", KEYS[1]) <= 1 then
+    redis.call(""lpush"", KEYS[2], KEYS[1])
+    return {KEYS[1], 0}
+else
+    return {KEYS[1], redis.call(""llen"", KEYS[1])}
+end
+""""""
+
+
+
+UNLOCK_SCRIPT = b""""""
+redis.call(""rpop"", KEYS[1])
+if redis.call(""llen"", KEYS[1]) > 0 then
+    local k = redis.call(""lindex"", KEYS[1], -1)
+    redis.call(""lpush"", k, KEYS[1])
+end
+return redis.call(""llen"", KEYS[1])
+""""""
+
+
+import asyncio
+import aioredis
+import random
+
+
+host = '10.0.30.26'
+port = 20100
+password = '11111111'
+minsize=3
+maxsize=3
+db = 10
+ch = 'abcde'
+lock_name = 'test_lock'
+_redis_pool = None
+_locks = {}
+
+
+async def init():
+    global _redis_pool
+    _redis_pool = await aioredis.create_redis_pool((host, port), db=db, password=password, minsize=minsize, maxsize=maxsize)
+    await _redis_pool.delete('test_lock')
+
+
+async def lock(i):
+    print('into lock', i)
+    await asyncio.sleep(random.uniform(0, 0.01))
+    if lock_name not in _locks:
+        _locks[lock_name] = asyncio.Queue()
+    q = _locks[lock_name]
+    await _redis_pool.eval(LOCK_SCRIPT, keys=[lock_name, ch])
+    await q.get()
+    asyncio.ensure_future(unlock(i))
+
+
+async def unlock(i):
+    print('into unlock', i)
+    await _redis_pool.eval(UNLOCK_SCRIPT, keys =[lock_name])
+
+
+async def recv():
+    while 1:
+        msg = await _redis_pool.brpop(ch)
+        lock_name = str(msg[1], 'utf8')
+        q = _locks[lock_name]
+        print('brpop', lock_name, q)
+        q.put_nowait(1)
+
+
+asyncio.get_event_loop().run_until_complete(init())
+tasks = [lock(i) for i in range(5)]
+tasks.append(recv())
+w = asyncio.wait(tasks)
+asyncio.get_event_loop().run_until_complete(w)
+
+```
+
+","start issue","When use pool.eval together with pool.brpop, blocks quit often"
+"issue_comment","285","aio-libs","aioredis","yangbo1024","2017-08-21 10:13:21","online & waiting for it ~  ^_^","",""
+"issue_comment","285","aio-libs","aioredis","jameshilliard","2017-09-07 11:06:11","I think I've run into the same issue and was able to reproduce it using your script, from what it appears [`get_connection()`](https://github.com/aio-libs/aioredis/blob/17df0c621a5cbe3d5290da802f32a85c0dd04a47/aioredis/pool.py#L227-L252) does not properly special case blocking operations like brpop. So what I think is happening here is that the unlock is being executed on the same connection as brpop thus creating a deadlock situation. There probably needs to be some changes made to ensure that commands don't get stacked on top of blocking operations similar to how pubsub is special cased.","",""

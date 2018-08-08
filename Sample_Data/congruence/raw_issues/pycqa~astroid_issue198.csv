@@ -1,0 +1,90 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","198","pycqa","astroid","pylint-bot","2015-09-29 21:56:23","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+The following example shows that class lookups aren't done properly in a situation where an instance has a variable with the same name. In this example, the `self.ala` from the RHS part of the assignment is the value 42, but astroid doesn't go to look there, since at first the instance getattr is called, which finds the self.ala from the assignment. This means that class scope lookup is never triggered for this example.
+
+This is definitely not easy to solve, unless we're considering evaluation of individual statements, in which case we could detect this kind of situation.
+
+```
+#!python
+
+        class A(object):
+            ala = 42
+            def __init__(self):
+                self.ala = self.ala
+        A()
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/198
+","start issue","Class and instance lookups aren't considering self referencing values"
+"issue_comment","198","pycqa","astroid","pylint-bot","2015-09-29 19:58:54","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This also has a nasty side effect. The following code triggers maximum recursion error, which makes sense according to the above description of the bug (the same base class is inferred over and over):
+
+```
+#!python
+
+class A(object):
+    pass
+
+
+class SomeClass(object):
+    route_class = A
+
+    def __init__(self):
+        self.route_class = type('B', (self.route_class, ), {})
+        self.route_class() #@
+```
+
+When we'll have a fix for this isssue, we should remove whatever fix (note hack) we add for this crash, since we'll not have the evaluator in time.
+","",""
+"issue_comment","198","pycqa","astroid","pylint-bot","2015-09-29 20:23:41","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+A slight variant of this is this code. It triggers a maximum recursion error, because self.rev in the interpolation is considered to be the same assignment.
+
+```
+#!python
+
+class VersionControl:
+    def __init__(self, rev=''):
+        self.rev = rev
+
+class SVN(VersionControl):
+    def __init__(self, *args, **kwargs):
+        super(SVN, self).__init__()
+        if self.rev:
+            self.rev = '-r%s' % self.rev
+
+SVN()
+```
+","",""
+"issue_comment","198","pycqa","astroid","pylint-bot","2015-09-30 10:44:42","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yet another example of this failure:
+
+```
+#!python
+
+class ResultSet(object):
+    def __init__(self):
+        self._limit = slice(None)
+
+    def limit(self, stop):
+        self._limit = slice(self._limit.start, stop)
+        return self
+
+    def skip(self, start):
+        self._limit = slice(start, self._limit.stop or -1)
+        return self
+
+```
+","",""

@@ -1,0 +1,71 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","299","pycqa","astroid","opalmer","2015-12-21 15:49:25","For some reason this code throws `assignment-from-no-return` on line 7 in Python 3.3:
+
+``` python
+""""""
+Test module
+""""""
+
+from pkg_resources import resource_filename
+
+PATH = resource_filename(""foo"", ""bar.py"")
+```
+
+I ran the above inside a clean virtual environment:
+
+``` console
+$ python3 --version
+Python 3.4.3
+$ virtualenv -p python3 /tmp/test
+$ . /tmp/test/bin/activate
+$ pip install pylint
+$ pip freeze
+astroid==1.4.2
+colorama==0.3.5
+lazy-object-proxy==1.2.1
+pylint==1.5.2
+six==1.10.0
+wrapt==1.10.6
+$ pylint -E test.py
+No config file found, using default configuration
+************* Module test
+E:  7, 0: Assigning to function call which doesn't return (assignment-from-no-return)
+```
+
+For comparison with where I saw this problem originally, here's some of my code which up until yesterday didn't have problems:
+
+https://github.com/opalmer/pywincffi/pull/33/files#diff-899a2c24db5c88e486a990d2702cf6c3R55
+
+And here's the build on Travis which failed (prior to adding `disable=...`): https://travis-ci.org/opalmer/pywincffi/jobs/98052778
+
+Here's the same code, but passing: https://travis-ci.org/opalmer/pywincffi/jobs/97980009
+
+Based on the install output from line 97 downwards the above build used pylint 1.5.1 and astroid 1.4.1.  I thought this might be an issue with pylint but downgrading astroid to 1.4.1 seems to fix the issue:
+
+``` console
+$ pip install --upgrade astroid
+...
+Installing collected packages: astroid
+  Found existing installation: astroid 1.4.1
+    Uninstalling astroid-1.4.1:
+      Successfully uninstalled astroid-1.4.1
+Successfully installed astroid-1.4.2
+$ pylint -E test.py
+No config file found, using default configuration
+************* Module test
+E:  7, 0: Assigning to function call which doesn't return (assignment-from-no-return)
+```
+
+This appears to be a regression, but I'm not intimately familiar enought with either pylint or astroid enough to tell.  Could someone take a look?  I'd be happy to provide more detailed information too.
+
+**UPDATE**: I rolled back astroid to 1.4.1 and kept pylint at the latest version, 1.5.2, and the build for  https://github.com/opalmer/pywincffi/compare/e85f28af3f6d...c6056b17ecf4, seems to pass: https://travis-ci.org/opalmer/pywincffi/builds/98140615
+","start issue","New 'assignment-from-no-return' error for pkg_resources.resource_filename"
+"issue_closed","299","pycqa","astroid","PCManticore","2015-12-29 15:09:06","","closed issue","New 'assignment-from-no-return' error for pkg_resources.resource_filename"
+"issue_comment","299","pycqa","astroid","PCManticore","2015-12-21 15:57:33","This is something that occurred during the patch release of astroid (1.4.2) and it's already fixed with https://github.com/PyCQA/astroid/commit/8715ea4491e435969d943918fb7a7bca9d95be28. I'm going to create another patch release tonight, sorry for the inconvenience.
+","",""
+"issue_comment","299","pycqa","astroid","opalmer","2015-12-21 15:58:36","Ah ok cool, thanks!  I should have looked at the commit log before opening this heh.
+","",""
+"issue_comment","299","pycqa","astroid","PCManticore","2015-12-29 15:09:06","This is fixed by astroid 1.4.3, I forgot to close the issue when it was released (for a couple of days now).
+","",""
+"issue_comment","299","pycqa","astroid","The-Compiler","2015-12-29 17:07:23","I can confirm the fix - thanks!
+","",""

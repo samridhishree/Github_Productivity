@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","183","idan","oauthlib","clintecker","2013-06-20 21:12:41","Without the code added on line 104 of `refresh_token.py`, the scopes given in the HTTP request body are not incorporated into the `request` object, and as a result, a new access token is granted with no scope.
+
+I also removed a duplicate definition of the `RefreshTokenGrant` class that was floating around in the `client_credentials.py` file which was pretty confusing ;)
+","start issue","Validate scopes when performing a token refresh"
+"issue_closed","183","idan","oauthlib","ib-lundgren","2013-06-21 10:32:54","","closed issue","Validate scopes when performing a token refresh"
+"pull_request_title","183","idan","oauthlib","clintecker","2013-06-20 21:12:40","Without the code added on line 104 of `refresh_token.py`, the scopes given in the HTTP request body are not incorporated into the `request` object, and as a result, a new access token is granted with no scope.
+
+I also removed a duplicate definition of the `RefreshTokenGrant` class that was floating around in the `client_credentials.py` file which was pretty confusing ;)
+","fcf61775934e60fda9f60a9c456eacf2d6024f38","Validate scopes when performing a token refresh"
+"issue_comment","183","idan","oauthlib","ib-lundgren","2013-06-20 22:03:26","Thanks for the PR! Had a quick go at this earlier today but managed to mess it up a bit.
+
+The code was a copy/paste mistake and removed it already - https://github.com/idan/oauthlib/commit/d63df53bdf861088a06b7fbad1a2c65d107af843
+
+I replaced the whole scope validation with `self.validate_scopes(request)` which is wrong as it is not meant to be validated in the same way as in other grant scopes (i.e. confirm_scopes, not validate_scopes).
+
+If you update your PR replacing `self.validate_scopes(request)` with the code below it should be good to go.
+
+```
+if not request.scopes:
+        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                self.request_validator.get_default_scopes(request.client_id, request))
+```
+","",""
+"issue_comment","183","idan","oauthlib","clintecker","2013-06-20 22:12:33","OK I updated it. One  thing I think is missing is that the scope doesn't get copied from the original token if the request doesn't specify the scope.  Is that something that's expected from a high level library?
+","",""
+"issue_comment","183","idan","oauthlib","ib-lundgren","2013-06-20 23:05:52","Ah yea we should add a new validator method get_scopes which take the
+refresh token and returns the associated scopes and use that instead of
+default scopes.
+
+Scopes can only be the originally authorized scope or a subset thereof.
+
+Fancy adding such a method?
+On Jun 20, 2013 11:12 PM, ""Clint Ecker"" notifications@github.com wrote:
+
+> OK I updated it. One thing I think is missing is that the scope doesn't
+> get copied from the original token if the request doesn't specify the
+> scope. Is that something that's expected from a high level library?
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/183#issuecomment-19786921
+> .
+","",""
+"issue_comment","183","idan","oauthlib","ib-lundgren","2013-06-21 10:32:54","Applied the fixes I mentioned. Went with `get_original_scopes` which obsoleted `confirm_scopes` as it takes care of ensuring scope is a equal or a subset of original.
+
+Thanks again for bringing this to attention. Will close this PR unmerged. Please add yourself to authors on next PR =)
+","",""
+"issue_comment","183","idan","oauthlib","clintecker","2013-06-21 14:47:54","That's awesome, thank you so much.  Sorry I couldn't get to it until this morning ;)
+","",""
+"issue_comment","183","idan","oauthlib","ib-lundgren","2013-06-21 14:53:09","Sorry for not letting you fix it yourself. Normally I'd not rush things but this time I just wanted to clean up my mess =)
+","",""
+"pull_request_commit","183","idan","oauthlib","clintecker","2013-06-20 20:20:06","validate scopes","16b456d4ae0aa06755af2482e8cf8bbe361d909e",""
+"pull_request_commit","183","idan","oauthlib","clintecker","2013-06-20 22:06:01","get scopes in a better way","fcf61775934e60fda9f60a9c456eacf2d6024f38",""

@@ -1,0 +1,83 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","216","pycqa","astroid","pylint-bot","2015-10-19 17:23:54","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+EmptyNode is used to hold a name and a node for an arbitrary object in the locals attribute of astroid scoped nodes in artificial ASTs that mimic builtin objects or other such things.  Since it has fields, ""Empty"" isn't an appropriate moniker.  Maybe ""Alias?""  There's probably another better name.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/216
+","start issue","Rename EmptyNode and repurpose it to explicitly hold representations of runtime objects inside ASTs"
+"issue_closed","216","pycqa","astroid","pylint-bot","2015-12-09 05:55:19","","closed issue","Rename EmptyNode and repurpose it to explicitly hold representations of runtime objects inside ASTs"
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 04:59:36","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+infer_empty_node at the moment seems to be taking a Python runtime object and then using it (through several levels of indirection) to get an AST, whether from parsing the code for the module it's from or using the functions to build it from a live object.  (I don't know what happens if infer_empty_node is called on a node containing an AST?  I thought that could happen, but the code seems like it would raise if it did.)  Anyway, there's no reason to have a special node type that returns ordinary AST nodes, it would be simpler and faster to simply insert the node in question into the AST.  That said, there is a use for a special node that returns a runtime object which otherwise can't be found in an AST, so I propose that should be the explicit purpose of EmptyNode from now on.  The first name that occurs is ObjectProxy---the only reason I see not to use it is that we're using lots of other things called object proxies, so that might be confusing.
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 08:45:07","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+""I don't know what happens if infer_empty_node is called on a node
+containing an AST?"" that should not happen. infer_empty_node is the
+._infer() method for the EmptyNode class, which is monkey-patched as other
+inference method.
+
+Anyway you're right that we could probably build the AST for the runtime
+object statically instead of at inference time. In case that work (ie
+inference return a single known object) we can probably get ride of the
+EmptyNode. I'm not quite sure this actually happen though, and the
+EmptyNode purpose isn't already the one you suggest. In any case I agree
+EmptyNode could be renamed and its inference method simplified.
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 14:49:43","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I wasn't quite clear on what I meant: I should have said, ""when infer_empty_node is called on an EmptyNode whose self.object attribute contains an AST node rather than a live Python object.""
+
+I think we still do need a node to hold all the classes representing runtime objects, that don't have normal representations in ASTs: this is everything in the interpreter module in the 2.0 bookmark, now that we're formally splitting static from dynamic objects.  Since it's already performing this task in at least some cases, I think we might as well reuse the existing code.
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 15:16:51","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Right, at this point it seems more sane to build the AST dynamically instead of wrapping pure Python objects with EmptyNode. I do agree with @ceridwenv regarding the existence of another node which should encapsulate runtime objects (through runtime objects we mean things from astroid.interpreter.objects, which can't be represented by an AST, as it is the case for Super, Instance and so on). The question is how many occurrences of these objects do we currently have and in which places they are? Also, in this case we can rename it to RuntimeObject, it's more meaningful than ObjectProxy.
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 16:30:24","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Maybe InterpreterObject, to be consistent with the module interpreter.py?
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 16:31:45","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Sounds good. Apart of the current uses of EmptyNode with a Python object, where InterpreterObject is currently used?
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 17:20:10","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I'm not sure what you're asking here? 
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 17:30:25","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+If we have places where we use InterpreterObject (EmptyNode) with interpreter objects (Instance, BoundMethod) etc. I think we have two places modified recently, in nose and enum plugins, but we have others?
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-03 18:35:07","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+They are used in nose and multiprocessing to hold BoundMethods.  Enum handling on modular-locals still has some bugs I need to fix, I forget if they're still used there.  help in builtins is an instance of a class _Helper._site.builtins or something like that so it's used there.  At some point during the tests inference is called on one holding one of the _ModuleLoader objects.  I don't know if that's all of them, but it's most of them. 
+","",""
+"issue_comment","216","pycqa","astroid","pylint-bot","2015-11-14 05:11:31","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Done in 3e3b3e936b69, including changing the name and fixing the inference function.
+","",""

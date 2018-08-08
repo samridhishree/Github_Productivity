@@ -1,0 +1,168 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","129","aio-libs","aioredis","popravich","2016-06-06 08:23:32","This changes are intended to invert pool-to-redis dependency; Redis will be top-level API working
+either with pool, or a single connection.
+
+``` python
+# replace this:
+redis_pool = yield from create_pool(...)
+with (yield from redis_pool) as redis:
+    yield from redis.set('foo', 'bar')
+
+# with this:
+redis = yield from create_redis_pool(...)
+yield from redis.set('foo', 'bar')
+```
+
+Sub tasks:
+- [x] Implement new RedisPool;
+- [x] Adopt Redis mixins to work with pool;
+- [x] Add `address` to Connection;
+- [x] Impement pool pub/sub;
+- [x] Fix pipeline/multiexec execution;
+- [x] Fix tests;
+- [x] rewrite docs
+","start issue","Pool refactoring"
+"issue_closed","129","aio-libs","aioredis","popravich","2017-01-13 13:48:41","","closed issue","Pool refactoring"
+"pull_request_title","129","aio-libs","aioredis","popravich","2016-06-06 08:23:32","This changes are intended to invert pool-to-redis dependency; Redis will be top-level API working
+either with pool, or a single connection.
+
+``` python
+# replace this:
+redis_pool = yield from create_pool(...)
+with (yield from redis_pool) as redis:
+    yield from redis.set('foo', 'bar')
+
+# with this:
+redis = yield from create_redis_pool(...)
+yield from redis.set('foo', 'bar')
+```
+
+Sub tasks:
+- [x] Implement new RedisPool;
+- [x] Adopt Redis mixins to work with pool;
+- [x] Add `address` to Connection;
+- [x] Impement pool pub/sub;
+- [x] Fix pipeline/multiexec execution;
+- [x] Fix tests;
+- [x] rewrite docs
+","d0d25dbc727c03c0c5e3561304170a5109fc160e","Pool refactoring"
+"pull_request_merged","129","aio-libs","aioredis","popravich","2017-01-13 13:48:41","Pool refactoring","8b0efa2640e904546745276b936d2ee4b39e316e","Pull request merge from aio-libs/aioredis:pool_refactoring to aio-libs/aioredis:master"
+"issue_comment","129","aio-libs","aioredis","coveralls","2016-06-22 08:10:23","[![Coverage Status](https://coveralls.io/builds/6701052/badge)](https://coveralls.io/builds/6701052)
+
+Coverage decreased (-1.0%) to 96.2% when pulling **742b7f968c03202bba635d695a2d8348728f552a on pool_refactoring** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on master**.
+","",""
+"issue_comment","129","aio-libs","aioredis","coveralls","2016-06-22 10:44:33","[![Coverage Status](https://coveralls.io/builds/6702868/badge)](https://coveralls.io/builds/6702868)
+
+Coverage decreased (-0.6%) to 96.615% when pulling **fda28de5d13ddfc7623e8c9711e0b77e0890baca on pool_refactoring** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on master**.
+","",""
+"issue_comment","129","aio-libs","aioredis","codecov-io","2016-11-03 11:05:20","## [Current coverage](https://codecov.io/gh/aio-libs/aioredis/pull/129?src=pr) is 96.48% (diff: 85.53%)
+> Merging [#129](https://codecov.io/gh/aio-libs/aioredis/pull/129?src=pr) into [master](https://codecov.io/gh/aio-libs/aioredis/branch/master?src=pr) will decrease coverage by **0.49%**
+
+```diff
+@@             master       #129   diff @@
+==========================================
+  Files            51         50     -1   
+  Lines          6160       6267   +107   
+  Methods           0          0          
+  Messages          0          0          
+  Branches        465        481    +16   
+==========================================
++ Hits           5974       6047    +73   
+- Misses          141        166    +25   
+- Partials         45         54     +9   
+```
+
+> Powered by [Codecov](https://codecov.io?src=pr). Last update [b4f54fc...d0d25db](https://codecov.io/gh/aio-libs/aioredis/compare/b4f54fcdd5ac87054e4db81ae6df650b779b24ef...d0d25dbc727c03c0c5e3561304170a5109fc160e?src=pr)","",""
+"issue_comment","129","aio-libs","aioredis","argaen","2016-11-03 12:03:58","Do you think it is possible (or makes sense) to make the initialization of the Client/Pool synchronous like in `aiomcache`? 
+
+https://github.com/aio-libs/aiomcache#getting-started
+
+This way we could avoid patterns like [this one](https://github.com/argaen/aiocache/blob/master/aiocache/backends/redis.py#L33) where all the functions need to connect to the pool before doing its operation.
+","",""
+"issue_comment","129","aio-libs","aioredis","asvetlov","2016-11-03 12:39:34","I think aiomcache has a error in design.
+It allows to create  a `aiomcache.Client` with global lifetime extremely easy.
+But lifetime of `Client` should be shorter than loop.
+Using coroutines for making connection instances prevents from silly bugs.
+
+Let's consider the following code:
+
+```
+class A:
+     client = aiomcache.Client()
+```
+
+What's wrong with it? Hint: think about testing for example.
+","",""
+"issue_comment","129","aio-libs","aioredis","argaen","2016-11-03 18:14:54","From a user perspective I prefer this: https://github.com/argaen/aiocache/blob/master/aiocache/backends/memcached.py#L11 than having to have something like https://github.com/argaen/aiocache/blob/master/aiocache/backends/redis.py#L120 and then call it for every method that needs to interact with redis...
+
+Also from testing for me its easier to do:
+
+```
+mymemcached = MemcachedCache()
+mymemcached.client = MagicMock()
+```
+
+Than having to patch the `_connect` function so it returns what the double call to `await` is supposed to return
+","",""
+"issue_comment","129","aio-libs","aioredis","asvetlov","2016-11-03 22:29:41","@argaen what you really need is `.post_init()` coroutine.
+
+In my snippet I mean not mocking but working with read memcache server in functional tests.
+
+```
+class A:
+     client = aiomcache.Client()
+
+
+async def test_a():
+    a = A()
+    await a.client.get('key')
+```
+
+`test_a` will hang forever because test suite creates new event loop for every test.
+Proper test code should look like:
+
+```
+async def test_a(loop):
+    a = A()
+    a.client = aiomcache.Client(loop=loop)
+    await a.client.get('key')
+```
+
+but overriding all instances which has grabbed event loop too early is very tedious and error prone.
+","",""
+"issue_comment","129","aio-libs","aioredis","popravich","2016-11-04 09:21:08","> Do you think it is possible…
+
+Yes, It is possible — you can instatiate RedisPool directly but it is kind of private API;
+
+> or makes sense…
+
+No, as this would lead to late errors, i.e. if redis server is unreachable connection errors would
+raised only when decorated function get called.
+","",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-05-18 14:41:00","ConnectionPool wip snapshot","dabfff80575148dac3b4bd08ac56127762453e2a",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-03 14:36:42","get rid of connection usage in Redis","c6b5fe9870836ef5bc738ad54214b2b70bad6dba",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-03 14:36:55","fixed few tests","a7a4d6c5167a4ee749417b48f41e898f3618d57e",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-03 14:51:49","fix RedisPool.__iter__","e85853cee174c773a4ae394e2d09ecd77a290a6f",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-03 18:51:16","more test fixes","6932fc21ae5fd9a5ef8278561c5ffa027459f566",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-06 09:58:47","create_redis fixture parametrized with 'single' and 'pool' modes","492c88c03534ab9f711e3415839511e0c22cde98",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-06 10:02:58","drop AutoConnector (use ConnectionsPool instead)","244e0706eb74b7ee67ea822a6717014feab4945d",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-06 10:03:59","ConnectionsPool repr; add several compatibility methods","d3734fa85860661c78223699ee15ffade52b416c",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-09 19:11:45","test fixed","a9f77d740ce92470d2f1f7a25b3bd5e7305dad6d",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-12 17:26:17","pool: conn has address attribute","e9548da46382394b2dd858cca69ff4d977211534",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-17 08:21:09","drop AutoConnector","e853c466cf9cae1decceff8831b0ab2cfdd1106c",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-17 08:22:02","ConnectionsPool: implement pubsub","d4d387c610908f94e8fb8c12f2476311fa140103",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-21 12:30:31","drop 'get_atomic_connection'","d8dff56b87ae4855c4d1da9b795239ac4ca1dff9",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-22 07:38:28","pipeline/multi_exec fixes for pool","594dfc22fbaf548bee59a14360faed454e042996",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-22 08:01:07","fix examples and flake8 error","2e5f6a32ac65d74cc83427f95013adccefc1b573",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-06-22 10:38:12","drop reconnecting_test; a bits of tests cleanup","121f187efd2112fe7de5016b096a8ba30afd14b6",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-11-02 08:41:43","hmset_dict fixed","e7a2c0bc10fa24586f54ba4f0f825400dfe60c5c",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-12-16 11:48:31","fix tests","6488fad416658bd5a92d43e634c009a387dccef1",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-12-16 12:01:34","fix examples","14170c2dfface26ddcbc18ac352e92ee160bc0d2",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-12-16 13:23:33","trying to fix racing test","4c0e9405a937b916727423d81b96a595b9916cb1",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2016-12-23 14:54:05","fixed mixing pub/sub and normal commands in pool","dab009f7422fd595ce3fd50852b031970bd22831",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2017-01-10 14:24:36","Update some docs and docstrings; rename pubsub.Listener to Receiver;","11da2445738dbfb0343ec826b4a95387f56fa87c",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2017-01-10 14:34:42","fix geo commands and few more tests.","b8cee2d0255cdb8d4aced858f8b57f575c0c1d79",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2017-01-10 15:24:01","try to make *expire commands more consistent","73803a36a43afada276ef64409eb38e263e6bb0d",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2017-01-10 16:22:25","documenting ConnectionsPool","4c6dc775168a1c30201ef40e78d3bcab6bd64ed0",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2017-01-11 09:19:06","another try to make time-based tests more consistent","36d1ed773987d5026da09bb0f8d227a014c314c3",""
+"pull_request_commit","129","aio-libs","aioredis","popravich","2017-01-11 10:15:29","more doc updates","d0d25dbc727c03c0c5e3561304170a5109fc160e",""

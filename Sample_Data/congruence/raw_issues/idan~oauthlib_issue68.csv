@@ -1,0 +1,61 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","68","idan","oauthlib","warsaw","2012-11-12 22:11:10","Porting a library from oauth to oauthlib, is fairly straightforward.  One thing I ran into was the test for unicode_type in oauth1/rfc5849/utils.py escape() function.
+
+This happens because the old api passes the token (a.k.a. resource_owner) key/secret and consumer (a.k.a. client) token/key as Python 2 8-bit strings.  When Client.sign() is subsequently called, these values are passed to escape() which throws the ValueError.
+
+The workaround in my own code is to .decode('utf-8') them when they are isinstance(value, bytes), but it seems crufty to require this in clients which will support both python 2 and python 3 (e.g. using un-prefixed string literals in test cases).
+
+Why couldn't unescape() do the decoding for you?
+","start issue","raising ValueError in escape() seems unfortunate"
+"issue_closed","68","idan","oauthlib","ib-lundgren","2013-02-03 17:04:59","","closed issue","raising ValueError in escape() seems unfortunate"
+"issue_comment","68","idan","oauthlib","ib-lundgren","2012-11-12 22:56:50","It is a bit awkward at the moment I agree. Details on why we don't simply decode can be found in #53. One way to address this could be adding a keyword flag to _Client.sign_ in the lines of _attempt_unicode_conversion_ that would either naively try to _decode('utf-8')_ or with the help of chardet guess the encoding.
+
+Unfortunately, I've remained ignorant of most encoding issues so can't provide much insight into the best way to solve this, @idan - what do you think?
+","",""
+"issue_comment","68","idan","oauthlib","warsaw","2012-11-13 00:12:59","On Nov 12, 2012, at 02:56 PM, Ib Lundgren wrote:
+
+> It is a bit awkward at the moment I agree. Details on why we don't simply
+> decode can be found in #53. One way to address this could be adding a keyword
+> flag to _Client.sign_ in the lines of _attempt_unicode_conversion_ that would
+> either naively try to _decode('utf-8')_ or with the help of chardet guess the
+> encoding.
+> 
+> Unfortunately, I've remained ignorant of most encoding issues so can't
+> provide much insight into the best way to solve this, @idan - what do you
+> think?
+
+Thanks for the reference to issue #53.  I only briefly skimmed RFC 5849, but I
+saw no indication as to the required character set for the keys/secrets.
+That's a bit surprising, but maybe I missed it.  If not, well, I guess being
+strict about the inputs makes the most sense, despite it being inconvenient.
+
+Of course, if the keys/secrets are not unicodes or utf-8 encoded bytes
+already, you could just let the .decode('utf-8') failure percolate up to the
+caller.  That way, the most obvious choice would be covered, and any corner
+cases would raise errors by Python itself.  I personally think it's crazy to
+use anything other than utf-8 here, but maybe there's a good use case I'm
+missing (frankly, it seems like all keys/secrets are ascii anyway, but that's
+probably being too strict).
+","",""
+"issue_comment","68","idan","oauthlib","warsaw","2012-11-19 21:01:10","I just noticed that if you use a string for Client(..., signature_method='PLAINTEXT'), you'll get this error too.  That at least could probably be fixed without controversy.
+","",""
+"issue_comment","68","idan","oauthlib","ib-lundgren","2012-11-19 22:28:28","I've added some very basic conversion support (in Client init & sign) that will crash horribly if you don't supply the correct encoding. It is off by default and almost entirely untested. Fancy trying it out and see if it meets your needs somewhat? If not please let me know where it's lacking. 
+
+I tried chardet out quickly but it seem to struggle with short strings so not that keen on adding another dependency if it can be avoided.
+","",""
+"issue_comment","68","idan","oauthlib","warsaw","2012-11-21 18:46:08","One small typo discovered by pyflakes:
+
+s/resource_owner/resource_owner_key/
+
+Of course, it's possible the various components aren't of the same encoding, but then I think that would be just as insane as using something other than utf-8 ;).  FWIW, below is a merge proposal which shows how I did this in in a package I just converted from oauth to oauthlib.
+
+I had another thought.  Given that unicodes are required, perhaps it would be better to validate the parameters as early as possible, such that the ValueError was raised in the Client.**init**() instead of later during signing.  IOW, if you're going to throw the exception, throw it as early as possible, as close to the source of error as possible.
+
+https://code.launchpad.net/~barry/piston-mini-client/lp1077083/+merge/135449
+
+I also think you could collapse convert_to_unicode and encoding into a single encoding parameter.  If it were None, no conversion would be done.  (But I understand this is mostly for experimental purposes.)
+","",""
+"issue_comment","68","idan","oauthlib","ib-lundgren","2012-11-21 19:43:24","Only one typo, not bad considering. Good idea to collapse the params, will do that. And yea if they have mutliple encodings for various params the responsibility to convert sure falls on them from my pov. I agree with the exception being thrown early but when that check was written there was no such thing as Client and since then it's just not happened. Will take a look at maybe integrating that into where i now attempt conversion.
+
+Will have a look at your merge proposal, should be a good source of examples for the docs when they feel like being written =)
+","",""

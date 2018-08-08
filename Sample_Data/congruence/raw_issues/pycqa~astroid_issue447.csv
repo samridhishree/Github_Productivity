@@ -1,0 +1,22 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","447","pycqa","astroid","ceridwen","2017-08-12 21:08:39","Reported by @phryk.
+
+Run pyreverse on `https://github.com/phryk/poobrains` in the directory `poobrains/`.  Outside the directory, it works fine.  Inside, it infinitely recurses while processing the augmented assignment in this code:
+
+```python
+def flatten_nested_multidict(v):
+
+    flat = []
+
+    if not isinstance(v, werkzeug.datastructures.MultiDict):
+        flat.append(v)
+    else:
+        for _, value in werkzeug.datastructures.iter_multi_items(v):
+            flat += flatten_nested_multidict(value)
+
+    return flat
+
+```
+(https://github.com/phryk/poobrains/blob/master/poobrains/helpers.py#L36)
+
+Because it works outside that directory but not inside it, my guess is that the bug is related in some way to Python's import machinery.","start issue","Recursion error in augmented assignment"

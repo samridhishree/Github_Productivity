@@ -1,0 +1,63 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","315","pycqa","astroid","xmo-odoo","2016-02-09 11:11:02","May be related to #192?
+
+``` python
+m = astroid.builder.parse('''
+a = ''
+if cond:
+    a += thing()
+print a
+''')
+```
+
+`m.body[-1].values[0].infer()` will only contain a `Const(value='')`, completely ignoring the augmented assignment. I would have expected something similar to a regular concatenation-and-assignment:
+
+``` python
+m = astroid.builder.parse('''
+a = ''
+if cond:
+    a = a + thing()
+print a
+''')
+print list(m.body[-1].values[0].infer())
+```
+
+```
+[<Const(str) l.2 [] at 0x1020d7550>, YES]
+```
+
+since augmented assignment _will_ fallback on a normal operate-then-assign if not overridden, interpreting them as operate-then-assign would be a valid basic inference:
+
+``` python
+>>> class Foo(object):
+...     def __radd__(self, other):
+...             return self
+... 
+>>> a = 'a'
+>>> a += Foo()
+>>> a
+<__main__.Foo object at 0x1020c0a10>
+```
+
+Note: while the inference is not _incorrect_ on unconditional augmented assignment, it blows up entirely:
+
+``` python
+>>> m = astroid.builder.parse(""""""
+... a = ''
+... a += foo()
+... print a
+... """""")
+>>> list(m.body[-1].values[0].infer()) 
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+  File ""lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""lib/python2.7/site-packages/astroid/bases.py"", line 108, in _infer_stmts
+    raise exceptions.InferenceError(str(stmt))
+astroid.exceptions.InferenceError: AssignName(a)
+```
+
+This is with astroid 1.4.3
+","start issue","Incorrect inference on conditional inferred assignment"
+"issue_comment","315","pycqa","astroid","PCManticore","2016-02-09 15:29:46","Yeah, this could be nice to be improved, but probably it won't happen soon. I'd like to change the inference in the near future from evaluating all the states of variables during inference to an approach closer to interpretation, so that we could know at each line of code the potential values of  variables.
+","",""

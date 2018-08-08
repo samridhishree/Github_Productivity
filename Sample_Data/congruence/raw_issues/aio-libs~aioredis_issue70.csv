@@ -1,0 +1,49 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","70","aio-libs","aioredis","zamoa","2015-07-23 09:48:02","_testutil.py
+
+```
+class RedisEncodingTest(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.redis = self.loop.run_until_complete(self.create_redis(
+            ('localhost', self.redis_port), loop=self.loop, encoding='utf-8'))
+
+    def tearDown(self):
+        del self.redis
+        super().tearDown()
+```
+
+string_commands_test.py
+
+```
+class StringCommandsEncodingTest(RedisEncodingTest):
+    @run_until_complete
+    def test_set(self):
+        ok = yield from self.redis.set('my-key', 'value')
+        self.assertTrue(ok)
+
+        with self.assertRaises(TypeError):
+            yield from self.redis.set(None, 'value')
+```
+
+util.py
+
+```
+@asyncio.coroutine
+def wait_ok(fut):
+    res = yield from fut
+    if res == b'QUEUED':
+        return res
+    return res == b'OK'
+```
+
+In wait_ok, fut's result is 'OK', not b'OK'.
+so res == b'OK' is always False
+maybe res == b'QUEUED' is always False
+","start issue","wait_ok always failed when connection's encoding is used"
+"issue_closed","70","aio-libs","aioredis","popravich","2015-07-28 09:11:19","","closed issue","wait_ok always failed when connection's encoding is used"
+"issue_comment","70","aio-libs","aioredis","kernel0","2015-07-28 02:30:08","wait_convert, wait_make_dict do the same
+","",""
+"issue_comment","70","aio-libs","aioredis","popravich","2015-07-28 09:11:19","The fix is in master.
+Will release with cluster commands update
+","",""

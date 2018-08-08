@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","85","idan","oauthlib","Evlos","2012-12-24 11:34:16","Dear Sir/Madam,
+
+I was trying to use oauthlib by the code below. 
+
+``` python
+oauth = oauthlib.oauth2.draft25.Server('code')
+verified = oauth.verify_request(uri = self.request.uri, http_method = 'GET', body = None, headers = self.request.headers)
+```
+
+But I got an error: object has no attribute '_tokens'.
+As I thought, using 'class Server(AuthorizationEndpoint, TokenEndpoint, ResourceEndpoint):' may only allows the `__init__` of AuthorizationEndpoint works. So there is no initation for ResourceEndpoint either no _tokens.
+
+So I added the code below.
+
+``` python
+oauth._tokens = {'Bearer': oauthlib.oauth2.draft25.tokens.BearerToken()}
+oauth._default_token_type = 'Bearer'
+```
+
+Then got an error: AttributeError: 'str' object has no attribute 'estimate_type'.
+So I am confusing now.
+
+Am I wrong or this part of oauthlib is not completed yet?
+
+Thanks for your work.
+
+Regards,
+Evlos
+","start issue","OAuth2 draft25 issues"
+"issue_closed","85","idan","oauthlib","Evlos","2012-12-24 13:10:28","","closed issue","OAuth2 draft25 issues"
+"issue_comment","85","idan","oauthlib","Evlos","2012-12-24 12:54:53","Well, it seems the package on pypi is not the latest version.
+
+``` python
+  File ""/Library/Python/2.7/site-packages/oauthlib/oauth2/draft25/__init__.py"", line 662, in verify_request
+    request.token_type = self.find_token_type(request)
+  File ""/Library/Python/2.7/site-packages/oauthlib/oauth2/draft25/__init__.py"", line 682, in find_token_type
+    estimates = sorted((t.estimate_type(request) for t in self.tokens))
+  File ""/Library/Python/2.7/site-packages/oauthlib/oauth2/draft25/__init__.py"", line 682, in <genexpr>
+    estimates = sorted((t.estimate_type(request) for t in self.tokens))
+```
+","",""

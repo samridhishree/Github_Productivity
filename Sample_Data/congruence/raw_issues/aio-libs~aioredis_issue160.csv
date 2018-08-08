@@ -1,0 +1,54 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","160","aio-libs","aioredis","shongololo","2016-11-03 22:35:53","I have been using a redis pool for some time, however, after upgrading to the latest version I get an error telling me that the connection has no `execute` method.
+
+To resolve this I have to add `.connection` to the connection object to successfully run the `execute` method, e.g.
+
+        async with redis_pool.get() as redis_connect:
+            exists = await redis_connect.connection.execute('EXISTS', 'my_key')
+
+Is this somehow related to #40 ?","start issue","Connection pool requires new syntax?"
+"issue_comment","160","aio-libs","aioredis","popravich","2016-11-06 20:46:54","can you post complete traceback?
+","",""
+"issue_comment","160","aio-libs","aioredis","hsmade","2017-03-10 11:55:42","I think he meant this:
+
+    import aioredis
+    import asyncio
+    async def go():
+        pool = await aioredis.create_pool(
+            ('localhost', 6379),
+            minsize=10)
+        with await pool as conn:
+            msg = await conn.execute('echo', 'hello')
+            assert msg == b'hello'
+    asyncio.get_event_loop().run_until_complete(go())
+    Traceback (most recent call last):
+      File ""<input>"", line 12, in <module>
+      File ""/usr/lib/python3.5/asyncio/base_events.py"", line 387, in run_until_complete
+        return future.result()
+      File ""/usr/lib/python3.5/asyncio/futures.py"", line 274, in result
+        raise self._exception
+      File ""/usr/lib/python3.5/asyncio/tasks.py"", line 239, in _step
+        result = coro.send(None)
+      File ""<input>"", line 8, in go
+    AttributeError: 'Redis' object has no attribute 'execute'
+","",""
+"issue_comment","160","aio-libs","aioredis","popravich","2017-03-10 12:40:30","Ok, I see.
+Current version in master (yet unreleased) has changed API and pool yields connection instances.
+However current stable version `v0.3.0` pool still yields `Redis` instances which don't have `execute`
+method, but have `connection` property allowing to call:
+```python
+with await pool as redis:
+    msg = await redis.connection.execute('echo', 'hello')
+```
+Next release would allow the following:
+```python
+# create pool of connection instances
+pool = await aioredis.create_pool(...)
+assert await pool.execute('echo', 'hello') == b'hello'
+# or
+with await pool as conn:
+    assert await conn.execute('echo', 'hello') == b'hello'
+# or
+# create Redis instance bound to pool of connection instances
+redis = await aioredis.create_redis_pool(...)
+assert await redis.execute('echo', 'hello') == b'hello'","",""

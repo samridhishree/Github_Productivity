@@ -1,0 +1,22 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","267","idan","oauthlib","whit537","2014-09-17 14:08:23","RFC6749 [specifies](http://tools.ietf.org/html/rfc6749#section-5.1) that the `access_token` is given in a JSON struct:
+
+> The parameters are included in the entity-body of the HTTP response using the ""application/json"" media type as defined by [RFC4627].
+
+However, as @gulopine points out at https://github.com/idan/oauthlib/issues/44#issuecomment-6356991, Facebook [returns](https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.1#confirm) the data in an URL-encoded string instead:
+
+> The response you will receive from this endpoint, if successful, is
+> 
+> `access_token={access-token}&expires={seconds-til-expiration}`
+
+@ib-lundgren claims that ""the first versions [of the spec] did in fact use url encoded strings,"" though I haven't verified this. @gulopine suggests that GitHub also uses URL-encoded strings; in my testing they do serve JSON, at least when asked for it via `Accept`.
+
+We should support Facebook.
+","start issue","parse_token_response assumes JSON"
+"issue_closed","267","idan","oauthlib","ib-lundgren","2014-09-22 14:35:52","","closed issue","parse_token_response assumes JSON"
+"issue_comment","267","idan","oauthlib","ib-lundgren","2014-09-22 13:02:03","I've worked around this in requests-oauthlib by converting facebook to json encoding but never yet got around to doing a semi-intelligent fixing of responses directly in oauthlib. 
+","",""
+"issue_comment","267","idan","oauthlib","whit537","2014-09-22 13:58:12","@ib-lundgren Glad to hear I wasn't the first to run into this issue! I couldn't imagine I was the first to try using `oauthlib` (via `requests-oauthlib`) with Facebook. :-)
+","",""
+"issue_comment","267","idan","oauthlib","whit537","2014-09-22 14:15:12","And I did consider casting to JSON in the Facebook case, but that could only really happen in the `requests-oauthlib` layer. It seemed better to push this behavior down further, so that, on the one hand, other libraries also depending on `oauthlib` will get the fix, and on the other, we can be robust in the face of other providers besides Facebook that use the old, non-JSON behavior.
+","",""

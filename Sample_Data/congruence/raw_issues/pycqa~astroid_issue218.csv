@@ -1,0 +1,34 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","218","pycqa","astroid","pylint-bot","2015-10-20 02:20:41","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+With scandir now in the 3.5 stdlib and some progress on PyPy compatibility (there's a pull request at https://github.com/benhoyt/scandir/pull/53), it might be worth revisiting the use of scandir in modutils, if necessary in a conditional way.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/218
+","start issue","[easy] Consider using scandir in modutils again"
+"issue_comment","218","pycqa","astroid","pylint-bot","2015-10-20 13:42:09","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Sounds good! scandir is also backported to Python 2, why is it necessary to be used in a conditional way?
+","",""
+"issue_comment","218","pycqa","astroid","pylint-bot","2015-10-20 17:45:13","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Because it's now in the stdlib, we have to use the same pattern as for singledispatch.  If PyPy compatibility is broken too,
+
+``` python
+try:
+    from os import scandir, walk
+except ImportError:
+    if platform.python_implementation = 'Cpython':
+         from scandir import scandir, walk
+    else:
+         from os import walk
+```
+
+Or something like that. 
+","",""

@@ -1,0 +1,35 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","199","aio-libs","aioredis","brianlan","2017-02-20 07:44:34","I'm not able to run the connection pool example in the README file. The error message and stack trace shows:
+
+
+Traceback (most recent call last):
+  File ""/Users/rlan/Work/projects/SkyNet/SkyNet/src/collector_gateway_service/test/play_with_asyncio_redis.py"", line 38, in <module>
+    loop.run_until_complete(go())
+  File ""/Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/asyncio/base_events.py"", line 387, in run_until_complete
+    return future.result()
+  File ""/Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/asyncio/futures.py"", line 274, in result
+    raise self._exception
+  File ""/Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/asyncio/tasks.py"", line 239, in _step
+    result = coro.send(None)
+  File ""/Users/rlan/Work/projects/SkyNet/SkyNet/src/collector_gateway_service/test/play_with_asyncio_redis.py"", line 32, in go
+    await pool.execute('set', 'my-key', 'value')
+AttributeError: 'RedisPool' object has no attribute 'execute'
+
+
+After checking the code, I'm able to use connection pool successfully by replacing pool.execute with context manager way:
+``` python
+    async with pool.get() as conn:
+        await conn.set('my-key', 'value')
+
+    async with pool.get() as conn:
+        print(await conn.get('my-key'))
+```
+
+**Version**: 
+python 3.5.2
+aioredis 0.3.0","start issue","Connection pool example in the README file doesn't work"
+"issue_closed","199","aio-libs","aioredis","popravich","2017-02-23 09:42:57","","closed issue","Connection pool example in the README file doesn't work"
+"issue_comment","199","aio-libs","aioredis","popravich","2017-02-20 09:14:16","Examples in README on github corresponds to latest code in master — RedisPool has been refactored.
+v0.3.0 still has old pool version, I recommend to go forward and use latest version (yet unreleased).
+See latest docs here — http://aioredis.readthedocs.io/en/latest/api_reference.html#connections-pool","",""
+"issue_comment","199","aio-libs","aioredis","brianlan","2017-02-23 03:02:01","@popravich Thank you.","",""

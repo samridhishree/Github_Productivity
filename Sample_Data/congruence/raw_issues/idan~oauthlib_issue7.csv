@@ -1,0 +1,42 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","7","idan","oauthlib","ib-lundgren","2012-03-15 20:21:01","Curious to why they are named OAuth1a when OAuth 1a is obsoleted by the OAuth RFC 5849? (http://oauth.net/core/1.0a/)
+
+I suggest renaming them to OAuthClient and OAuthServer and have the module define the version:
+
+```
+# OAuth 1
+from oauthlib.oauth import OAuthClient
+
+# Possible future OAuth 2 scenario...
+from oauthlib.oauth2 import OAuthConfidentialClient , OAuthPublicClient
+```
+
+What do you think?
+
+Also, does questions like this one go under ""Issues"" or somewhere else?
+","start issue","OAuth1aClient & OAuth1aServer"
+"issue_closed","7","idan","oauthlib","ib-lundgren","2012-04-13 11:14:09","","closed issue","OAuth1aClient & OAuth1aServer"
+"issue_comment","7","idan","oauthlib","dgouldin","2012-03-15 21:04:42","I wasn't aware that the RFC was different from 1.0a. Thanks for pointing that out.
+
+I think the correct answer is to namespace everything currently under oauthlib/ to oauthlib/oauth1_RFC5849/ but keeping the class names OAuthServer and OAuthClient.  Then when we implement oauth2 it can be namespaced under oauthlib/oauth2_draft18/ or whatever.
+
+@idangazit didn't want to change it right now, so I'll follow his lead on when is the best time to restructure.
+","",""
+"issue_comment","7","idan","oauthlib","ib-lundgren","2012-03-15 21:42:06","Sounds good. Really like the structure of the OAuthLib now and think its advancing awesomely.
+
+Noted another thing...
+
+Currently resource owner key and resource owner secret is set to mandatory arguments to OAuthClient which might not be what we want. When obtaining a request/temporary token the client will usually have neither, the resource owner secret is most often obtained together with the ""access token"" in the last step of the authentication. 
+
+The oauth_token parameter may be set to an empty string so maybe that would be a good default value? Or None and not include it in params at all if not set. (http://tools.ietf.org/html/rfc5849#section-2.1)
+
+The resource owner secret could safely be set to None without affecting the HMAC-SHA signature. 
+","",""
+"issue_comment","7","idan","oauthlib","dgouldin","2012-03-15 21:55:56","Changes required to the library should in theory be very straightforward.  Simply point out where we're not adhering to the spec, and if you're correct, it's a bug, without exception.  In the case where a paramater has a default if not specified or is not required, it should be represented as a keyword argument in the method used to fulfill that part of the spec, again without exception.
+
+If you'd like to send a pull request for this particular change, I'd be happy to look it over and give you pointers if it's not pythonic, but I think you have the right idea.  To satisfy the pedant in me, please open as a separate issue if you want to send a pull request.
+","",""
+"issue_comment","7","idan","oauthlib","ib-lundgren","2012-03-15 22:00:00","Right, I'll do that in the future then =)
+","",""
+"issue_comment","7","idan","oauthlib","ib-lundgren","2012-04-13 11:14:09","Closing since these changes have been made.
+","",""

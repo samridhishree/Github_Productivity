@@ -1,0 +1,558 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","58","pycqa","astroid","pylint-bot","2014-11-22 04:38:41","Originally reported by: **Anonymous**
+
+---
+
+Because of use of print() function without using `from __future__ import print_function`:
+
+```
+$ mkvirtualenv xxx
+New python executable in xxx/bin/python2.7
+Also creating executable in xxx/bin/python
+Installing setuptools, pip...done.
+
+$ pip install astroid
+Downloading/unpacking astroid
+  Downloading astroid-1.3.1-py2.py3-none-any.whl (163kB): 163kB downloaded
+Downloading/unpacking logilab-common>=0.60.0 (from astroid)
+  Downloading logilab-common-0.63.0.tar.gz (195kB): 195kB downloaded
+  Running setup.py (path:/Users/docker/.virtualenvs/xxx/build/logilab-common/setup.py) egg_info for package logilab-common
+
+    package init file './test/__init__.py' not found (or not a regular file)
+Downloading/unpacking six (from astroid)
+  Downloading six-1.8.0-py2.py3-none-any.whl
+Installing collected packages: astroid, logilab-common, six
+Compiling /Users/docker/.virtualenvs/xxx/build/astroid/astroid/tests/testdata/python3/data/module.py ...
+  File ""/Users/docker/.virtualenvs/xxx/build/astroid/astroid/tests/testdata/python3/data/module.py"", line 55
+    print('yo', end=' ')
+                   ^
+SyntaxError: invalid syntax
+
+Compiling /Users/docker/.virtualenvs/xxx/build/astroid/astroid/tests/testdata/python3/data/module2.py ...
+  File ""/Users/docker/.virtualenvs/xxx/build/astroid/astroid/tests/testdata/python3/data/module2.py"", line 100
+    print('bonjour', file=stream)
+                         ^
+SyntaxError: invalid syntax
+
+  Running setup.py install for logilab-common
+    package init file './test/__init__.py' not found (or not a regular file)
+    package init file './test/__init__.py' not found (or not a regular file)
+    changing mode of build/scripts-2.7/pytest from 644 to 755
+
+    package init file './test/__init__.py' not found (or not a regular file)
+    Installing /Users/docker/.virtualenvs/xxx/lib/python2.7/site-packages/logilab_common-0.63.0-py2.7-nspkg.pth
+    changing mode of /Users/docker/.virtualenvs/xxx/bin/pytest to 755
+    package init file './test/__init__.py' not found (or not a regular file)
+Successfully installed astroid logilab-common six
+Cleaning up...
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/58
+","start issue","SyntaxError on install for python2"
+"issue_closed","58","pycqa","astroid","pylint-bot","2015-12-09 05:52:40","","closed issue","SyntaxError on install for python2"
+"issue_comment","58","pycqa","astroid","pylint-bot","2014-11-22 10:40:47","_Original comment by_ **Torsten Marek (BitBucket: [tmarek](http://bitbucket.org/tmarek), GitHub: @tmarek?)**:
+
+---
+
+This is harmless, since the compile failures are in the test files. The installation does finish nonetheless.
+
+I think we have code in pylint that disables compilation of test files, should be easy enough to adopt this in astroid.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2014-11-22 14:05:59","_Original comment by_ **Torsten Marek (BitBucket: [tmarek](http://bitbucket.org/tmarek), GitHub: @tmarek?)**:
+
+---
+
+Do not byte-compile test files on install. Fixes #58.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-28 11:31:23","_Original comment by_ **Davide Callegari (BitBucket: [brokenseal](http://bitbucket.org/brokenseal), GitHub: @brokenseal?)**:
+
+---
+
+I'm still having this issue with your latest version on pypi, when are you planning to update it?
+Thanks.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 06:47:23","_Original comment by_ **Davide Callegari (BitBucket: [brokenseal](http://bitbucket.org/brokenseal), GitHub: @brokenseal?)**:
+
+---
+
+Guys, this error makes your library unusable, please update to a newer version on pypi, thanks.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 07:04:15","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+What do you mean `unusable`? Those errors are only compile failures in the test files.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 08:34:33","_Original comment by_ **Davide Callegari (BitBucket: [brokenseal](http://bitbucket.org/brokenseal), GitHub: @brokenseal?)**:
+
+---
+
+Have you tried upgrading pylint with that compile failure?
+Take a look:
+
+```
+#!bash
+
+$ pylint --version
+pylint 1.3.1,
+astroid 1.3.2, common 0.63.0
+Python 2.7.6 (default, Mar 22 2014, 22:59:56)
+[GCC 4.8.2]
+$ pip install pylint==1.4.3
+[...]
+ File ""[...]/astroid/astroid/tests/testdata/python3/data/module2.py"", line 100
+    print('bonjour', file=stream)
+                         ^
+SyntaxError: invalid syntax
+
+Successfully installed pylint astroid
+Cleaning up...
+$ pylint --version
+pylint 1.3.1,
+astroid 1.3.2, common 0.63.0
+Python 2.7.6 (default, Mar 22 2014, 22:59:56)
+[GCC 4.8.2]
+```
+
+It doesn't update it.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 08:41:19","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I believe you have another problem there. Maybe you have two python versions and pip installs somewhere and pylint is somewhere else.
+Here's what I have. As you can see and as the installation tells, astroid _succesfully_ installs, even though you see those compilation errors.
+
+```
+#!python
+
+C:\Users\Claudiu>pip install pylint==1.3.1 astroid==1.3.2
+Collecting pylint==1.3.1
+  Downloading pylint-1.3.1.zip (471kB)
+    100% |################################| 471kB 381kB/s
+Collecting astroid==1.3.2
+  Downloading astroid-1.3.2-py2.py3-none-any.whl (163kB)
+    100% |################################| 167kB 368kB/s
+Requirement already satisfied (use --upgrade to upgrade): logilab-common>=0.53.0
+ in e:\projects\repos\logilab-common (from pylint==1.3.1)
+Requirement already satisfied (use --upgrade to upgrade): six in c:\python34\lib
+\site-packages (from astroid==1.3.2)
+Requirement already satisfied (use --upgrade to upgrade): colorama in c:\python3
+4\lib\site-packages (from logilab-common>=0.53.0->pylint==1.3.1)
+Installing collected packages: astroid, pylint
+  Running setup.py install for pylint
+Successfully installed astroid-1.3.2 pylint-1.3.1
+
+C:\Users\Claudiu>pylint --version
+No config file found, using default configuration
+pylint-script.py 1.3.1,
+astroid 1.3.2, common 0.63.2
+Python 3.4.2 (v3.4.2:ab2c023a9432, Oct  6 2014, 22:15:05) [MSC v.1600 32 bit (In
+tel)]
+
+C:\Users\Claudiu>pip install pylint==1.4.3
+Collecting pylint==1.4.3
+  Downloading pylint-1.4.3-py2.py3-none-any.whl (428kB)
+    100% |################################| 430kB 470kB/s
+Collecting astroid>=1.3.6 (from pylint==1.4.3)
+  Downloading astroid-1.3.6-py2.py3-none-any.whl (182kB)
+    100% |################################| 184kB 660kB/s
+Requirement already satisfied (use --upgrade to upgrade): six in c:\python34\lib
+\site-packages (from pylint==1.4.3)
+Requirement already satisfied (use --upgrade to upgrade): logilab-common>=0.53.0
+ in e:\projects\repos\logilab-common (from pylint==1.4.3)
+Requirement already satisfied (use --upgrade to upgrade): colorama in c:\python3
+4\lib\site-packages (from logilab-common>=0.53.0->pylint==1.4.3)
+Installing collected packages: astroid, pylint
+  Found existing installation: astroid 1.3.2
+    Uninstalling astroid-1.3.2:
+      Successfully uninstalled astroid-1.3.2
+  Found existing installation: pylint 1.3.1
+    Uninstalling pylint-1.3.1:
+      Successfully uninstalled pylint-1.3.1
+Successfully installed astroid-1.3.6 pylint-1.4.3
+
+C:\Users\Claudiu>pylint --version
+No config file found, using default configuration
+pylint 1.4.3,
+astroid 1.3.6, common 0.63.2
+Python 3.4.2 (v3.4.2:ab2c023a9432, Oct  6 2014, 22:15:05) [MSC v.1600 32 bit (In
+tel)]
+
+```
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 12:03:17","_Original comment by_ **Davide Callegari (BitBucket: [brokenseal](http://bitbucket.org/brokenseal), GitHub: @brokenseal?)**:
+
+---
+
+I see no compilation errors
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 12:05:59","_Original comment by_ **Davide Callegari (BitBucket: [brokenseal](http://bitbucket.org/brokenseal), GitHub: @brokenseal?)**:
+
+---
+
+Oh, sorry, you mean my errors.
+So, no, I double checked and everything comes from my local virtualenv.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 12:11:50","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Could you verify what's the path of pylint and what's the path of pip?
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-29 14:10:50","_Original comment by_ **Davide Callegari (BitBucket: [brokenseal](http://bitbucket.org/brokenseal), GitHub: @brokenseal?)**:
+
+---
+
+I verified pip, pylint and python paths and they all come from the same virtualenv.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-30 08:56:23","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I really can't reproduce your case. Here's what I have in a virtualenv, as you can see, in the end astroid installs just fine.
+
+```
+#!python
+(testpylint)devstack@ubuntu:~/test/$ pip install pylint==1.3.1
+Downloading/unpacking pylint==1.3.1
+  Downloading pylint-1.3.1.zip (471kB): 471kB downloaded
+  Running setup.py (path:/home/devstack/test//testpylint/build/pylint/setup.py) egg_info for package pylint
+
+    warning: no files found matching '*.html' under directory 'doc'
+Downloading/unpacking logilab-common>=0.53.0 (from pylint==1.3.1)
+  Downloading logilab-common-0.63.2.tar.gz (196kB): 196kB downloaded
+  Running setup.py (path:/home/devstack/test//testpylint/build/logilab-common/setup.py) egg_info for package logilab-common
+    /usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'test_require'
+      warnings.warn(msg)
+
+    package init file './test/__init__.py' not found (or not a regular file)
+Downloading/unpacking astroid>=1.2.1 (from pylint==1.3.1)
+  Downloading astroid-1.3.6-py2.py3-none-any.whl (182kB): 182kB downloaded
+Downloading/unpacking six>=1.4.0 (from logilab-common>=0.53.0->pylint==1.3.1)
+  Downloading six-1.9.0-py2.py3-none-any.whl
+Installing collected packages: pylint, logilab-common, astroid, six
+  Running setup.py install for pylint
+    changing mode of build/scripts-2.7/pylint from 664 to 775
+    changing mode of build/scripts-2.7/pylint-gui from 664 to 775
+    changing mode of build/scripts-2.7/symilar from 664 to 775
+    changing mode of build/scripts-2.7/epylint from 664 to 775
+    changing mode of build/scripts-2.7/pyreverse from 664 to 775
+
+    warning: no files found matching '*.html' under directory 'doc'
+    changing mode of /home/devstack/test//testpylint/bin/pylint to 775
+    changing mode of /home/devstack/test//testpylint/bin/pylint-gui to 775
+    changing mode of /home/devstack/test//testpylint/bin/symilar to 775
+    changing mode of /home/devstack/test//testpylint/bin/pyreverse to 775
+    changing mode of /home/devstack/test//testpylint/bin/epylint to 775
+    Installing pylint script to /home/devstack/test//testpylint/bin
+    Installing epylint script to /home/devstack/test//testpylint/bin
+    Installing pyreverse script to /home/devstack/test//testpylint/bin
+    Installing pylint-gui script to /home/devstack/test//testpylint/bin
+    Installing symilar script to /home/devstack/test//testpylint/bin
+  Running setup.py install for logilab-common
+    /usr/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'test_require'
+      warnings.warn(msg)
+    package init file './test/__init__.py' not found (or not a regular file)
+    package init file './test/__init__.py' not found (or not a regular file)
+    changing mode of build/scripts-2.7/pytest from 664 to 775
+
+    package init file './test/__init__.py' not found (or not a regular file)
+    Installing /home/devstack/test//testpylint/lib/python2.7/site-packages/logilab_common-0.63.2-py2.7-nspkg.pth
+    changing mode of /home/devstack/test//testpylint/bin/pytest to 775
+    package init file './test/__init__.py' not found (or not a regular file)
+Compiling /home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module.py ...
+  File ""/home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module.py"", line 55
+    print('yo', end=' ')
+                   ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module2.py ...
+  File ""/home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module2.py"", line 100
+    print('bonjour', file=stream)
+                         ^
+SyntaxError: invalid syntax
+
+Successfully installed pylint logilab-common astroid six
+Cleaning up...
+(testpylint)devstack@ubuntu:~/test/$ pylint --version
+Warning: option include-ids is deprecated and ignored.
+Warning: option symbols is deprecated and ignored.
+pylint 1.3.1,
+astroid 1.3.6, common 0.63.2
+Python 2.7.6 (default, Mar 22 2014, 22:59:56)
+[GCC 4.8.2]
+(testpylint)devstack@ubuntu:~/test/$ pip install astroid==1.3.2
+Downloading/unpacking astroid==1.3.2
+  Downloading astroid-1.3.2-py2.py3-none-any.whl (163kB): 163kB downloaded
+Requirement already satisfied (use --upgrade to upgrade): logilab-common>=0.60.0 in ./testpylint/lib/python2.7/site-packages (from astroid==1.3.2)
+Requirement already satisfied (use --upgrade to upgrade): six in ./testpylint/lib/python2.7/site-packages (from astroid==1.3.2)
+Installing collected packages: astroid
+  Found existing installation: astroid 1.3.6
+    Uninstalling astroid:
+      Successfully uninstalled astroid
+Compiling /home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module.py ...
+  File ""/home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module.py"", line 55
+    print('yo', end=' ')
+                   ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module2.py ...
+  File ""/home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module2.py"", line 100
+    print('bonjour', file=stream)
+                         ^
+SyntaxError: invalid syntax
+
+Successfully installed astroid
+Cleaning up...
+(testpylint)devstack@ubuntu:~/test/$ pylint --version
+Warning: option include-ids is deprecated and ignored.
+Warning: option symbols is deprecated and ignored.
+pylint 1.3.1,
+astroid 1.3.2, common 0.63.2
+Python 2.7.6 (default, Mar 22 2014, 22:59:56)
+[GCC 4.8.2]
+(testpylint)devstack@ubuntu:~/test/$ pip install pylint==1.4.3
+Downloading/unpacking pylint==1.4.3
+  Downloading pylint-1.4.3-py2.py3-none-any.whl (428kB): 428kB downloaded
+Requirement already satisfied (use --upgrade to upgrade): six in ./testpylint/lib/python2.7/site-packages (from pylint==1.4.3)
+Downloading/unpacking astroid>=1.3.6 (from pylint==1.4.3)
+  Downloading astroid-1.3.6-py2.py3-none-any.whl (182kB): 182kB downloaded
+Requirement already satisfied (use --upgrade to upgrade): logilab-common>=0.53.0 in ./testpylint/lib/python2.7/site-packages (from pylint==1.4.3)
+Installing collected packages: pylint, astroid
+  Found existing installation: pylint 1.3.1
+    Uninstalling pylint:
+      Successfully uninstalled pylint
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_abc_methods.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_abc_methods.py"", line 6
+    class Parent(object, metaclass=abc.ABCMeta):
+                                  ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_class_instantiated_py2.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_class_instantiated_py2.py"", line 15
+    class GoodClass(object, metaclass=abc.ABCMeta):
+                                     ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_class_instantiated_py3.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_class_instantiated_py3.py"", line 14
+    class GoodClass(object, metaclass=abc.ABCMeta):
+                                     ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_method_py2.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_method_py2.py"", line 35
+    class Structure(object, metaclass=abc.ABCMeta):
+                                     ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_method_py3.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/abstract_method_py3.py"", line 35
+    class Structure(object, metaclass=abc.ABCMeta):
+                                     ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/class_members_py27.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/class_members_py27.py"", line 34
+    class TestMetaclass(object, metaclass=ABCMeta):
+                                         ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/class_members_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/class_members_py30.py"", line 34
+    class TestMetaclass(object, metaclass=ABCMeta):
+                                         ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/no_name_in_module.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/no_name_in_module.py"", line 15
+    print('hello world', file=sys.stdout)
+                             ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/old_style_class_py27.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/old_style_class_py27.py"", line 10
+    class NotOldStyle2(metaclass=type):
+                                ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/raising_non_exception_py3.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/raising_non_exception_py3.py"", line 13
+    raise Exc from missing # [raising-non-exception]
+                 ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/unbalanced_tuple_unpacking_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/unbalanced_tuple_unpacking_py30.py"", line 9
+    first, second, *last = (1, 2, 3, 4)
+                   ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/undefined_variable_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/undefined_variable_py30.py"", line 8
+    def test(self)->Undefined: # [undefined-variable]
+                  ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/functional/yield_outside_func.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/functional/yield_outside_func.py"", line 2
+    yield 1  # [yield-outside-function]
+SyntaxError: 'yield' outside function
+
+/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_assert_2uple.py:4: SyntaxWarning: assertion is always true, perhaps remove parentheses?
+  assert (1 == 1, 2 == 2), ""no error""
+/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_assert_2uple.py:5: SyntaxWarning: assertion is always true, perhaps remove parentheses?
+  assert (1 == 1, 2 == 2) #this should generate a warning
+/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_assert_2uple.py:7: SyntaxWarning: assertion is always true, perhaps remove parentheses?
+  assert (1 == 1, ), ""no error""
+/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_assert_2uple.py:8: SyntaxWarning: assertion is always true, perhaps remove parentheses?
+  assert (1 == 1, )
+/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_assert_2uple.py:9: SyntaxWarning: assertion is always true, perhaps remove parentheses?
+  assert (1 == 1, 2 == 2, 3 == 5), ""no error""
+/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_assert_2uple.py:11: SyntaxWarning: assertion is always true, perhaps remove parentheses?
+  assert (True, 'error msg') #this should generate a warning
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_bad_exception_context_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_bad_exception_context_py30.py"", line 14
+    raise IndexError from 1
+                        ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_continue_not_in_loop.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_continue_not_in_loop.py"", line 8
+    continue
+SyntaxError: 'continue' not properly in loop
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_e0108.py ...
+SyntaxError: duplicate argument '_' in function definition (func_e0108.py, line 4)
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_exec_used_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_exec_used_py30.py"", line 6
+    exec('a = 1', globals={})
+                         ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_keyword_repeat.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_keyword_repeat.py"", line 8
+    function_default_arg(two=5, two=7)
+SyntaxError: keyword argument repeated
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_kwoa_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_kwoa_py30.py"", line 3
+    def function(*, foo):
+                  ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_noerror_mcs_attr_access.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_noerror_mcs_attr_access.py"", line 14
+    class Test(object, metaclass=Meta):
+                                ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_noerror_unused_variable_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_noerror_unused_variable_py30.py"", line 12
+    nonlocal attr
+                ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_return_outside_func.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_return_outside_func.py"", line 3
+    return
+SyntaxError: 'return' outside function
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_return_yield_mix_py_33.py ...
+SyntaxError: 'return' with argument inside generator (func_return_yield_mix_py_33.py, line 8)
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_syntax_error.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_syntax_error.py"", line 1
+    def toto
+           ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_undefined_metaclass_var_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_undefined_metaclass_var_py30.py"", line 8
+    class Bad(metaclass=ABCMet):
+                       ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_unused_import_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_unused_import_py30.py"", line 10
+    class Meta(metaclass=abc.ABCMeta):
+                        ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_used_before_assignment_py30.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_used_before_assignment_py30.py"", line 10
+    nonlocal cnt
+               ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/func_w0705.py ...
+  File ""/home/devstack/test//testpylint/build/pylint/pylint/test/input/func_w0705.py"", line 28
+    __revision__ += 1
+SyntaxError: default 'except:' must be last
+
+Compiling /home/devstack/test//testpylint/build/pylint/pylint/test/input/syntax_error.py ...
+Sorry: IndentationError: expected an indented block (syntax_error.py, line 2)
+  Found existing installation: astroid 1.3.2
+    Uninstalling astroid:
+      Successfully uninstalled astroid
+Compiling /home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module.py ...
+  File ""/home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module.py"", line 55
+    print('yo', end=' ')
+                   ^
+SyntaxError: invalid syntax
+
+Compiling /home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module2.py ...
+  File ""/home/devstack/test//testpylint/build/astroid/astroid/tests/testdata/python3/data/module2.py"", line 100
+    print('bonjour', file=stream)
+                         ^
+SyntaxError: invalid syntax
+
+Successfully installed pylint astroid
+Cleaning up...
+(testpylint)devstack@ubuntu:~/test/$ pylint --version
+Warning: option include-ids is deprecated and ignored.
+Warning: option symbols is deprecated and ignored.
+pylint 1.4.3,
+astroid 1.3.6, common 0.63.2
+Python 2.7.6 (default, Mar 22 2014, 22:59:56)
+[GCC 4.8.2]
+(testpylint)devstack@ubuntu:~/test/$
+
+
+```
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-04-30 10:17:17","_Original comment by_ **Davide Callegari (BitBucket: [brokenseal](http://bitbucket.org/brokenseal), GitHub: @brokenseal?)**:
+
+---
+
+Weird.
+Anyway, since you actually fixed these issues, can you update the version you have on pypi? That would help.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-05-14 15:55:17","_Original comment by_ **BitBucket: [jakirkham](http://bitbucket.org/jakirkham), GitHub: @jakirkham?**:
+
+---
+
+I'm sorry to raise this back up again, but I don't understand how adding `from __future__ import print_function` would be harmful for the python 3 test data. I should say I am trying to install the latest version (1.3.6) and am still seeing the exact same issue as the OP.
+","",""
+"issue_comment","58","pycqa","astroid","pylint-bot","2015-05-14 16:34:48","_Original comment by_ **BitBucket: [jakirkham](http://bitbucket.org/jakirkham), GitHub: @jakirkham?**:
+
+---
+
+If I clone the repo and use the latest version, I only see the first error. It appears someone patched the second one by using `__future__`. Patching the `module.py` file fixes the problem for me (patch below).
+
+---
+
+```
+diff -r 2758935c62ca astroid/tests/testdata/python3/data/module.py
+--- a/astroid/tests/testdata/python3/data/module.py Wed May 13 12:37:32 2015 +0300
++++ b/astroid/tests/testdata/python3/data/module.py Thu May 14 12:33:25 2015 -0400
+@@ -1,3 +1,5 @@
++from __future__ import print_function
++
+ """"""test module for astroid
+ """"""
+```
+","",""

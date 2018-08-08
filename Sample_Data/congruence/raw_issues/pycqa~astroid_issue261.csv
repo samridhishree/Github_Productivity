@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","261","pycqa","astroid","pylint-bot","2015-11-22 16:38:09","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+I've already tweaked builtin_lookup() to accommodate cases where ast_from_object() is creating an AssignName node because of an alias to the same object in the builtins module.  However, there's another issue that's less clear how to solve: in some cases, the builtins module has objects that actually belong to another module.  The proximate test failure caused by this case is that on Python3, open() is imported from io:
+
+``` python
+FAIL: test_builtin_open (unittest_inference.InferenceTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_inference.py"", line 811, in test_builtin_open
+    self.assertIsInstance(inferred[0], nodes.FunctionDef)
+AssertionError: Uninferable is not an instance of <class 'astroid.tree.scoped_nodes.FunctionDef'>
+```
+
+However, there are other cases.  ast_from_object() tries to create an AST that's as close as possible to the AST that would create the object if it were compiled.  I think this should probably be solved in builtin_lookup(), but what's the best way to do it?
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/261
+","start issue","[2.0 bugs] Imported nodes in the builtins mock AST and builtin_lookup()"
+"issue_comment","261","pycqa","astroid","pylint-bot","2015-11-23 08:40:21","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I don't think this needs to be fixed in builtin_lookup, it should do only lookup and fail if it's not possible to do so. Any other use case should belong somewhere else.
+
+Without taking a close look at the problem, maybe this is related with _io / io discrepancy that the previous code hardcoded? https://bitbucket.org/logilab/astroid/src/473f94bc7afddb40295c6225861512e9485fbd3e/astroid/raw_building.py?at=default&fileviewer=file-view-default#raw_building.py-44
+","",""

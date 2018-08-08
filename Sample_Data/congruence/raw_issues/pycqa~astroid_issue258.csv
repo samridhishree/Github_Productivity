@@ -1,0 +1,23 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","258","pycqa","astroid","pylint-bot","2015-11-19 05:15:35","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+There's another builtin type in CPython 3.3+ called SimpleNamespace, exposed in types.  I think it's implemented in C but I'm not certain.  It's used for `sys.implementation`; I don't know if it's used anywhere else.  When something tries to import a module containing a SimpleNamespace instance, ast_from_object eventually finds the following definition in `types` and adds it as an AssignNode:
+
+``` python
+SimpleNamespace = type(sys.implementation)
+```
+
+However, since that `type` call doesn't point to anything inference can understand, it ultimately causes tests to fail.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/258
+","start issue","[2.0 bugs] SimpleNamespace causes any tests that ultimately import sys to fail on Python 3"
+"issue_closed","258","pycqa","astroid","pylint-bot","2015-12-09 05:55:55","","closed issue","[2.0 bugs] SimpleNamespace causes any tests that ultimately import sys to fail on Python 3"
+"issue_comment","258","pycqa","astroid","pylint-bot","2015-11-21 17:47:03","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Added SimpleNamespace to the builtins mock AST in e7139c4.
+","",""

@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","176","pycqa","astroid","pylint-bot","2015-08-20 16:42:17","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+In debugging, I noticed that on Python 2 in certain circumstances it's possible for exceptions in the inference mechanisms to end up losing the traceback up to the point they're raised.  (Python3 always chains exceptions that are raised while processing another exception, I think.)  The best way I know of to do this is probably with six.reraise, but I'm open to other suggestions.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/176
+","start issue","Preserve tracebacks on Python 2"
+"issue_closed","176","pycqa","astroid","pylint-bot","2015-12-09 05:54:33","","closed issue","Preserve tracebacks on Python 2"
+"issue_comment","176","pycqa","astroid","pylint-bot","2015-08-20 14:43:22","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+That sounds good, there are a lot of places where exceptions are reraised, without considering the loss of the traceback. 
+","",""
+"issue_comment","176","pycqa","astroid","pylint-bot","2015-08-20 14:50:46","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+I'm aware of `raise
+ObjectNotFound(name).with_traceback(sys.exc_info()[-1])` (py3) or `raise
+ObjectNotFound(name), None, sys.exc_info()[-1]` (py2)
+","",""
+"issue_comment","176","pycqa","astroid","pylint-bot","2015-09-05 14:31:56","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+My problem when attempting this has turned out to be that I don't understand the code paths well enough to know where exceptions can be raised ultimately within an `except` block.  I can simply try to change all the places where exceptions are being raised, or if anyone has more understanding of the code paths, I could try to focus on those.
+","",""
+"issue_comment","176","pycqa","astroid","pylint-bot","2015-09-05 15:02:17","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+We could focus only on the places where exceptions are being raised, since otherwise we might have tracebacks from the entire inference chain and I'm not sure how useful that would be. In that case, something as oslo.excutils.save_and_reraise_exception could be used: http://docs.openstack.org/developer/oslo.utils/api/excutils.html#oslo_utils.excutils.save_and_reraise_exception
+","",""
+"issue_comment","176","pycqa","astroid","pylint-bot","2015-09-26 12:36:05","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Fixed by https://bitbucket.org/logilab/astroid/pull-requests/88/use-sixreraise-to-avoid-losing-tracebacks
+","",""

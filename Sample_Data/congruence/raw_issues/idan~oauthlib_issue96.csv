@@ -1,0 +1,20 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","96","idan","oauthlib","wulczer","2013-01-29 14:29:25","The following fails with an exception on Python 2.7.3 with latest oauthlib HEAD (comment out the GET request signing to see the failure of POST request signing)
+
+``` python
+from oauthlib import oauth1
+
+uchar = u""\N{GREEK SMALL LETTER LAMDA}""
+
+client = oauth1.Client(u'foo', u'bar', u'baz', u'quuz')
+
+client.sign(u'http://example.com?foo=' + uchar, u'GET')
+client.sign(u'http://example.com', u'POST', {u'foo': uchar},
+            {u'Content-Type': u'application/x-www-form-urlencoded'})
+```
+","start issue","cannot use non-ASCII unicode values in query string or request body of oauth1.Client"
+"issue_closed","96","idan","oauthlib","ib-lundgren","2013-01-29 20:18:23","","closed issue","cannot use non-ASCII unicode values in query string or request body of oauth1.Client"
+"issue_comment","96","idan","oauthlib","ib-lundgren","2013-01-29 20:18:23","Thanks for the report!
+
+This was caused because until now oauthlib has required input to already be urlencoded but I through in some experimental support for automatically encoding. Please let me know if you run into other issues =)
+","",""

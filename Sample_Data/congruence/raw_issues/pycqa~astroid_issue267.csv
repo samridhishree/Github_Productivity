@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","267","pycqa","astroid","pylint-bot","2015-11-26 11:15:02","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+There are a couple of nodes in the builtin module **ast** which provide a `.ctx` member, useful for determining in what context these nodes occurred, with types such as **Store**, for instance for `x[1] = 2`, **Del** for `del x[1]` and **Load** for the rest of them. Might be useful for pylint for disambiguating between a `__getitem__` call or a  `__setitem__` call.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/267
+","start issue","Add a context for certain nodes, similar to the builtin module ast"
+"issue_closed","267","pycqa","astroid","pylint-bot","2015-12-09 05:56:03","","closed issue","Add a context for certain nodes, similar to the builtin module ast"
+"issue_comment","267","pycqa","astroid","pylint-bot","2015-12-08 09:36:10","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Some nodes got a new attribute, 'ctx', which tells in which context the said node was used.
+
+The possible values for the contexts are `Load` ('a'), `Del` ('del a'),
+`Store` ('a = 4') and the nodes that got the new attribute are Starred,
+Subscript, List and Tuple. The builtin ast module provides contexts for
+Name and Attribute as well, but we took a different approach in the past,
+by having different nodes for each type of context. For instance, Name
+used in a Del context is a DelName, while Name used in a Store
+context is AssignName. Since this is ingrained in astroid since quite
+some time, it makes no sense to change them as well, even though it's
+a loss of consistency.
+The patch introduces a new dependency to enum34 on older Python
+versions, which is used for building the three possible enum values
+for the contexts.
+
+Closes issue #267.
+","",""
+"issue_comment","267","pycqa","astroid","pylint-bot","2015-12-08 09:36:11","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Some nodes got a new attribute, 'ctx', which tells in which context the said node was used.
+
+The possible values for the contexts are `Load` ('a'), `Del` ('del a'),
+`Store` ('a = 4') and the nodes that got the new attribute are Starred,
+Subscript, List and Tuple. The builtin ast module provides contexts for
+Name and Attribute as well, but we took a different approach in the past,
+by having different nodes for each type of context. For instance, Name
+used in a Del context is a DelName, while Name used in a Store
+context is AssignName. Since this is ingrained in astroid since quite
+some time, it makes no sense to change them as well, even though it's
+a loss of consistency.
+The patch introduces a new dependency to enum34 on older Python
+versions, which is used for building the three possible enum values
+for the contexts.
+
+Closes issue #267.
+","",""

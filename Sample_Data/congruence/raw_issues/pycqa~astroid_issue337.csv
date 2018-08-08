@@ -1,0 +1,215 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","337","pycqa","astroid","NotSqrt","2016-05-13 12:36:38","Hi,
+
+I opened a ticket in PyCQA/pylint#903 but it is probably in astroid itself:
+I have the following situation:
+
+```
+# package 1, installed with ""pip install package1""
+mynamespace/
+    __init__.py
+    pylint_plugins/
+        __init__.py
+       plugin1.py
+
+# package 2, installed with ""pip install -e package2""
+mynamespace/
+    __init__.py
+   # other modules
+```
+
+In that situation, `pylint --load-plugins mynamespace.pylint_plugins.plugin1` fails, because `load_module_from_modpath` looks for `pylint_plugins` inside the folder of package2 installed in develop mode.
+
+Cf what Django does to avoid this problem (it used to fail in some cases for django < 1.7): https://github.com/django/django/blob/1.9.6/django/utils/module_loading.py#L9
+
+Steps to reproduce easily:
+
+``` bash
+mktmpenv 
+pip install pylint
+mkdir -p package1/mynamespace/pylint_plugins
+mkdir -p package2/mynamespace/
+# setup scripts
+echo -e ""from setuptools import setup, find_packages\nsetup(name='package1', version='0.1', packages=find_packages())"" > package1/setup.py
+echo -e ""from setuptools import setup, find_packages\nsetup(name='package2', version='0.1', packages=find_packages())"" > package2/setup.py
+# namespace declaration
+echo -e ""from pkgutil import extend_path\n__path__ = extend_path(__path__, __name__)"" > package1/mynamespace/__init__.py
+echo -e ""from pkgutil import extend_path\n__path__ = extend_path(__path__, __name__)"" > package2/mynamespace/__init__.py
+# other python files
+touch package1/mynamespace/pylint_plugins/__init__.py
+echo -e ""def register(linter):\n    pass"" > package1/mynamespace/pylint_plugins/plugin1.py
+
+pip install package1/
+pip install -e package2/
+pylint --load-plugins mynamespace.pylint_plugins.plugin1  
+# Fails because it looks for pylint_plugins in /absolute/path/to/package2/
+# Doing the installs in reverse order does not fix the error
+
+# both with -e
+pip uninstall -y package1 package2
+pip install -e package1/ -e package2/
+pylint --load-plugins mynamespace.pylint_plugins.plugin1  # ok
+
+# both regular install
+pip uninstall -y package1 package2
+pip install package1/ package2/
+pylint --load-plugins mynamespace.pylint_plugins.plugin1  # ok
+```
+
+How to fix this ?
+
+Since python2.6 does not seem supported in tox, we might simply use importlib, no ?
+
+Thanks !
+","start issue","load_module_from_modpath does not fully support namespace packages"
+"issue_closed","337","pycqa","astroid","PCManticore","2017-04-13 09:05:20","","closed issue","load_module_from_modpath does not fully support namespace packages"
+"issue_comment","337","pycqa","astroid","PCManticore","2016-05-13 12:42:02","Hi,
+
+Yes, we might try to use importlib for this, if it fixes the problem. Would you like to take a stab at it? 
+","",""
+"issue_comment","337","pycqa","astroid","NotSqrt","2016-05-13 12:46:19","Well, this seems to work for me, but I don't know it it covers 100% of cases:
+
+``` python
+def load_module_from_name(dotted_name, path=None, use_sys=True):
+    from importlib import import_module
+    return import_module(dotted_name)
+
+    # instead of:
+    # return load_module_from_modpath(dotted_name.split('.'), path, use_sys)
+```
+
+There does not seem to be any calls to `load_module_from_name` with a `path` or `use_sys != True`
+","",""
+"issue_comment","337","pycqa","astroid","PCManticore","2016-06-28 22:20:01","Hi,
+
+Sorry for the delay. I tried reproducing this issue using the latest released pylint / astroid and it worked just fine without any modification. What pylint version did you use and what OS (not sure if it matters, I tested on Windows for instance)?
+","",""
+"issue_comment","337","pycqa","astroid","NotSqrt","2016-06-29 07:36:52","Hi,
+
+I re-run my script above, and had the same exact results with the following setup:
+- ubuntu 14.04
+- python 2.7.11
+- astroid==1.4.6 pip==8.1.2 pylint==1.5.6
+
+Thanks.
+","",""
+"issue_comment","337","pycqa","astroid","PCManticore","2016-06-29 09:22:18","Thanks, I will try to test on a Linux machine then.
+","",""
+"issue_comment","337","pycqa","astroid","PCManticore","2017-04-13 09:05:20","I tested this with latest pylint (1.6.5) and latest astroid (1.4.9) on an Ubuntu machine and I couldn't reproduce it. Do note that the latest pylint has its import internals rewritten, with support for namespace packages and whatnot. Let me know if you can still reproduce this issue, feel free to reopen it in such case.","",""
+"issue_comment","337","pycqa","astroid","NotSqrt","2017-04-13 09:53:35","I retried a couple weeks ago, and I could no longer reproduce the error, so it seems fixed !
+Thanks !","",""
+"issue_comment","337","pycqa","astroid","NotSqrt","2017-05-04 14:55:17","Hi,
+
+Bad news, I just faced this issue again ..
+Here is an updated script, which tests more cases:
+```bash
+#!/usr/bin/env bash
+
+virtualenv -p python2.7 /tmp/test-pylint
+source /tmp/test-pylint/bin/activate
+pip install pylint
+mkdir -p package1/mynamespace/pylint_plugins1
+mkdir -p package2/mynamespace/pylint_plugins2
+# setup scripts
+echo -e ""from setuptools import setup, find_packages\nsetup(name='package1', version='0.1', packages=find_packages())"" > package1/setup.py
+echo -e ""from setuptools import setup, find_packages\nsetup(name='package2', version='0.1', packages=find_packages())"" > package2/setup.py
+# namespace declaration
+echo -e ""from pkgutil import extend_path\n__path__ = extend_path(__path__, __name__)"" > package1/mynamespace/__init__.py
+echo -e ""from pkgutil import extend_path\n__path__ = extend_path(__path__, __name__)"" > package2/mynamespace/__init__.py
+# other python files
+touch package1/mynamespace/pylint_plugins1/__init__.py
+echo -e ""def register(linter):\n    pass"" > package1/mynamespace/pylint_plugins1/plugin.py
+touch package2/mynamespace/pylint_plugins2/__init__.py
+echo -e ""def register(linter):\n    pass"" > package2/mynamespace/pylint_plugins2/plugin.py
+
+
+# nano ""$(python -c ""from astroid import modutils; print(modutils.__file__.replace('.pyc', '.py'))"")""
+
+RESULT=""Results:\n""
+
+test_import () {
+	RESULT=""${RESULT}- import plugin1: ""
+	{ python -c ""from mynamespace.pylint_plugins1 import plugin"" && RESULT=""${RESULT}success\n"" ; } || RESULT=""${RESULT}failed\n""
+	RESULT=""${RESULT}- import plugin2: ""
+	{ python -c ""from mynamespace.pylint_plugins2 import plugin"" && RESULT=""${RESULT}success\n"" ; } || RESULT=""${RESULT}failed\n""
+}
+
+test_plugin () {
+	RESULT=""${RESULT}- load-plugins plugin1: ""
+	{ pylint --load-plugins mynamespace.pylint_plugins1.plugin -h && RESULT=""${RESULT}success\n"" ; } || RESULT=""${RESULT}failed\n""
+	RESULT=""${RESULT}- load-plugins plugin2: ""
+	{ pylint --load-plugins mynamespace.pylint_plugins2.plugin -h && RESULT=""${RESULT}success\n"" ; } || RESULT=""${RESULT}failed\n""
+}
+
+RESULT=""${RESULT}\n1. package2 with -e\n""
+pip install package1/ -e package2/
+test_import
+test_plugin
+
+RESULT=""${RESULT}\n2. package1 with -e\n""
+pip uninstall -y package1 package2
+pip install -e package1/ package2/
+test_import
+test_plugin
+
+RESULT=""${RESULT}\n3. both with -e\n""
+pip uninstall -y package1 package2
+pip install -e package1/ -e package2/
+test_import
+test_plugin
+
+RESULT=""${RESULT}\n4. both regular install\n""
+pip uninstall -y package1 package2
+pip install package1/ package2/
+test_import
+test_plugin
+
+deactivate
+rm -rf /tmp/test-pylint
+
+echo
+echo -e ""$RESULT""
+```
+
+Which ouputs:
+```
+Results:
+
+1. package2 with -e
+- import plugin1: success
+- import plugin2: success
+- load-plugins plugin1: success
+- load-plugins plugin2: failed
+
+2. package1 with -e
+- import plugin1: success
+- import plugin2: success
+- load-plugins plugin1: failed
+- load-plugins plugin2: success
+
+3. both with -e
+- import plugin1: success
+- import plugin2: success
+- load-plugins plugin1: success
+- load-plugins plugin2: failed
+
+4. both regular install
+- import plugin1: success
+- import plugin2: success
+- load-plugins plugin1: success
+- load-plugins plugin2: success
+```
+
+For each case, there's a test to see if a regular python import works, and another test to see if `pylint --load-plugins` works.
+
+Basically, apart from the case where everything is installed without `-e` mode, something fails.
+
+I confirm that the following modification still fixes the problem:
+```python
+def load_module_from_name(dotted_name, path=None, use_sys=True):
+    from importlib import import_module
+    return import_module(dotted_name)
+
+    # instead of:
+    # return load_module_from_modpath(dotted_name.split('.'), path, use_sys)
+```","",""

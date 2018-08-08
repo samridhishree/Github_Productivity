@@ -1,0 +1,182 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","467","pycqa","astroid","JoaoFelipe","2017-11-27 20:10:55","### Steps to reproduce
+Run the following code to infer variables of `a = []; x = [a*2, a]*2*2`
+
+```python
+from astroid.builder import MANAGER, AstroidBuilder
+
+class Visitor(object):
+    
+    def visit(self, node):
+        for child in node.get_children():
+            child.accept(self)
+    visit_module = visit
+    visit_assign = visit
+    visit_binop = visit
+    visit_list = visit
+    visit_const = visit
+    visit_name = visit
+            
+    def visit_assignname(self, node):
+        for var in node.infer():
+            pass
+    
+builder = AstroidBuilder(manager=MANAGER, apply_transforms=True)
+parsed = builder.string_build(""""""
+a = []
+x = [a*2, a]*2*2
+"""""")
+
+parsed.accept(Visitor())
+```
+
+### Current behavior
+
+Currently, `safe_infer` throws a TypeError exception.
+```
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-13-243db1d8132c> in <module>()
+     23 """""")
+     24 
+---> 25 parsed.accept(Visitor())
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/node_classes.py in accept(self, visitor)
+    293     def accept(self, visitor):
+    294         func = getattr(visitor, ""visit_"" + self.__class__.__name__.lower())
+--> 295         return func(self)
+    296 
+    297     def get_children(self):
+
+<ipython-input-13-243db1d8132c> in visit(self, node)
+      5     def visit(self, node):
+      6         for child in node.get_children():
+----> 7             child.accept(self)
+      8     visit_module = visit
+      9     visit_assign = visit
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/node_classes.py in accept(self, visitor)
+    293     def accept(self, visitor):
+    294         func = getattr(visitor, ""visit_"" + self.__class__.__name__.lower())
+--> 295         return func(self)
+    296 
+    297     def get_children(self):
+
+<ipython-input-13-243db1d8132c> in visit(self, node)
+      5     def visit(self, node):
+      6         for child in node.get_children():
+----> 7             child.accept(self)
+      8     visit_module = visit
+      9     visit_assign = visit
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/node_classes.py in accept(self, visitor)
+    293     def accept(self, visitor):
+    294         func = getattr(visitor, ""visit_"" + self.__class__.__name__.lower())
+--> 295         return func(self)
+    296 
+    297     def get_children(self):
+
+<ipython-input-13-243db1d8132c> in visit_assignname(self, node)
+     14 
+     15     def visit_assignname(self, node):
+---> 16         for var in node.infer():
+     17             pass
+     18 
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/decorators.py in wrapped(node, context, _func, **kwargs)
+     83         try:
+     84             while True:
+---> 85                 res = next(generator)
+     86                 # unproxy only true instance, not const, tuple, dict...
+     87                 if res.__class__.__name__ == 'Instance':
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/bases.py in _infer_stmts(stmts, context, frame)
+     93         context.lookupname = stmt._infer_name(frame, name)
+     94         try:
+---> 95             for inferred in stmt.infer(context=context):
+     96                 yield inferred
+     97                 inferred = True
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/context.py in cache_generator(self, key, generator)
+     38     def cache_generator(self, key, generator):
+     39         results = []
+---> 40         for result in generator:
+     41             results.append(result)
+     42             yield result
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/decorators.py in yes_if_nothing_inferred(func, instance, args, kwargs)
+    106 def yes_if_nothing_inferred(func, instance, args, kwargs):
+    107     inferred = False
+--> 108     for node in func(*args, **kwargs):
+    109         inferred = True
+    110         yield node
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/decorators.py in wrapped(node, context, _func, **kwargs)
+     83         try:
+     84             while True:
+---> 85                 res = next(generator)
+     86                 # unproxy only true instance, not const, tuple, dict...
+     87                 if res.__class__.__name__ == 'Instance':
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/inference.py in _filter_operation_errors(self, infer_callable, context, error)
+    407 
+    408 def _filter_operation_errors(self, infer_callable, context, error):
+--> 409     for result in infer_callable(self, context):
+    410         if isinstance(result, error):
+    411             # For the sake of .infer(), we don't care about operation
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/inference.py in _infer_binop(self, context)
+    686             try:
+    687                 for result in _infer_binary_operation(lhs, rhs, self,
+--> 688                                                       context, _get_binop_flow):
+    689                     yield result
+    690             except exceptions._NonDeducibleTypeHierarchy:
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/inference.py in _infer_binary_operation(left, right, binary_opnode, context, flow_factory)
+    626     for method in methods:
+    627         try:
+--> 628             results = list(method())
+    629         except AttributeError:
+    630             continue
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/decorators.py in yes_if_nothing_inferred(func, instance, args, kwargs)
+    106 def yes_if_nothing_inferred(func, instance, args, kwargs):
+    107     inferred = False
+--> 108     for node in func(*args, **kwargs):
+    109         inferred = True
+    110         yield node
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/protocols.py in tl_infer_binary_op(self, opnode, operator, other, context, method)
+    170             yield not_implemented
+    171             return
+--> 172         yield _multiply_seq_by_int(self, opnode, other, context)
+    173     elif isinstance(other, bases.Instance) and operator == '*':
+    174         # Verify if the instance supports __index__.
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/protocols.py in _multiply_seq_by_int(self, opnode, other, context)
+    137     elts = []
+    138     for elt in self.elts:
+--> 139         infered = helpers.safe_infer(elt, context)
+    140         if infered is None:
+    141             infered = util.Uninferable
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/helpers.py in safe_infer(node, context)
+     98     try:
+     99         inferit = node.infer(context=context)
+--> 100         value = next(inferit)
+    101     except exceptions.InferenceError:
+    102         return
+
+TypeError: 'Uninferable' object is not an iterator
+```
+
+### Expected behavior
+
+`safe_infer` converts other exceptions into None.
+I was expecting to get None and not break the code.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+1.5.3","start issue","safe_infer fails for Uninferable objects"
+"issue_closed","467","pycqa","astroid","PCManticore","2017-12-15 09:27:30","","closed issue","safe_infer fails for Uninferable objects"
+"issue_comment","467","pycqa","astroid","PCManticore","2017-12-11 09:22:35","Thanks for raising the issue!","",""

@@ -1,0 +1,28 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","135","aio-libs","aioredis","tkram01","2016-08-10 20:29:09","Calling close and wait_closed on Redis generates an error since these are not implemented. It also can make it hard to exit gracefully since you can't wait for tasks to finish easily.
+
+`````` python
+@@ -46,15 +46,6 @@
+                     self._conn = conn
+         return self._conn
+
+-    def close(self):
+-        if self._conn is not None and not self._conn.closed:
+-            self._conn.close()
+-
+-    @asyncio.coroutine
+-    def wait_closed(self):
+-        if self._conn is not None and not self._conn.closed:
+-            yield from self._conn.wait_closed()
+-
+
+ class Redis(GenericCommandsMixin, StringCommandsMixin,
+             HyperLogLogCommandsMixin, SetCommandsMixin,```
+``````
+","start issue","AutoConnector needs close and wait_closed"
+"issue_comment","135","aio-libs","aioredis","popravich","2016-08-11 07:43:06","Thanks for report, will fix this.
+","",""
+"issue_comment","135","aio-libs","aioredis","tkram01","2017-03-30 15:01:09","I see you made a branch for this. Can you merge it in? Is there anything I can do to get this integrated?","",""
+"issue_comment","135","aio-libs","aioredis","popravich","2017-03-30 15:08:28","Hi, actually AutoConnector is deprecated and will be removed.
+Pool is now used inside Redis so there is no need in AutoConnector.
+The new code is in master but not yet released.","",""

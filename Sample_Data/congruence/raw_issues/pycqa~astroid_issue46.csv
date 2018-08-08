@@ -1,0 +1,54 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","46","pycqa","astroid","pylint-bot","2014-08-05 17:53:26","Originally reported by: **Michal Nowikowski (BitBucket: [godfryd](http://bitbucket.org/godfryd), GitHub: @godfryd?)**
+
+---
+
+Not precise data can get into node.locals.
+For example test code:
+
+```
+""""""unused import""""""
+import xml.etree  # [unused-import]
+import xml.sax  # [unused-import]
+```
+
+node.locals contains:
+
+```
+#!python
+{'xml': [<Import() l.2 [functional.unused_import] at 0x7f18cde2ec10>, <Import() l.3 [functional.unused_import] at 0x7f18cde46090>]}
+```
+
+xml is not a local name. It cannot be referenced in code. 
+There is only available either xml.etree or xml.sax.
+
+Wouldn't it be better to fix node.locals that it contains:
+
+```
+#!python
+{'xml.etree': [<Import() l.2 [functional.unused_import] at 0x7f18cde2ec10>],
+ 'xml.sax': [<Import() l.3 [functional.unused_import] at 0x7f18cde46090>]}
+```
+
+This issue is related to issue pylint#293.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/46
+","start issue","node.locals contains not precise data"
+"issue_closed","46","pycqa","astroid","pylint-bot","2015-12-09 05:52:22","","closed issue","node.locals contains not precise data"
+"issue_comment","46","pycqa","astroid","pylint-bot","2014-08-25 07:00:01","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+this is not true, in your example 'xml' **is** a local name, as demonstrated below:
+
+```
+#!python
+
+>>> import xml.etree
+>>> print xml
+<module 'xml' from '/usr/lib/python2.7/xml/__init__.pyc'>
+```
+
+the 'import x.y' form of import in python is importing the 'x' package, then the 'y' subpackage/module, then bind 'x' to the local namespace.
+","",""

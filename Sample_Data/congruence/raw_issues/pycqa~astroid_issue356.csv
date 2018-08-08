@@ -1,0 +1,220 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","356","pycqa","astroid","royw","2016-08-01 21:47:32","### Fixes / new features
+- This pull requests simply says when a class does not have a name attribute, then it does not match the signal name and therefore returns False.
+
+pylint --rcfile=pylint.rc src > quality/pylint.log
+Traceback (most recent call last):
+  File ""/usr/local/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/**init**.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 1315, in **init**
+    linter.check(args)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 736, in check
+    self._do_check(files_or_modules)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 867, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 947, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 935, in walk
+    cb(astroid)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/checkers/stdlib.py"", line 186, in visit_call
+    for inferred in node.func.infer():
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, *_kwargs):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 99, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, *_kwargs):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 99, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/inference.py"", line 142, in infer_import_from
+    module = self.do_import_module()
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/mixins.py"", line 129, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/scoped_nodes.py"", line 492, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/manager.py"", line 136, in ast_from_module_name
+    return self.ast_from_file(filepath, modname, fallback=False)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/manager.py"", line 86, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/builder.py"", line 142, in file_build
+    return self._post_build(module, encoding)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/builder.py"", line 166, in _post_build
+    module = self._manager.visit_transforms(module)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/manager.py"", line 68, in visit_transforms
+    return self._transform.visit(node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 95, in visit
+    module.body = [self._visit(child) for child in module.body]
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 63, in _visit
+    visited = self._visit_generic(value)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 69, in _visit_generic
+    return [self._visit_generic(child) for child in node]
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 73, in _visit_generic
+    return self._visit(node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 65, in _visit
+    return self._transform(node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 47, in _transform
+    if predicate is None or predicate(node):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/brain/brain_qt.py"", line 12, in _looks_like_signal
+    return cls.name == signal_name
+AttributeError: 'AssignAttr' object has no attribute 'name'
+
+Here's the method that is throwing the exception:
+
+```
+def _looks_like_signal(node, signal_name='pyqtSignal'):
+    if '__class__' in node.instance_attrs:
+        cls = node.instance_attrs['__class__'][0]
+        return cls.name == signal_name
+    return False
+```
+
+The cls object without the name attribute field look like (repr(cls)):
+
+```
+<AssignAttr(__class__) l.120 [lazy_object_proxy.slots] at 0x7f93a4bc2b90>
+```
+
+So simply catch the AttributeError and let the function return False:
+
+```
+def _looks_like_signal(node, signal_name='pyqtSignal'):
+    if '__class__' in node.instance_attrs:
+        try:
+            cls = node.instance_attrs['__class__'][0]
+            return cls.name == signal_name
+        except AttributeError:
+            # return False if the cls does not have a name attribute
+            pass
+    return False
+```
+
+Thank you.
+","start issue","Pylint throws AttributeError on missing class name attribute"
+"issue_closed","356","pycqa","astroid","PCManticore","2017-02-09 08:37:57","","closed issue","Pylint throws AttributeError on missing class name attribute"
+"pull_request_title","356","pycqa","astroid","royw","2016-08-01 21:47:32","### Fixes / new features
+- This pull requests simply says when a class does not have a name attribute, then it does not match the signal name and therefore returns False.
+
+pylint --rcfile=pylint.rc src > quality/pylint.log
+Traceback (most recent call last):
+  File ""/usr/local/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/**init**.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 1315, in **init**
+    linter.check(args)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 736, in check
+    self._do_check(files_or_modules)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 867, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 947, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 935, in walk
+    cb(astroid)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/checkers/stdlib.py"", line 186, in visit_call
+    for inferred in node.func.infer():
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, *_kwargs):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 99, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, *_kwargs):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 99, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/inference.py"", line 142, in infer_import_from
+    module = self.do_import_module()
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/mixins.py"", line 129, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/scoped_nodes.py"", line 492, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/manager.py"", line 136, in ast_from_module_name
+    return self.ast_from_file(filepath, modname, fallback=False)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/manager.py"", line 86, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/builder.py"", line 142, in file_build
+    return self._post_build(module, encoding)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/builder.py"", line 166, in _post_build
+    module = self._manager.visit_transforms(module)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/manager.py"", line 68, in visit_transforms
+    return self._transform.visit(node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 95, in visit
+    module.body = [self._visit(child) for child in module.body]
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 63, in _visit
+    visited = self._visit_generic(value)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 69, in _visit_generic
+    return [self._visit_generic(child) for child in node]
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 73, in _visit_generic
+    return self._visit(node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 65, in _visit
+    return self._transform(node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/transforms.py"", line 47, in _transform
+    if predicate is None or predicate(node):
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/brain/brain_qt.py"", line 12, in _looks_like_signal
+    return cls.name == signal_name
+AttributeError: 'AssignAttr' object has no attribute 'name'
+
+Here's the method that is throwing the exception:
+
+```
+def _looks_like_signal(node, signal_name='pyqtSignal'):
+    if '__class__' in node.instance_attrs:
+        cls = node.instance_attrs['__class__'][0]
+        return cls.name == signal_name
+    return False
+```
+
+The cls object without the name attribute field look like (repr(cls)):
+
+```
+<AssignAttr(__class__) l.120 [lazy_object_proxy.slots] at 0x7f93a4bc2b90>
+```
+
+So simply catch the AttributeError and let the function return False:
+
+```
+def _looks_like_signal(node, signal_name='pyqtSignal'):
+    if '__class__' in node.instance_attrs:
+        try:
+            cls = node.instance_attrs['__class__'][0]
+            return cls.name == signal_name
+        except AttributeError:
+            # return False if the cls does not have a name attribute
+            pass
+    return False
+```
+
+Thank you.
+","f9c4b41409bfe3c20304856207125f4d989f749c","Pylint throws AttributeError on missing class name attribute"
+"pull_request_merged","356","pycqa","astroid","PCManticore","2017-02-09 08:37:57","Pylint throws AttributeError on missing class name attribute","b4f314a6bc12978030d82ccde321f85232498236","Pull request merge from royw/astroid:master to PyCQA/astroid:master"
+"issue_comment","356","pycqa","astroid","ceridwen","2017-01-30 21:03:06","@PCManticore, do you want to take a look at this?  It looks to me like the brain_qt.py code needs to be altered in the light of the new handling for underscore methods/attributes.","",""
+"issue_comment","356","pycqa","astroid","PCManticore","2017-01-30 21:19:39","We have to check why this difference appeared in the first case. Maybe inferring the node would be enough.","",""
+"pull_request_commit","356","pycqa","astroid","roy_wright@trendmicro.com","2016-08-01 21:14:46","handle missing class name attribute","bb11453818f12c9df4b1751e0080329ffab0241c",""
+"pull_request_commit","356","pycqa","astroid","roy_wright@trendmicro.com","2016-08-01 21:36:07","Merge branch 'master' of https://github.com/royw/astroid
+
+* 'master' of https://github.com/royw/astroid:
+  Use proper environment markers for version specific dependencies.","f9c4b41409bfe3c20304856207125f4d989f749c",""

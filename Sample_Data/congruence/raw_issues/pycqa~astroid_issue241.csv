@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","241","pycqa","astroid","pylint-bot","2015-11-03 06:16:26","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+The lack of proper types in the builtins is causing lots of bugs in modular-locals, including #234, and at the moment, raw_building is already directly inserting a mock ClassDef node for types.GeneratorType into the AST.  I would like to add other builtin types to the builtin module, either in their own namespace (probably using a ClassDef node to hold them) or directly. The former has the advantage of more clearly separating which names are accessible in builtins versus which aren't but will require some changes to how lookups are handled, and because the lookup code is scattered across astroid, that could touch many locations.  Note that these types should be included in the builtins module because the Python interpreter identifies their module as builtins.
+
+The types that have to be included are NotImplementedType, NoneType, and types.GeneratorType.  Other types we might include come from https://docs.python.org/3/reference/datamodel.html#the-standard-type-hierarchy and https://docs.python.org/3/library/types.html .  (We will almost certainly have to add a coroutine type at some point to handle Python 3.5 properly.)
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/241
+","start issue","Adding types to the builtins mock AST"
+"issue_closed","241","pycqa","astroid","pylint-bot","2015-12-09 05:55:41","","closed issue","Adding types to the builtins mock AST"
+"issue_comment","241","pycqa","astroid","pylint-bot","2015-11-03 15:25:47","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I don't think the former case is worth it for now, we can let them be discoverable. This has the advantage that it simplifies the implementation and it can be used earlier, rather than trying to modify the lookup methods from all the place. 
+
+I agree with all the types you mentioned, but could you also add FunctionType and MethodType for now? They'll greatly simplify the code for helpers.object_type, which in turn will help the efforts of removing the circular depedency (since currently it needs to depend on raw_building for building a dynamic class with the type of functions).
+","",""
+"issue_comment","241","pycqa","astroid","pylint-bot","2015-11-14 05:12:33","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Types added in 3e3b3e936b69.
+","",""

@@ -1,0 +1,178 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,23,idan,oauthlib,calebbrown,2012-04-24 23:19:17,"I went through the latest changes and made some fixes so the server tests started working again.
+
+The two changes I needed to make were:
+1. Order of values returned from client.sign() were changed
+2. Call to `Client.get_oauth_signature()` in `Server.check_request_signature()` needed to take a Request() instance.
+",start issue,Fix the failing server tests.
+1,issue_closed,23,idan,oauthlib,idan,2012-04-25 06:39:18,,closed issue,Fix the failing server tests.
+2,pull_request_title,23,idan,oauthlib,calebbrown,2012-04-24 23:19:17,"I went through the latest changes and made some fixes so the server tests started working again.
+
+The two changes I needed to make were:
+1. Order of values returned from client.sign() were changed
+2. Call to `Client.get_oauth_signature()` in `Server.check_request_signature()` needed to take a Request() instance.
+",41576dbcd659dc09a042191d41f460f138b96102,Fix the failing server tests.
+3,pull_request_merged,23,idan,oauthlib,idan,2012-04-25 06:39:18,Fix the failing server tests.,beae91455044458b12c66e86ee20fdc53206a6e0,Pull request merge from calebbrown/oauthlib:bugs/broken_server to idan/oauthlib:master
+4,pull_request_commit_comment,23,idan,oauthlib,calebbrown,2012-04-24 23:29:29,"Needing to explicitly set oauth_params didn't feel exactly right in this scenario. When Server gets some Request love this will go away I presume.
+",41576dbcd659dc09a042191d41f460f138b96102,"(7, '', u'oauthlib/oauth1/rfc5849/__init__.py')"
+5,pull_request_commit_comment,23,idan,oauthlib,idan,2012-04-25 06:39:10,"Not sure what you mean by this—e.g. you'd like to change the signature of Request.**init**()? Or something more?
+",41576dbcd659dc09a042191d41f460f138b96102,"(7, '', u'oauthlib/oauth1/rfc5849/__init__.py')"
+6,pull_request_commit_comment,23,idan,oauthlib,calebbrown,2012-04-26 01:09:04,"Sorry, that comment wasn't very clear.
+
+I don't think the signature needs to change to `Request.__init__()`, I just wasn't sure if the way I was doing things was the right way to do it, or the way it was planning to stay.
+",41576dbcd659dc09a042191d41f460f138b96102,"(7, '', u'oauthlib/oauth1/rfc5849/__init__.py')"
+7,pull_request_commit,23,idan,oauthlib,calebbrown,2012-04-24 23:15:20,"Fix the failing tests.
+
+ * Order of values returned from client.sign() were changed
+ * Call to Client.get_oauth_signature() in
+   Server.check_request_signature() needs to take a Request()",41576dbcd659dc09a042191d41f460f138b96102,
+0,issue_title,21,idan,oauthlib,calebbrown,2012-04-19 04:14:37,"### Problem
+
+The problem I was having was that `oauth1.rfc5849.signature.collect_parameters()` was not properly supporting headers that were in unicode.
+
+This problem doesn't expose itself unless you pass through parameters that will change when escaped/unescaped, e.g URLs.
+
+The problem can be seen in `Client.sign()`. What happens is `oauth1.rfc5849.parameters.prepare_headers()` is called (via `Client._contribute_parameters()`), builds _and_ escapes the headers and returns a unicode encoded header string.
+
+This is then passed to `signature.collect_parameters()` (via `Client.get_oauth_signature()`) which fails to unescape the headers because they're in unicode.
+
+The base string is then built from these, leading to an incorrect signature being generated.
+### Solution
+
+My implementation solves the problem by allowing both unicode and str types to be unescaped in `signature.collect_parameters()`.
+
+The fix is in the last two changesets.
+
+This pull requests also includes everything from my [last pull request](https://github.com/idangazit/oauthlib/pull/20) (if I had planned it better they would've all been in separate branches :/)
+",start issue,Better handle unicode in OAuth1's parameter parsing.
+1,issue_closed,21,idan,oauthlib,calebbrown,2012-04-26 01:09:48,,closed issue,Better handle unicode in OAuth1's parameter parsing.
+2,pull_request_title,21,idan,oauthlib,calebbrown,2012-04-19 04:14:37,"### Problem
+
+The problem I was having was that `oauth1.rfc5849.signature.collect_parameters()` was not properly supporting headers that were in unicode.
+
+This problem doesn't expose itself unless you pass through parameters that will change when escaped/unescaped, e.g URLs.
+
+The problem can be seen in `Client.sign()`. What happens is `oauth1.rfc5849.parameters.prepare_headers()` is called (via `Client._contribute_parameters()`), builds _and_ escapes the headers and returns a unicode encoded header string.
+
+This is then passed to `signature.collect_parameters()` (via `Client.get_oauth_signature()`) which fails to unescape the headers because they're in unicode.
+
+The base string is then built from these, leading to an incorrect signature being generated.
+### Solution
+
+My implementation solves the problem by allowing both unicode and str types to be unescaped in `signature.collect_parameters()`.
+
+The fix is in the last two changesets.
+
+This pull requests also includes everything from my [last pull request](https://github.com/idangazit/oauthlib/pull/20) (if I had planned it better they would've all been in separate branches :/)
+",2a2594986c61115ebe1ec5f1ddeec3812294642b,Better handle unicode in OAuth1's parameter parsing.
+3,issue_comment,21,idan,oauthlib,calebbrown,2012-04-19 05:40:21,"Related pull request is #20
+",,
+4,issue_comment,21,idan,oauthlib,idan,2012-04-24 14:14:23,"I'm still wrapping my brain around the unicode-related changes in your branch and @dgouldin's recent commits. Regardless, the pull request won't merge at this point.
+",,
+5,issue_comment,21,idan,oauthlib,dgouldin,2012-04-24 16:31:16,"I've integrated his piece of the pull request into collect_parameters, so it should be effectively the same now.  The changeset is small enough that it may be best to cherry-pick the commits we want to include rather than merging the whole pull request.
+",,
+6,issue_comment,21,idan,oauthlib,idan,2012-04-24 19:22:37,"@dgouldin meaning your recent commits already include this or we still have stuff to merge?
+",,
+7,issue_comment,21,idan,oauthlib,dgouldin,2012-04-24 19:23:34,"Includes the one diff you commented on in signature.py, but not the whole pull request
+",,
+8,issue_comment,21,idan,oauthlib,idan,2012-04-24 19:27:08,"Everything from d98d..eb08 was already merged in #20; looking at what's left over now.
+",,
+9,issue_comment,21,idan,oauthlib,calebbrown,2012-04-24 23:21:51,"@idangazit, I went over the most recent changes in master and it appears as though the bug this changeset was fixing was fixed by the changes @dgouldin committed earlier.
+",,
+10,issue_comment,21,idan,oauthlib,idan,2012-04-25 07:04:04,"@calebbrown tl;dr is there anything which still requires merging here or shall I close the PR?
+",,
+11,issue_comment,21,idan,oauthlib,calebbrown,2012-04-26 01:09:48,"@idangazit no. the PR can be closed.
+",,
+12,pull_request_commit_comment,21,idan,oauthlib,idan,2012-04-24 14:09:57,"This bit seems to conflict with changes that @dgouldin made—not sure what should take precedence.
+",2a2594986c61115ebe1ec5f1ddeec3812294642b,"(4, '', u'oauthlib/oauth1/rfc5849/signature.py')"
+13,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 10:53:36,Fix some some broken constants and vars in the OAuth1 Server.,d98d067bd807cbe5a1d3067f57397909e387618b,
+14,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 11:38:41,"Extract the signature method for the signature method, not the
+signature.",7118970bb198b1bd34c43e0073da54df3d09d749,
+15,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 11:40:38,urllib.unqoute doesn't take 'safe' as an arg. Add a test and fix.,e569fc16ed65a2bfe50061a58f21579025eff3c3,
+16,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 11:51:58,Fix a bug in oauth1.signature.collect_parameters preventing unescaping.,1f292e6923aa9419d28e3700e22102dffd447886,
+17,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 13:13:27,Pass through the request method to the client when generating signature.,cb1997081a873e59cf4f2e55d19246cb244a2a60,
+18,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 13:14:17,"Make prepare_headers return non-unicode strings.
+
+Because there is an assumption that headers are encoding in ASCII,
+and because all the parameters are passed through utils.escape anyway
+we shouldn't use unicode strings when building the header.
+
+When it was returning unicode strings the base string used to generate
+the signature was being double encoded.",028ff8dced3c63365c580345a145a5e997c312d0,
+19,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 13:17:25,"Update the tests. Strengthen the unescape and escape tests and add more
+server tests.",361d306d11efedaa63b281d2e87b25f54ef91b38,
+20,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 13:51:18,Make sure the OAuth1 client doens't drop headers when signing requests.,f744f6ca1f81e6d48044f7416472f39dbd6e573c,
+21,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 13:54:30,"Add support to OAuth1 for including body in the base string based on
+encoding.
+
+Section 3.4.1.3.1. (Parameter Sources) in rfc5849 indicates that
+multipart bodies are excluded from the base string when generating the
+signature.",ae386c2154f65054427f33419bf17b6feda563d5,
+22,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-18 14:03:50,"Allow empty secrets when generating the OAuth1 HMAC SHA1 Signature.
+
+Previously the secrets would be 'None' and would cause utils.escape
+to throw an except.",eb0858a1627f8d58456020d20c74c75830c67c11,
+23,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-19 02:56:50,"Revert ""Add support to OAuth1 for including body in the base string based on""
+
+This reverts commit ae386c2154f65054427f33419bf17b6feda563d5.
+
+Will be replaced in favour of passing a 'content_type' parameter.",a3ae77f63b46bed830c171d22137cb5eb4ee9c3e,
+24,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-19 03:00:18,"Revert ""Make prepare_headers return non-unicode strings.""
+
+This reverts commit 028ff8dced3c63365c580345a145a5e997c312d0.
+
+Rather than converting to non-unicode strings the desire is to have
+unicode everywhere.
+
+So this is being removed in favour of improving the unicode support elsewhere.
+
+In particular utils.unescape() and signature.collect_parameters()
+need to have their unicode support improved.",a0f10d6455ee285d713dee34e99131cdc6ab0b95,
+25,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-19 03:07:05,"Add comment indicating why we need ""safe='~'"" in the call to urllib.quote.",b373b48ab363fea2195d00f4e2a91cc77315f2a0,
+26,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-19 03:08:02,Add self to AUTHORS,6d56d09ac887130a1cc2c1f0d3cce30fc70b629b,
+27,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-19 03:41:52,"Clean up internal char encoding handling in rfc5849.signature.collect_parameters
+
+ 1. Change `utils.unescape()` to support unescaping both unicode and str
+    types. So if a param is in unicode it can still be escaped.
+ 2. Change `signature.collect_parameters()` so that the call to
+    `unescape()` was no longer restricted to the value being just 'str'.
+
+This solves the problem where the output of
+`parameters.prepare_headers()` being in unicode was feed into
+`signature.collect_parameters()` and failing to be unescaped.",486c338b24454146d42eb5d3501859e76f0ad3d3,
+28,pull_request_commit,21,idan,oauthlib,calebbrown,2012-04-19 03:49:21,Remove the hack in tests that converted the headers from unicode to str.,2a2594986c61115ebe1ec5f1ddeec3812294642b,
+0,issue_title,24,idan,oauthlib,ib-lundgren,2012-04-26 11:09:30,"Idan found an annoying issue with urlparse.parse_qsl when using the strict_parsing flag [1]. The issue boils down to parse_qsl treating a single name string as invalid (ie ""c2"") since it does not include an equals sign. This is not according to the spec for x-www-form-urlencoded.
+
+My idea of strict parsing would be that only properly formatted x-www-form-urlencoded strings were parsed and otherwise a value error was raised, this is not the case with parse_qsl.
+
+Thus, here is urldecode which extends parse_qsl with query string validation. If you like urldecode ill refactor OAuthLib to use it instead of parse_qsl.
+
+1) https://github.com/idangazit/oauthlib/commit/299e019846792ff78ba7a106913765f25e0d198b#commitcomment-1252003
+
+off topic: seem to have thrown in quite a few commits, bit off a serial committer, should i merge those 7 together somehow?
+",start issue,Urldecode 
+1,issue_closed,24,idan,oauthlib,idan,2012-04-29 09:59:36,,closed issue,Urldecode 
+2,pull_request_title,24,idan,oauthlib,ib-lundgren,2012-04-26 11:09:30,"Idan found an annoying issue with urlparse.parse_qsl when using the strict_parsing flag [1]. The issue boils down to parse_qsl treating a single name string as invalid (ie ""c2"") since it does not include an equals sign. This is not according to the spec for x-www-form-urlencoded.
+
+My idea of strict parsing would be that only properly formatted x-www-form-urlencoded strings were parsed and otherwise a value error was raised, this is not the case with parse_qsl.
+
+Thus, here is urldecode which extends parse_qsl with query string validation. If you like urldecode ill refactor OAuthLib to use it instead of parse_qsl.
+
+1) https://github.com/idangazit/oauthlib/commit/299e019846792ff78ba7a106913765f25e0d198b#commitcomment-1252003
+
+off topic: seem to have thrown in quite a few commits, bit off a serial committer, should i merge those 7 together somehow?
+",0b0705bf18b6451e8d1db3804c42f6ace1c3150c,Urldecode 
+3,pull_request_merged,24,idan,oauthlib,idan,2012-04-29 09:59:36,Urldecode ,361fbdea8b999571ca304c9dc77a1fe3092d25f7,Pull request merge from ib-lundgren/oauthlib:urldecode to idan/oauthlib:master
+4,issue_comment,24,idan,oauthlib,idan,2012-04-29 09:59:16,"Looks fantastic -- thank you!
+
+Regarding serial commits: meh. It would be nice to have them squashed, but we'll survive just fine without it :) Squash commits next time.
+",,
+5,pull_request_commit,24,idan,oauthlib,ib-lundgren,2012-04-26 10:53:06,Decode urlencoded properly,e6ea39fef208873100ad225d4b3ec4c225aa4201,
+6,pull_request_commit,24,idan,oauthlib,ib-lundgren,2012-04-26 10:56:55,paraphrase,b43faf7a3deae34c38e60a0af689fb91018c4101,
+7,pull_request_commit,24,idan,oauthlib,ib-lundgren,2012-04-26 11:13:09,Regex fix,3ac2b61395f4e9489aa4ee8cc46ef68ef9ac9082,
+8,pull_request_commit,24,idan,oauthlib,ib-lundgren,2012-04-26 13:34:25,refactor regex,cd8d0ab8b43cb12f4de96767eae694842e6fbceb,
+9,pull_request_commit,24,idan,oauthlib,ib-lundgren,2012-04-26 13:47:02,urldecode,9c2a6dadcf54142c378677ae38d6833e397ae21b,
+10,pull_request_commit,24,idan,oauthlib,ib-lundgren,2012-04-26 13:51:38,"Revert ""urldecode""
+
+This reverts commit 9c2a6dadcf54142c378677ae38d6833e397ae21b.",a07d520defb04f0d35febb55470d331ef451da92,
+11,pull_request_commit,24,idan,oauthlib,ib-lundgren,2012-04-26 13:53:23,Moved import to top,0b0705bf18b6451e8d1db3804c42f6ace1c3150c,

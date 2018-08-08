@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","107","pycqa","astroid","pylint-bot","2015-06-10 00:27:56","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, it will print YES instead of the HTTPConnection class. That's because we can't handle the `from six.moves import ..`, due to the fact that there's no six.moves module.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+from six.moves import http_client
+http_client = six.moves.http_client
+http_client.HTTPConnection #@
+''')
+print(n.infered())
+```
+
+This works fine:
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+import six
+http_client = six.moves.http_client
+http_client.HTTPConnection #@
+''')
+print(n.infered())
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/107
+","start issue","six.moves is not correctly understood when using from imports"
+"issue_closed","107","pycqa","astroid","pylint-bot","2015-12-09 05:53:35","","closed issue","six.moves is not correctly understood when using from imports"
+"issue_comment","107","pycqa","astroid","pylint-bot","2015-06-10 17:09:42","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Improve the inference of six.moves.
+
+This patch improves especially the inferrence when using `from ... import ...`
+syntax. Also, we added a new fail import hook for six.moves, which fixes the
+import-error false positive from pylint. Closes issue #107.
+","",""
+"issue_comment","107","pycqa","astroid","pylint-bot","2015-07-27 15:06:12","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Improve the inference of six.moves.
+
+This patch improves especially the inferrence when using `from ... import ...`
+syntax. Also, we added a new fail import hook for six.moves, which fixes the
+import-error false positive from pylint. Closes issue #107.
+","",""

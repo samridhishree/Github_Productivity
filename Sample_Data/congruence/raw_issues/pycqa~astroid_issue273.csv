@@ -1,0 +1,143 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","273","pycqa","astroid","pylint-bot","2015-11-30 17:30:39","Originally reported by: **BitBucket: [notsqrt](http://bitbucket.org/notsqrt), GitHub: @notsqrt?**
+
+---
+
+Hi !
+
+Just found a regression with astroid 1.4
+
+In https://bitbucket.org/logilab/astroid/commits/9367f99b6d66f63b482f32da5d944e56fb2fdb02#Lastroid/as_string.pyF271, the visit_functiondef method switched from `%` to `.format`, which fails on unicode characters.
+
+With python 2.7:
+
+``` python
+>>> b""%s"" % u""\u2019""
+u'\u2019'
+>>> b""{}"".format(u""\u2019"")
+UnicodeEncodeError: 'ascii' codec can't encode character u'\u2019' in position 0: ordinal not in range(128)
+```
+
+Which means that docstrings in particular can't contain non-ascii characters..
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/273
+","start issue","[regression] UnicodeEncodeError in AsStringVisitor.visit_functiondef"
+"issue_closed","273","pycqa","astroid","pylint-bot","2015-12-09 05:56:09","","closed issue","[regression] UnicodeEncodeError in AsStringVisitor.visit_functiondef"
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-11-30 16:42:42","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Thanks!
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-11-30 17:33:19","_Original comment by_ **BitBucket: [notsqrt](http://bitbucket.org/notsqrt), GitHub: @notsqrt?**:
+
+---
+
+Reverting to `%` is enough. Do you want a pull request ?
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-11-30 17:36:25","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Sure.
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-11-30 19:23:34","_Original comment by_ **BitBucket: [notsqrt](http://bitbucket.org/notsqrt), GitHub: @notsqrt?**:
+
+---
+
+Can't get my head around mercurial ...
+
+Here is a patch:
+
+``` patch
+diff -r 90a41f5f9e8f astroid/as_string.py
+--- a/astroid/as_string.py  Sun Nov 29 22:45:14 2015 +0200
++++ b/astroid/as_string.py  Mon Nov 30 20:22:29 2015 +0100
+@@ -287,13 +287,13 @@
+             trailer = return_annotation + "":""
+         else:
+             trailer = "":""
+-        def_format = ""\n{decorators}def {name}({args}){trailer}{docs}\n{body}""
+-        return def_format.format(decorators=decorate,
+-                                 name=node.name,
+-                                 args=node.args.accept(self),
+-                                 trailer=trailer,
+-                                 docs=docs,
+-                                 body=self._stmt_list(node.body))
++        def_format = ""\n%sdef %s(%s)%s%s\n%s""
++        return def_format % (decorate,
++                             node.name,
++                             node.args.accept(self),
++                             trailer,
++                             docs,
++                             self._stmt_list(node.body))
+
+     def visit_generatorexp(self, node):
+         """"""return an astroid.GeneratorExp node as string""""""
+diff -r 90a41f5f9e8f astroid/tests/unittest_regrtest.py
+--- a/astroid/tests/unittest_regrtest.py    Sun Nov 29 22:45:14 2015 +0200
++++ b/astroid/tests/unittest_regrtest.py    Mon Nov 30 20:22:29 2015 +0100
+@@ -282,6 +282,23 @@
+         ''')
+         self.assertRaises(exceptions.InferenceError, next, node.infer())
+
++    def test_unicode_in_docstring(self):
++        # Crashed for astroid==1.4.1
++        # Test for https://bitbucket.org/logilab/astroid/issues/273/
++
++        # In a regular file, ""coding: utf-8"" would have been used.
++        node = extract_node(u'''
++        from __future__ import unicode_literals
++
++        class MyClass(object):
++            def method(self):
++                ""With unicode : %s ""
++
++        instance = MyClass()
++        ''' % u""\u2019"")
++
++        next(node.value.infer()).as_string()
++
+
+ class Whatever(object):
+     a = property(lambda x: x, lambda x: x)
+```
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-12-01 16:53:05","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Use printf-style formatting in as_string, in order
+ to avoid a potential problem with encodings when using .format.
+
+Closes issue #273.
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-12-01 16:53:05","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Use printf-style formatting in as_string, in order
+ to avoid a potential problem with encodings when using .format.
+
+Closes issue #273.
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-12-01 16:56:06","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Ah, I forgot to credit you, I'm sorry. I added your username in the ChangeLog though (https://bitbucket.org/logilab/astroid/commits/3f46c677c4b8f72372bcc840e6534aa0120a7613), since I can't edit the commits after being pushed.
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-12-01 19:00:29","_Original comment by_ **BitBucket: [notsqrt](http://bitbucket.org/notsqrt), GitHub: @notsqrt?**:
+
+---
+
+Perfect !
+Thanks !
+","",""
+"issue_comment","273","pycqa","astroid","pylint-bot","2015-12-09 03:50:27","_Original comment by_ **BitBucket: [metaist](http://bitbucket.org/metaist), GitHub: @metaist?**:
+
+---
+
+Thank you! This was a major headache today when a dependency (path.py) used a Unicode character in its docs and suddenly pylint was dying.
+","",""

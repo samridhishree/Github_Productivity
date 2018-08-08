@@ -1,0 +1,107 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","97","idan","oauthlib","Arfrever","2013-01-29 21:07:43","oauthlib 0.3.4 passes all tests.
+oauthlib 0.3.5 introduced 1 test error.
+I use Django 1.4.3.
+
+```
+$ nosetests-2.7
+E.............................................................................................................
+======================================================================
+ERROR: Failure: ImportError (Settings cannot be imported, because environment variable DJANGO_SETTINGS_MODULE is undefined.)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib64/python2.7/site-packages/nose/loader.py"", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File ""/usr/lib64/python2.7/site-packages/nose/importer.py"", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File ""/usr/lib64/python2.7/site-packages/nose/importer.py"", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File ""/tmp/oauthlib-0.3.5/oauthlib/oauth2/ext/django/__init__.py"", line 3, in <module>
+    from django.views.decorators.csrf import csrf_exempt
+  File ""/usr/lib64/python2.7/site-packages/django/views/decorators/csrf.py"", line 3, in <module>
+    from django.middleware.csrf import CsrfViewMiddleware, get_token
+  File ""/usr/lib64/python2.7/site-packages/django/middleware/csrf.py"", line 14, in <module>
+    from django.utils.cache import patch_vary_headers
+  File ""/usr/lib64/python2.7/site-packages/django/utils/cache.py"", line 25, in <module>
+    from django.core.cache import get_cache
+  File ""/usr/lib64/python2.7/site-packages/django/core/cache/__init__.py"", line 76, in <module>
+    if not settings.CACHES:
+  File ""/usr/lib64/python2.7/site-packages/django/utils/functional.py"", line 184, in inner
+    self._setup()
+  File ""/usr/lib64/python2.7/site-packages/django/conf/__init__.py"", line 40, in _setup
+    raise ImportError(""Settings cannot be imported, because environment variable %s is undefined."" % ENVIRONMENT_VARIABLE)
+ImportError: Settings cannot be imported, because environment variable DJANGO_SETTINGS_MODULE is undefined.
+
+----------------------------------------------------------------------
+Ran 110 tests in 0.765s
+
+FAILED (errors=1)
+```
+
+Additionally test suite now fails when Django is not installed:
+
+```
+$ nosetests-3.3
+E.............................................................................................................
+======================================================================
+ERROR: Failure: ImportError (No module named 'django')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib64/python3.3/site-packages/nose/failure.py"", line 37, in runTest
+    raise self.exc_class(self.exc_val).with_traceback(self.tb)
+  File ""/usr/lib64/python3.3/site-packages/nose/loader.py"", line 390, in loadTestsFromName
+    addr.filename, addr.module)
+  File ""/usr/lib64/python3.3/site-packages/nose/importer.py"", line 39, in importFromPath
+    return self.importFromDir(dir_path, fqname)
+  File ""/usr/lib64/python3.3/site-packages/nose/importer.py"", line 86, in importFromDir
+    mod = load_module(part_fqname, fh, filename, desc)
+  File ""/usr/lib64/python3.3/imp.py"", line 166, in load_module
+    return load_package(name, filename)
+  File ""/usr/lib64/python3.3/imp.py"", line 140, in load_package
+    return _bootstrap.SourceFileLoader(name, path).load_module(name)
+  File ""<frozen importlib._bootstrap>"", line 586, in _check_name_wrapper
+  File ""<frozen importlib._bootstrap>"", line 1023, in load_module
+  File ""<frozen importlib._bootstrap>"", line 1004, in load_module
+  File ""<frozen importlib._bootstrap>"", line 562, in module_for_loader_wrapper
+  File ""<frozen importlib._bootstrap>"", line 869, in _load_module
+  File ""<frozen importlib._bootstrap>"", line 313, in _call_with_frames_removed
+  File ""/tmp/oauthlib-0.3.5/oauthlib/oauth2/ext/django/__init__.py"", line 2, in <module>
+    from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
+ImportError: No module named 'django'
+
+----------------------------------------------------------------------
+Ran 110 tests in 0.749s
+
+FAILED (errors=1)
+```
+","start issue","oauthlib 0.3.5: Django-related test error"
+"issue_closed","97","idan","oauthlib","ib-lundgren","2013-02-07 22:34:07","","closed issue","oauthlib 0.3.5: Django-related test error"
+"issue_comment","97","idan","oauthlib","ib-lundgren","2013-01-29 22:42:08","Thanks for the report! This error is caused because nosetests tries to inspect everything in the oauthlib directory, including the work in progres django oauth 2 provider decorator. Since there is no plan to add django as a dependency just for the sake of a small decorator I've updated the tox, travis and makefile to adjust for this dilemma by only looking in the tests directory.
+
+tl;dr use nosetests -w tests and see if you still see any errors please
+","",""
+"issue_comment","97","idan","oauthlib","warsaw","2013-01-30 00:07:55","Just hit this same problem as I'm working on updating the Ubuntu package.  I'd previously been using `python setup.py test -vv` but I'll either switch to nosetests directly or see if I can add something to setup.cfg to do as you suggest.  Oh and also, there's no official Python 3 Django yet. :)
+","",""
+"issue_comment","97","idan","oauthlib","warsaw","2013-01-30 00:19:39","Here's the Debian quilt patch I'm going with:
+
+```
+Description: Restrict nose from looking outside the tests directory for tests.
+ This prevents a test failure (and build dependency) on Django.
+Author: Barry Warsaw <barry@ubuntu.com>
+Bug: https://github.com/idan/oauthlib/issues/97
+Forwarded: yes
+
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -3,3 +3,5 @@
+ tag_date = 0
+ tag_svn_revision = 0
+
++[nosetests]
++where=tests
+```
+","",""
+"issue_comment","97","idan","oauthlib","ib-lundgren","2013-01-30 00:30:37","Had a nagging feeling there should be a way to prevent nose from nosing around too much. Turns out I was right, if I move oauthlib/oauth2/ext/django/**init**.py to oauthlib/oauth2/ext/django.py everything is fine. Will sort this out tomorrow as its 01.30 am now...
+","",""
+"issue_comment","97","idan","oauthlib","ib-lundgren","2013-02-07 22:34:06","An updated oauthlib is available on PyPI and should not cause these issues anymore.
+","",""

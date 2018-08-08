@@ -1,0 +1,20 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","374","idan","oauthlib","jvanasco","2015-08-11 18:02:44","I was trying to create a local version of twitter's server for testing purposes.
+
+Unfortunately, oauthlib is more strict that twitter's API (and various python clients).  twitter's API allows the callback_uri as a query string param, and seems to require the verifier as one as well.  oauthlib doesn't like this because it mixes oauth params between contexts (the other data is sent in the header), not querystring.  
+
+it would be great if the validator could be configured to allowed a list of params to appear in the query string.  i know this essentially breaks the spec, but twitter has one of the larger oauth apis, and it would be great if oauthlib could approximate it's behavior.
+","start issue","feature request: allow broken servers"
+"issue_comment","374","idan","oauthlib","thedrow","2015-11-01 14:58:58","You could write the validator yourself and use it for your OAuth client.
+It sounds like a very specific use case. Are there a lot of servers that break the specs?
+","",""
+"issue_comment","374","idan","oauthlib","jvanasco","2015-11-03 19:16:36","It's been a few while since I filed this...
+
+IIRC the issue couldn't be solved through just a Validator; the error is triggered in the core function `BaseEndpoint._create_request`, which calls `BaseEndpoint._get_signature_type_and_params`.
+
+I can only speak from personal experience, but I've found a ""fully standards/spec compliant server"" to be an exception -- not the norm.  I've seen a few of random companies who implement oAuth follow twitter's lead and break this particular part of the spec in an identical way.  
+
+I think the rationale is that people either learn oAuth from twitter (as they're one of the most popular APIs to program against) or try to create a drop-in replacement flow so existing Twitter API scripts can just substitute a different endpoint.
+
+Running offline tests against one of the biggest oAuth implementations might be an edgecase, but it's incredibly useful.  Forking oauthlib to run a purposefully broken server (that mimics Twitter) lets us run tests in a fraction of time and without a net connection.
+","",""

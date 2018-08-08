@@ -1,0 +1,75 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","36","pycqa","astroid","pylint-bot","2014-07-07 21:50:44","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+While testing https://bitbucket.org/logilab/pylint/pull-request/119/emit-an-error-when-a-list-index-is-a-non/, I discovered the following bug in astroid.
+
+```
+#!python
+
+  File ""C:\Python34\lib\site-packages\pylint-1.2.1-py3.4.egg\pylint\checkers\typecheck.py"", line 544, in visit_index
+    parent_type = safe_infer(node.parent.value)
+  File ""C:\Python34\lib\site-packages\pylint-1.2.1-py3.4.egg\pylint\checkers\utils.py"", line 86, in safe_infer
+    value = next(inferit)
+  File ""C:\Python34\lib\site-packages\astroid-1.1.1-py3.4.egg\astroid\bases.py"", line 313, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""C:\Python34\lib\site-packages\astroid-1.1.1-py3.4.egg\astroid\bases.py"", line 115, in _infer_stmts
+    for infered in stmt.infer(context):
+  File ""C:\Python34\lib\site-packages\astroid-1.1.1-py3.4.egg\astroid\bases.py"", line 313, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""C:\Python34\lib\site-packages\astroid-1.1.1-py3.4.egg\astroid\inference.py"", line 358, in infer_ass
+    stmts = list(self.assigned_stmts(context=context))
+  File ""C:\Python34\lib\site-packages\astroid-1.1.1-py3.4.egg\astroid\protocols.py"", line 213, in assend_assigned_stmts
+    return self.parent.assigned_stmts(self, context=context)
+AttributeError: 'Starred' object has no attribute 'assigned_stmts'
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/36
+","start issue","AttributeError: 'Starred' object has no attribute 'assigned_stmts'"
+"issue_closed","36","pycqa","astroid","pylint-bot","2015-12-09 05:52:11","","closed issue","AttributeError: 'Starred' object has no attribute 'assigned_stmts'"
+"issue_comment","36","pycqa","astroid","pylint-bot","2014-07-07 21:32:21","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Reproducing using:
+
+```
+#!python
+
+for (*a, val) in ((1, 2, 3), (4, 5, 6)):
+   a[0]
+```
+","",""
+"issue_comment","36","pycqa","astroid","pylint-bot","2015-01-08 18:52:50","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Issue #69 was marked as a duplicate of this issue.
+","",""
+"issue_comment","36","pycqa","astroid","pylint-bot","2015-01-08 18:54:17","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Another reproducing case:
+
+```
+#!python
+
+def func(sequence):
+    head, *tail = sequence
+    return reversed(tail)
+```
+","",""
+"issue_comment","36","pycqa","astroid","pylint-bot","2015-02-21 16:50:21","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Implement the assigned_stmts operation for Starred nodes.
+
+This was omitted when support for Python 3 was added in astroid.
+It currently works only for Starred nodes in assignments and only
+for the most common of cases, such as `a, *b = (1, 2, 3)`.
+Closes issue #36.
+","",""

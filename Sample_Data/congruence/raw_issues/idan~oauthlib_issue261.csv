@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","261","idan","oauthlib","paolodina","2014-08-30 14:11:08","Trying to access a protected resource via curl I always get 401 Unauthorized. This is the command I use:
+
+```
+curl -H ""Authorization: token 5OFlYYXeQ2nlQxocQGi4XlhINxACIr"" http://127.0.0.1:5000/api/me
+```
+
+I noted that the retrieved token results in a string without the leading character: `OFlYYXeQ2nlQxocQGi4XlhINxACIr`. I've been able to obtain the full token modifying this line in [validate_request](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/tokens.py#L234) method, from
+
+`token = request.headers.get('Authorization')[7:]`
+
+to: `token = request.headers.get('Authorization')[6:]`
+
+Am I doing something wrong with curl or is it something to be fixed in the library?
+","start issue","Can't get the full token from Authorization header"
+"issue_closed","261","idan","oauthlib","paolodina","2014-09-01 15:39:52","","closed issue","Can't get the full token from Authorization header"
+"issue_comment","261","idan","oauthlib","ib-lundgren","2014-09-01 14:02:12","Hey @paolodina,
+
+Only a tiny mistake in your curl, it should say ""Bearer"" where it now says ""token""
+
+```
+>>> len('Bearer')
+6
+>>> len('token')
+5
+```
+","",""
+"issue_comment","261","idan","oauthlib","paolodina","2014-09-01 15:39:38","Thanks for clarification, I got confused by an example found on [github docs](https://developer.github.com/v3/oauth/#use-the-access-token-to-access-the-api), where it's used ""token"" instead of Bearer.
+","",""

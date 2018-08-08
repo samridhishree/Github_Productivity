@@ -1,0 +1,108 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","42","pycqa","astroid","pylint-bot","2014-07-28 00:34:58","Originally reported by: **Anonymous**
+
+---
+
+Since upgrading to astroid 1.2.0 pylint has been failing with an exception.  Minimal test case:
+
+```
+#!python
+
+from nose.tools import raises
+
+@raises(RuntimeError)
+def test():
+    pass
+```
+
+Run with `pylint test.py` gives traceback:
+
+```
+Traceback (most recent call last):
+  File ""/usr/local/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==1.3.0', 'console_scripts', 'pylint')()
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/__init__.py"", line 21, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 991, in __init__
+    linter.check(args)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 585, in check
+    self.check_astroid_module(astroid, walker, rawcheckers, tokencheckers)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/lint.py"", line 662, in check_astroid_module
+    walker.walk(astroid)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 804, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/utils.py"", line 801, in walk
+    cb(astroid)
+  File ""/usr/local/lib/python2.7/dist-packages/pylint/checkers/base.py"", line 279, in visit_function
+    self._check_redefinition(node.is_method() and 'method' or 'function', node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/scoped_nodes.py"", line 670, in is_method
+    return self.type != 'function' and isinstance(self.parent.frame(), Class)
+  File ""/usr/local/lib/python2.7/dist-packages/logilab/common/decorators.py"", line 155, in __get__
+    val = self.wrapped(inst)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/scoped_nodes.py"", line 536, in _function_type
+    _type = _infer_decorator_callchain(node)
+  File ""/usr/local/lib/python2.7/dist-packages/astroid/scoped_nodes.py"", line 501, in _infer_decorator_callchain
+    result = current.infer_call_result(current.parent).next()
+StopIteration
+```
+
+This test case works fine with astroid 1.1.0.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/42
+","start issue","pylint with astroid 1.2.0 fails with `StopIteration` exception"
+"issue_closed","42","pycqa","astroid","pylint-bot","2015-12-09 05:52:18","","closed issue","pylint with astroid 1.2.0 fails with `StopIteration` exception"
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-07-28 05:47:59","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Will be fixed. We'll wait for a week or two for more of these regressions to occur before releasing a bug fix version.
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-07-28 06:19:25","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Fix a crash occurred when inferring decorator call chain. Closes issue #42.
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-07-28 08:57:08","_Original comment by_ **William Manley (BitBucket: [willmanley](http://bitbucket.org/willmanley))**:
+
+---
+
+Great, thanks for the fast response :).
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-08-01 13:37:53","_Original comment by_ **Ciaran Creedon (BitBucket: [ccreedon1](http://bitbucket.org/ccreedon1), GitHub: @ccreedon1?)**:
+
+---
+
+Is there a release date for this?
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-08-01 14:23:21","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+A week or two.
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-08-22 09:04:55","_Original comment by_ **BitBucket: [wooparadog](http://bitbucket.org/wooparadog), GitHub: @wooparadog?**:
+
+---
+
+Hi, when will this be released?
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-08-22 09:32:56","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This weekend.
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-08-24 19:35:26","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+astroid 1.2.1 was released, so the problem should be fixed with the PyPi version.
+","",""
+"issue_comment","42","pycqa","astroid","pylint-bot","2014-08-31 10:55:10","_Original comment by_ **David Röthlisberger (BitBucket: [drothlis](http://bitbucket.org/drothlis), GitHub: @drothlis?)**:
+
+---
+
+Astroid 1.2.1 fixes the issue I reported. Thanks!
+","",""

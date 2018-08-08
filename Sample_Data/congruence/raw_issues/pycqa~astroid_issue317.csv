@@ -1,0 +1,65 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","317","pycqa","astroid","gvanrossum","2016-02-10 23:19:09","PEP 484 uses comments of the form `# type: <expression>. It also has a new feature (added after Python 3.5.1 was released) aimed at supporting function annotations for Python 2.7; this uses`# type: (T1, T2, ...) -> Tr`. Both together mean that a Python 2.7 program using type hints can be somewhat noisy under pylint; the reason is that you must use real imports to import the types (e.g. Any) and special forms (e.g. Union) in the type comments, so pylint thinks those imports are unused. For example:
+
+```
+from typing import Any
+def foo(a):
+    # type: (Any) -> str
+    return str(a)
+```
+
+Now, I can mark that import up with `# pylint: disable=unused-import` but that's verbose, and I think you can do better. If you incorporate the `# type:` comments into the AST then pylint will be able to see them, and the pylint comments won't be needed. (Note that this is not just about imports from the typing module. Other imports may also import classes that are then only used in `# type:` comments.)
+
+I've run into a similar problem with flake8, and I've developed a monkey-patch for that, but at Dropbox we use both flake8 and pylint, and pylint seems to be a lot more complex to hack on than flake8.
+
+(Admittedly, the flake8 monkey-patch is unaware of scopes so gets some corner cases wrong. But it gets the common case right, while greatly reduces our developers' pain as we're beginning to roll out mypy.)
+
+Any advice? FWIW the monkey-patch works by pre-scanning the source code for `# type:` comments and appending some lines to the source code containing the expressions extracted from those before the source code is parsed. If I could find the place where pylint parses the source code I might be able to construct a similar monkey-patch.
+","start issue","Consider parsing '# type:' comments and incorporating them into the AST"
+"issue_comment","317","pycqa","astroid","PCManticore","2016-02-10 23:49:03","This wouldn't be a big problem if we didn't use the builtin ast module internally. In pylint, we solved this by obtaining the tokens from the source file and maintaining the state of the disabled / enabled patterns internally, separated from the AST level. You can take a look at this method (https://github.com/PyCQA/pylint/blob/master/pylint/lint.py#L629) in pylint to see how we're doing stuff right now, it might be extended to support `#type` comments as well, but that information needs to be propagated somehow to pylint.checkers.variables, which is the checker responsible for that unused variable message you're getting. The PyLinter class is accessible from the checkers, so that's a potential place where this information can be stored and later accessed before unused-import gets emitted.
+
+Things are planned to be changed though, since we want to have PEP 484 support someday and moving away from the builtin ast module to a complete syntax tree library instead.
+","",""
+"issue_comment","317","pycqa","astroid","gvanrossum","2016-02-11 00:11:31","Fair enough.
+
+At Dropbox we're actually working on a hacked version of the ast module that can represent `# type` comments, to replace mypy's native parser (which is too slow). Maybe this would be of interest? Our work in progress is at https://github.com/ddfisher/mypy/tree/typed-ast (in the typed_ast subdir).
+
+(Alternatively, the parser in lib2to3 represents all comments in its not-very-abstract syntax tree.)
+","",""
+"issue_comment","317","pycqa","astroid","PCManticore","2016-02-11 10:57:44","Alternatively, there's another approach which you can use without needing to modify pylint or astroid code for now. It relies on modifying the AST in order to inject uses of those variables after they were retrieved by tokenizing the code. Here's an example: https://gist.github.com/PCManticore/eca887488248b7594d37. It doesn't consider scopes, but that's easily doable (just need to figure out in which function to inject them, which can be retrieved from the module AST by looking in the .locals or the .body attributes). This can be enabled with `pylint --load-plugins=name_of_this_file source_code`
+
+typed-ast looks interesting, does it support Python 2 as well? Would you consider making it a public package on PyPi?  Using lib2to3 would also help (we're rebuilding the tree to our API anyway, so it doesn't matter if it's not very abstract syntax tree-ish right now), the only problem is finding time to switch using it.
+","",""
+"issue_comment","317","pycqa","astroid","gvanrossum","2016-02-11 17:30:44","Thanks for the example, that's just what I needed!
+
+We're planning to add support for PY2 to typed-ast too. We're also thinking
+of making it a public package if there's enough interest (and if we succeed
+in making it work). The advantage of lib2to3 would that it is pure Python.
+The disadvantages are speed, and the shape of the AST is pretty quirky.
+
+On Thu, Feb 11, 2016 at 2:57 AM, Claudiu Popa notifications@github.com
+wrote:
+
+> Alternatively, there's another approach which you can use without needing
+> to modify pylint or astroid code for now. It relies on modifying the AST in
+> order to inject uses of those variables after they were retrieved by
+> tokenizing the code. Here's an example:
+> https://gist.github.com/PCManticore/eca887488248b7594d37. It doesn't
+> consider scopes, but that's easily doable (just need to figure out in which
+> function to inject them, which can be retrieved from the module AST by
+> looking in the .locals or the .body attributes).
+> 
+> typed-ast looks interesting, does it support Python 2 as well? Would you
+> consider making it a public package on PyPi? Using lib2to3 would also help
+> (we're rebuilding the tree to our API anyway, so it doesn't matter if it's
+> not very abstract syntax tree-ish right now), the only problem is finding
+> time to switch using it.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/PyCQA/astroid/issues/317#issuecomment-182809570.
+
+## 
+
+--Guido van Rossum (python.org/~guido)
+","",""

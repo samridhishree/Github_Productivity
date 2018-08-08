@@ -1,0 +1,76 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","169","pycqa","astroid","pylint-bot","2015-08-15 18:58:52","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+As an example, take _newstyle_impl in scoped_nodes.py.  It caches its result in self._newstyle and checks that first before returning a value.  If you then create a class 'B' that inherits from another class 'A', call anything that accesses B.newstyle, and change what class 'A' inherits from a new-style class to an old-style class or vice-versa, B.newstyle will return an incorrect value.  The two obvious solutions here are not to cache property values or to make ASTs immutable.
+
+The deeper issue is that there's no real separation between properties that are properties of individual nodes, for instance a class's name, and properties that are properties of entire ASTs, like a class being new-style or old-style.  I don't know what to do about this in general.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/169
+","start issue","Caching property values is unsafe with mutable ASTs"
+"issue_comment","169","pycqa","astroid","pylint-bot","2015-08-15 18:11:56","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+What do you mean when you're referring to inheriting a class B from a class A? newstyle should be immutable already, while _newstyle should be an implementation detail, so that changing it from outside should be prohibited.
+
+Regarding the distinction, it could be explained through the fact that astroid's ASTs aren't pure, they provide more capabilities and they tend to represent the respective Python object. Unfortunately there's nothing we can do right now,
+not without breaking backward compatibility and not without major changes. What could be done is to separate the ASTs into multiple layers: the AST layer, where the classes represents only the nodes, the inference layer, which adds inference support to the nodes and other possible layers (control flow graph etc.) That's definitely interesting to have, but probably not very soon.
+","",""
+"issue_comment","169","pycqa","astroid","pylint-bot","2015-08-16 20:32:34","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Let me be more explicit.  I'm going to represent ASTs with the code that they're compiled from because it's easier to read that way.
+
+``` python
+class A(object): pass
+
+class B: pass
+
+class C(A): pass
+```
+
+I could parse this code into an astroid AST and then access `node.newstyle` for the node representing C.  If I then mutate the resulting AST to:
+
+``` python
+class A(object): pass
+
+class B: pass
+
+class C(B): pass
+```
+
+The cached value of `node.newstyle` for C won't get updated.  I started thinking about this because of wondering what might happen if I used any of astroid's inference functions in Macropy, which by definition is doing AST rewriting, particularly around scope analysis for hygienic macros.
+
+I agree separating the ASTs into levels would require some major changes, I don't think it's a short-term project, I do think it might be worth thinking about in terms of changes we're making now.
+","",""
+"issue_comment","169","pycqa","astroid","pylint-bot","2015-08-17 06:55:34","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yeah, now I understand the exact problem, which happens after the original AST is mutated. It's something that I didn't come across during transforms, but it's definitely possible to happen. A temporary solution would be to not cache the value, but we need a profiling before that, to see what performance regression incurs.
+
+I definitely want to have the separation of the AST levels, probably not for astroid 1.4, which should be due in one-two months at best. I'm imagining something like this:
+- normal ASTs should be located in astroid.ast or astroid.tree or something like that.
+- after converting from Python's ASTs to astroid, augment the resulting tree with inference capabilities, so if that anyone wants to use only the trees which are compatible with Python 2 or 3 and doesn't actually needs inference, he/she can use astroid.tree.
+- I'm not sure on the order of this one: after the trees were augmented, apply the transforms.
+- I'm not sure on this one either, probably because I don't know if this should come after or before the transforms: apply control flow graphs support, after having this implemented.
+- probably the last component will be abstract interpretation over the resulting objects, which at this step, aren't pure ASTs and we can stop calling them like this.
+
+If you have any other idea or improvement, I'm happy to hear it. ;-)
+","",""
+"issue_comment","169","pycqa","astroid","pylint-bot","2015-09-05 14:45:26","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Do you have any profiling data on pylint/astroid to tell us what's slow?  I admit that if I had to guess, properties wouldn't dominate the run time, rather the allocations for the various context objects and the many small function calls (on CPython, that might be better on PyPy).  I admit I call pylint with PyPy on Python 2.7 because pylint is slow, but I don't know how much of the slowness is pylint-specific, and on the whole astroid's code strikes me as being written in a not-particularly-performance-sensitive manner.  If performance is an issue, we should maybe talk about performance optimization in a more global sense.
+","",""
+"issue_comment","169","pycqa","astroid","pylint-bot","2015-09-05 15:09:05","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Basically, the entire inference is slow, since some things are reinferred over and over again, depending from where the inference starts. There is a caching somewhere, but it doesn't work all the time and it's context-specific. Indeed, the performance isn't a big goal for astroid, I'm more interested in having correctness and good Python understanding. If this wasn't the case, astroid could have been written into another faster language, since we're basically writing a form of a Python interpreter here.
+","",""

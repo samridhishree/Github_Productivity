@@ -1,0 +1,262 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,194,idan,oauthlib,ib-lundgren,2013-07-09 16:02:38,"Add a new flag/param to preconfigured servers used to indicate whether new refresh tokens should be issued upon token refresh or not.
+
+See #192 for some more details.
+",start issue,Toggle refresh token reuse on a high level
+1,issue_closed,194,idan,oauthlib,ib-lundgren,2013-09-19 09:16:16,,closed issue,Toggle refresh token reuse on a high level
+0,issue_title,187,idan,oauthlib,Ryan-K,2013-07-03 03:13:03,"There's some issues with the way that realms are handled, but I think this change solves all of the use cases that I'm aware of. I'm not entirely sure what the `(not require_resource_owner and not request.realm)` condition supports and its very possible that this change breaks that.
+
+As of 0.4.2, the only condition that needs to be met is that the supplied realm is permitted by the supplied client_key. `required_realm` is never checked and the realm check could be bypassed entirely by simply not specifying a realm header!
+
+One could even argue that the header isn't necessary as the required realm is specified in the call to `verify_request`, client key is also known via the headers, and there's a `validate_requested_realm` provided that ensures that pair is valid.
+
+It's possible that there's an issue with the way that flask_oauthprovider is interacting with oauthlib, but this seems like a glaring issue. I understand that the Server is being refactored, but until that happens and flask_oauthprovider gets updated, this change will be necessary.
+",start issue,Check to ensure that the requested realm is actually the required realm
+1,issue_closed,187,idan,oauthlib,ib-lundgren,2013-07-09 17:15:24,,closed issue,Check to ensure that the requested realm is actually the required realm
+2,pull_request_title,187,idan,oauthlib,Ryan-K,2013-07-03 03:13:03,"There's some issues with the way that realms are handled, but I think this change solves all of the use cases that I'm aware of. I'm not entirely sure what the `(not require_resource_owner and not request.realm)` condition supports and its very possible that this change breaks that.
+
+As of 0.4.2, the only condition that needs to be met is that the supplied realm is permitted by the supplied client_key. `required_realm` is never checked and the realm check could be bypassed entirely by simply not specifying a realm header!
+
+One could even argue that the header isn't necessary as the required realm is specified in the call to `verify_request`, client key is also known via the headers, and there's a `validate_requested_realm` provided that ensures that pair is valid.
+
+It's possible that there's an issue with the way that flask_oauthprovider is interacting with oauthlib, but this seems like a glaring issue. I understand that the Server is being refactored, but until that happens and flask_oauthprovider gets updated, this change will be necessary.
+",1daed280c95352b50094f706b48db352db9e89a1,Check to ensure that the requested realm is actually the required realm
+3,issue_comment,187,idan,oauthlib,lepture,2013-07-03 03:39:44,"@Ryan-K There is no `Server` now. Check out https://github.com/idan/oauthlib/blob/master/oauthlib/oauth1/rfc5849/__init__.py
+",,
+4,issue_comment,187,idan,oauthlib,Ryan-K,2013-07-03 04:01:00,"@lepture That is correct. As I stated, I'm aware that Server is going away. However, there's dependent projects that depend on the Server class provided by oauthlib. See: https://github.com/ib-lundgren/flask-oauthprovider/blob/master/flask_oauthprovider.py#L12
+
+Sadly, there's no branch for the existing 0.4.2 release for an update, so I had to open this request against master. I haven't looked at the status of the refactor, nor what the impact will be on dependent projects supporting OAuth1, but I suspect that addressing this issue on the 0.4.2 release is a good idea.
+
+In the meantime, I'm using the branch from my repo to resolve the issue.
+",,
+5,issue_comment,187,idan,oauthlib,lepture,2013-07-03 06:23:14,"@Ryan-K I think @ib-lundgren would drop `flask_oauthprovider`, let's move to [flask-oauthlib](https://github.com/lepture/flask-oauthlib), the oauth1 provider is on oauth1 branch now.
+
+OAuth1 provider is not finished yet, there are some bugs in oauthlib now, and it will be ready after the next release of oauthlib.
+",,
+6,issue_comment,187,idan,oauthlib,Ryan-K,2013-07-04 00:04:48,"Yeah, I trust that everyone will do what is best. The truth is that the state of OAuth support in python is really a mixed bag, so it's awesome seeing people making things better.
+
+There's many ways to implement things, and while flask_oauthprovider certainly has some issues, a bunch of people have been making updates recently and the latest versions are relatively stable, which is what's important for my current needs.
+
+Thankfully, this is all pretty modular so its pretty easy to swap out for flask-oauthlib... I'll certainly be watching it!
+
+Thanks again!
+",,
+7,issue_comment,187,idan,oauthlib,ib-lundgren,2013-07-04 00:49:45,"As @lepture mentioned flask-oauthlib is the way forward. @lepture & Co know
+flask very well and are in a much better spot to create a great and easy to
+use extension than I will ever be with flask-oauthprovider. If you can
+transition over please do so :)
+
+I'll look into what I can do with flask-oauthprovider moving forward to not
+break existing implementations when I get back from Canada next week and am
+no longer working solely from an android phone...
+On Jul 4, 2013 1:09 AM, ""Ryan-K"" notifications@github.com wrote:
+
+> Yeah, I trust that everyone will do what is best. The truth is that the
+> state of OAuth support in python is really a mixed bag, so it's awesome
+> seeing people making things better.
+> 
+> There's many ways to implement things, and while flask_oauthprovider
+> certainly has some issues, a bunch of people have been making updates
+> recently and the latest versions are relatively stable, which is what's
+> important for my current needs.
+> 
+> Thankfully, this is all pretty modular so its pretty easy to swap out for
+> flask-oauthlib... I'll certainly be watching it!
+> 
+> Thanks again!
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/187#issuecomment-20452611
+> .
+",,
+8,issue_comment,187,idan,oauthlib,lepture,2013-07-05 03:46:50,"@Ryan-K @ib-lundgren The oauth1 branch is merged to master now. HMAC-SHA1 signature method is working now,  RSA is on TODO list.
+
+This will be released after the release of oauthlib.
+",,
+9,issue_comment,187,idan,oauthlib,ib-lundgren,2013-07-06 18:08:23,"Cool. Will ping you when I roll out 0.5 next week :)
+On Jul 5, 2013 4:47 AM, ""Hsiaoming Yang"" notifications@github.com wrote:
+
+> @Ryan-K https://github.com/Ryan-K @ib-lundgrenhttps://github.com/ib-lundgrenThe oauth1 branch is merged to master now. HMAC-SHA1 signature method is
+> working now, RSA is on TODO list.
+> 
+> This will be released after the release of oauthlib.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/187#issuecomment-20500294
+> .
+",,
+10,issue_comment,187,idan,oauthlib,ib-lundgren,2013-07-09 17:15:24,"@lepture @Ryan-K oauthlib-0.5.0 is pushed now =)
+
+Closing this PR now. Will look into what I can do to not break compatibility on flask-oauthproviders side.
+",,
+11,issue_comment,187,idan,oauthlib,lepture,2013-07-10 10:51:26,"@ib-lundgren @Ryan-K Last issue for 0.3.0: https://github.com/lepture/flask-oauthlib/issues/25
+",,
+12,issue_comment,187,idan,oauthlib,lepture,2013-07-10 11:46:43,"0.3.0 is out.
+",,
+13,issue_comment,187,idan,oauthlib,ib-lundgren,2013-07-10 11:48:57,"Awesome :)
+
+On Wed, Jul 10, 2013 at 12:46 PM, Hsiaoming Yang
+notifications@github.comwrote:
+
+> 0.3.0 is out.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/187#issuecomment-20736738
+> .
+",,
+14,pull_request_commit,187,idan,oauthlib,Ryan-K,2013-07-03 02:36:39,Check to ensure that the requested realm is actually the required realm,1daed280c95352b50094f706b48db352db9e89a1,
+0,issue_title,192,idan,oauthlib,vitriol,2013-07-09 12:13:15,"The definition of the refresh token in the specs is that of a long lasting credential for trusted clients, while at some point it does specify that the implementation MAY (their caps) chose to issue a new refresh token after the use of a refresh_token grant.
+
+Currently from what i see in the lib this is default behavior, and there is no way of keeping the same refresh token. For our needs this does not fit.
+
+Could this behavior be changed in any easy way?
+Thanks
+",start issue,Option to keep same refresh token after a bearer token is refreshed?
+1,issue_closed,192,idan,oauthlib,ib-lundgren,2013-09-19 09:20:04,,closed issue,Option to keep same refresh token after a bearer token is refreshed?
+2,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 12:33:35,"There currently is no flag/parameter to specify refresh token re-use from a high level. This would be nice to have, Ill open an issue to add it later.
+
+In the meantime you could achieve this by passing in a custom token generator, for example
+
+```
+from your_validator import the_validator
+from oauthlib.common import generate_token
+from oauthlib.oauth2 import WebApplicationServer
+
+def keep_refresh_tokens(request, refresh_token=False):
+    return request.refresh_token if refresh_token else generate_token()
+
+server = WebApplicationServer(the_validator, token_generator=keep_refresh_tokens)
+```
+",,
+3,issue_comment,192,idan,oauthlib,vitriol,2013-07-09 12:44:43,"perfect, thanks! 
+please leave a sign so I'm notified when the feature is added
+",,
+4,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 12:48:32,"Will do :)
+
+On Tue, Jul 9, 2013 at 1:44 PM, ciupenhauer notifications@github.comwrote:
+
+> perfect, thanks!
+> please leave a sign so I'm notified when the feature is added
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/192#issuecomment-20671168
+> .
+",,
+5,issue_comment,192,idan,oauthlib,vitriol,2013-07-09 13:18:30,":-D
+just realized the above solution does not work for me because I am using Server instead of WebApplicationServer.
+I could use BackendApplicationServer and LegacyApplicationServer and decide which one gets to process the request, but is there any reason that Server, the all inclusive one, does not support that param?
+",,
+6,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 13:32:04,"Oh, Server should support token_generators too. Its a two line fix. Will
+sort it out tonight.
+
+On Tue, Jul 9, 2013 at 2:18 PM, ciupenhauer notifications@github.comwrote:
+
+> :-D
+> just realized the above solution does not work for me because I am using
+> Server instead of WebApplicationServer, and cannot switch to
+> WebApplicationServer
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/192#issuecomment-20672990
+> .
+",,
+7,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 16:04:22,"@vitriol The token_generator param is now available in Server on master. Will push a new release soon so it should be on Pypi, opened a new issue to track the token reuse feature.
+",,
+8,issue_comment,192,idan,oauthlib,ib-lundgren,2013-09-19 09:20:04,"Added `rotate_refresh_token(request)` to the validator which can be used to determine whether to refresh or not. This will not break your work around with a custom token generator but if you want to get rid of the work around simple use
+
+```
+ def rotate_refresh_token(self, request):
+     return False
+```
+
+to keep the previous refresh token.
+
+http://oauthlib.readthedocs.org/en/latest/oauth2/validator.html#oauthlib.oauth2.RequestValidator.rotate_refresh_token
+",,
+0,issue_title,193,idan,oauthlib,lepture,2013-07-09 15:39:53,"Fix for setup.py, add more information and fix some pep8 errors.
+",start issue,style fix for setup.py. add classifiers
+1,issue_closed,193,idan,oauthlib,ib-lundgren,2013-07-09 17:03:10,,closed issue,style fix for setup.py. add classifiers
+2,pull_request_title,193,idan,oauthlib,lepture,2013-07-09 15:39:53,"Fix for setup.py, add more information and fix some pep8 errors.
+",4502cd9fce0575b02424e58958eb424315acac15,style fix for setup.py. add classifiers
+3,pull_request_merged,193,idan,oauthlib,ib-lundgren,2013-07-09 17:03:09,style fix for setup.py. add classifiers,0053c9938c70e869590f9112cd67061c4cc93deb,Pull request merge from lepture/oauthlib:pypi to idan/oauthlib:master
+4,issue_comment,193,idan,oauthlib,ib-lundgren,2013-07-09 15:47:22,"Cheers @lepture! Looks great =) 
+
+I'm hesitant to change `license='BSD'` however since that was set after problems with a multi line licence when packaging for various rpm based distros due to flawed setup.py bdist_rpm #81. That might not be the case anymore but pretty sure it is...
+",,
+5,issue_comment,193,idan,oauthlib,lepture,2013-07-09 23:46:11,"@ib-lundgren I have no idea on `bdist_rpm` and I never build distros like that. I do upload `sdist` rather than `bdist`.
+",,
+6,pull_request_commit,193,idan,oauthlib,lepture,2013-07-09 15:38:32,style fix for setup.py. add classifiers,4502cd9fce0575b02424e58958eb424315acac15,
+0,issue_title,186,idan,oauthlib,scfarley,2013-06-28 17:18:10,"Catch IndexError when calling parse_keqv_list in
+parse_authorization_header.  parse_keqv_list could raise an IndexError
+exception if the header has an incomplete key=value pair.  Some examples
+of this are a broken OAuth header (e.g., OAuth oauth_nonce=) and client
+code that attempts to use IWA for authentication (i.e., Negotiate
+b2F1dGhsaWI=).  IWA uses Base64 which may end with an ""="".
+
+Add unit tests for bad authorization headers raising ValueError.
+",start issue,Fix parse_authorization_header to catch IndexError
+1,issue_closed,186,idan,oauthlib,ib-lundgren,2013-07-09 17:03:09,,closed issue,Fix parse_authorization_header to catch IndexError
+2,pull_request_title,186,idan,oauthlib,scfarley,2013-06-28 17:18:10,"Catch IndexError when calling parse_keqv_list in
+parse_authorization_header.  parse_keqv_list could raise an IndexError
+exception if the header has an incomplete key=value pair.  Some examples
+of this are a broken OAuth header (e.g., OAuth oauth_nonce=) and client
+code that attempts to use IWA for authentication (i.e., Negotiate
+b2F1dGhsaWI=).  IWA uses Base64 which may end with an ""="".
+
+Add unit tests for bad authorization headers raising ValueError.
+",adb64a0835aeb5e1cbf49952cd25a2510dae70bb,Fix parse_authorization_header to catch IndexError
+3,pull_request_merged,186,idan,oauthlib,ib-lundgren,2013-07-09 17:03:09,Fix parse_authorization_header to catch IndexError,013c427d13af67bf3ab98a4fe90f4b7e308a5e2e,Pull request merge from Unknown:master to idan/oauthlib:master
+4,issue_comment,186,idan,oauthlib,ib-lundgren,2013-06-30 19:16:28,"Thanks for the PR @scfarley. Catching index error for malformed auth header is a great start. I think we can easily improve the resilience even more by returning an empty list if the Authorization header does not start with 'OAuth'. 
+
+```
+if authorization_header.startswith(auth_scheme):
+    authorization_header = authorization_header.replace(auth_scheme, '', 1)
+    items = parse_http_list(authorization_header)
+    try:
+        return list(parse_keqv_list(items).items())
+    except (IndexError, ValueError):
+        raise ValueError('Malformed authorization header')
+else:
+    return []
+```
+",,
+5,issue_comment,186,idan,oauthlib,scfarley,2013-07-01 15:24:54,"I agree with having it return sooner if the header does not start with ""OAuth "".  However, would it better to raise ValueError in this case anyway?  In oauthlib's view, it is malformed even if it is valid for a different scheme.
+",,
+6,issue_comment,186,idan,oauthlib,ib-lundgren,2013-07-02 14:55:37,"Yes ValueError would be better. I thought the spec mentioned only include parameters if OAuth auth header is present, but reading it now it is clear that it is for any auth header so an error is correct. Fancy updating the PR? Cheers
+",,
+7,issue_comment,186,idan,oauthlib,scfarley,2013-07-05 17:28:27,"Since I noticed that the RFC does not require case-sensitivity with the scheme, my fixes include changes for that.
+",,
+8,issue_comment,186,idan,oauthlib,ib-lundgren,2013-07-06 17:56:24,"Looks good :) Please change auth scheme var to lower case and drop the .lower() on comparison. Oh and add a test to make sure it works with with headers shorter than len(auth_scheme) 
+",,
+9,issue_comment,186,idan,oauthlib,scfarley,2013-07-09 18:42:25,"Did you still want me to change the scheme variable to lower case and drop the lower() calls?  One of the tests in the first commit is one character shorter than len(auth_scheme).
+",,
+10,issue_comment,186,idan,oauthlib,ib-lundgren,2013-07-09 20:08:54,"I sorted it out quickly just after merging. Thanks again for the PR :)
+On Jul 9, 2013 7:42 PM, ""Sean Farley"" notifications@github.com wrote:
+
+> Did you still want me to change the scheme variable to lower case and drop
+> the lower() calls? One of the tests in the first commit is one character
+> shorter than len(auth_scheme).
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/186#issuecomment-20696017
+> .
+",,
+11,pull_request_commit,186,idan,oauthlib,sean-dev@farley.org,2013-06-28 14:56:30,"Improve resilience to bad authorization headers
+
+Catch IndexError when calling parse_keqv_list in
+parse_authorization_header.  parse_keqv_list could raise an IndexError
+exception if the header has an incomplete key=value pair.  Some examples
+of this are a broken OAuth header (e.g., OAuth oauth_nonce=) and client
+code that attempts to use IWA for authentication (i.e., Negotiate
+b2F1dGhsaWI=).  IWA uses Base64 which may end with an ""="".
+
+Add unit tests for bad authorization headers raising ValueError.",349d9f398afd58cc993f207c4035b85e2bf86b26,
+12,pull_request_commit,186,idan,oauthlib,sean-dev@farley.org,2013-07-05 16:59:37,"Validate authentication header prior to parsing
+
+Before attempting to parse the authentication header as if it OAuth,
+raise ValueError if the header does not even begin with ""OAuth "".  Also,
+make the check case insensitive in accordance with RFC 5849 section
+3.5.1.
+
+References #186.",a950f0880fa77fd80020769a5ff3f7e52b7a8b89,
+13,pull_request_commit,186,idan,oauthlib,sean-dev@farley.org,2013-07-05 17:20:02,Use case-insensitive removal of scheme from header,adb64a0835aeb5e1cbf49952cd25a2510dae70bb,

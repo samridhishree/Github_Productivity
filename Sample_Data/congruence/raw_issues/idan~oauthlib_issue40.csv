@@ -1,0 +1,62 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","40","idan","oauthlib","marienz","2012-06-03 16:21:11","Two tests fail with pypy:
+
+```
+======================================================================
+FAIL: test_collect_parameters (tests.oauth1.rfc5849.test_signatures.SignatureTests)
+We check against parameters multiple times in case things change after more
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/tmp/oauthlib/tests/oauth1/rfc5849/test_signatures.py"", line 123, in test_collect_parameters
+    self.assertEquals(parameters[6], ('oauth_nonce', '7d8f3e4a'))
+AssertionError: Tuples differ: (u'oauth_token', u'kkk9d7dh3k3... != ('oauth_nonce', '7d8f3e4a')
+
+First differing element 0:
+oauth_token
+oauth_nonce
+
+- (u'oauth_token', u'kkk9d7dh3k39sjv7')
++ ('oauth_nonce', '7d8f3e4a')
+
+======================================================================
+FAIL: test_parse_authorization_header (tests.oauth1.rfc5849.test_utils.UtilsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/tmp/oauthlib/tests/oauth1/rfc5849/test_utils.py"", line 149, in test_parse_authorization_header
+    self.assertEquals(authorization_headers[1][0], u""oauth_nonce"")
+AssertionError: u'oauth_token' != u'oauth_nonce'
+- oauth_token+ oauth_nonce
+
+----------------------------------------------------------------------
+```
+
+In both cases the problem is oauthlib.oauth1.rfc5849.parse_authorization_header returning `d.items()`, and the tests making assumptions about the order those items are in. Dict order is undefined, has changed in cpython before, and is different in pypy. This can be fixed in the tests, for example by sorting the list from parse_authorization_header, but I think it might make sense to sort the list in parse_authorization_header before returning it. I'd be happy to provide (and test) a patch for either approach.
+","start issue","tests depend on dict ordering, causing them to fail under pypy"
+"issue_closed","40","idan","oauthlib","ib-lundgren","2012-06-12 15:37:19","","closed issue","tests depend on dict ordering, causing them to fail under pypy"
+"issue_comment","40","idan","oauthlib","ib-lundgren","2012-06-05 16:08:55","Hey @marienz and thank you for the bug report!
+
+The tests do need quite a bit of work and it's there the fix should go rather than sorting the parsed auth header. One way they could be fixed is by using the [assertItemsEqual](http://docs.python.org/library/unittest.html#unittest.TestCase.assertItemsEqual) method of `unittest.TestCase` rather than the naive comparison done currently. 
+
+For example, in [test_collect_parameters](https://github.com/idangazit/oauthlib/blob/master/tests/oauth1/rfc5849/test_signatures.py#L84) replace 
+
+```
+parameters = collect_parameters(uri_query=self.uri_query)
+self.assertEquals(len(parameters), 6)
+self.assertEquals(parameters[0], ('b5', '=%3D'))
+self.assertEquals(parameters[1], ('a3', 'a'))
+self.assertEquals(parameters[2], ('c@', ''))
+self.assertEquals(parameters[3], ('a2', 'r b'))
+self.assertEquals(parameters[4], ('c2', ''))
+self.assertEquals(parameters[5], ('a3', '2 q'))
+```
+
+with
+
+```
+parameters = collect_parameters(uri_query=self.uri_query)
+correct_parameters = [('b5', '=%3D'), ('a3', 'a'), ('c@', ''),  ('a2', 'r b'), ('c2', ''), ('a3', '2 q')]
+self.assertItemsEqual(parameters, correct_parameters)
+```
+
+If you feel like making these changes where appropriate it would be great! If not thanks for the heads up and I'll sort it out soonish.
+","",""

@@ -1,0 +1,62 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","207","idan","oauthlib","masci","2013-09-16 09:32:19","Scenario: I'm trying to implement a drop-in replacement for Basic Auth with an OAuth2 password flow. 
+
+The problem is that even if client type is set to ""Public"", the client has to be authenticated anyway with _client_id:client_secret_ credentials. I see `create_token_response` mehtod in `ResourceOwnerPasswordCredentialsGrant` class has a boolean parameter `require_authentication` that can be used to bypass authentication, but I don't know how to pass it without deriving some oauthlib's classes.
+","start issue","Client authentication always needed in Resource Owner Password Credentials Grant"
+"issue_closed","207","idan","oauthlib","ib-lundgren","2013-09-18 16:18:14","","closed issue","Client authentication always needed in Resource Owner Password Credentials Grant"
+"issue_comment","207","idan","oauthlib","ib-lundgren","2013-09-16 09:53:22","Think forwarding the parameter from the composite endpoints would be
+reasonable here. Similar to token_generator.
+On Sep 16, 2013 10:32 AM, ""Massimiliano Pippi"" notifications@github.com
+wrote:
+
+> Scenario: I'm trying to implement a drop-in replacement for Basic Auth
+> with an OAuth2 password flow.
+> 
+> The problem is that even if client type is set to ""Public"", the client has
+> to be authenticated anyway with _client_id:client_secret_ credentials. I
+> see create_token_response mehtod in ResourceOwnerPasswordCredentialsGrantclass has a boolean parameter
+> require_authentication that can be used to bypass authentication, but I
+> don't know how to pass it without deriving some oauthlib's classes.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/207
+> .
+","",""
+"issue_comment","207","idan","oauthlib","ib-lundgren","2013-09-16 11:00:47","I can add the parameter forwarding later today but feel free to send a PR if you are already on it :)
+
+Also, if the client still authenticates with a client_id/client_secret, is the client really public? not confidential? Since if you simple want to auth by looking at params in the body rather than in the Auth header that could easily be done in authenticate_client. Maybe I am missing something,,,
+","",""
+"issue_comment","207","idan","oauthlib","masci","2013-09-16 14:33:01","Yep, I could bypass authentication in my own validator at `authenticate_client` method, but at a first glance I found this a bit weird because I thought I shouldn't be arrived at that point (the flow does not require validation after all).
+
+Forwarding the parameter would be ok but I prefer not to have such kind of controls outside the validator (plus it costs me a database query :-).
+
+What about subsituting/integrating the `require_authentication` parameter with a call to something like `is_authentication_required()` method in the validator? Base class could return always true to behave like it does now. The same method could be used in the _Authorization flow_ instead of trying to authenticate with _authenticate_client_ method and falling back to _authenticate_client_id_ and letting third parties to decide what to do when that check fails.
+
+If it makes sense to you I can write a draft
+","",""
+"issue_comment","207","idan","oauthlib","ib-lundgren","2013-09-16 14:38:36","Sounds good to me.
+On Sep 16, 2013 3:33 PM, ""Massimiliano Pippi"" notifications@github.com
+wrote:
+
+> Yep, I could bypass authentication in my own validator at
+> authenticate_client method, but at a first glance I found this a bit
+> weird because I thought I shouldn't be arrived at that point (the flow does
+> not require validation after all).
+> 
+> Forwarding the parameter would be ok but I prefer not to have such kind of
+> controls outside the validator (plus it costs me a database query :-).
+> 
+> What about subsituting/integrating the require_authentication parameter
+> with a call to something like is_authentication_required() method in the
+> validator? Base class could return always true to behave like it does now.
+> The same method could be used in the _Authorization flow_ instead of
+> trying to authenticate with _authenticate_client_ method and falling back
+> to _authenticate_client_id_ and letting third parties to decide what to
+> do when that check fails.
+> 
+> If it makes sense to you I can write a draft
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/207#issuecomment-24514159
+> .
+","",""

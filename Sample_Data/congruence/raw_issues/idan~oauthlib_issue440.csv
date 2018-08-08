@@ -1,0 +1,40 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","440","idan","oauthlib","fabfuel","2016-10-03 08:30:49","In grant type authorization_code, `create_token_response()` and `validate_token_request()` are using `request.client_id`:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L275
+
+But `validate_token_request()` is only checking, if `request.client.client_id` is set:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L413-L416
+
+When e.g. using Flask-Oauthlib, the `request.client_id` is not set in token requests. The client id is only available in `request.client.client_id`.
+
+**That leads to a critical bug, that authorization codes are never invalidated/deleted**, because the passed client_id is always `None` and the query to find the code fails and the invalidation is silently ignored (that's out of scope here, I'll create an issue in its project as well).
+
+This can be fixed by ensuring `request.client_id` like it's already done in e.g. the client_credentials grant:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py#L120
+
+Best
+Fabian
+","start issue","Ensure request.client_id in grant authorization_code"
+"issue_closed","440","idan","oauthlib","thedrow","2016-11-24 15:57:41","","closed issue","Ensure request.client_id in grant authorization_code"
+"pull_request_title","440","idan","oauthlib","fabfuel","2016-10-03 08:30:49","In grant type authorization_code, `create_token_response()` and `validate_token_request()` are using `request.client_id`:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L275
+
+But `validate_token_request()` is only checking, if `request.client.client_id` is set:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L413-L416
+
+When e.g. using Flask-Oauthlib, the `request.client_id` is not set in token requests. The client id is only available in `request.client.client_id`.
+
+**That leads to a critical bug, that authorization codes are never invalidated/deleted**, because the passed client_id is always `None` and the query to find the code fails and the invalidation is silently ignored (that's out of scope here, I'll create an issue in its project as well).
+
+This can be fixed by ensuring `request.client_id` like it's already done in e.g. the client_credentials grant:
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py#L120
+
+Best
+Fabian
+","335d9e8b427163bc64c18cb7ad54e609fcd84b23","Ensure request.client_id in grant authorization_code"
+"pull_request_merged","440","idan","oauthlib","thedrow","2016-11-24 15:57:41","Ensure request.client_id in grant authorization_code","3185028db1711b7c0bc1be1ab3ab9a0a9249469f","Pull request merge from fabfuel/oauthlib:ensure-request-client_id-from-request-client to idan/oauthlib:master"
+"issue_comment","440","idan","oauthlib","fabfuel","2016-10-07 17:22:55","The build failures are not related to my changes. Not the same, but similar issues with Python 3.2 as in #437 
+","",""
+"issue_comment","440","idan","oauthlib","thedrow","2016-11-24 15:57:48","Thanks!","",""
+"pull_request_commit","440","idan","oauthlib","fabfuel","2016-10-03 08:16:14","Ensure request.client_id, getting it optionally from request.client.client_id","83ed13701707b19420773f18a32aa8b688ae7a3c",""
+"pull_request_commit","440","idan","oauthlib","fabfuel","2016-10-03 08:38:38","Ensure request.client_id after checking request.client.client_id","335d9e8b427163bc64c18cb7ad54e609fcd84b23",""

@@ -1,0 +1,55 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","19","pycqa","astroid","pylint-bot","2014-02-28 20:42:45","Originally reported by: **David Shea (BitBucket: [davidshea](http://bitbucket.org/davidshea), GitHub: @davidshea?)**
+
+---
+
+For example, NetworkManager contains a class 80211ApFlags. Running pylint-1.1 on a file that contains
+
+from gi.repository import NetworkManager
+
+results in
+
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 284, in getattr
+    return [self.import_module(name, relative_only=True)]
+  File ""/usr/lib/python2.7/site-packages/astroid/brain/py2gi.py"", line 139, in _new_import_module
+    astng = AstroidBuilder(MANAGER).string_build(modcode, modname)
+  File ""/usr/lib/python2.7/site-packages/astroid/builder.py"", line 133, in string_build
+    module = self._data_build(data, modname, path)
+  File ""/usr/lib/python2.7/site-packages/astroid/builder.py"", line 146, in _data_build
+    node = parse(data + '\n')
+  File ""/usr/lib/python2.7/site-packages/astroid/builder.py"", line 39, in parse
+    return compile(string, ""<string>"", 'exec', PyCF_ONLY_AST)
+  File ""<string>"", line 364
+    class 80211ApFlags(object):
+              ^
+SyntaxError: invalid syntax
+
+The problem being that astroid attempts to generate python stubs for gi modules without checking whether the names are valid in python. Attaching a patch that fixes the problem by skipping such identifiers.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/19
+","start issue","SyntaxError when examining gi modules containing identifiers not legal in python"
+"issue_closed","19","pycqa","astroid","pylint-bot","2015-12-09 05:51:52","","closed issue","SyntaxError when examining gi modules containing identifiers not legal in python"
+"issue_comment","19","pycqa","astroid","pylint-bot","2014-03-22 13:08:55","_Original comment by_ **Cole Robinson (BitBucket: [crobinso](http://bitbucket.org/crobinso), GitHub: @crobinso?)**:
+
+---
+
+This patch should also remove the 'not name' and Iconv comment above, since it should catch that case as well.
+","",""
+"issue_comment","19","pycqa","astroid","pylint-bot","2014-03-31 22:03:01","_Original comment by_ **Cole Robinson (BitBucket: [crobinso](http://bitbucket.org/crobinso), GitHub: @crobinso?)**:
+
+---
+
+David, I added your patch to a pull request against pylint-brain:
+
+https://bitbucket.org/logilab/pylint-brain/pull-request/15/brain-couple-gobject-introspection-fixes/diff
+
+However I can't close this bug...
+","",""
+"issue_comment","19","pycqa","astroid","pylint-bot","2014-04-08 10:11:23","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+backport gi related changes from pylint-brain, closes #19 and #22
+","",""

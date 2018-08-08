@@ -1,0 +1,22 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","296","idan","oauthlib","JamSquad","2014-11-14 17:28:38","Some providers (Specifically Mailchimp) don't supply a token_type or a scope with their OAuth authentication flow.
+
+This causes a TypeError ('NoneType' object is not iterable) when trying to init the OAuth2Token class.  (Because it is wrapped in a set()).
+
+Possible solution is to try, except TypeError around this call in tokens.py line 30
+
+Or possibly I'm missing something entirely.
+","start issue","utils.scope_to_list TypeError if scope is None"
+"issue_closed","296","idan","oauthlib","ib-lundgren","2015-05-23 17:38:26","","closed issue","utils.scope_to_list TypeError if scope is None"
+"issue_comment","296","idan","oauthlib","mblayman","2014-12-17 04:45:28","I experiencing this too. When I look at this problem, I'm trying to figure out why `scope_to_list` is returning `None` when scope is `None`. https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/utils.py#L41-L42
+
+Wouldn't it be better to return an empty list?
+","",""
+"issue_comment","296","idan","oauthlib","mblayman","2014-12-17 04:56:05","@asteinlein `git blame` indicates that you wrote the code that make `scope_to_list` return `None` when the scope is `None`. Do you recall why you did that instead of returning an empty list?
+","",""
+"issue_comment","296","idan","oauthlib","flamusdiu","2015-01-20 03:10:18","However, this doesn't fix #306 for me. If a Oauth2 server doesn't return the a scope on the response, then it assumed it changed. The Oauth2 may not return a scope in the response if it didn't change which scope was requested. More info on #306 as well. 
+
+I am not sure why but another person I know using Google + flask-oauthlib doesn't get this error but I can create it 100% of the time.
+","",""
+"issue_comment","296","idan","oauthlib","mrwalker","2015-02-02 04:53:44","I worked around this issue for MailChimp in particular using a compliance fix at the OAuth client level in requests-oauthlib.  If you're stuck and don't have the luxury of waiting on a release, you can host the compliance fixes in your own code.
+","",""

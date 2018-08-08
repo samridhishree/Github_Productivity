@@ -1,0 +1,140 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","393","pycqa","astroid","cdunklau","2017-01-29 19:00:52","Looks like astroid doesn't yet support PEP 526 variable type hints, new in Python 3.6
+
+### Steps to reproduce
+
+1. Put the code `myvar: int` in a file.
+2. Run pylint against that file
+
+### Current behavior
+
+Pylint crashes with this traceback. Appears to point at the new node introduced in Python 3.6's AST: `AnnAssign(expr target, expr annotation, expr? value, int simple)`
+
+```
+Traceback (most recent call last):
+  File ""/Users/cdunklau/Development/pngdoctor/.tox/style/lib/python3.6/site-packages/pylint/lint.py"", line 927, in get_ast
+    return MANAGER.ast_from_file(filepath, modname, source=True)
+  File ""/Users/cdunklau/Development/pngdoctor/.tox/style/lib/python3.6/site-packages/astroid/manager.py"", line 86, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/Users/cdunklau/Development/pngdoctor/.tox/style/lib/python3.6/site-packages/astroid/builder.py"", line 141, in file_build
+    module = self._data_build(data, modname, path)
+  File ""/Users/cdunklau/Development/pngdoctor/.tox/style/lib/python3.6/site-packages/astroid/builder.py"", line 185, in _data_build
+    module = builder.visit_module(node, modname, node_file, package)
+  File ""/Users/cdunklau/Development/pngdoctor/.tox/style/lib/python3.6/site-packages/astroid/rebuilder.py"", line 154, in visit_module
+    newnode.body = [self.visit(child, newnode) for child in node.body]
+  File ""/Users/cdunklau/Development/pngdoctor/.tox/style/lib/python3.6/site-packages/astroid/rebuilder.py"", line 154, in <listcomp>
+    newnode.body = [self.visit(child, newnode) for child in node.body]
+  File ""/Users/cdunklau/Development/pngdoctor/.tox/style/lib/python3.6/site-packages/astroid/rebuilder.py"", line 165, in visit
+    visit_method = getattr(self, visit_name)
+AttributeError: 'TreeRebuilder3k' object has no attribute 'visit_annassign'
+************* Module pylint_breaks_on_AnnAssign
+F:  1, 0: <class 'AttributeError'>: 'TreeRebuilder3k' object has no attribute 'visit_annassign' (astroid-error)
+```
+
+### Expected behavior
+
+No crash, perhaps a warning about this not being supported yet?
+
+
+### Pylint and Astroid Versions
+- pylint 1.6.5,
+- astroid 1.4.9
+- Python 3.6.0 (default, Jan  9 2017, 19:38:03)
+","start issue","Crash when trying to interpret PEP 526 variable type hints"
+"issue_closed","393","pycqa","astroid","PCManticore","2017-02-09 08:58:46","","closed issue","Crash when trying to interpret PEP 526 variable type hints"
+"issue_comment","393","pycqa","astroid","rr-","2017-01-29 19:30:41","""I have no idea what I'm doing"" kind of patch:
+
+```diff
+diff --git a/astroid/node_classes.py b/astroid/node_classes.py
+index fb92849..3d5c4ec 100644
+--- a/astroid/node_classes.py
++++ b/astroid/node_classes.py
+@@ -1051,6 +1051,19 @@ class Assign(mixins.AssignTypeMixin, Statement):
+         self.value = value
+ 
+ 
++class AnnAssign(mixins.AssignTypeMixin, Statement):
++    """"""class representing an AnnAssign node""""""
++    _astroid_fields = ('targets', 'value', 'annotation',)
++    targets = None
++    value = None
++    annotation = None
++
++    def postinit(self, targets=None, value=None, annotation=None):
++        self.targets = targets
++        self.value = value
++        self.annotation = annotation
++
++
+ class AugAssign(mixins.AssignTypeMixin, Statement):
+     """"""class representing an AugAssign node""""""
+     _astroid_fields = ('target', 'value')
+diff --git a/astroid/nodes.py b/astroid/nodes.py
+index 3397294..861b0a6 100644
+--- a/astroid/nodes.py
++++ b/astroid/nodes.py
+@@ -28,7 +28,7 @@ on ImportFrom and Import :
+ # pylint: disable=unused-import,redefined-builtin
+ 
+ from astroid.node_classes import (
+-    Arguments, AssignAttr, Assert, Assign,
++    Arguments, AssignAttr, Assert, Assign, AnnAssign,
+     AssignName, AugAssign, Repr, BinOp, BoolOp, Break, Call, Compare,
+     Comprehension, Const, Continue, Decorators, DelAttr, DelName, Delete,
+     Dict, Expr, Ellipsis, EmptyNode, ExceptHandler, Exec, ExtSlice, For,
+@@ -56,7 +56,7 @@ from astroid.scoped_nodes import (
+ ALL_NODE_CLASSES = (
+     AsyncFunctionDef, AsyncFor, AsyncWith, Await,
+ 
+-    Arguments, AssignAttr, Assert, Assign, AssignName, AugAssign,
++    Arguments, AssignAttr, Assert, Assign, AnnAssign, AssignName, AugAssign,
+     Repr, BinOp, BoolOp, Break,
+     Call, ClassDef, Compare, Comprehension, Const, Continue,
+     Decorators, DelAttr, DelName, Delete,
+diff --git a/astroid/protocols.py b/astroid/protocols.py
+index 4058802..a6e6a97 100644
+--- a/astroid/protocols.py
++++ b/astroid/protocols.py
+@@ -357,6 +357,7 @@ def assign_assigned_stmts(self, node=None, context=None, asspath=None):
+                              assign_path=asspath, context=context))
+ 
+ nodes.Assign.assigned_stmts = assign_assigned_stmts
++nodes.AnnAssign.assigned_stmts = assign_assigned_stmts
+ nodes.AugAssign.assigned_stmts = assign_assigned_stmts
+ 
+ 
+diff --git a/astroid/rebuilder.py b/astroid/rebuilder.py
+index 4b3506b..f25c794 100644
+--- a/astroid/rebuilder.py
++++ b/astroid/rebuilder.py
+@@ -214,6 +214,17 @@ class TreeRebuilder(object):
+                          self.visit(node.value, newnode))
+         return newnode
+ 
++    def visit_annassign(self, node, parent):
++        """"""visit a AnnAssign node by returning a fresh instance of it""""""
++        newnode = nodes.AnnAssign(node.lineno, node.col_offset, parent)
++        annotation = None
++        if node.annotation:
++            annotation = self.visit(node.annotation, newnode)
++        newnode.postinit([self.visit(node.target, newnode)],
++                         self.visit(node.value, newnode),
++                         annotation)
++        return newnode
++
+     def visit_assignname(self, node, parent, node_name=None):
+         '''visit a node and return a AssignName node'''
+         newnode = nodes.AssignName(node_name, getattr(node, 'lineno', None),
+```
+
+This seems to work and does not complain about unused imports in scenarios like this:
+
+```python
+from typing import Optional
+test: Optional[str] = None
+```
+
+(where the imported `Optional` is used only in variable annotations)","",""
+"issue_comment","393","pycqa","astroid","rogalski","2017-01-30 08:39:49","@rr- do you mind creating a ""proper"" pull request? At least we can start with code review and making change ready for merge.","",""
+"issue_comment","393","pycqa","astroid","rr-","2017-01-30 08:40:57","Yes sir","",""
+"issue_comment","393","pycqa","astroid","PCManticore","2017-02-09 08:58:46","Thanks to @rr-, this now works in master branch.","",""

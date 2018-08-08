@@ -1,0 +1,62 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","53","pycqa","astroid","pylint-bot","2014-11-04 11:19:59","Originally reported by: **Gilles Dartiguelongue (BitBucket: [EvaSDK](http://bitbucket.org/EvaSDK), GitHub: @EvaSDK?)**
+
+---
+
+I am currently trying to work with changeset:   1273:4b36c6903a05 and python3.3 is not easily avaible to me right now but I do have 3.4 installed but:
+
+```
+$ tox
+GLOB sdist-make: /Users/gilles/devel/astroid-evasdk/setup.py
+py27 inst-nodeps: /Users/gilles/devel/astroid-evasdk/.tox/dist/astroid-1.2.1.zip
+py27 runtests: PYTHONHASHSEED='1125974306'
+py27 runtests: commands[0] | python -Wi -m unittest discover -p unittest*.py
+...........s.................................................................................................................s.....................................................................................................s.............s..............................s.s.s.s.s.s.s.s.s.s.s.s.s............s.s.s..s.................................................................
+----------------------------------------------------------------------
+Ran 361 tests in 1.584s
+
+OK (skipped=21)
+py34 recreate: /Users/gilles/devel/astroid-evasdk/.tox/py34
+py34 installdeps: logilab-common
+py34 inst: /Users/gilles/devel/astroid-evasdk/.tox/dist/astroid-1.2.1.zip
+py34 runtests: PYTHONHASHSEED='1125974306'
+py34 runtests: commands[0] | python -Wi -m unittest discover -p unittest*.py
+.s..........s..s......................s..s..............................................F......................s..............s.........................s.........................................................................s...s...........s............................s.............................s.s..s....................s..s.....s.s..s.s.................s.................
+======================================================================
+FAIL: test_builtin_help (unittest_inference.InferenceTC)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/Users/gilles/devel/astroid-evasdk/.tox/py34/lib/python3.4/site-packages/astroid/test/unittest_inference.py"", line 711, in test_builtin_help
+    'Instance of %s._Helper' % SITE)
+AssertionError: 'Instance of site._Helper' != 'Instance of _sitebuiltins._Helper'
+- Instance of site._Helper
++ Instance of _sitebuiltins._Helper
+?             +    ++++++++
+
+
+----------------------------------------------------------------------
+Ran 357 tests in 3.349s
+
+FAILED (failures=1, skipped=22)
+ERROR: InvocationError: '/Users/gilles/devel/astroid-evasdk/.tox/py34/bin/python -Wi -m unittest discover -p unittest*.py'
+______________________________________________________________________________________ summary ______________________________________________________________________________________
+  py27: commands succeeded
+ERROR:   py34: commands failed
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/53
+","start issue","unittests fail with python3.4"
+"issue_closed","53","pycqa","astroid","pylint-bot","2015-12-09 05:52:31","","closed issue","unittests fail with python3.4"
+"issue_comment","53","pycqa","astroid","pylint-bot","2014-11-04 10:43:12","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+It seems that virtualenv uses a completely different site.py than the one from stdlib, which leads to this result. In Python 3.4, `help` is defined in _sitebuiltins, which is imported in site.py, but in virtualenv's version of site.py, there's no _sitebuiltins.
+","",""
+"issue_comment","53","pycqa","astroid","pylint-bot","2014-11-04 10:55:18","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Check only the name of `help` function. Closes issue #53.
+","",""

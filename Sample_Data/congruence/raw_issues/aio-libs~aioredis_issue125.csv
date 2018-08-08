@@ -1,0 +1,56 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","125","aio-libs","aioredis","shicky","2016-05-13 06:13:21","## What these changes does?
+- Add Queue class that wraps around LPOP, BLPOP, RPUSH, LLEN
+## How to test your changes?
+
+[https://github.com/shicky/aioredis/blob/redis_queue/tests/queue_test.py](https://github.com/shicky/aioredis/blob/redis_queue/tests/queue_test.py)
+## Related issue number
+#123
+## Checklist
+- [ O ] Code is written and well
+- [ O ] Tests for the changes are provided
+- [ X ] Documentation reflects the changes
+","start issue","redis queue implementation (LPOP, BLPOP, RPUSH, LLEN)"
+"issue_closed","125","aio-libs","aioredis","popravich","2016-06-02 07:58:57","","closed issue","redis queue implementation (LPOP, BLPOP, RPUSH, LLEN)"
+"pull_request_title","125","aio-libs","aioredis","shicky","2016-05-13 06:13:21","## What these changes does?
+- Add Queue class that wraps around LPOP, BLPOP, RPUSH, LLEN
+## How to test your changes?
+
+[https://github.com/shicky/aioredis/blob/redis_queue/tests/queue_test.py](https://github.com/shicky/aioredis/blob/redis_queue/tests/queue_test.py)
+## Related issue number
+#123
+## Checklist
+- [ O ] Code is written and well
+- [ O ] Tests for the changes are provided
+- [ X ] Documentation reflects the changes
+","f61321eaff770e1520c317df750750eed3307bda","redis queue implementation (LPOP, BLPOP, RPUSH, LLEN)"
+"issue_comment","125","aio-libs","aioredis","coveralls","2016-05-13 07:58:06","[![Coverage Status](https://coveralls.io/builds/6165855/badge)](https://coveralls.io/builds/6165855)
+
+Coverage decreased (-0.2%) to 92.272% when pulling **f61321eaff770e1520c317df750750eed3307bda on shicky:redis_queue** into **3d97b83019b122288d7d2f561993ca6f907c6a47 on aio-libs:master**.
+","",""
+"pull_request_commit_comment","125","aio-libs","aioredis","popravich","2016-05-30 10:44:40","`put()` and `put_nowait()` methods are the main problem:
+the main idea is ok -- ""check if list is not full and then add one item"",
+but implementation would not work this way as between list size check and data append command
+list may change in redis, consider this timeline:
+
+```
+coro1: -- llen() ---------- rpush(data) ----->
+coro2: ---------- llen() --------------- rpush(data) --->
+```
+
+So the best way to implement constrained queue would be to use Lua scripting.
+Redis executes lua-script as single command so you can check the len and add (or not add) data
+to list atomically.
+","f61321eaff770e1520c317df750750eed3307bda","(82, '', u'aioredis/util.py')"
+"pull_request_commit_comment","125","aio-libs","aioredis","popravich","2016-05-30 10:49:40","Having both `put` and `put_nowait` mean that first one must block until data is actually added to list (when it has space), however it wont happen, there should be a loop wating until list `is not full()`, then adding data to it and returning True.
+","f61321eaff770e1520c317df750750eed3307bda","(82, '', u'aioredis/util.py')"
+"pull_request_commit_comment","125","aio-libs","aioredis","popravich","2016-05-30 10:55:13","Having such default value for key is **totally wrong**.
+If someone using this Queue will not specify `key` parameter he will end up working with different queues every time application restarts.
+key argument must not have default value.
+","f61321eaff770e1520c317df750750eed3307bda","(31, '', u'aioredis/util.py')"
+"pull_request_commit_comment","125","aio-libs","aioredis","shicky","2016-06-07 00:34:34","Thank you for the feedback.
+Are you suggesting that it would be better to use lua script to implement this and wrap it with python using lupa?
+","f61321eaff770e1520c317df750750eed3307bda","(82, '', u'aioredis/util.py')"
+"pull_request_commit_comment","125","aio-libs","aioredis","popravich","2016-06-07 06:51:40","No, I mean using redis lua scripting -- http://redis.io/commands/eval
+","f61321eaff770e1520c317df750750eed3307bda","(82, '', u'aioredis/util.py')"
+"pull_request_commit","125","aio-libs","aioredis","shicky","2016-05-13 05:32:23","redis queue implementation + tests","f61321eaff770e1520c317df750750eed3307bda",""

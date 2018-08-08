@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","26","pycqa","astroid","pylint-bot","2014-04-23 16:06:49","Originally reported by: **David Shea (BitBucket: [davidshea](http://bitbucket.org/davidshea), GitHub: @davidshea?)**
+
+---
+
+I don't really know how, but the TransactionSet class in rpm's python library has itself in the bases list, or something that looks like it:
+
+> > > import rpm
+> > > print(rpm.TransactionSet.**bases**)
+> > > (<type 'rpm.ts'>,)
+> > > print(rpm.ts)
+> > > <class 'rpm.transaction.TransactionSet'>
+
+This causes _is_metaclass to get stuck recursing on the same class. Encountered when running pylint on code such as the following:
+
+import rpm
+ts = rpm.TransactionSet(""/"")
+print ts.dbMatch(""basenames"", ""/"")
+
+I don't know whether astroid's assessment of the class and its bases is correct, but on the assumption that it is I've attached a patch to avoid the infinite recursion.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/26
+","start issue","astroid gets stuck on classes which have themselves as a base"
+"issue_closed","26","pycqa","astroid","pylint-bot","2015-12-09 05:51:59","","closed issue","astroid gets stuck on classes which have themselves as a base"
+"issue_comment","26","pycqa","astroid","pylint-bot","2014-04-23 14:25:39","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Thanks for the report. The fix was already applied in 7a9a377. Could you check that it fixes your issue? Another user reported this problem and his situation was similar to the one reported by you, but he was doing some ugly monkey patching which confused astroid.
+","",""
+"issue_comment","26","pycqa","astroid","pylint-bot","2014-04-23 14:35:08","_Original comment by_ **David Shea (BitBucket: [davidshea](http://bitbucket.org/davidshea), GitHub: @davidshea?)**:
+
+---
+
+Oh cool, thanks. I ended up making the same fix, so yeah, it solves the problem :-)
+","",""
+"issue_comment","26","pycqa","astroid","pylint-bot","2014-04-23 14:35:48","_Original comment by_ **David Shea (BitBucket: [davidshea](http://bitbucket.org/davidshea), GitHub: @davidshea?)**:
+
+---
+
+Duplicate of #25.
+","",""

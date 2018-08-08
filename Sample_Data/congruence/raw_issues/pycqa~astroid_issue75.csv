@@ -1,0 +1,81 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","75","pycqa","astroid","pylint-bot","2015-01-18 11:47:48","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+The following stackoverflow post http://stackoverflow.com/questions/21545409/pylint-reports-maybe-no-member-error-for-data-loaded-via-simplejson describes a false positive
+related to simplejson and json. It's more of an inference issue, so this should be fixed in astroid, rather than pylint.
+
+```
+#!python
+
+import astroid.builder
+builder = astroid.builder.AstroidBuilder()
+ast = builder.string_build(""""""
+import simplejson
+import json
+x = json.loads('""test""')
+y = simplejson.loads('""test""')
+"""""")
+
+json_assignment, simplejson_assignment = list(ast.get_children())[2:]
+print(""json:"", list(json_assignment.get_children())[-1].infered())
+print(""simplejson:"", list(simplejson_assignment.get_children())[-1].infered())
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/75
+","start issue","Improve astroid's inference for simplejson & json"
+"issue_comment","75","pycqa","astroid","pylint-bot","2015-10-06 14:53:17","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+I think astroid got more clever about the `json` module, which means I get the same false-positive with the astroid tip with the `json` module.
+
+With this code snippet:
+
+``` python
+import json
+
+j = json.loads('{""foo"": ""bar""}')
+j.get('foo')
+```
+
+I get this with pylint and astroid from the tip:
+
+```
+E:  4, 0: Instance of 'bool' has no 'get' member (no-member)
+```
+
+but no errors with the last releases.
+
+When looking at what astroid infers:
+
+``` python
+from astroid.test_utils import extract_node
+n = extract_node('''
+import json
+
+j = json.loads('{""foo"": ""bar""}')
+j  #@
+j.get('foo')
+''')
+print(n.infered())
+```
+
+I get `[YES]` with the release and `[YES, <Const.NoneType l.42 at ...>, <Const.bool l.44 at ...>, <Const.bool l.46 at ...>]` with the tip.
+
+Maybe astroid should just assume something like `[None, dict, list, string, int, float]` for the json/simplejson load calls?
+","",""
+"issue_comment","75","pycqa","astroid","pylint-bot","2015-10-06 17:37:02","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yes, one solution is to not emit no-member if there are more than one member inferred, because there's no way to reason about that.
+","",""
+"issue_comment","75","pycqa","astroid","pylint-bot","2015-10-07 04:45:16","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+In such case It would make sense to force inference to return Yes/Any
+","",""

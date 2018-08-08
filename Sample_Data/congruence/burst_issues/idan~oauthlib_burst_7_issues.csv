@@ -1,0 +1,175 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,42,idan,oauthlib,ib-lundgren,2012-06-12 17:43:05,"Going back to using PyCrypto rather than python-rsa for RSA signatures as agreed upon in email discussions. PyCrypto will not be installed by default and users who want to sign requests using RSA will need to install it themselves. 
+
+Added some lines about installing PyCrypto with the links supplied by @piotr-dobrogost (#34) to the client documentation.
+
+Using restricted.io to avoid timeouts on travis builds (#26) as shown by @dstufft in #33. 
+
+ps. sending this as a pull request so travis can scold me before merging =)
+",start issue,Soft dependency on PyCrypto
+1,issue_closed,42,idan,oauthlib,ib-lundgren,2012-06-12 20:25:42,,closed issue,Soft dependency on PyCrypto
+2,pull_request_title,42,idan,oauthlib,ib-lundgren,2012-06-12 17:43:05,"Going back to using PyCrypto rather than python-rsa for RSA signatures as agreed upon in email discussions. PyCrypto will not be installed by default and users who want to sign requests using RSA will need to install it themselves. 
+
+Added some lines about installing PyCrypto with the links supplied by @piotr-dobrogost (#34) to the client documentation.
+
+Using restricted.io to avoid timeouts on travis builds (#26) as shown by @dstufft in #33. 
+
+ps. sending this as a pull request so travis can scold me before merging =)
+",a582d1ca3e66a1ea63b1be8e8102d9f891cb0737,Soft dependency on PyCrypto
+3,pull_request_merged,42,idan,oauthlib,ib-lundgren,2012-06-12 20:25:42,Soft dependency on PyCrypto,26f173e537e86579a7b4735a895957a2fb73eaa0,Pull request merge from ib-lundgren/oauthlib:soft_pycrypto to idan/oauthlib:master
+4,issue_comment,42,idan,oauthlib,dstufft,2012-06-12 21:17:23,"Awesome :)
+
+Just a note that pip supports extras now. So if you wanted to make it so that setup.py is still the one true source of everything that get's installed, you could just do:
+
+```
+pip install -i https://restricted.crate.io/ ""file://$PWD#egg=oauthlib[test]""
+```
+
+Which is basically the same as pip install ., but it also installs the test extra_requires.
+",,
+5,pull_request_commit,42,idan,oauthlib,ib-lundgren,2012-06-12 17:11:38,Soft dependency on PyCrypto,a0ba685a3e6ded2b7542b292996e04082de51101,
+6,pull_request_commit,42,idan,oauthlib,ib-lundgren,2012-06-12 17:33:24,Links for windows rsa users,a582d1ca3e66a1ea63b1be8e8102d9f891cb0737,
+0,issue_title,40,idan,oauthlib,marienz,2012-06-03 16:21:11,"Two tests fail with pypy:
+
+```
+======================================================================
+FAIL: test_collect_parameters (tests.oauth1.rfc5849.test_signatures.SignatureTests)
+We check against parameters multiple times in case things change after more
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/tmp/oauthlib/tests/oauth1/rfc5849/test_signatures.py"", line 123, in test_collect_parameters
+    self.assertEquals(parameters[6], ('oauth_nonce', '7d8f3e4a'))
+AssertionError: Tuples differ: (u'oauth_token', u'kkk9d7dh3k3... != ('oauth_nonce', '7d8f3e4a')
+
+First differing element 0:
+oauth_token
+oauth_nonce
+
+- (u'oauth_token', u'kkk9d7dh3k39sjv7')
++ ('oauth_nonce', '7d8f3e4a')
+
+======================================================================
+FAIL: test_parse_authorization_header (tests.oauth1.rfc5849.test_utils.UtilsTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/tmp/oauthlib/tests/oauth1/rfc5849/test_utils.py"", line 149, in test_parse_authorization_header
+    self.assertEquals(authorization_headers[1][0], u""oauth_nonce"")
+AssertionError: u'oauth_token' != u'oauth_nonce'
+- oauth_token+ oauth_nonce
+
+----------------------------------------------------------------------
+```
+
+In both cases the problem is oauthlib.oauth1.rfc5849.parse_authorization_header returning `d.items()`, and the tests making assumptions about the order those items are in. Dict order is undefined, has changed in cpython before, and is different in pypy. This can be fixed in the tests, for example by sorting the list from parse_authorization_header, but I think it might make sense to sort the list in parse_authorization_header before returning it. I'd be happy to provide (and test) a patch for either approach.
+",start issue,"tests depend on dict ordering, causing them to fail under pypy"
+1,issue_closed,40,idan,oauthlib,ib-lundgren,2012-06-12 15:37:19,,closed issue,"tests depend on dict ordering, causing them to fail under pypy"
+2,issue_comment,40,idan,oauthlib,ib-lundgren,2012-06-05 16:08:55,"Hey @marienz and thank you for the bug report!
+
+The tests do need quite a bit of work and it's there the fix should go rather than sorting the parsed auth header. One way they could be fixed is by using the [assertItemsEqual](http://docs.python.org/library/unittest.html#unittest.TestCase.assertItemsEqual) method of `unittest.TestCase` rather than the naive comparison done currently. 
+
+For example, in [test_collect_parameters](https://github.com/idangazit/oauthlib/blob/master/tests/oauth1/rfc5849/test_signatures.py#L84) replace 
+
+```
+parameters = collect_parameters(uri_query=self.uri_query)
+self.assertEquals(len(parameters), 6)
+self.assertEquals(parameters[0], ('b5', '=%3D'))
+self.assertEquals(parameters[1], ('a3', 'a'))
+self.assertEquals(parameters[2], ('c@', ''))
+self.assertEquals(parameters[3], ('a2', 'r b'))
+self.assertEquals(parameters[4], ('c2', ''))
+self.assertEquals(parameters[5], ('a3', '2 q'))
+```
+
+with
+
+```
+parameters = collect_parameters(uri_query=self.uri_query)
+correct_parameters = [('b5', '=%3D'), ('a3', 'a'), ('c@', ''),  ('a2', 'r b'), ('c2', ''), ('a3', '2 q')]
+self.assertItemsEqual(parameters, correct_parameters)
+```
+
+If you feel like making these changes where appropriate it would be great! If not thanks for the heads up and I'll sort it out soonish.
+",,
+0,issue_title,38,idan,oauthlib,michaelhelmick,2012-05-14 14:42:55,"Say I want to update my status on Twitter
+
+Example: https://gist.github.com/2690021
+
+If `data = {}` it works fine. But when `data = {'status': 'some status would go here'}` it effs up and throws a 401 Unauthorized rather than a 200 OK.
+",start issue,Passing params along with file
+1,issue_closed,38,idan,oauthlib,ib-lundgren,2012-06-12 15:37:37,,closed issue,Passing params along with file
+2,issue_comment,38,idan,oauthlib,ib-lundgren,2012-05-14 23:26:47,"Hey and thanks for the report!
+
+It is indeed a bug and the caused by incorrectly including data when calculating the OAuth signature. When sending multipart form data the body parameters should not be used in the signature, but they are in this case.
+
+This happens because when requests call OAuth1 it has not yet set the content-type header (which ive not looked deeper into why), this causes OAuth1 to have to guess content type, since no is set and data is included it happily and wrongly assumes it is x-www-form-urlencoded (no check for files etc.). OAuthLib then has no clue that wrong input is given since its correctly formatted and proceeds to calculate a signature.
+
+There are a two solutions to this but unfortunately for you @michaelhelmick no easy one-line fix.
+- Have requests set the content-type prior to calling OAuth1
+- Make OAuth1 do a better job figuring out content-type
+
+Note to @idangazit @dgouldin, [Twitter docs](https://dev.twitter.com/discussions/1059) mentioned that they exclude body params (as per spec)  but in this specific case also query parameters which is odd. Maybe add an option to OAuth1 to exclude params from query/body?
+",,
+3,issue_comment,38,idan,oauthlib,michaelhelmick,2012-05-15 00:04:24,"Yep. You hit the nail on the head. I've found ways around this with standard urllib2 (in my Tumblpy and Flick libs) and with requests in @ryanmcgrath's Twython lib by creating a ""fake request"" and signing the params then sending them to a new requests.post() with the authorization headers (https://github.com/ryanmcgrath/twython/blob/master/twython/twython.py#L514-L552)
+
+The first solution I believe was turned down by @kennethreitz I believe. Don't quote me on that. Haha. 
+
+The second solution I would imagine would be more desired. 
+
+Sent from my iPad
+
+On May 14, 2012, at 7:26 PM, ib-lundgrenreply@reply.github.com wrote:
+
+> Hey and thanks for the report!
+> 
+> It is indeed a bug and the caused by incorrectly including data when calculating the OAuth signature. When sending multipart form data the body parameters should not be used in the signature, but they are in this case.
+> 
+> This happens because when requests call OAuth1 it has not yet set the content-type header (which ive not looked deeper into why), this causes OAuth1 to have to guess content type, since no is set and data is included it happily and wrongly assumes it is x-www-form-urlencoded (no check for files etc.). OAuthLib then has no clue that wrong input is given since its correctly formatted and proceeds to calculate a signature.
+> 
+> There are a two solutions to this but unfortunately for you @michaelhelmick no easy one-line fix.
+> - Have requests set the content-type prior to calling OAuth1
+> - Make OAuth1 do a better job figuring out content-type
+> 
+> Note to @idangazit @dgouldin, [Twitter docs](https://dev.twitter.com/discussions/1059) mentioned that they exclude body params (as per spec)  but in this specific case also query parameters which is odd. Maybe add an option to OAuth1 to exclude params from query/body?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/idangazit/oauthlib/issues/38#issuecomment-5704881
+",,
+4,issue_comment,38,idan,oauthlib,ib-lundgren,2012-05-15 15:39:49,"@idangazit Sent a pull request addressing this at https://github.com/kennethreitz/requests/pull/614. If it gets merged you can probably close this issue =)
+",,
+5,issue_comment,38,idan,oauthlib,kennethreitz,2012-05-15 15:40:18,"Merged. :cake:
+",,
+0,issue_title,26,idan,oauthlib,idan,2012-04-29 11:18:29,"Tests are nominally green, but apparently pycrypto's host is somewhat flaky. Some of the time, [the download of pycrypto times out, causing the build to fail](http://travis-ci.org/#!/idangazit/oauthlib/jobs/1202441).
+
+If you look at the [build history](http://travis-ci.org/#!/idangazit/oauthlib/builds), this affects both 2.6 and 2.7, though usually not at the same time. Specifically, builds 29, 30, and 31 are broken only because of this issue.
+
+Is there any way we can prevent this from happening, or minimize/mitigate its effects?
+",start issue,pycrypto download is causing travis builds to fail
+1,issue_closed,26,idan,oauthlib,ib-lundgren,2012-06-12 20:42:47,,closed issue,pycrypto download is causing travis builds to fail
+2,issue_comment,26,idan,oauthlib,ib-lundgren,2012-06-12 20:42:46,"""Solved"" by having travis use restricted.crate.io
+",,
+0,issue_title,41,idan,oauthlib,marienz,2012-06-06 21:32:40,"This makes the changes suggested in issue #40 to make a couple of tests not depend on the order of dicts. I've also made a second commit that replaces several assertTrue/assertFalse calls with more specific test methods. This second commit is completely optional, but it seemed an obvious improvement to make while I was there. This works when using cpython 2.7 or pypy 1.8 with or without unittest2 installed. I have not tested it with python 2.6, but I see no reason for it to fail as long as unittest2 is installed.
+",start issue,"Improve tests, fixing issue #40"
+1,issue_closed,41,idan,oauthlib,ib-lundgren,2012-06-12 15:36:58,,closed issue,"Improve tests, fixing issue #40"
+2,pull_request_title,41,idan,oauthlib,marienz,2012-06-06 21:32:40,"This makes the changes suggested in issue #40 to make a couple of tests not depend on the order of dicts. I've also made a second commit that replaces several assertTrue/assertFalse calls with more specific test methods. This second commit is completely optional, but it seemed an obvious improvement to make while I was there. This works when using cpython 2.7 or pypy 1.8 with or without unittest2 installed. I have not tested it with python 2.6, but I see no reason for it to fail as long as unittest2 is installed.
+",605e04637c0d03d1ea1709ee1650567d14f2c554,"Improve tests, fixing issue #40"
+3,pull_request_merged,41,idan,oauthlib,ib-lundgren,2012-06-12 15:36:58,"Improve tests, fixing issue #40",48cb0878c64c4cc5622632470fc4a3639696653b,Pull request merge from marienz/oauthlib:issue40-tests-dict-ordering to idan/oauthlib:master
+4,issue_comment,41,idan,oauthlib,travisbot,2012-06-06 21:33:22,"This pull request [passes](http://travis-ci.org/idangazit/oauthlib/builds/1552016) (merged 605e0463 into c151c9cc).
+",,
+5,issue_comment,41,idan,oauthlib,ib-lundgren,2012-06-07 17:35:16,"Looks great. Unfortunately I can't merge but @idangazit or @dgouldin will get around to it eventually. Oh and add yourself to the authors file too.
+",,
+6,pull_request_commit,41,idan,oauthlib,marienz,2012-06-06 21:08:12,"Use assertItemsEqual to test lists of headers and parameters.
+
+This is cleaner, and makes the tests not depend on dictionary
+order (which may change, and is different in pypy).",02ff18492bd147aaaea6b57b7c698536433561fd,
+7,pull_request_commit,41,idan,oauthlib,marienz,2012-06-06 21:16:06,"Use more specific assert methods in the tests where possible.
+
+This should make no difference as long as the tests pass, but produce
+better messages if they fail.",605e04637c0d03d1ea1709ee1650567d14f2c554,
+0,issue_title,33,idan,oauthlib,dstufft,2012-05-03 05:48:04,,start issue,Make Build not dependent on oft failing requirements
+1,issue_closed,33,idan,oauthlib,ib-lundgren,2012-06-12 20:44:42,,closed issue,Make Build not dependent on oft failing requirements
+2,pull_request_title,33,idan,oauthlib,dstufft,2012-05-03 05:48:04,,1b972011ad1abf16d9829d9d24762cdcd409d231,Make Build not dependent on oft failing requirements
+3,issue_comment,33,idan,oauthlib,ib-lundgren,2012-06-12 20:44:42,"Used your solution in #42, also added pycrypto =)
+",,
+4,pull_request_commit,33,idan,oauthlib,dstufft,2012-05-03 05:47:58,Make Build not dependent on oft failing requirements,1b972011ad1abf16d9829d9d24762cdcd409d231,

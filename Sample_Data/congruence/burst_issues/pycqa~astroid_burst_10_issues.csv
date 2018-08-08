@@ -1,0 +1,166 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,225,pycqa,astroid,pylint-bot,2015-10-26 04:27:36,"Originally reported by: **Pavel Roskin (BitBucket: [pavel_roskin](http://bitbucket.org/pavel_roskin))**
+
+---
+
+The current astroid cannot be installed with Python2 because `funcsigs` is misspelled as `funcigs` in `astroid/__pkginfo__.py`
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/225
+",start issue,"""funcsigs"" misspelled as ""funcigs"", python 2 support broken"
+1,issue_closed,225,pycqa,astroid,pylint-bot,2015-12-09 05:55:27,,closed issue,"""funcsigs"" misspelled as ""funcigs"", python 2 support broken"
+2,issue_comment,225,pycqa,astroid,pylint-bot,2015-10-26 03:42:22,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Thanks for the report.  Are you trying to install using the @ bookmark/head?  The other bookmarks in the repository are under development and thus at any point may well be broken, but the @ bookmark should always point to a working changeset.  (If you're pulling and not getting all the bookmarks, something else is going on.)
+",,
+3,issue_comment,225,pycqa,astroid,pylint-bot,2015-10-26 04:14:57,"_Original comment by_ **Pavel Roskin (BitBucket: [pavel_roskin](http://bitbucket.org/pavel_roskin))**:
+
+---
+
+It's embarrassing to admit, today is the first day I heard of bookmarks. I run ""hg pull -u"" regularly on the checked out repositories. I notices that hg complained of something ""non-linear"", so I forced the update. Then I could not install astroid. I could quickly find out the reason. Then I forked astroid to submit a pull request. But my fork does not have that issue, it's behind the original repository. As I understand, bookmarks are lightweight branches, and I got to an experimental branch accidentally.
+",,
+4,issue_comment,225,pycqa,astroid,pylint-bot,2015-10-26 04:53:27,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Fixed in 68d51cfd7930.
+",,
+0,issue_title,227,pycqa,astroid,pylint-bot,2015-10-26 09:47:59,"Originally reported by: **Antony Lee (BitBucket: [anntzer](http://bitbucket.org/anntzer), GitHub: @anntzer?)**
+
+---
+
+```
+$ pip install --user --upgrade --no-deps -vvv hg+ssh://hg@bitbucket.org/logilab/astroid
+<... elided>
+      File ""/home/antony/.local/lib/python3.5/site-packages/astroid/tests/unittest_raw_building.py"", line 62
+        def f(a, (b, (c, d))):
+                 ^
+    SyntaxError: invalid syntax
+
+  Removing source in /tmp/pip-h9nj9jv_-build
+Successfully installed astroid-1.4.0
+Cleaning up...
+```
+
+Actually the installation seems to be fine, so it's rather benign.
+
+However, pylint doesn't like it:
+
+```
+$ touch /tmp/foo.py
+$ pylint /tmp/foo.py
+Warning: option profile is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option comment is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option ignore-iface-methods is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option required-attributes is obsolete and it is slated for removal in Pylint 1.6.
+Warning: option zope is obsolete and it is slated for removal in Pylint 1.6.
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==1.5.0', 'console_scripts', 'pylint')()
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 1311, in __init__
+    linter.check(args)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 734, in check
+    self._do_check(files_or_modules)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 861, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/lint.py"", line 919, in check_astroid_module
+    tokens = utils.tokenize_module(ast_node)
+  File ""/home/antony/.local/lib/python3.5/site-packages/pylint/utils.py"", line 150, in tokenize_module
+    with module.stream() as stream:
+  File ""/home/antony/.local/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 390, in stream
+    return self._get_stream()
+  File ""/home/antony/.local/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 376, in _get_stream
+    if self.file_bytes is not None:
+AttributeError: 'Module' object has no attribute 'file_bytes'
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/227
+",start issue,tip issues on Python3.5
+1,issue_closed,227,pycqa,astroid,pylint-bot,2015-12-09 05:55:28,,closed issue,tip issues on Python3.5
+2,issue_comment,227,pycqa,astroid,pylint-bot,2015-10-26 09:28:18,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This seems that you installed a under-development bookmark. Could you try to do a clone instead and before running python setup.py install, do a hg update @? That's the default bookmark which should be working under all conditions. Unfortunately pip doesn't handle this bookmark thingy properly. The problem with raw_building is actually from another under-development bookmark.
+",,
+3,issue_comment,227,pycqa,astroid,pylint-bot,2015-10-26 18:46:27,"_Original comment by_ **Antony Lee (BitBucket: [anntzer](http://bitbucket.org/anntzer), GitHub: @anntzer?)**:
+
+---
+
+That works, thanks.
+",,
+0,issue_title,226,pycqa,astroid,pylint-bot,2015-10-26 05:16:17,"Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+In Module.getattr()
+
+``` python
+            if name == '__file__':
+                return [node_classes.Const(self.source_file)] + self.locals.get(name, [])
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/226
+",start issue,Tiny untested code path in scoped_nodes
+1,issue_closed,226,pycqa,astroid,ceridwen,2016-01-19 01:15:21,,closed issue,Tiny untested code path in scoped_nodes
+2,issue_comment,226,pycqa,astroid,PCManticore,2016-01-19 01:18:57,"Why is this closed? 
+",,
+3,issue_comment,226,pycqa,astroid,ceridwen,2016-01-19 04:52:24,"Coverage results indicate it's no longer untested.  I'm not sure when
+that happened.
+",,
+0,issue_title,228,pycqa,astroid,pylint-bot,2015-10-26 19:36:33,"Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+(This is part of a series of issues I'm going to open to talk about necessary reworkings that aren't obvious.)
+
+``` python
+======================================================================
+ERROR: test_inferred_dont_pollute (unittest_builder.BuilderTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_builder.py"", line 539, in test_inferred_dont_pollute
+    self.assertNotIn('custom_attr', nonetype.locals)
+  File ""~/code/astroid/astroid/bases.py"", line 79, in __getattr__
+    return getattr(self._proxied, name)
+  File ""~/code/astroid/astroid/decorators.py"", line 79, in __get__
+    val = self.wrapped(inst)
+  File ""~/code/astroid/astroid/node_classes.py"", line 1220, in _proxied
+    return builtins.getattr(type(self.value).__name__)[0]
+  File ""~/code/astroid/astroid/scoped_nodes.py"", line 102, in decorator
+    nodes = [n for n in func(*args, **kwargs) if not isinstance(n, cls)]
+  File ""~/code/astroid/astroid/scoped_nodes.py"", line 433, in getattr
+    raise exceptions.NotFoundError(name)
+astroid.exceptions.NotFoundError: NoneType
+```
+
+This test is raising ultimately because for None, `type(self.value).__name__` evaluates to `NoneType`, which is the type of the None singleton, only there's no name in the builtins module for `NoneType`.  This will also be a problem for NotImplemented.
+
+Fundamentally, this problem and others like it are arising because astroid is using AST nodes to represent both ASTs and live objects.  However, there's no one-to-one mapping between ASTs and live objects: because None and NotImplemented only exist in the AST as Name(name=None) and Name(name=NotImplemented), using Const to represent them is kind of a hack.  In the far future, we should maybe talk about better-distinguishing the two layers of astroid objects, AST nodes and live objects, and clarifying what kinds of objects only exist in one layer or the other.
+
+For now, my best suggestion is to create a new node that subclasses Const called Singleton that overrides the _proxied property.  Alternately, we could talk about shifting to a different proxy structure, perhaps in combination with replacing bases.Proxy with a different proxy (#205).  Other solutions, like dispatching on the type of the object in _proxied or modifying the builtins AST to add names, look more hackish to me.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/228
+",start issue,[modular_locals bugs] Issues with Const._proxied and singletons
+1,issue_closed,228,pycqa,astroid,pylint-bot,2015-12-09 05:55:29,,closed issue,[modular_locals bugs] Issues with Const._proxied and singletons
+2,issue_comment,228,pycqa,astroid,pylint-bot,2015-10-26 21:01:42,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Having a Singleton node makes sense to me, so I would pretty much prefer this solution.
+
+Yes, at some point we'll have to discuss about separating ASTs from live objects, but we shouldn't worry right now about this. I don't know why issue #205 has any relevancy here, the underlying proxy mechanism should be just an implementation detail from Const's point of view.
+",,
+3,issue_comment,228,pycqa,astroid,pylint-bot,2015-10-28 03:50:57,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Added Singleton node in 45b5ba2 to resolve some of these problems.
+",,

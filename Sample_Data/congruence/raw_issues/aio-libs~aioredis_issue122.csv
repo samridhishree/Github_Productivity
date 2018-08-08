@@ -1,0 +1,62 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","122","aio-libs","aioredis","lyapun","2016-05-03 10:13:19","Hello!
+
+I have a pool of redis connections for pub sub:
+
+``` python
+pubsub_pool = await aioredis.create_pool((REDIS_HOST, REDIS_PORT), minsize=5, maxsize=10, loop=asyncio.get_event_loop())
+```
+
+Then I use it something like that:
+
+``` python
+async with pubsub_pool.get() as connection:
+    channel, = await connection.subscribe(channel_key)
+```
+
+But I see in my logs warning messages:
+
+```
+Connection <Redis <RedisConnection [db:0]>> is in subscribe mode, closing it.
+```
+
+Could you please explain the purpose of this warning message? Is it something wrong here? Or should I  just filter out these messages? If so - why did you put that warning here?
+
+Thank you.
+","start issue","Warning messages: Connection <Redis <RedisConnection [db:0]>> is in subscribe mode, closing it."
+"issue_closed","122","aio-libs","aioredis","lyapun","2016-05-03 14:45:20","","closed issue","Warning messages: Connection <Redis <RedisConnection [db:0]>> is in subscribe mode, closing it."
+"issue_comment","122","aio-libs","aioredis","jettify","2016-05-03 13:50:42","Because you release connection to the pool that in subscribe mode. Pool does not know what is proper way to unsubscribe, since process can involve user specific logic. So just unsubscribe (https://github.com/aio-libs/aioredis/blob/9c8200a3d7fd2defae28a2cdd511bc77e013406c/aioredis/commands/pubsub.py#L33)
+","",""
+"issue_comment","122","aio-libs","aioredis","lyapun","2016-05-03 14:45:20","Got it. Thanks!
+","",""
+"issue_comment","122","aio-libs","aioredis","lud4ik","2017-06-26 09:26:05","If I want to subscribe to separate channels in pool and want to be able reuse connections, is there any way to do it? For example pool size = 1000, subscribtions = 20000 (20 subscribhions per connection) and subscriptions are not linked, how to do it?  ","",""
+"issue_comment","122","aio-libs","aioredis","popravich","2017-06-27 06:58:38","Hi, this is basically terrible idea — 20K subscriptions may impact redis server performance,
+take a look at this article — https://making.pusher.com/redis-pubsub-under-the-hood/
+
+Anyway, aioredis lets you do this:
+for `aioredis v0.3`
+```python
+pool = await aioredis.create_pool(...)
+async def pubsub(pool, channels):
+    tasks = []
+    # acquire a separate conneciton from pool
+    with await pool as redis:
+        for name in channels:
+            ch, = await redis.subscribe(name)
+            tasks.append(ensure_future(pubsub_reader(ch)))
+        # wait until all tasks are done and release connection
+        await asyncio.gather(*tasks)
+ensure_future(pubsub(pool, [....]))
+# pool is reusable here and after
+```
+for `aioredis v1.0`:
+```python
+redis = await aioredis.create_redis_pool(...)
+for name in channels:
+    ch, = await redis.subscribe(name)
+    ensure_future(pubsub_reader(ch))
+# client is reusable here and after
+```
+Still, I think its a very bad idea (1K connection & 20K subscriptions).
+
+PS: next time, please, open a separate issue.","",""

@@ -1,0 +1,157 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,229,idan,oauthlib,TkTech,2013-12-10 19:53:50,"-- NOT READY FOR MERGE --
+
+This PR is not yet ready to be merged, and is just to track work towards ticket #226.
+- [x] Implement `sign_rsa_sha1(base_string, rsa_private_key)` with tlslite
+- [ ] Implement `verify_rsa_sha1(request, rsa_public_key)` with tlslite
+- [ ] Swap pycrypto for tlslite in documentation references
+- [x] Swap pycrypto for tlslite in setup.py
+",start issue,sign_rsa_sha1 no longer requires pycrypto (tests pass)
+1,issue_closed,229,idan,oauthlib,TkTech,2014-09-18 13:38:00,,closed issue,sign_rsa_sha1 no longer requires pycrypto (tests pass)
+2,pull_request_title,229,idan,oauthlib,TkTech,2013-12-10 19:53:50,"-- NOT READY FOR MERGE --
+
+This PR is not yet ready to be merged, and is just to track work towards ticket #226.
+- [x] Implement `sign_rsa_sha1(base_string, rsa_private_key)` with tlslite
+- [ ] Implement `verify_rsa_sha1(request, rsa_public_key)` with tlslite
+- [ ] Swap pycrypto for tlslite in documentation references
+- [x] Swap pycrypto for tlslite in setup.py
+",87578ec71620be359fb1bdb7fbed8659d1ce3087,sign_rsa_sha1 no longer requires pycrypto (tests pass)
+3,issue_comment,229,idan,oauthlib,ib-lundgren,2014-01-20 10:45:27,"Looks like a good start!
+
+I think having docs for how to keep using PyCrypto would be a good start for sure. Also, this update should make it easier for Windows users to get started using RSA-SHA1 as PyCrypto is fairly cumbersome to install there from what I gather.
+
+Sorry for taking so long to reply. Would you like some help with something in particular or happy to tackle both implementation and docs? 
+",,
+4,issue_comment,229,idan,oauthlib,whit537,2014-09-18 12:59:31,"This PR seems to have stalled. I suggest closing, especially in light of https://github.com/idan/oauthlib/issues/226#issuecomment-53194390.
+",,
+5,issue_comment,229,idan,oauthlib,TkTech,2014-09-18 13:38:00,"Agreed, closing. While I could get it to pass locally, I never managed to get the builds to pass on travis.
+",,
+6,pull_request_commit,229,idan,oauthlib,TkTech,2013-12-10 19:06:17,sign_rsa_sha1 no longer requires pycrypto (tests pass),ffd0505db80b0a671b013ab4bd84780591c065ad,
+7,pull_request_commit,229,idan,oauthlib,TkTech,2013-12-10 19:58:02,Swap pycrypto for tlslite in setup.py,0def5967c3eb5f51fbb159742ea95e19f5330b2d,
+8,pull_request_commit,229,idan,oauthlib,TkTech,2013-12-10 20:00:18,Add tlslite to .travis.yml (Whoops!),87578ec71620be359fb1bdb7fbed8659d1ce3087,
+0,issue_title,270,idan,oauthlib,singingwolfboy,2014-09-18 15:36:31,"Similar to #269, but drops the envvar
+",start issue,Use warnings.warn() to warn for scope change
+1,issue_closed,270,idan,oauthlib,ib-lundgren,2014-10-23 18:45:11,,closed issue,Use warnings.warn() to warn for scope change
+2,pull_request_title,270,idan,oauthlib,singingwolfboy,2014-09-18 15:36:31,"Similar to #269, but drops the envvar
+",155cbdef3226462a6bc434e180e736b6918b947e,Use warnings.warn() to warn for scope change
+3,pull_request_commit,270,idan,oauthlib,singingwolfboy,2014-09-18 14:57:46,"Use warnings.warn() to warn for scope change
+
+This does not raise an exception and disrupt the call stack",155cbdef3226462a6bc434e180e736b6918b947e,
+0,issue_title,265,idan,oauthlib,singingwolfboy,2014-09-15 23:16:43,"Because `warnings.catch_warnings()` is not thread-safe.
+https://docs.python.org/3/library/warnings.html#warnings.catch_warnings
+",start issue,Turn off raising warnings via parameter
+1,issue_closed,265,idan,oauthlib,singingwolfboy,2014-09-18 14:59:37,,closed issue,Turn off raising warnings via parameter
+2,pull_request_title,265,idan,oauthlib,singingwolfboy,2014-09-15 23:16:43,"Because `warnings.catch_warnings()` is not thread-safe.
+https://docs.python.org/3/library/warnings.html#warnings.catch_warnings
+",2323609dc88ff4ea3add9d6e377b7aaf579a3ec0,Turn off raising warnings via parameter
+3,issue_comment,265,idan,oauthlib,singingwolfboy,2014-09-15 23:23:16,"We should maybe also use `warnings.warn()` instead of raising a Warning directly: https://docs.python.org/2/library/warnings.html#warnings.warn
+",,
+4,issue_comment,265,idan,oauthlib,whit537,2014-09-18 12:55:44,"Another way to do this would be with an envvar. That's what's used for [insecure transports](https://github.com/idan/oauthlib/blob/8fcceae9ef2d6e3c0cdf38b12ac71bc538dd6432/oauthlib/oauth2/rfc6749/utils.py#L89), for example, and it's also the approach I took in #268 for relaxing the `token_type` requirement in `parse_token_response`. Is this a knob one wants to configure for the whole application or do we need per-call configuration?
+
+If we proceed with the additional parameter to `parse_token_response` as implemented here then it seems that we should also expose that in the other `client/*_application.py` files.
+",,
+5,issue_comment,265,idan,oauthlib,singingwolfboy,2014-09-18 13:38:53,"@whit537 using an envvar seems like a great idea, actually -- let me switch my pull request to do that. I don't think per-call configuration is necessary.
+",,
+6,issue_comment,265,idan,oauthlib,whit537,2014-09-18 13:40:26,"@singingwolfboy Next question is what the default should be. Per the [robustness principle](http://en.wikipedia.org/wiki/Robustness_principle) I went with a non-strict default on #268.
+",,
+7,issue_comment,265,idan,oauthlib,singingwolfboy,2014-09-18 14:06:03,"@whit537 I think it makes sense to raise the warning by default. First of all, it maintains backwards compatibility. Second, in single-threaded applications, you can just use `warnings.catch_warnings()` to silence the warning (which I assume is why the Warning exception was chosen in the first place). Third, receiving a different scope from the scope you requested seems like an exceptional situation, and exceptional situations warrant exceptions.
+
+If only `warnings.catch_warnings()` was threadsafe, this whole pull request would be unnecessary. :(
+",,
+8,issue_comment,265,idan,oauthlib,whit537,2014-09-18 14:09:58,"@singingwolfboy Couldn't you just use try/except to catch warnings?
+
+``` python
+try:
+    parse_token_response(token_response)
+except Warning:
+    pass
+```
+",,
+9,issue_comment,265,idan,oauthlib,singingwolfboy,2014-09-18 14:23:26,"@whit537 not for my use case, because I need the output from the function that I'm calling, and raising an exception prevents me from getting the return value. Specifically, [this is the code where the exception gets raised](https://github.com/singingwolfboy/flask-dance/blob/c306ad936/flask_dance/consumer/oauth2.py#L107-L111): `flask_dance.consumer.OAuth2ConsumerBlueprint.authorized()` is calling `requests_oauthlib.OAuth2Session.fetch_token()` is calling `WebApplicationClient.parse_token_response()`.
+",,
+10,issue_comment,265,idan,oauthlib,whit537,2014-09-18 14:46:48,"Ah, okay. That makes sense.
+",,
+11,issue_comment,265,idan,oauthlib,singingwolfboy,2014-09-18 14:59:37,"I figured it would be better to leave this PR as-is and simply create a new one, rather than removing my work. (Could be useful as a reference, or for comparison.) I've opened #269, and we can continue this discussion there.
+",,
+12,pull_request_commit,265,idan,oauthlib,singingwolfboy,2014-09-15 23:15:19,"Turn off raising warnings via parameter
+
+Because warnings.catch_warnings() is not thread-safe.
+https://docs.python.org/3/library/warnings.html#warnings.catch_warnings",2323609dc88ff4ea3add9d6e377b7aaf579a3ec0,
+0,issue_title,269,idan,oauthlib,singingwolfboy,2014-09-18 14:58:45,"See https://github.com/idan/oauthlib/pull/265 for explanation/discussion
+",start issue,Ignore scope change on setting envvar
+1,issue_closed,269,idan,oauthlib,ib-lundgren,2014-10-23 18:45:00,,closed issue,Ignore scope change on setting envvar
+2,pull_request_title,269,idan,oauthlib,singingwolfboy,2014-09-18 14:58:45,"See https://github.com/idan/oauthlib/pull/265 for explanation/discussion
+",3c8261bec13e15b3845f7dd1e87e46b329329d6f,Ignore scope change on setting envvar
+3,issue_comment,269,idan,oauthlib,whit537,2014-09-18 15:00:41,"lgtm
+",,
+4,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 15:00:46,"I'm not sure where is the best place to document this environment variable and what it does. @whit537, any thoughts?
+",,
+5,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 15:05:35,"Actually, further testing seems to indicate that using `warnings.warn()` doesn't actually raise an exception, which allows me to get the return value:
+
+``` python
+% python
+Python 2.7.6 (default, Nov 19 2013, 10:11:04) 
+[GCC 4.2.1 Compatible Apple LLVM 5.0 (clang-500.2.79)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> import warnings
+>>> def f():
+...   warnings.warn(""ohnoz"")
+...   return 4
+... 
+>>> result = f()
+__main__:2: UserWarning: ohnoz
+>>> result
+4
+```
+
+Maybe I should just switch the `raise Warning` to `warnings.warn()` and be done with it?
+",,
+6,issue_comment,269,idan,oauthlib,whit537,2014-09-18 17:08:19,"> Maybe I should just switch the `raise Warning` to `warnings.warn()` and be done with it?
+
+Could do, though as you mentioned earlier that would break backward-compatibility.
+
+I don't think a `warnings.warn()` is sufficient. The purpose here is to signal to the application that scope has changed, so the application can respond accordingly (by reasking for the denied permission, or downgrading the experience, or ...). The more I think about it, the more it seems like making this a per-call configuration is better than an envvar. I can easily imagine an application that wants to ignore scope changes in some contexts but not in others. The onus is then on #268 as to why an envvar is appropriate there instead of yet another parameter.
+",,
+7,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 18:35:47,"@whit537 True. Raising an exception may be going too far, but printing a warning to `stderr` may not be going far enough. I'm skeptical that this needs to be a per-call configuration: if the application wants to ignore scope changes in some contexts but not others, the application can easily enable this exception (or whatever solution we end up with), and just take action when necessary:
+
+``` python
+try:
+    parse_token_response(token_response)
+except Warning as w:
+    if need_to_handle(w):
+        ask_user_to_reauthenticate()
+    else:
+        pass
+```
+",,
+8,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 18:41:51,"If oauthlib supported signals, I feel like that might strike the right balance between alert/notification vs destroying the stack. [Flask supports signals](http://flask.pocoo.org/docs/0.10/signals/), so perhaps we could do something similar? (I realize that Flask and oauthlib operate at two _very_ different conceptual levels, I'm just suggesting that we can take inspiration from Flask's API. Which I think is all-around awesome.)
+",,
+9,issue_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 13:23:07,"Signals sound interesting. Will take a look :)
+",,
+10,issue_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 13:30:31,"As @whit537 mentions users can simply catch the exception and deal with it as they please. We could make this even easier for them by subclassing the warning, maybe ScopeChangedWarning?
+",,
+11,issue_comment,269,idan,oauthlib,whit537,2014-09-22 14:12:15,"> [U]sers can simply catch the exception and deal with it as they please.
+
+Copying @singingwolfboy's response from https://github.com/idan/oauthlib/pull/265#issuecomment-56045238: 
+
+> [N]ot for my use case, because I need the output from the function that I'm calling, and raising an exception prevents me from getting the return value.
+",,
+12,issue_comment,269,idan,oauthlib,whit537,2014-09-22 14:16:07,"> I'm not sure where is the best place to document this environment variable and what it does. @whit537, any thoughts?
+
+Over at https://github.com/idan/oauthlib/pull/268#issuecomment-56370244 I decided to go with http://oauthlib.readthedocs.org/en/latest/oauth2/tokens/tokens.html.
+",,
+13,issue_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 15:03:37,"Thanks @whit537 
+
+So if I understand this right the problem is that since raising a Warning interrupts the flow the token is never returned. On top of my head there are a few approaches here
+1. Not raising but merely logging/warning. This is awkward to ""catch"".
+2. Transporting the token on the warning itself. This assumes no other modification/checking is done and complicates the logical flow.
+3. Returning the warning/differing scope/etc a long with the token. Breaks current API.
+4. Adding more parameters to the token like (oauthlib_)scope_changed (boolean) and (oauthlib_)old_scope. No change in flow and user would check the token items rather than catching a warning.
+5. Similar to 4 but rather create a Token class (extending dict) which could have properties such as scope_changed.
+6. Introduce a signalling system. Think this is a bit overkill here but maybe worth it in the long run, will have to look into signals and how they might fit a bit more.
+
+I'm currently leaning towards 5. Thoughts?
+",,
+14,pull_request_commit_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 13:28:19,"Better indent the entire scope check or else I might sleepily forget about it and add unrelated code to the end of the file :)
+",3c8261bec13e15b3845f7dd1e87e46b329329d6f,"(16, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+15,pull_request_commit,269,idan,oauthlib,singingwolfboy,2014-09-18 14:57:46,Set OAUTHLIB_IGNORE_SCOPE_CHANGE envvar to disable raising a warning for scope change,3c8261bec13e15b3845f7dd1e87e46b329329d6f,

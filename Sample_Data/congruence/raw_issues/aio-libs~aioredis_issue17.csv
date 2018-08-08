@@ -1,0 +1,87 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","17","aio-libs","aioredis","popravich","2014-06-20 08:04:38","Here is my thoughts regarding cursor for those commands:
+wrap response of this commands in a subclass of namedtuple providing raw cursor value
+and data itself. But also implementing context manager interface allowing to iterate over it. something like:
+
+``` python
+with (yield from redis.scan(0)) as cursor_context:
+    while cursor_context:
+        raw_cursor, response = yield from cursor_context
+```
+
+and simple usage
+
+``` python
+cur, resp = yield from redis.scan(0)
+while cur != 0:
+    cur, resp = yield from redis.scan(cur)
+```
+","start issue","*SCAN commands family implementation"
+"issue_closed","17","aio-libs","aioredis","popravich","2014-07-10 07:51:46","","closed issue","*SCAN commands family implementation"
+"issue_comment","17","aio-libs","aioredis","jettify","2014-06-21 10:50:25","Second variant could be even simpler, with little trick:
+
+``` python
+cur = b'0'
+while cur != 0:
+    cur, resp = yield from redis.scan(cur)
+```
+","",""
+"issue_comment","17","aio-libs","aioredis","jettify","2014-06-23 20:44:28","Little research about _scan_ command in other libraries: 
+
+**redis-py** has  really nice api:
+
+``` python
+def scan_iter(self, match=None, count=None):
+    cursor = '0'
+    while cursor != 0:
+        cursor, data = self.scan(cursor=cursor, match=match, count=count)
+        for item in data:
+            yield item
+# usage
+for items in redis.scan_iter():
+    print(item)
+```
+
+but I failed to do something similar... since you have to mix _yield_ and _yield from_
+
+**asyncio-redis** has _cursor_ abstraction:
+
+``` python
+cursor = yield from protocol.scan(match='*')
+while True:
+    item = yield from cursor.fetchone()
+    if item is None:
+        break
+    else:
+        print(item)
+```
+
+other python redis libs (tornado-redis, txredisapi, txReids) did nothing about _scan_ api or do not support this command at all.
+","",""
+"issue_comment","17","aio-libs","aioredis","popravich","2014-06-24 10:55:12","My first variant with `with` statement doesn't look very good.
+I don't want to implement cursor as an explicit object (ie like the one in asyncio-redis).
+My intention is to hide cursor but to allow using it if needed.
+Here is new sample use cases:
+simple usage
+
+``` python
+cur = '0'
+while cur != 0:
+    cur, resp = yield from redis.scan(cur)
+    for item in resp:
+        pass  # handle items
+```
+
+'as cursor' usage
+
+``` python
+cursor_ctx = yield from redis.scan(0)
+# cursor_ctx -- namedtuple with 'cur' and 'resp' fields and __iter__ method
+for fut in cursor_ctx:   # or simply: for fut in (yield from redis.scan(0)):
+    cur, resp = yield from fut
+    for item in resp:
+        pass  # handle items
+```
+","",""
+"issue_comment","17","aio-libs","aioredis","popravich","2014-07-10 07:51:46","For now `*scan` commands return (cursor, items) tuple.
+","",""

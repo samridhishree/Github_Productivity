@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","35","pycqa","astroid","pylint-bot","2014-07-02 13:10:25","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, astroid detects A().descriptor as a bound method, while it's actually the result of calling A().descriptor(). It should be smarter about this and it should know that A.descriptor is a descriptor, not a function.
+
+```
+#!python
+
+class lazy_attribute(object):
+    def __init__(self, func):
+        self._func = func
+        self.__name__ = func.__name__
+        self.__doc__ = func.__doc__
+
+    def __get__(self, obj, klass=None):
+        return self
+        if obj is None:
+            return None
+
+        result = obj.__dict__[self.__name__] = self._func(obj)
+        return result
+
+    def __call__(self):
+        return 400
+
+class A:
+   @lazy_attribute
+   def descriptor(self):
+        return 24
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/35
+","start issue","astroid doesn't understand descriptors very well"
+"issue_closed","35","pycqa","astroid","pylint-bot","2015-12-09 05:52:09","","closed issue","astroid doesn't understand descriptors very well"
+"issue_comment","35","pycqa","astroid","pylint-bot","2015-05-03 08:37:23","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This should be solved by https://bitbucket.org/logilab/astroid/commits/2dccb781ac497c1915872d3307b564e952476dcd. Actually understanding descriptors probably won't happen in astroid at any point.
+","",""

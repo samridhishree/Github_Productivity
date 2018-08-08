@@ -1,0 +1,392 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","317","idan","oauthlib","ralphbean","2015-02-24 17:24:16","I got the following failures when I tried to run the test suite against oauthlib-0.7.2:
+
+```
+======================================================================
+ERROR: test_request_body (tests.oauth2.rfc6749.clients.test_service_application.ServiceApplicationClientTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/clients/test_service_application.py"", line 84, in test_request_body
+    body=self.body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/clients/service_application.py"", line 172, in prepare_request_body
+    assertion = jwt.encode(claim, key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 81, in encode
+    raise NotImplementedError('Algorithm not supported')
+NotImplementedError: Algorithm not supported
+======================================================================
+ERROR: test_authorization_grant (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 223, in test_authorization_grant
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py"", line 240, in create_token_response
+    token = token_handler.create_token(request, refresh_token=True)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 81, in encode
+    raise NotImplementedError('Algorithm not supported')
+NotImplementedError: Algorithm not supported
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type authorization_code request to <oauthlib.oauth2.rfc6749.grant_types.authorization_code.AuthorizationCodeGrant object at 0x7f0a174907d0>.
+oauthlib.oauth2.rfc6749.grant_types.authorization_code: DEBUG: request.scopes was not set on code validation.
+oauthlib.oauth2.rfc6749.grant_types.authorization_code: DEBUG: Token request validation ok for <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz"">.
+--------------------- >> end captured logging << ---------------------
+======================================================================
+ERROR: test_client_grant (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 266, in test_client_grant
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py"", line 80, in create_token_response
+    token = token_handler.create_token(request, refresh_token=False)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 81, in encode
+    raise NotImplementedError('Algorithm not supported')
+NotImplementedError: Algorithm not supported
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type client_credentials request to <oauthlib.oauth2.rfc6749.grant_types.client_credentials.ClientCredentialsGrant object at 0x7f0a173aff10>.
+oauthlib.oauth2.rfc6749.grant_types.client_credentials: DEBUG: Validating access token request, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=client_credentials&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.client_credentials: DEBUG: Authenticating client, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=client_credentials&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.client_credentials: DEBUG: Authorizing access to user <MagicMock id='139681316172048'>.
+oauthlib.oauth2.rfc6749.grant_types.base: DEBUG: Validating access to scopes [u'all', u'of', u'them'] for client u'mocked_client_id' (<MagicMock id='139681316197328'>).
+--------------------- >> end captured logging << ---------------------
+======================================================================
+ERROR: test_password_grant (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 238, in test_password_grant
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/resource_owner_password_credentials.py"", line 113, in create_token_response
+    token = token_handler.create_token(request, self.refresh_token)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 81, in encode
+    raise NotImplementedError('Algorithm not supported')
+NotImplementedError: Algorithm not supported
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type password request to <oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials.ResourceOwnerPasswordCredentialsGrant object at 0x7f0a17343cd0>.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authenticating client, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating access token request, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating username a.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authorizing access to user <MagicMock id='139681315284816'>.
+oauthlib.oauth2.rfc6749.grant_types.base: DEBUG: Validating access to scopes [u'all', u'of', u'them'] for client u'mocked_client_id' (<MagicMock id='139681315310096'>).
+--------------------- >> end captured logging << ---------------------
+======================================================================
+ERROR: test_scopes_and_user_id_stored_in_access_token (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 253, in test_scopes_and_user_id_stored_in_access_token
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/resource_owner_password_credentials.py"", line 113, in create_token_response
+    token = token_handler.create_token(request, self.refresh_token)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 81, in encode
+    raise NotImplementedError('Algorithm not supported')
+NotImplementedError: Algorithm not supported
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type password request to <oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials.ResourceOwnerPasswordCredentialsGrant object at 0x7f0a172d3790>.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authenticating client, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating access token request, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating username a.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authorizing access to user <MagicMock id='139681314820624'>.
+oauthlib.oauth2.rfc6749.grant_types.base: DEBUG: Validating access to scopes [u'all', u'of', u'them'] for client u'mocked_client_id' (<MagicMock id='139681314850000'>).
+--------------------- >> end captured logging << ---------------------
+----------------------------------------------------------------------
+Ran 240 tests in 1.222s
+FAILED (errors=5)
+```
+","start issue","Test failures against the 0.7.2 release"
+"issue_closed","317","idan","oauthlib","thedrow","2015-07-25 07:33:55","","closed issue","Test failures against the 0.7.2 release"
+"issue_comment","317","idan","oauthlib","josephtate","2015-04-13 08:51:01","Ahh my good buddy @ralphbean. It's funny how we keep using the same software. You must have good taste. This is addressed by #310 (if you need to stay with PyJWT<4.0.0, and #322 (if you want to move to PyJWT 1.0.0).
+","",""
+"issue_comment","317","idan","oauthlib","ralphbean","2015-05-14 23:59:56","Thanks @josephtate!  But I'm hitting new tracebacks in the oauthlib-0.7.2 test suite against PyJWT-1.0.1:
+
+```
+======================================================================
+ERROR: test_request_body (tests.oauth2.rfc6749.clients.test_service_application.ServiceApplicationClientTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/clients/test_service_application.py"", line 84, in test_request_body
+    body=self.body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/clients/service_application.py"", line 172, in prepare_request_body
+    assertion = jwt.encode(claim, key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 102, in encode
+    key = alg_obj.prepare_key(key)
+  File ""/usr/lib/python2.7/site-packages/jwt/algorithms.py"", line 167, in prepare_key
+    raise TypeError('Expecting a PEM-formatted key.')
+TypeError: Expecting a PEM-formatted key.
+======================================================================
+ERROR: test_authorization_grant (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 223, in test_authorization_grant
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py"", line 240, in create_token_response
+    token = token_handler.create_token(request, refresh_token=True)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 102, in encode
+    key = alg_obj.prepare_key(key)
+  File ""/usr/lib/python2.7/site-packages/jwt/algorithms.py"", line 167, in prepare_key
+    raise TypeError('Expecting a PEM-formatted key.')
+TypeError: Expecting a PEM-formatted key.
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type authorization_code request to <oauthlib.oauth2.rfc6749.grant_types.authorization_code.AuthorizationCodeGrant object at 0xf4fe03cc>.
+oauthlib.oauth2.rfc6749.grant_types.authorization_code: DEBUG: request.scopes was not set on code validation.
+oauthlib.oauth2.rfc6749.grant_types.authorization_code: DEBUG: Token request validation ok for <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=authorization_code&code=abc&scope=all+of+them&state=xyz"">.
+--------------------- >> end captured logging << ---------------------
+======================================================================
+ERROR: test_client_grant (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 266, in test_client_grant
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py"", line 80, in create_token_response
+    token = token_handler.create_token(request, refresh_token=False)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 102, in encode
+    key = alg_obj.prepare_key(key)
+  File ""/usr/lib/python2.7/site-packages/jwt/algorithms.py"", line 167, in prepare_key
+    raise TypeError('Expecting a PEM-formatted key.')
+TypeError: Expecting a PEM-formatted key.
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type client_credentials request to <oauthlib.oauth2.rfc6749.grant_types.client_credentials.ClientCredentialsGrant object at 0xf4f35f2c>.
+oauthlib.oauth2.rfc6749.grant_types.client_credentials: DEBUG: Validating access token request, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=client_credentials&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.client_credentials: DEBUG: Authenticating client, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=client_credentials&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.client_credentials: DEBUG: Authorizing access to user <MagicMock id='4109615276'>.
+oauthlib.oauth2.rfc6749.grant_types.base: DEBUG: Validating access to scopes [u'all', u'of', u'them'] for client u'mocked_client_id' (<MagicMock id='4109617644'>).
+--------------------- >> end captured logging << ---------------------
+======================================================================
+ERROR: test_password_grant (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 238, in test_password_grant
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/resource_owner_password_credentials.py"", line 113, in create_token_response
+    token = token_handler.create_token(request, self.refresh_token)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 102, in encode
+    key = alg_obj.prepare_key(key)
+  File ""/usr/lib/python2.7/site-packages/jwt/algorithms.py"", line 167, in prepare_key
+    raise TypeError('Expecting a PEM-formatted key.')
+TypeError: Expecting a PEM-formatted key.
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type password request to <oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials.ResourceOwnerPasswordCredentialsGrant object at 0xf4f04e6c>.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authenticating client, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating access token request, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating username a.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authorizing access to user <MagicMock id='4109437996'>.
+oauthlib.oauth2.rfc6749.grant_types.base: DEBUG: Validating access to scopes [u'all', u'of', u'them'] for client u'mocked_client_id' (<MagicMock id='4109460876'>).
+--------------------- >> end captured logging << ---------------------
+======================================================================
+ERROR: test_scopes_and_user_id_stored_in_access_token (tests.oauth2.rfc6749.test_server.SignedTokenEndpointTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/usr/lib/python2.7/site-packages/mock.py"", line 1201, in patched
+    return func(*args, **keywargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/tests/oauth2/rfc6749/test_server.py"", line 253, in test_scopes_and_user_id_stored_in_access_token
+    '', body=body)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/grant_types/resource_owner_password_credentials.py"", line 113, in create_token_response
+    token = token_handler.create_token(request, self.refresh_token)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 250, in create_token
+    'access_token': self.token_generator(request),
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/oauth2/rfc6749/tokens.py"", line 211, in signed_token_generator
+    return common.generate_signed_token(private_pem, request)
+  File ""/builddir/build/BUILD/oauthlib-0.7.2/oauthlib/common.py"", line 246, in generate_signed_token
+    token = jwt.encode(claims, private_key, 'RS256')
+  File ""/usr/lib/python2.7/site-packages/jwt/api.py"", line 102, in encode
+    key = alg_obj.prepare_key(key)
+  File ""/usr/lib/python2.7/site-packages/jwt/algorithms.py"", line 167, in prepare_key
+    raise TypeError('Expecting a PEM-formatted key.')
+TypeError: Expecting a PEM-formatted key.
+-------------------- >> begin captured logging << --------------------
+oauthlib.oauth2.rfc6749.endpoints.token: DEBUG: Dispatching grant_type password request to <oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials.ResourceOwnerPasswordCredentialsGrant object at 0xf4ecf08c>.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authenticating client, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating access token request, <oauthlib.Request url="""", http_method=""GET"", headers=""{}"", body=""grant_type=password&username=a&password=hello&scope=all+of+them"">.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Validating username a.
+oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: DEBUG: Authorizing access to user <MagicMock id='4109205036'>.
+oauthlib.oauth2.rfc6749.grant_types.base: DEBUG: Validating access to scopes [u'all', u'of', u'them'] for client u'mocked_client_id' (<MagicMock id='4109231980'>).
+--------------------- >> end captured logging << ---------------------
+----------------------------------------------------------------------
+Ran 240 tests in 1.360s
+FAILED (errors=5)
+```
+","",""
+"issue_comment","317","idan","oauthlib","josephtate","2015-05-15 20:22:08","Are you running tox? How are you running? What's your pip freeze look like?
+
+If I start a new virtualenv, run pip install -r requirements.txt and then pip install -r requirements-test.txt, I can run nosetests just fine:
+
+$ nosetests
+
+## ................................................................................................................................................................................................................................................
+
+Ran 240 tests in 0.891s
+
+OK
+","",""
+"issue_comment","317","idan","oauthlib","josephtate","2015-05-15 20:22:42","This is HEAD btw, not released 0.7.2.
+","",""
+"issue_comment","317","idan","oauthlib","ralphbean","2015-05-18 20:02:18","I'm getting the errors against the 0.7.2 released tarball -- I'm running the suite with 'python setup.py test' in the Fedora project's build system.  Here's a [log of the run where you can see both the failures and the output of 'pip freeze'](https://kojipkgs.fedoraproject.org//work/tasks/8354/9778354/build.log).  As you can see, this is against PyJWT-1.0.1.
+
+`pip freeze` output:
+
+```
+backports.ssl-match-hostname==3.4.0.2
+blinker==1.3
+cffi==0.8.6
+cryptography==0.9
+enum34==1.0.4
+idna==1.0
+ipaddress==1.0.7
+mock==1.0.1
+nose==1.3.6
+ply==3.4
+pyasn1==0.1.7
+pycparser==2.10
+pycrypto==2.6.1
+PyJWT==1.0.1
+six==1.9.0
+unittest2==0.8.0
+```
+
+Anything there stand out as problematic?
+","",""
+"issue_comment","317","idan","oauthlib","josephtate","2015-05-18 20:04:08","Yes. You have to use PyJWT < 0.4.0 for oauthlib 0.7.2. For PyJWT 0.4 or
+later, you need master head.
+
+On Mon, May 18, 2015 at 4:02 PM, Ralph Bean notifications@github.com
+wrote:
+
+> I'm getting the errors against the 0.7.2 released tarball -- I'm running
+> the suite with 'python setup.py test' in the Fedora project's build system.
+> Here's a log of the run where you can see both the failures and the
+> output of 'pip freeze'
+> https://kojipkgs.fedoraproject.org//work/tasks/8354/9778354/build.log.
+> As you can see, this is against PyJWT-1.0.1.
+> 
+> pip freeze output:
+> 
+> backports.ssl-match-hostname==3.4.0.2
+> blinker==1.3
+> cffi==0.8.6
+> cryptography==0.9
+> enum34==1.0.4
+> idna==1.0
+> ipaddress==1.0.7
+> mock==1.0.1
+> nose==1.3.6
+> ply==3.4
+> pyasn1==0.1.7
+> pycparser==2.10
+> pycrypto==2.6.1
+> PyJWT==1.0.1
+> six==1.9.0
+> unittest2==0.8.0
+> 
+> Anything there stand out as problematic?
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/idan/oauthlib/issues/317#issuecomment-103193761.
+","",""
+"issue_comment","317","idan","oauthlib","ralphbean","2015-05-19 13:29:53","Hm.  Good to know.  Thanks!  Any chance of a new release?  It's been around a year and a half since 0.7.2.
+","",""
+"issue_comment","317","idan","oauthlib","josephtate","2015-05-19 18:44:40","I wish. I'm not a dev of the project: no access to repo or pypi. It's been
+a little while since we've had any activity by any dev, but since I did the
+work to adapt to the new PyJWT version, I thought I'd answer this bug
+report.
+
+On Tue, May 19, 2015 at 9:29 AM, Ralph Bean notifications@github.com
+wrote:
+
+> Hm. Good to know. Thanks! Any chance of a new release? It's been around a
+> year and a half since 0.7.2.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/idan/oauthlib/issues/317#issuecomment-103490605.
+","",""
+"issue_comment","317","idan","oauthlib","thedrow","2015-07-25 07:33:55","oauthlib 1.0.0 is released which supports this.
+","",""

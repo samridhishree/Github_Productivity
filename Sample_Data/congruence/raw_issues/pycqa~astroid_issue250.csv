@@ -1,0 +1,105 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","250","pycqa","astroid","pylint-bot","2015-11-10 00:48:28","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+As of modular-locals, I'm going to be removing support for global and nonlocal statements in variable scope calculations for ASTs.  The current code is buggy (it doesn't support globals in class statements, it neither enforces all the restrictions in https://docs.python.org/3.5/reference/simple_stmts.html#the-global-statement nor is as liberal as the current CPython parser) and doesn't support `nonlocal` anyways, and implementing support would involve significant amounts of work and complicated code in the otherwise-simple get_locals function.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/250
+","start issue","Support global and nonlocal statements for finding variables in scopes"
+"issue_comment","250","pycqa","astroid","pylint-bot","2015-11-24 21:26:03","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The best solution to this, which isn't going to be easy in any event, is probably double-dispatch using a class and single-dispatch methods: have one subclass for each root node with different behavior with respect to `global` and `nonlocal`, use the class to dispatch on the type of the root, and then use the generic method to dispatch on the type of the node being processed.  There also has to be another mutable object passed down to keep track of what names are affected by `global` and `nonlocal` statements in a given scope.
+","",""
+"issue_comment","250","pycqa","astroid","pylint-bot","2015-11-25 00:06:33","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Couldn't this be implemented in a simpler way by going bottom-up, from the nonlocal / global nodes traversing into outer scopes and dealing with labels at each step? 
+","",""
+"issue_comment","250","pycqa","astroid","pylint-bot","2015-11-25 14:55:42","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+[Ignore this, I was confused.]
+","",""
+"issue_comment","250","pycqa","astroid","pylint-bot","2015-11-25 16:21:22","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I think I'm lost in these processing details. Could you write up a small proof of concept that expresses the ideas you're having for this? I'm not sure for instance which information you need to pass within scopes and why can't it be solved with a recursive algorithm. Talking on pseudo-code will be much easier.
+","",""
+"issue_comment","250","pycqa","astroid","pylint-bot","2015-11-27 16:17:33","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+To be clear, I don't have any plans to implement this, I'm merely writing notes so that whoever's unfortunate to have to, possibly me, will have some starting points.
+
+My thinking before was partially incorrect, so I understand your confusion.  I'll try to clarify.  Here's a running example.
+
+``` python
+print(locals())
+
+def f():
+    global b
+    a = None
+    b = 'bar'
+    print(locals())
+    def g():
+        nonlocal a
+        a = 42
+        print(locals())
+        return a
+    g()
+    print(locals())
+    return a
+
+print(f())
+print(locals())
+```
+
+Now assume that I've called get_locals() at the module level, to get the globals/locals for the module, and that I'm inside an inner scope, in this case `f()`.  Here's a possible implementation of the generic function for a general node, nodes that can start a new scope, and global statements, with the implementations for the nodes that create bindings to names elided (they're similar to the ones for the existing get_locals(), only they need to check if a name is in global_names first).
+
+``` python
+@_get_globals.register(base.NodeNG)
+def globals_generic(node, locals_, global_names):
+  for n in node.get_children():
+    _get_globals(node, locals_, global_names)
+
+@_get_globals.register(node_classes.Global)
+def globals_global(node, locals_, global_names):
+  globals_names.extend(node.names)
+
+@_get_globals.register(node_classes.FunctionDef)
+@_get_globals.register(node_classes.ClassDef)
+def globals_new_scope(node, locals_, global_names):
+  global_names = []
+  for n in node.get_children():
+    _get_globals(node, locals_, global_names)
+```
+
+Passing down a mutable object does work here, I think, or rather, it _would_ if CPython enforced the first restriction discussed in my link to the CPython documentation.  However, it doesn't, so if I do this:
+
+``` python
+
+def f():
+    a = None
+    b = 'bar'
+    print(locals())
+    def g():
+         ...
+    g()
+    print(locals())
+    global b
+    return a
+```
+
+The above code won't figure out that the assignment to `b` in `f()` assigns to globals.  I don't see any way to traverse the tree in one pass that's guaranteed to correctly handle all the global statements.  Since assigning to a name before using a `nonlocal` statement is a syntax error, similar code for `nonlocal` would not have this problem.
+
+What makes it worse, though, is that nonlocal and global statements in functions aren't executed until the function is executed.  If I remove the call to `f()` at the top level in the above example, the assignment to `b` never happens and so there's no global variable `b` at all.  If I remove the call to `g()` in `f()`, `a` remains None.  With `nonlocal`, the value of a name in a namespace depends on the call graph of the whole program.  `global` has that problem and in addition, the set of global names that are even defined depends on the call graph.
+
+I have edited some parts of my previous notes to make it clear I was wrong.
+","",""

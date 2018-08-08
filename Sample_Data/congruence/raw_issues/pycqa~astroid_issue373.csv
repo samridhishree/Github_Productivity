@@ -1,0 +1,1188 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","373","pycqa","astroid","ghost","2016-11-06 09:25:47","### Fixes / new features
+- 
+","start issue","1.4.5"
+"issue_closed","373","pycqa","astroid","PCManticore","2016-11-21 08:25:04","","closed issue","1.4.5"
+"pull_request_title","373","pycqa","astroid","ghost","2016-11-06 09:25:47","### Fixes / new features
+- 
+","436687c385dbeebcfb7faaedc745491a5a115195","1.4.5"
+"issue_comment","373","pycqa","astroid","PCManticore","2016-11-21 08:25:03","I don't understand what you intended here, but this is not the way we are doing releases.","",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-03-27 11:52:41","Filter out YES nodes when creating a temporary class for the with_metaclass hack.
+
+Having an YES node in a class bases will lead to a crash with a TypeError
+when trying to obtain the ancestors of the given class, because .ancestors()
+will try to iterate each inferred node from the bases, thus will try to
+iterate over an YES node. This should fix issue #84.
+
+--HG--
+branch : 1.3.8","6ac9de89f78035618272783982d79e2448db848d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-03-28 16:08:40","Add brain tips for multiprocessing.Manager and multiprocessing.managers.SyncManager.
+
+--HG--
+branch : 1.4.0","24692564e2ca9dfb208ca2495e635b709fb009b7",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-03-31 10:41:24","Proper mro support for six.with_metaclass. Closes issue #85.
+
+--HG--
+branch : 1.4.0","42a5ee27b96fd64b50288bc8d3a961833ae6bde5",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-01 11:24:09","Set the current function as parent for the Generator object inferred from `infer_call_result`.
+
+--HG--
+branch : 1.4.0","068bc258b9b0632366e0c0ff9c61fdf8aa0d2b80",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-02 14:58:56","Add brain tips for multiprocessing post Python 3.4+.
+
+In Python 3.4+, the module level functions are retrieved with getattr
+from a context object, leading to many no-member errors
+in Pylint. This patch ensures us that we can retrieve those attributes,
+no matter what.
+
+--HG--
+branch : 1.4.0","5d4e65d22a08605da373c6cafb79c2e1b9133d17",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-02 15:02:46","Use a check on sys.version_info instead, to accomodate for Python 3.3
+
+--HG--
+branch : 1.4.0","8c6995236a66d1e26d4d23fbdd0b973346a71e76",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-13 18:27:14","Understand partially the 3-argument form of `type`.
+
+The only change is that astroid understands members
+passed in as dictionaries as the third argument. This improves
+the understanding of classes generated on-the-fly, using
+the type function.
+
+--HG--
+branch : 1.4.0","120436cf15dc9e6bd0b7774436f62f9b5d6f81b6",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-17 15:03:21","Improve the inference of Getattr nodes when dealing with abstract properties from the abc module.
+
+In astroid.bases.Instance._wrap_attr we had a detection
+code for properties, which basically inferred whatever
+a property returned, passing the results up the stack,
+to the igetattr() method. It handled only the builtin property
+but the new patch also handles abc.abstractproperty.
+
+--HG--
+branch : 1.4.0","abd3955ea00255588f57b9a285c5c78c113be60f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-17 17:39:14","UnboundMethod.getattr calls the getattr of its _proxied object.
+
+It previously crashed, since it called super(...).getattr(..) and the
+first ancestor in its mro was bases.Proxy and bases.Proxy doesn't implement
+the .getattr method. Closes issue #91.
+
+--HG--
+branch : 1.4.0","3f523cdd03608bb9f02c4e9bec66530ba8a91bec",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-17 20:45:59","Support multiple types of known properties in _wrap_attr.
+
+--HG--
+branch : 1.4.0","77c60db70f0a8cd91732c6ee67a957fc011f2eae",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-17 20:51:54","Make is_property a private function. Remove some trailing whitespaces.
+
+--HG--
+branch : 1.4.0","f9499092145494f4ae7addba67d9ff6115b52bda",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-18 07:50:02","Fix a typo in the possible properties list and add more tests.
+
+--HG--
+branch : 1.4.0","f155171af9abf02ebd1d95fc28557e801a2608c4",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-18 08:40:01","Filter out YES results from .decoratornames().
+
+--HG--
+branch : 1.4.0","476a7c502cae43228cdc2acbcd3c007ad825120b",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-18 12:34:10","Handle empty strings as arguments to StopIteration when looking for slots().
+
+StopIteration can have an empty string as an argument on Jython,
+which lead to an incorrect result when calling .slots().
+
+--HG--
+branch : 1.4.0","d6bbd5dd13d5e65325e8a1b0834e743819f480cb",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-18 17:50:46","Don't hard fail when calling .mro() on a class which has combined both newstyle and old style classes.
+
+The class in question is actually newstyle (and the __mro__ can be retrieved using Python).
+.mro() fallbacks to using .ancestors() in that case.
+
+--HG--
+branch : 1.4.0","4e747b1b029bc003984d5425f9c15389b7d0e17f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-18 18:22:10","Class.local_attr and Class.local_attr_ancestors uses internally a mro lookup, using .mro() method, if they can.
+
+That means for newstyle classes, when trying to lookup a member
+using one of these functions, the first one according to the
+mro will be returned. This reflects nicely the reality,
+but it can have as a drawback the fact that it is a behaviour
+change (the previous behaviour was incorrect though). Also,
+having bases which can return multiple values when inferred
+will not work with the new approach, because .mro() only
+retrieves the first value inferred from a base.
+
+--HG--
+branch : 1.4.0","4149d34d1c7535a73b7308a7fa653d0359cd3169",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-23 21:40:35","Add six tips for vendorized requests library.
+
+--HG--
+branch : 1.3.7","355334d59d5bf3942db79ff8e80c853e02a7ceb8",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-24 21:29:31","Expose a implicit_metaclass() method in Class.
+
+This will return a builtins.type instance for newstyle classes, otherwise it will
+return None.
+
+--HG--
+branch : 1.4.0","c2229bed4b1391c9deab39d7e3c93798bf2ac0ba",""
+"pull_request_commit","373","pycqa","astroid","invalid-email-address","2015-04-26 09:37:14","add annotations to as_string method of Arguments
+
+--HG--
+branch : 1.4.0","9592d13731ad612325d0202f5b12290343822e95",""
+"pull_request_commit","373","pycqa","astroid","invalid-email-address","2015-04-26 11:51:53","annotations = None
+
+--HG--
+branch : 1.4.0","c2bb5cdd0bb338fa89f20bbe978c4e4d7740fe48",""
+"pull_request_commit","373","pycqa","astroid","invalid-email-address","2015-04-26 12:11:44","add returns annotation
+
+--HG--
+branch : 1.4.0","e12c0fd64a8fb9c54535a4009002fb5e015d87c9",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-29 07:41:04","SyncManager is a context manager as well.
+
+--HG--
+branch : 1.4.0","cb9f31b9b645165b84d505304291f88b88046b92",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-04-30 16:34:20","Don't let ResolveError leak out from local_attr, when using .mro().
+
+--HG--
+branch : 1.4.0","fea3f9f4aef813f5610b4a05aa27fe973bf62334",""
+"pull_request_commit","373","pycqa","astroid","lorenzph","2015-05-01 08:30:57","Add basic unit test for enum support
+
+This test verifies that the generated enum member stubs behave
+implement the correct interface.
+
+--HG--
+branch : 1.4.0","d0dc4aac111e11482e2c1096e1463c2436722ca7",""
+"pull_request_commit","373","pycqa","astroid","lorenzph","2015-05-01 08:44:12","Ensure that generated enum values have the correct base classes
+
+Enum values should share the same base classes as their defining class.
+If this is not the case it may lead to wrong inference results when an
+enum member is used - e.g. for the following snippet:
+
+class X(enum.IntEnum):
+    one = 1
+
+print([1, 2][X.one])
+
+pylint will detect a ""invalid-sequence-index"" error as the __index__
+method of X.one is not detected.
+
+--HG--
+branch : 1.4.0","07fd588658af118edcc87025fb17a481a7e80db2",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-03 06:21:04","Add two new exceptions for handling MRO error cases.
+
+DuplicateBasesError is emitted when duplicate bases are found in a class,
+InconsistentMroError is raised when the method resolution is determined
+to be inconsistent. They share a common class, MroError, which
+is a subclass of ResolveError, meaning that this change is backwards compatible.
+
+--HG--
+branch : 1.4.0","51a0c3de6b1a931bcb7e521d3b55410d6024a996",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-03 08:36:16","Add a new possible property, lazy_attribute.
+
+--HG--
+branch : 1.4.0","2f625f2a7d3ebf0462fcdc29687e993fa39970e6",""
+"pull_request_commit","373","pycqa","astroid","lorenzph","2015-05-04 20:42:57","Fix recursive class attribute lookups
+
+Commit 83053ac added MRO lookup support for new-style only class
+hierarchies. Due to a typo old-style / mixed-style class hierarchies
+were either not traversed recursively or traversed with the wrong
+context.
+
+--HG--
+branch : 1.4.0","a30c976d724c5aadb2cb592c343a4282ec701d3a",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-05 08:37:51","Classes aren't marked as interfaces anymore, in the `type` attribute.
+
+--HG--
+branch : 1.4.0","148ba340bc040fc195bd05c9f3e6dda2b37f6fd4",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-06 18:31:56","_io names itself io. This patch fixes some cyclic dependencies when solving io.BufferedReader and friends.
+
+--HG--
+branch : 1.4.0","50e7a2d327f76bf871f73a9d01e642e3eed7c2e4",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-06 19:15:34","Remove hardcoded behaviour of has_dynamic_getattr for optparse.
+
+--HG--
+branch : 1.4.0","040dfdf4fb4c74ffc2375c30e8fcc9af68392667",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-06 19:20:36","Update the docstring for has_dynamic_getattr to better reflect reality.
+
+--HG--
+branch : 1.4.0","e736a80386788ea1f10db9d533be57ada3d50bbd",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-07 10:52:36","Class.has_dynamic_getattr doesn't return True for special methods which aren't implemented in pure Python.
+
+Since most likely the methods were coming from a live object, this implies
+that all of them will have __getattr__ and __getattribute__ present and it
+is wrong to consider that those methods were actually implemented
+(the descriptors will be there, not necessarily implying that the function
+is user implemented).
+
+--HG--
+branch : 1.4.0","52efdfc9f6720d821f6b5b97e979c3a47b002f44",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-07 19:04:40","Make sure that sys.stderr is reset after the .infer() call.
+
+--HG--
+branch : 1.4.0","880fbc42393d7eb22134583d6d6e41b70bdc7945",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-08 08:06:59","open doesn't have a __module__ attribute on Jython. Handle this case.
+
+--HG--
+branch : 1.4.0","a58b167874b5cf4bfc69f70021374e81e5afd1ca",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-08 08:13:49","Remove trailing whitespace.
+
+--HG--
+branch : 1.4.0","7ea644e4d0f884a39c5d33becabd5ce2ba77a896",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-08 11:09:48","Handle builtins without a __module__, especially for Jython.
+
+--HG--
+branch : 1.4.0","78fdee272610549f8ffbd99e13a5026ef0c75d54",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-09 14:01:47",".root() can't always return a Module, do a getattr over pure_python method instead.
+
+--HG--
+branch : 1.4.0","323d6b6688689839b5280131844b0b77a3abe89e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-09 14:20:09","local_attr_ancestors fallbacks to using .ancestors if .mro() fails.
+
+--HG--
+branch : 1.4.0","e8aa061001563221c91bafdbc2f4a2bc4e7403fe",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-09 14:25:32","Add a test which shows that using namedtuple-generated classes with classes with the same name leads to an invalid MRO.
+
+--HG--
+branch : 1.4.0","24bc9efaa02e84396e598f9a99617bd4a5e601dd",""
+"pull_request_commit","373","pycqa","astroid","raylu","2015-05-13 01:35:52","Add brain module for dateutil.parser.parse
+
+--HG--
+branch : 1.4.0","21a588f7c2fd8f2d3ffe7b182935013b88f4b2c0",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-19 16:40:25","Add a new type of nodes, called *inference objects*.
+
+Inference objects are similar with AST nodes, but they can be obtained
+only after inference, so they can't be found inside the AST tree.
+Their purpose is to handle at astroid level some operations which can't
+be handled when using brain transforms. For instance, the first object
+added is FrozenSet, which can be manipulated at astroid's level
+(inferred, itered etc). Code such as this 'frozenset((1,2))'
+will not return an Instance of frozenset, without having access to its
+content, but a new objects.FrozenSet, which can be used just as a nodes.Set.
+
+--HG--
+branch : 1.4.0","619bf571769996f9901a693a346ee8bda1601053",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-28 09:10:00","Add a new *inference object* called Super
+
+This patch also adds support for understanding super calls.
+astroid understands the zero-argument form of super, specific to
+Python 3, where the interpreter fills itself the arguments of the call. Also, we
+are understanding the 2-argument form of super, both for bounded lookups
+(super(X, instance)) as well as for unbounded lookups (super(X, Y)),
+having as well support for validating that the object-or-type is a subtype
+of the first argument. The unbounded form of super (one argument) is not
+understood, since it's useless in practice and should be removed from
+Python's specification. Closes issue #89.
+
+--HG--
+branch : 1.4.0","acc3fec09b1ed2330c118f13770e9106cc7dd870",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-28 18:57:14","Update the rules for what descriptor is returned from a super(), depending on the accessed object.
+
+--HG--
+branch : 1.4.0","efb66f9936fb1fec43b0b0c9241e16994126f66e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-29 13:45:22","Fail when calling Super.super_mro if the object-or-type is not the expected type.
+
+--HG--
+branch : 1.4.0","d56b071c0b17117f04596e58ec177ed4a7db6b01",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-05-29 13:58:58","Add a new SuperError exception subclass, SuperArgumentTypeError, which is raised when there's a problem with any argument of the super call (invalid types).
+
+--HG--
+branch : 1.4.0","6f7a397196fe2a29c7523238df5f7f0d1a745d42",""
+"pull_request_commit","373","pycqa","astroid","thedrow","2015-06-01 10:33:29","Fixed syntax errors in Python 3.
+
+--HG--
+branch : 1.4.0","a4479e78222c3f833f43e228d1fcf546eba573cb",""
+"pull_request_commit","373","pycqa","astroid","thedrow","2015-06-02 09:13:02","print_statement -> print_function.
+
+--HG--
+branch : 1.4.0","a6d3b793e2bb1e00acd382c8fd1eb94949851cb3",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-09 15:16:59","Add 'assert_equals' method in nose.tools's brain plugin.
+
+--HG--
+branch : 1.4.0","6602fe72b2059c69359320d19cec4e78d787e0f5",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-10 17:09:32","Improve the inference of six.moves.
+
+This patch improves especially the inferrence when using `from ... import ...`
+syntax. Also, we added a new fail import hook for six.moves, which fixes the
+import-error false positive from pylint. Closes issue #107.
+
+--HG--
+branch : 1.3.7","148de8189b501dfce2cb20a42505245d0c93b1b0",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-10 17:22:24","Set the module name for six.moves fail hook module.
+
+--HG--
+branch : 1.3.7","a5964cc94610ac96ac7f866f6fccb528d1b8e2bd",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-15 12:01:08","Staticmethods retrieved with super are functions, not bound methods.
+
+--HG--
+branch : 1.4.0","2e24530c3d9585e362077e4afb8f2d553ce92165",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-17 19:41:49","astroid.utils.ASTWalker and astroid.utils.LocalsVisitor were moved to pylint.pyreverse.utils.
+
+--HG--
+branch : 1.4.0","7455d60169657c1b537f048dd27613daa090af79",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-20 10:40:47","Namedtuple's instance members gain a new .attrname attribute, since they're actually equivalent to an AssAttr node.
+
+--HG--
+branch : 1.4.0","fb3a8c24e092bc03ee634317e2d3a880296fb339",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-20 12:14:48","Add `igetattr` method to scoped_nodes.Function.
+
+--HG--
+branch : 1.4.0","9964fd0e8b894287e50d03fd8d3c7c189352418d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-21 12:21:56","Add support for Python 3.5's MatMul infix operator. See PEP 465 for more details.
+
+--HG--
+branch : 1.4.0","7f89ca7b5318d577f7156eacfa4dcc4d4fc03238",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-23 09:40:29","NotImplemented is detected properly now as being part of the builtins module.
+
+Previously trying to infer the Name(NotImplemented) returned an YES object.
+
+--HG--
+branch : 1.4.0","22d49916c718dd1b6a64dbfd4a7d904ca739f321",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-26 10:16:02","Add __reversed__ special method to deques.
+
+--HG--
+branch : 1.4.0","a3bae9a3855513253f60b92caf909a97f929d867",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-30 09:27:19","Transform lambdas with a self argument at the class level to bound methods.
+
+--HG--
+branch : 1.4.0","9e49c8d12cfa6a409c30e085709a00a49680a9fe",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-06-30 23:36:45","Star unpacking in assignments returns properly a list, not the individual components. Closes issue #138.
+
+--HG--
+branch : 1.4.0","8cb28bda361092ad97b3075b4e324d13c6ec5c07",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-01 00:28:04","Add annotation support for function.as_string(). Closes issue #37.
+
+--HG--
+branch : 1.4.0","ccdc75e91881069cefe37f32625d06727a401bb4",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-01 16:00:45","Mark a test as an expected failure: not all staticmethod and classmethods are callable. Should be fixed when we'll understand classmethods and staticmethods.
+
+--HG--
+branch : 1.4.0","31d0434fa582227aabb53390fa48b789717e4e9d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-01 16:18:27","Add support for indexing bytes on Python 3.
+
+--HG--
+branch : 1.4.0","46c1fe9239831aaa4ce8b000075aedc594085961",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-01 20:08:46","Add support for inferring subscript on instances, which will  use __getitem__. Closes issue #124.
+
+--HG--
+branch : 1.4.0","4285c159a9b1227edacf56d4820fd9e7c498eaac",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-02 13:41:49","Update modutils.py from logilab.common and add support for namespace packages
+
+This patch is mostly a backport from logilab.common. The addition is the
+support for pkg_resources.declare_namespace, which created a good
+deal of problems so far with regard to virtualenvs.
+
+--HG--
+branch : 1.4.0","df91c59774838e00e6fe645ad6d204ed95ad5671",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-03 08:59:16","Add __enter__ and __exit__ for subprocess.Popen.
+
+--HG--
+branch : 1.4.0","62397918b87baa4cdb43e1d720550669d9aebe79",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-03 09:29:28","Add new property name in the list of known property-like objects.
+
+--HG--
+branch : 1.4.0","d0fb5ab6a4e2413a90419fa7eaceeae8f1f757f9",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-06 15:24:03","Fix the body of namedtuple._replace: return the current self and don't actually call self._make, since it's impossible to understand it.
+
+--HG--
+branch : 1.4.0","fbac8fb5ac480f48e716ef73e1a3b9d384adbba5",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-06 21:56:06","Test Super.pytype, Super.display_type and Super.name
+
+--HG--
+branch : 1.4.0","682bea860c8652a0e39eda2b23e39889f95a396d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-07 09:51:30","Understand metaclasses added with six.add_metaclass decorator. Closes issue #129.
+
+--HG--
+branch : 1.4.0","795c8649615ecee8d6527baeadd400ff69b45ae4",""
+"pull_request_commit","373","pycqa","astroid","dashea","2015-07-08 14:43:10","Duplicate calls to gi.require_version.
+
+gobject-introspection uses gi.require_version to choose which version of a
+library to import from gi.repository, and pygobject now issues a warning if
+gi.require_version is not used. Find calls to require_version and duplicate
+them in py2gi.py so that the version data is present in the context of the
+import.
+
+--HG--
+branch : 1.4.0","3c2b79c0c1bb7c39ed9425b7de309fba94f2401c",""
+"pull_request_commit","373","pycqa","astroid","dashea","2015-07-08 15:47:07","Ignore exceptions raised by gi.require_version
+
+--HG--
+branch : 1.4.0","3aaa2d6d0fa1bf959852ca5557422133a0120a3a",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-11 14:57:21","Cleanup builder.py
+
+--HG--
+branch : 1.4.0","3824753d343ed22f7280f560498ae59d9c1388d0",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-11 15:12:18","Add a new convenience API, `astroid.parse`.
+
+This API can be used to retrieve an astroid AST from a source code string,
+similar to how ast.parse can be used to obtain a Python AST from a source string.
+This is the test_utils.build_module promoted to a public API.
+
+--HG--
+branch : 1.4.0","028b684439421a6c3722cce83bc258c480b67f66",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-11 15:19:06","Fix pylint issues.
+
+--HG--
+branch : 1.4.0","3c031479a244ab61642c194ca7d0fe3f27dcffc0",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-13 21:13:31","do_import_module passes the proper relative_only flag if the level is higher than 1.
+
+This has the side effect that using `from .something import something`
+in a non-package will finally result in an import-error on Pylint's side.
+Until now relative_only was ignored, leading to the import of `something`,
+if it was globally available.
+
+--HG--
+branch : 1.4.0","e628d616de1bdabbf639742566231c85c8b11b52",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-22 22:25:00","Patch astroid_cache in unittest_regrtest.setUp with the current builtins module, to prevent crashes when it's missing during tests.
+
+--HG--
+branch : 1.4.0","cdf3ca54193abc51ffc783db85eb0ed125740ff8",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 13:16:56","Get rid of astroid.common.decorators.
+
+This also implements an easier @cache decorator and removes @classproperty as
+it only was used in an insignificant test.
+
+--HG--
+branch : 1.4.0","f9098bf9a113232baf1c6c5ae7ee834d1e591c36",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 13:35:07","Get rid of logilab.common in unittest_modutils.py.
+
+It was only used as an example package with subpackages - now we use
+xml.etree.ElementTree for those checks instead.
+
+--HG--
+branch : 1.4.0","50ef663b716a84f998fd27fc0ecf4c94dffa8e0b",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 13:51:06","Get rid of logilab.common.shellutils in test data.
+
+Instead of logilab.common.shellutils.ProgressBar we use
+astroid.node_classes.Name now.
+
+--HG--
+branch : 1.4.0","c3f6e91bdf8531098b32ccdf863fb8abef03bff9",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 13:52:58","Use six.moves instead of logilab.common.compat.
+
+--HG--
+branch : 1.4.0","b2b82bd95e25502247a672202a8bfe4c102ddc2b",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:03:49","get rid of logilab.common in modutils.
+
+--HG--
+branch : 1.4.0","bfb47cb98ffbdd2e88d46453fd0fddc2814af6b0",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:05:45","Fix get_module_files documentation in modutils.
+
+--HG--
+branch : 1.4.0","4cd98b77686b607e9ef956ed16c78dd1acd424b0",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:10:21","Get rid of logilab.common in doc example.
+
+--HG--
+branch : 1.4.0","200bacf9ac4f6112890109041b80bec70c1e0c1b",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:12:45","Remove pytest recommendation from README.
+
+--HG--
+branch : 1.4.0","814b00de4798031cbd6a63357f9593b1a134ef97",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:14:54","Remove logilab-common dependency.
+
+--HG--
+branch : 1.4.0","f49c638bf5c9471e8eea78730831930296eb72f6",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:16:25","Add changelog entry.
+
+--HG--
+branch : 1.4.0","9b10c8c8b461f98a2c026f73af8c5ff2cbb75cd1",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:48:51","Remove __docformat__.
+
+--HG--
+branch : 1.4.0","be803a99552fe0bb08d4d88952e3ce6f9d9e5ccd",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:50:30","Remove __docformat__.
+
+--HG--
+branch : 1.4.0","b30b58ef1fc2d063e3ed8d58635d3a30481bc68f",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-07-25 14:54:45","Simplify decorators.cache.
+
+--HG--
+branch : 1.4.0","c0b6fe32a11528078542447bce30dea59f786e00",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-27 15:05:03","Don't forget to import six.
+
+--HG--
+branch : 1.3.7","aa2359afeddcc9db45a110aed0e2d16c336cebb3",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-27 15:08:06","Going up to 1.3.7.
+
+--HG--
+branch : 1.3.7","7e73ba32e23e2bce39251027e0c64c85600d6420",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-27 15:18:54","Limit the logilab-common version for now.
+
+--HG--
+branch : 1.3.7","d91da7593acd908cee83eef94dc9b4b5d22ba406",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-27 15:24:57","Use pylint 1.4.3 for now in the CI for astroid 1.3.7
+
+--HG--
+branch : 1.3.7","e6fb2e338668113172a677a711768f56cbeb24e0",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-07-27 15:30:07","Added tag astroid-1.3.7 for changeset cda2deee65e3
+
+--HG--
+branch : 1.3.7","2561c386760b5a66cea9f8739954617010b3a130",""
+"pull_request_commit","373","pycqa","astroid","dashea","2015-07-30 17:07:59","Add a timeout parameter to Popen.communicate in PY3K.
+
+Python 3.3 adds a timeout parameter to communicate(), so allow it if using
+Python 3.
+
+--HG--
+branch : 1.4.0","557b34f323eec6d22dfe8c70b9a76dc9cef6eb4e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-02 07:03:45","There's a new separate step for transforms.
+
+Until now, the transforms were applied at the same time the tree was
+being built. This was problematic if the transform functions were
+using inference, since the inference was executed on a partially
+constructed tree, which led to failures when post-building
+information was needed (such as setting the _from_names
+for the From imports).
+Now there's a separate step for transforms, which are applied
+using transform.TransformVisitor.
+
+There's a couple of other related changes:
+
+      * astroid.parse and AstroidBuilder gained a new parameter
+        `apply_transforms`, which is a boolean flag, which will
+        control if the transforms are applied. We do this because
+        there are uses when the vanilla tree is wanted, without
+        any implicit modification.
+
+      * the transforms are also applied for builtin modules,
+        as a side effect of the fact that transform visiting
+        was moved in AstroidBuilder._post_build from
+        AstroidBuilder._data_build.
+
+Closes issue #116.
+
+--HG--
+branch : 1.4.0","8ac050f4b8a4b4a87343beb3503bd01275d507de",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-02 19:38:09","Prepare release 1.3.8
+
+--HG--
+branch : 1.3.8","ea7739523e4a3ff373ae01431e3ac8460d0013eb",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-02 20:37:43","Remove trailing whitespace.
+
+--HG--
+branch : 1.3.8","6b71db693eb148b1c776192cf1f74be474b804cb",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-02 20:38:13","Added tag astroid-1.3.8 for changeset ee51df3a10b6
+
+--HG--
+branch : 1.3.8","77e9bc8707b72ee52e6d6ccafb974b8dbb351f8a",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-05 21:58:22","Move the determination of a function type from rebuilder to Function.type.
+
+Closes issue #162.
+
+--HG--
+branch : 1.4.0","2473d1eddc8c551472c72ed95fdba25fc540de5e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-06 07:57:59","Delegate the implementation of BoundMethod.infer_call_result to the parent.
+
+The implementation is the same, they both delegate to _proxied for inference,
+but UnboundMethod supports custom logic for handling object.__new__, which is
+also desired for BoundMethods.
+
+--HG--
+branch : 1.4.0","1b51d2120869ebb31ac30fd489f30d7f7d18f670",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-06 08:06:00","Remove decorator support for Python < 2.6, since it's dead code anyway.
+
+--HG--
+branch : 1.4.0","451c1cc219ef484b970c2d9cd4f192381698b1e6",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-06 08:11:48","decorator_list is always expected on Python > 2.6.
+
+--HG--
+branch : 1.4.0","c66019566856ce96adec8100a8c48c0f856aad0e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-06 11:38:22","Move the determination of extra_decorators directly into Function, as Function.extra_decorators.
+
+Previously, the extra_decorators computation was done in the rebuilder,
+which isn't the proper way to do it, since the rebuilder should be
+responsible only from transforming vanilla ast trees to astroid trees.
+Now, Function exports a propery called `extra_decorators`, which computes
+at runtime the callables that are wrapping a function in a class scope.
+
+--HG--
+branch : 1.4.0","1691ad7f35cae6dc567321106599639f67becefd",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-08 20:46:08","Add CallFunc.keywords, instead of putting together args and kwargs in CallFunc.args
+
+This patch improves the similarity with the Python's AST. Until now,
+CallFunc.args contained both the positional arguments and the keyword arguments,
+which was misleading and always it was required to filter out keywords when working
+with arguments.
+
+--HG--
+branch : 1.4.0","497f345b522ef217ec0b206308a20c9dc4422d12",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-08 23:06:38","Move YES to astroid.util.
+
+YES is needed by other components of astroid, components which aren't
+necessarily related to astroid.bases. In order to reduce circular
+interdependencies between components, YES is moved into a new module,
+tailored for various *utilities*.
+
+--HG--
+branch : 1.4.0","cebc16b2bcc6665cc14580289400a5c1faa6aead",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-08 23:43:03","Drop code that inspects sys.modules unconditionally, since it breaks the expectancy of a static analysis tool.
+
+--HG--
+branch : 1.4.0","fda55823e0914b739fff6b0cfe09a26118029776",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-12 17:59:36","Move InferenceContext and CallContext into astroid.context
+
+In order to reduce circular dependencies between components,
+CallContext is moved into a new module, astroid.context.
+At the same time, for increasing the cohesion inside astroid.bases,
+InferenceContext was moved as well into astroid.context.
+
+--HG--
+branch : 1.4.0","f4ef1a00f1036f974b69b9409c9ca3e61b5be3b8",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-20 17:34:18","Introduce a base class for Set, List and Tuple in order to avoid code duplication. Closes issue #160.
+
+--HG--
+branch : 1.4.0","8e096e38c82efd29529baa0979af05cfb447adf3",""
+"pull_request_commit","373","pycqa","astroid","obsc","2015-08-21 00:39:19","Fix infinite loop in metaclass inference
+(grafted from 43857b00bf3e6f2f93358f7ea89a7588828045c0)
+
+--HG--
+branch : 1.4.0","809c9eaab13b3ad17dc662e1f18946f7226fe924",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-22 16:24:33","Install lazy_object_proxy as a dependency.
+
+--HG--
+branch : 1.4.0","de5dca25a6d07e233e9a2009a68f779a38875733",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-25 16:00:42","Use a stack level of 2 when emitting warnings, since the call site of the deprecated method should be warned upon.
+
+--HG--
+branch : 1.4.0","92911d8b09d1a3d2256594b8ce7251ca396b0813",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-25 16:34:58","Emit a warning when an old AST name is used in an isinstance call.
+
+--HG--
+branch : 1.4.0","08268afe0c7693468501c4073c197ea6fbd051ac",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-25 17:41:47","Add ChangeLog entries for the newest changes.
+
+--HG--
+branch : 1.4.0","a4dbb93322c9e92bc83deded8d2467c95a5e2cbe",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-25 18:37:34","Change the order of the mixins, so that mixins are the first in the MRO before the actual roots.
+(grafted from 645389e19f48c036c1e842d0749706380e56fa02)
+
+--HG--
+branch : 1.4.0","9598c9ec813948579d64949fca15269676bdd486",""
+"pull_request_commit","373","pycqa","astroid","ceridwen","2015-08-26 14:16:54","Improve decorator introspection using wrapt and functools.wraps
+(grafted from e6137c433705bf363bebd0d23f6c8e625d26c821)
+
+--HG--
+branch : 1.4.0","027a6e5b6872b91f924e57191aaffe2233f00334",""
+"pull_request_commit","373","pycqa","astroid","ceridwen","2015-08-26 14:50:45","Add wrapt to pkginfo
+(grafted from 9c2ea4f4a393cb09dde9a1af0a62683e5778db83)
+
+--HG--
+branch : 1.4.0","655e12f48d38eb067fb8d1bebea5f89520455d95",""
+"pull_request_commit","373","pycqa","astroid","obsc","2015-08-26 16:49:54","Add new _find_metaclass method to maintain signature of metaclass
+(grafted from 51eac3121268902edb547dc8908f3e9f294829c3)
+
+--HG--
+branch : 1.4.0","8cfa486701b40418916dd1a881d02b3f6b92e36f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-26 17:41:35","Make seen a parameter with a default value, instead of passing explicitly None.
+(grafted from 01eda9eae74feced48d627f9000bd5be2ddb1029)
+
+--HG--
+branch : 1.4.0","9a2803f2c65f5cfec8aa513252439077055341f6",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-26 17:51:18","functools.wraps needs to be called with the decorated function and the implementation of cached decorator was passing the bad arguments
+(grafted from 2a66d7f8cf83616b3eac63bcae61efe655678ab7)
+
+--HG--
+branch : 1.4.0","c13857606dda6be0d48a3f40d7466391b5ab951b",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-08-26 19:13:33","Update the version to reflect what will be released. Some users are using the repo's version and it's misleading to have the same version for the released code.
+(grafted from bd95ace775ed60df863fa297443c47c2cf0ff3b5)
+
+--HG--
+branch : 1.4.0","3b98148205d608de54006e92bec6eded37a33f20",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-05 14:24:32","Don't use AsStringRegexpPredicate for detecting functional Enums.
+
+This patch fixes a problem with the detection of enums, which detected
+a class named Enumeration as a builtin enum, even if there was no correlation
+between them.
+(grafted from 1bb9d1375f71e2ed47169982050d679ea190a29f)
+
+--HG--
+branch : 1.4.0","1de5bd8d1de8d888d8660f9b7341494a1cfa2481",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-07 19:57:45","First pass of the Python 3.5 support.
+
+--HG--
+branch : 1.4.0","9abcce4e83d81d8675eb836f51c37b469a0a41a8",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-07 20:53:41","Second pass of the Python 3.5 support: adding Async nodes.
+
+--HG--
+branch : 1.4.0","4f0203fddc5d00ea3a6d7ae28a7d4ed31be76e35",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-08 21:16:44","Improve the understanding of arguments
+
+This changeset introduces a better way to understand arguments
+passed into call sites. The original logic was moved from
+astroid.context.CallContext, which become only a container for
+arguments and keyword arguments, to astroid.arguments.ArgumentInferator,
+a new class for understanding arguments.
+
+--HG--
+branch : 1.4.0","523f0c616824aa620dfdffce0c76bf5e2f99568d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-12 11:27:21","Add Call.starargs and Call.kwargs properties
+
+They were added in order to have a minimum level of backward
+compatibility, since they were removed from the class. This is also
+an easy way to retrieve them, instead of looking explicitly for them
+in args or keywords respectively.
+
+--HG--
+branch : 1.4.0","55edbec58a50dfa70425aaa113cac0a6ea49e94f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-24 18:53:24","Add brain tip for understanding numpy.core's mutation of the __all__ variable
+
+Since astroid doesn't understand properly augmented assignments, we have
+false positives with pylint when trying to find numpy attributes defined
+in some submodules, since numpy and numpy.core generates the __all__
+list by appending values from the subimport's __all__.
+This should fix pylint's issue #453.
+
+--HG--
+branch : 1.4.0","ff44ac707935499c4d5f467bd9f11d19addc2e8f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-24 21:33:02","Fix a crash when inferring subscripts which returned the same object all the time.
+
+--HG--
+branch : 1.4.0","3336f623e428e38c6d9961bb1875377213fb9c44",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-26 00:15:36","Add numpy transform tip for understanding numpy's calculation of __all__.
+
+--HG--
+branch : 1.4.0","ab4dd0eb17f91d8052227db5336954d493d2a7eb",""
+"pull_request_commit","373","pycqa","astroid","ceridwen","2015-09-26 17:33:47","Hopefully actually fix #185
+
+--HG--
+branch : 1.4.0","1de79044f831e803f75154712aa1a4698fb35b04",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-27 00:38:55","Add test for issue #183.
+
+--HG--
+branch : 1.4.0","1c400c2d314ae9dfa901d0992f7536b72221eab7",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-28 22:03:41","Fix a crash which occurred when extra_decorators was considering non-class level assignments to the same name as decorator calls.
+
+--HG--
+branch : 1.4.0","dc6d295fcf89b5033f1b46c00fd76e79d60f441b",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-29 12:42:30","Import test for pylint regarding context inference in relation with factory methods.
+
+--HG--
+branch : 1.4.0","fbf8d1849c2746e5bc7c719593e3dd9e2b4e95a6",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-09-30 11:25:34","Import test from pylint regarding a crash that used to occur a long time ago.
+
+--HG--
+branch : 1.4.0","c929685d26223c0e96837f682f5b32d6e5d7dc45",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-03 10:47:06","Make context an optional argument for BoundMethod.infer_call_result.
+
+--HG--
+branch : 1.4.0","5659a61e46aecb6e41cc92a3bf6ae9e3c69a52df",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-03 10:54:08","Skip objects which aren't callable when inferring an instance's call result.
+
+--HG--
+branch : 1.4.0","bc7174c2c73fcd474d18953a22219d61cae3ecd8",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-03 12:26:33","Add a test for issue #188, which was triggered because the transforms weren't executed in a separated step. Closes issue #188.
+
+--HG--
+branch : 1.4.0","19197c89c23ef613ce7aa30ad3eb3630ff72b4c9",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-05 22:22:55","Add a new node, DictUnpack, for representing the unpacking of a dict using PEP 448
+
+This is a different approach than what the builtin ast module does,
+since it just uses None to represent this kind of operation,
+which seems conceptually wrong, due to the fact the AST contains
+non-AST nodes. Closes issue #206.
+
+--HG--
+branch : 1.4.0","e3f02a3fab7c6ed033e9003eb31648d7c8a96fd5",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-05 22:37:27","Remove the value from the DictUnpack node, since it's used mostly to represent the ** operation.
+
+--HG--
+branch : 1.4.0","9a465a0aad08bddcfc5ae01300c7895d4a3562d2",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-05 22:59:20","Add support for looking up into DictUnpack's value in Dict.getitem
+
+--HG--
+branch : 1.4.0","e47120b9fc216f787d2b1fd049072c6a78ced9dc",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-06 14:13:09","Add brain tips for PyQt signals for supporting emit / connect and disconnect methods on them
+
+--HG--
+branch : 1.4.0","d57b4071cece6e0814b6d001df6249b8838b16b5",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-07 10:13:29","Change the signature of the ArgumentInference class to accept directly the arguments and the keywords of a call site.
+
+--HG--
+branch : 1.4.0","e5f1b48721bb29a3a127675ff4d2c2c7cd5aa351",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-07 14:22:48","Change arguments.ArgumentsInference to arguments.CallSite
+
+This new class can be used to obtain the already unpacked arguments
+and keyword arguments that a call site uses, which is especially
+useful when some of arguments are packed into Starred nodes.
+
+--HG--
+branch : 1.4.0","461f5ad7ec15a3d076ba91c88261418049c71003",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-07 22:07:09","Make duplicated_kwargs a public API.
+
+--HG--
+branch : 1.4.0","6e693aa45827f8078f1c04f9a89f546e39ec8a53",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-07 23:07:59","Support PEP 448 unpackings in dict calls.
+
+--HG--
+branch : 1.4.0","df3ff310a46654e2cecf99e28de6d8661e3e8a23",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-09 18:30:22","The functional form of Enum returns a class, not an instance.
+
+--HG--
+branch : 1.4.0","104555b9f08b2bf84ec24ed479b831d2f044bf1f",""
+"pull_request_commit","373","pycqa","astroid","jayvdb","2015-10-19 07:48:15","Fix SyntaxError on Python 2 for print function
+
+--HG--
+branch : 1.4.0","7aa6992f712f4d8e325ada8e8d9898e9f7e6911a",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-22 09:07:02","Replace the use of print in python3/data/module.py, since it complicates the testing of as_string.
+
+--HG--
+branch : 1.4.0","98e41442f6e9018ffcb38a761011f9c78b323b3e",""
+"pull_request_commit","373","pycqa","astroid","dmand","2015-10-23 21:45:36","Fix inference of list multiplication operation.
+
+Old implementation was pushing all the possible values inferred from a node
+into a list, thus creating extra items in case when there are multiple infered
+values yielded. New implementation takes only first infered value, preserving
+the expected size of the list.
+
+Fixes pylint's #559.
+
+--HG--
+branch : 1.4.0","c1a0546d3e648fd3e003234775cafce349fbe350",""
+"pull_request_commit","373","pycqa","astroid","dmand","2015-10-24 13:39:40","Use safe_infer for inference of elements in list multiplication operation
+
+Now inference yields YES instead of list item value when multiple
+values are inferred for one list item.
+
+--HG--
+branch : 1.4.0","724b82119e6ab2f98eefacabc8809544a6962190",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-26 12:30:08","Class.getattr('__mro__') returns the actual MRO.
+
+Also, Class.getattr('__bases__') returns actual bases.
+It previously didn't work correctly, because it was putting the
+entire ancestors into the Tuple object and it put those classes
+into the wrong attribute.
+Closes issue #128.
+
+--HG--
+branch : 1.4.0","0219936200703447f2073768cc32218a6ee1deab",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-26 21:10:09","Rename the brain files into something more suggestive. Closes issue #208.
+
+--HG--
+branch : 1.4.0","5e35bab2df94737fc85f761a5b129c80dda63c52",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-28 13:27:44","Rename the brain files again to avoid naming conflicts.
+
+--HG--
+branch : 1.4.0","f87efb1ede9dbcc6562fdfb9fb1b31b444eaf34f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-10-30 10:57:03","Add missing start and shutdown methods to the SyncManager tips.
+
+--HG--
+branch : 1.4.0","694110baed6b509e1dcfc8f5350c0a5f38cd0b1d",""
+"pull_request_commit","373","pycqa","astroid","dmand","2015-11-04 10:53:03","Add __getitem__ method to collections.deque inferface description.
+
+--HG--
+branch : 1.4.0","ea0b63b005662ae1a1a1cebc1dad67f45eb79e27",""
+"pull_request_commit","373","pycqa","astroid","ceridwen","2015-11-09 19:26:22","With the tox bug fixed, it's now possible to use one tox.ini for all testing
+
+--HG--
+branch : 1.4.0","a08a72ca2388f722aa0317363d7d4b41408c3e91",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-14 09:03:41","Fix test failures.
+
+--HG--
+branch : 1.4.0","00ee5f1d800e5481a0e6c3f8592164390662d1c0",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-14 09:43:01","Remove interfaces API, which was moved in pylint / pyreverse.
+
+--HG--
+branch : 1.4.0","18cdf80dcb285369419f1037c3460e0ea6b6a4a1",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-14 10:28:00","Remove tests related to astroid.Project, which was moved back into pylint.
+
+--HG--
+branch : 1.4.0","154c4fb26a1191e1c5e2b1eefca74677b0adfd78",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-14 17:52:26","Fix test on python 3.
+
+--HG--
+branch : 1.4.0","e63dd6050cd141417d3f27ded7ec44cd11bcf23e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-18 09:58:51","Rename ass_type, AssName and other nodes in order to be similar to ones provided by the builtin ast module
+
+The commit is just the renaming part from changeset bcca09ca.
+
+--HG--
+branch : 1.4.0","ba9b1b64876473b7d39985f8b9c8fc50557e0e85",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-18 10:10:05","Use the correct node for the isinstance check.
+
+--HG--
+branch : 1.4.0","c82a8771097edaa0a6e4c5ef3f838992ae5183bd",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-18 14:15:07","Fix the attribute name.
+
+--HG--
+branch : 1.4.0","50ea772d645e6b80f451da0d0bb13aab3b31c94c",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-18 17:19:04","Use the proper constructor for Await and handle properly the presence of .starargs and .kwargs on Python 3.5
+
+--HG--
+branch : 1.4.0","92433198afd87270dd9759f2cd6e77e7e579a30c",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-18 18:44:06","Fix the order of arguments for _format_args.
+
+--HG--
+branch : 1.4.0","946f0b4a72035901142c3d80023bea2b4a2146f8",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-19 14:24:50","Remove logilab.common import.
+
+--HG--
+branch : 1.4.0","b3bd78ba25bdf56a2c6f8f9140b2623b5f5a2d8f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-19 14:50:51","Use the new node names.
+
+--HG--
+branch : 1.4.0","b403da1a81028d00fed5150d8748ba8aa1a93d36",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-19 15:04:54","Fix tests.
+
+--HG--
+branch : 1.4.0","f0778c57516a89fc1e82d7e32ad533275e55e44d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-19 15:46:42","Fix pylint errors.
+
+--HG--
+branch : 1.4.0","da0276ffb914ee2f9f34a4ae5f492c3dddbb17d6",""
+"pull_request_commit","373","pycqa","astroid","ceridwen","2015-11-20 23:10:38","Add deprecations for node attributes in scoped_nodes
+
+--HG--
+branch : 1.4.0","96228676c3692f341789f533406f2ae2d0ece4ff",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-21 00:05:06","Materialize the items when iterating them in Dict's constructor
+
+This fixes a bug that can occur when the items object is changed during iteration.
+It can happen when items is sys.modules, coming through inference at some point
+and if there's an additional installed library that modifies sys.modules when
+it is imported, as it is the case for pytest.AliasModule.
+
+--HG--
+branch : 1.4.0","408eec4aa3f3f93a02d7668779c777cd900f16b8",""
+"pull_request_commit","373","pycqa","astroid","ceridwen","2015-11-21 02:31:47","Add deprecation warnings and forward-compatibility APIs for node attributes
+
+--HG--
+branch : 1.4.0","3c24884c5b460aa5c1e5200a6b3516df140c77a5",""
+"pull_request_commit","373","pycqa","astroid","ceridwen","2015-11-21 02:32:59","Merge fix for sys.modules changing
+
+--HG--
+branch : 1.4.0","f893a602afc45eb0cff265e2cc8952eb031337f6",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-23 12:17:01","Handle the cases when a List can contain Uninferable as its elements
+
+This can happen for instance when the list contains objects which
+weren't inferable in the first place. There were a bunch of places
+affected by this bug: unpack_infer, the inference of list additions
+and the handling of the namedtuple's fields.
+
+--HG--
+branch : 1.4.0","918f8278f9d4a204361d1c46cefb744d836b5ecf",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-26 12:31:21","Add __setitem__ to deque's brain tip.
+
+--HG--
+branch : 1.4.0","0b94e7e4e922bcd47414f0f7e4cd42b39b48665d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-26 15:11:42","Add __delitem__ to deque's brain tip.
+
+--HG--
+branch : 1.4.0","8ca55154a557d6fd8cd048918dac985e10f10215",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 15:18:53","Prepare the release.
+
+--HG--
+branch : 1.4.0","71c4cc5a6ee59edf0bad1d81cf79295b5eb3f996",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 16:03:32","Disable redefined-variable-type for now.
+
+--HG--
+branch : 1.4.0","469b8151b451627c9a9f03e2e13be9b755d2a92e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 16:25:32","Added tag astroid-1.4 for changeset 9a398270ddec
+
+--HG--
+branch : 1.4.0","916ce790ef67c329531c74c03824f2d0cecd8e86",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 17:13:55","Add astroid as a dependency for pylint, since it's not picked up.
+
+--HG--
+branch : 1.4.0","4a6e9d71342805cdf9a4f4a1abf3122d28590a97",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 17:14:47","Removed tag astroid-1.4
+
+--HG--
+branch : 1.4.0","d6660f21823902fac82b6806fe9bdcbc9fd8ef4c",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 17:15:00","Added tag astroid-1.4 for changeset 5b5738496f0c
+
+--HG--
+branch : 1.4.0","6e37cb55bdfa9de0048a08fad1f0ca6989df7c76",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 17:27:15","Removed tag astroid-1.4
+
+--HG--
+branch : 1.4.0","c952e53d65a0ff047018b43c5addd03a13fa34c9",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 17:27:28","Don't forget to install pylint as well.
+
+--HG--
+branch : 1.4.0","920176392adabfbb1c62310c1c1d182f72df1df4",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 17:27:31","Added tag astroid-1.4 for changeset 3c78efb03537
+
+--HG--
+branch : 1.4.0","7b1d8950de39d9c9037a5e26a5a2b3a725931bc3",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 20:11:22","Add support for handling Uninferable nodes when calling as_string
+
+Some object, for instance List or Tuple can have, after inference,
+Uninferable as their elements, happening when their components
+weren't couldn't be inferred properly. This means that as_string
+needs to cope with expecting Uninferable nodes part of the other
+nodes coming for a string transformation. The patch adds a visit
+method in AsString and ``accept`` on Yes / Uninferable nodes.
+Closes issue #270.
+
+--HG--
+branch : 1.4.0","0b910bde09d4c914ec577ce70810851633b81c34",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 20:45:14","Prepare a new bug fix release.
+
+--HG--
+branch : 1.4.0","ef20af65a00488feea31f269a78c7ea3040efdbb",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-11-29 21:08:31","Added tag astroid-1.4.1 for changeset 90a41f5f9e8f
+
+--HG--
+branch : 1.4.0","bcd6dfe5f98fe27ed54bfbb45410134b6bc85d56",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-01 16:49:47","Use printf-style formatting in as_string, in order
+ to avoid a potential problem with encodings when using .format.
+
+
+Closes issue #273.
+
+--HG--
+branch : 1.4.0","900747213bfb106eacf650e09ef821b3289df2ac",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-05 11:25:34","assigned_stmts methods have the same signature from now on.
+
+They used to have different signatures and each one made
+assumptions about what could be passed to other implementations,
+leading to various possible crashes when one or more arguments weren't given.
+Closes issue #277.
+
+--HG--
+branch : 1.4.0","653e3d14b4358866d1f33fd0a4537733b70a624f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-08 09:54:18","Make pylint happy.
+
+--HG--
+branch : 1.4.0","2f2ea80047aea471afb0db4f5cb39fe869cd809e",""
+"pull_request_commit","373","pycqa","astroid","dashea","2015-12-11 20:04:21","Check for flags/enum types before checking for int
+
+gobject-introspection enum and flag types inherit from int, so the check
+for a unusable string represenation needs to happen before checking if
+the values can be used as integers. This fixes syntax errors in the
+generated stubs for gobject-introspection modules containing flag and
+enum types.","e97b7765624d82187809f4594dd954f0b9c95cc6",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2015-12-11 12:00:26","Delete .hgtags","f15d6cb1cc3ba99cc27339e3212e36822cf89576",""
+"pull_request_commit","373","pycqa","astroid","arusahni","2015-12-10 11:37:34","Port hgignore to gitignore.
+
+For future iterations, we should switch to using pre-canned ignore lists
+from https://gitignore.io.","005eb73443096ba5ad2cec0225f454637e465e45",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-11 07:14:43","Include a travis.yml file for configuring Travis builds
+
+This patch also brings a couple of small changes to the
+setup.py file, in order to make it work installing from
+another directory.","456d9581f00ad7082fcd0ca348f134b311016834",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-10 22:02:57","Change the extension of the README file, so it gets rendered by github.","8cb5a9c9b9c0bac0bd53681f3541e378bdb83ece",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-11 12:19:12","Make _get_file_from_object more robust by verifying explicitly the extension
+
+This should fix a crash on PyPy, which occurred because
+_get_file_from_object was  returning files with .pyc extension, without
+stripping the 'c' from it.","4b99a460aa9f49ca159fbcfb047886ccfaef766b",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-15 13:13:18","Add support for not byte-compiling test files invalid by design.","19a0c822b34225b61c9909059845a8288df63c3d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-15 15:22:22","Add a test for is_standard_module with datetime.
+
+This is an interesting example, since datetime, on pypy,
+is under lib_pypy, rather than the usual Lib directory.","14285674261046b8546fa249ce9e974ebd04dfb0",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-15 16:06:44","Add lib_pypy into the list of standard library modules for PyPy
+
+Unfortunately it is not detected in any way by
+distutils.sysconfig.get_python_lib. This can detect datetime as a
+builtin module on PyPy.","7ac5cdcbc95c4c3ff2ad74487f7533b7d2916dc3",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-15 17:16:57","Improve the detection of lib_pypy, which was faulty.","1a1551fba30a4e9d27498105f9013bf1ac653c51",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-15 19:12:38","Move code which doesn't trigger DistutilsPlatformError outside of the try block.","59969400c706bffc06d530cb0a09b787c16244e8",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-15 19:41:30","Add lib_pypy from the real installation of Python
+
+This solves a problem with pypy and virtualenv, the latter deciding
+not to copy some of the modules into the virtual environment, such
+as datetime, which means that STD_LIB_DIRS needs to be updated in
+order to look there as well.","141d03f5bf8b4222299826b8758b87b642c9d7e3",""
+"pull_request_commit","373","pycqa","astroid","laura.medioni@logilab.fr","2015-12-16 10:18:22","Add information about parent module to the elements defined in this module
+
+solves issue #265","1d773dd4ac0660c8307622f8bb9441b52dd3fe04",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-18 19:08:50","The slots() method conflates all the slots from the ancestors into a list of current and parent slots.
+
+We're doing this because this is the right semantics of slots,
+they get inherited, as long as each parent defines a __slots__
+entry.","140146588893702631b49809af5c1ba9f361ddfe",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-18 19:16:52","Trigger NotImplementedError with slots message before mro gets executed (will fail for old style classes)","433531cd5bf9f2424bf380325b33c198ed0bae5e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-21 00:06:08","Prepare 1.4.2 release.","55e38faa8240ad2324376a32d0c1be27ec44e8dd",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-21 10:33:56","Make the pkg_resources brain tip a bit more specific
+
+The brain tip for pkg_resources was lacking proper returns,
+which led to an inadvertent assignment-from-no-return false positive,
+which assumed that the functions are indeed not returning anything
+useful. The bug was uncovered by 058a28.","935f68f7582cd6400837f714a333170cdfa287f3",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-21 10:40:04","Add changelog entry for 935f6","f98f7780ae05393bbbd8a0d108bfbb1b2f68b6d6",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-19 21:42:09","Add /usr/lib and /usr/lib64 to the list of stdlib paths","b1659cc9f75c0a6e09c2c83d60614f13191b3e3c",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-21 11:56:54","Add ChangeLog entry for b1659cc","f54683515f902e970bce878d5531f28eabc132ad",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-21 16:10:18","Add a new possible property-descriptor, lazy.
+
+Since we don't understand descriptors at all, we're relying
+on a list of possible property-descriptors, that is, decorators
+which transforms a method into its value, the exact process that
+a property does. While this is a bad approach, it works, at least
+until we can provide support for this high level of understanding.
+Closes #279","fcd146bd2d82fe57db931cfdec5b9414783cd5d8",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2015-12-24 15:03:56","Prepare 1.4.3 release","9f297c8712d2dbbc9b6b4fb104896b8cd2c18ff5",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-01-11 22:50:49","Enforce strong updates per frames.
+
+When looking up a name in a scope, Scope.lookup will return
+only the values which will be reachable after execution, as seen
+in the following code:
+
+   a = 1
+   a = 2
+
+In this case it doesn't make sense to return two values, but
+only the last one.","b2ece4f4d0e32cdc4791ccb7e7ba6758ac615491",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-01-14 21:11:24","Support accessing properties using super().","da683ae017cc5e29a16f63b670272821afdf3b29",""
+"pull_request_commit","373","pycqa","astroid","mbdevpl","2016-01-14 10:47:11","added 3 pkg_resources functions to brain
+
+[Those 3 are] methods of WorkingSet objects [that] are also available
+as module- level functions in pkg_resources that apply to the default
+working_set instance. Thus, you can use e.g. pkg_resources.require()
+as an abbreviation for pkg_resources.working_set.require()
+
+above taken from:
+https://pythonhosted.org/setuptools/pkg_resources.html#basic-workingset-methods
+
+this fixes https://github.com/PyCQA/pylint/issues/780
+
+Signed-off-by: Mateusz Bysiek <mb@mbdev.pl>","547117638d99bf3cbc8a2e070ac139a0b6422158",""
+"pull_request_commit","373","pycqa","astroid","dbaum","2016-01-14 17:14:39","Fix unpack_infer to fail if results are empty
+
+This should prevent a StopIteration leaking when next is called
+over unpack_infer.","d4f0e00eab3ad48e85ed40c7bb553dec949075a9",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-01-15 13:28:49","raise_if_nothing_inferred is in bases, not in decorators.","8d035f7e3eb3834a48545998101da903dd833568",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-01-15 17:01:24","Prepare 1.4.4 release.","33f7812ddda513315ec7c3e0ae3200ab3b0d6551",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-01-15 17:04:40","Fix pylint warnings.","942577fc5b5c44bc53937a9131a4e9ec476590d4",""
+"pull_request_commit","373","pycqa","astroid","jcristau","2016-02-10 14:15:02","doc: fix build
+
+Stop hardcoding an outdated version number, don't reference nonexistent
+_static directory, and fix ""inference"" module reference.
+
+Signed-off-by: Julien Cristau <julien.cristau@logilab.fr>
+(cherry picked from commit f505daf0bdd2b4dab1297b75f47e1f047bf142ec)","44dbc8a7d89cdf7027ea6fc50fd95586664de43d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-02-16 18:15:20","Set the parent to the BinOp node when inferring nodes created during binary operations
+
+In order to do so, we had to change the signature of infer_binary_operation to receive
+the binary operation instead of the operator itself.","ce80c835a492ccdf05b9786f0e0960327a51826e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-02-18 21:55:32","imported_names() got replaced by public_names()
+
+Our understanding of wildcard imports through __all__ was
+half baked to say at least, since we couldn't account for
+modifications of the list, which results in tons of false positives.
+Instead, we replaced it with public_names(), a method which returns
+all the names that are publicly available in a module, that is that
+don't start with an underscore, even though this means that there
+is a possibility for other names to be leaked out even though
+they are not present in the __all__ variable.","1d5bf7ec3c74496e2b9b5772cbe953a962ccd3d9",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-03-11 01:04:54","decoratornames() does not leak InferenceError anymore.","6294d0d503baa4d2d1e8c814415e037da9991fd5",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-03-21 18:18:55","Prepare 1.4.5","2499594771a8ecf00ddb798107e46ce4fc12820c",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-03-21 18:23:46","Remove trailing whitespace.","fcf5925ce15afbac4630aad07f19bd41d1f6854f",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-03-24 17:31:47","Add brain tips for the ssl library.","10122275a6b6aa6b39d8085d07a9c1ea193d4946",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-04-13 11:32:37","Functional form of enums support accessing values through __call__.","ce8966980cd4bceecbe23969e3f03258a473b51e",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-05-20 16:18:45","Fix a crash which occurred when the class of a namedtuple could not be inferred.","e888fb3c45178929259b8544100c5b9e70db7a79",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-06-06 14:27:05","Prepare 1.4.6","bb3ff4e34620ed442fbddb3c6f479bfe65c47946",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-06-27 17:24:18","Add more up-to-date package information. Close #330","5007c49ef63936ec7e4889c211801a1971598060",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-05-25 13:45:38","Stop saving assignment locals in ExceptHandlers, when the context is a store.
+
+This fixes a tripping case, where the RHS of a ExceptHandler can be redefined
+by the LHS, leading to a local save. For instance, ``except KeyError, exceptions.IndexError``
+could result in a local save for IndexError as KeyError, resulting in potential unexpected
+inferences. Since we don't lose a lot, this syntax gets prohibited.","2c48ede51875814bc039279462f45d7eeb219da3",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-07-02 11:02:51","Prepare 1.4.7","14fe475f76e1817521b4542f5db27a642affd2ca",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-07-07 16:13:31","Add the new date of the release.","106661a53742d611e1833116171e3d58a2141731",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-07-26 22:51:15","Add `returns` into the proper order in FunctionDef._astroid_fields
+
+The order is important, since it determines the last child,
+which in turn determines the last line number of a scoped node.","8f1d6bba30aeae80770df4a85d8d497a2d73a39d",""
+"pull_request_commit","373","pycqa","astroid","PCManticore","2016-07-26 23:10:48","Prepare 1.4.8","44f0753684247a246d36cf27bc5f4a0d176d176b",""
+"pull_request_commit","373","pycqa","astroid","The-Compiler","2016-08-22 08:21:50","Add pytest 3 compatibility in brain_pytest (#357)
+
+This change adjusts brain_pytest for pytest 3, while also reintroducing pytest 2 compatibility.","436687c385dbeebcfb7faaedc745491a5a115195",""

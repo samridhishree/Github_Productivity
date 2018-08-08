@@ -1,0 +1,87 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","469","idan","oauthlib","orenmazor","2017-03-29 17:14:22","@thedrow @bjmc Hey guys, looks like there are some  problems validating redirect_uris that have anchors in unexpected places (eg angular uris).
+
+I extended the regex and added a really basic test.
+
+thoughts?","start issue","Add anchors to valid chars in a redirect_uri"
+"issue_closed","469","idan","oauthlib","thedrow","2017-03-31 08:59:30","","closed issue","Add anchors to valid chars in a redirect_uri"
+"pull_request_title","469","idan","oauthlib","orenmazor","2017-03-29 17:14:22","@thedrow @bjmc Hey guys, looks like there are some  problems validating redirect_uris that have anchors in unexpected places (eg angular uris).
+
+I extended the regex and added a really basic test.
+
+thoughts?","52f197eae760d87791f1fdc85d558da1f4554635","Add anchors to valid chars in a redirect_uri"
+"issue_comment","469","idan","oauthlib","kevin-brown","2017-03-30 04:51:18","What's accepted by `pchar` is formally defined in [RFC 3986, Section 3.3](https://tools.ietf.org/html/rfc3986#section-3.3) and it doesn't contain `#` or `?`. This is because `pchar` defines what characters are allowed in the path, and the `#` defines the start of the fragment.
+
+The problem that you're running into is that the fragment is not formally defined as a part of the [absolute URI](https://tools.ietf.org/html/rfc3986#section-4.3), This should not normally be a problem, since the `redirect_uri` must be a ""URI"" and not an ""Absolute URI"" [per the specification](https://tools.ietf.org/html/rfc6749#appendix-A.6), but oauthlib is [validating it as an absolute URI](https://github.com/idan/oauthlib/blob/d2c7be6c38c9cc2dd3f5ba0dffaf38be42fcb418/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L299-L300).
+
+But oauthlib is actually doing it correctly, since there is a note in [RFC 6749, Section 3.1.2](https://tools.ietf.org/html/rfc6749#section-3.1.2) which defines acceptable redirection endpoints, which explicitly says
+
+> The redirection endpoint URI MUST be an absolute URI as defined by [[RFC3986] Section 4.3](https://tools.ietf.org/html/rfc3986#section-4.3).
+
+And later
+
+> The endpoint URI MUST NOT include a fragment component.
+
+So, there is an inconsistency within the specification, and oauthlib opted to lean on the safer side. After looking through [the errata](https://www.rfc-editor.org/errata_search.php?rfc=6749), I don't believe it's been reported.","",""
+"issue_comment","469","idan","oauthlib","bjmc","2017-03-30 07:33:04","You might check out this document, [""The correct use of the state parameter in OAuth 2""](http://www.thread-safe.com/2014/05/the-correct-use-of-state-parameter-in.html) by one of the authors of the RFC. It suggests encoding extra parameters your application needs into the `state` parameter that gets round-tripped during an OAuth2 authorization flow. Maybe that would be appropriate for your use-case?","",""
+"issue_comment","469","idan","oauthlib","orenmazor","2017-03-30 13:31:12","@bjmc I feel like it's wrong to use the `state` param as a generic bucket when it should be encourated to be used for security (i.e. csrf style). but also this is a uri issue and not extra parameters type of thing.
+
+@kevin-brown your comments make sense. but the long and the short of it is that angular uses these fragments for routing. as far as some more modern frameworks are concerned, routing requests via fragments is acceptable. which means that if I use oauthlib in my authentication server, people who use angular can't authenticate it.
+
+so the question becomes, do we want this to be strictly adhering or do we allow a superset of functionality?","",""
+"issue_comment","469","idan","oauthlib","bjmc","2017-03-30 13:39:16","@orenmazor It's not an either-or question. You can use `state` for csrf security and *also* encode extra information in the parameter. For example, a signed JWT that contains a nonce could also contain other information. If one of the spec authors is specifically saying it's intended to be used that way, I don't think it's wrong.
+
+I don't know very much about Angular, but it seems like it can be configured to work with URLs [without a fragment identifier?](http://stackoverflow.com/questions/14771091/removing-the-fragment-identifier-from-angularjs-urls-symbol)","",""
+"issue_comment","469","idan","oauthlib","kevin-brown","2017-03-30 13:41:43","> so the question becomes, do we want this to be strictly adhering or do we allow a superset of functionality?
+
+I can't speak for the project owners, but I will just leave the description here.
+
+> _A generic, spec-compliant, thorough implementation of the OAuth request-signing logic for python_","",""
+"issue_comment","469","idan","oauthlib","orenmazor","2017-03-30 13:42:22","@bjmc ah thats true. I kind of always wanted to keep `state` as small as possible but I guess nothing stops somebody from throwing as much of Genesis as you can fit in there :)
+
+I don't know much about angular either, but as far as it's concerned, those are valid urls. I don't know that I can dictate to people who integrate with us how they should structure their routing, to be honest (tho I'd definitely like to)","",""
+"issue_comment","469","idan","oauthlib","bjmc","2017-03-30 13:53:42","I obviously don't know the specifics of your situation with your users, but I think you'd be on pretty firm ground to say ""The RFC says it has to be this way...""
+
+FWIW, it seems like [the practice in Angular-land](https://www.thepolyglotdeveloper.com/2015/03/using-oauth-2-0-in-your-web-browser-with-angularjs/) is to have one page that's just responsible for handling OAuth2 callbacks, and then that will redirect back into the main application. That client-side redirect could be driven off something encoded in the `state` if they wanted.
+
+There may even be [library support](https://github.com/JamesRandall/AngularJS-OAuth2) so the app devs don't have to implement this all themselves.","",""
+"issue_comment","469","idan","oauthlib","orenmazor","2017-03-30 14:42:19","@bjmc totally. the only problem with that link is that its for implicit grants, which isn't what we're doing here :(
+
+the only other solution than updating the regex to allow more complex urls is to rely on the default redirect uri feature in oauthlib. the downside to this is that I'm then taking away their ability to have multiple possible redirect uris.
+
+tbh the regex solution smells the rightest, as the likelyhood of fragment urls going away anytime soon is basically 0. but if you guys are a strong no on this then I'll need to solve the problem some other way.","",""
+"issue_comment","469","idan","oauthlib","bjmc","2017-03-30 14:55:25","What are they wanting to do in Angular that isn't the implicit grant? A public Javascript client can't protect its `client_secret` so in that case they'll have to have some kind of back-end component, anyway.
+
+Modifying `pchar` to violate the spec smells wrong to me. I'm not one of the project owners so it's not my place to give a final decision, but I'm pretty iffy on it.","",""
+"issue_comment","469","idan","oauthlib","orenmazor","2017-03-30 14:57:04","> What are they wanting to do in Angular that isn't the implicit grant? A public Javascript client can't protect its client_secret so in that case they'll have to have some kind of back-end component, anyway.
+
+thats a great point actually. I assumed they're just piping the request to a backend, but if thats the case then maybe the backend can be reached directly.","",""
+"issue_comment","469","idan","oauthlib","thedrow","2017-03-31 08:59:27","I agree with @bjmc I don't think this PR should be accepted. I'd rather stick to the spec as best as I can in order to avoid security issues and/or compatibility issues with other clients.","",""
+"issue_comment","469","idan","oauthlib","orenmazor","2017-03-31 09:08:03",":+1: cool beans
+On Fri, Mar 31, 2017 at 4:59 AM Omer Katz <notifications@github.com> wrote:
+
+> Closed #469 <https://github.com/idan/oauthlib/pull/469>.
+>
+> —
+> You are receiving this because you were mentioned.
+> Reply to this email directly, view it on GitHub
+> <https://github.com/idan/oauthlib/pull/469#event-1023729192>, or mute the
+> thread
+> <https://github.com/notifications/unsubscribe-auth/AAXdF8P3MhuTmX4Zf_agSYm5Ws10esYLks5rrMBzgaJpZM4MtSN3>
+> .
+>
+","",""
+"pull_request_commit_comment","469","idan","oauthlib","bjmc","2017-03-29 17:42:31","Why are the requirements expanding as a result of this?","52f197eae760d87791f1fdc85d558da1f4554635","(None, '', u'requirements.txt')"
+"pull_request_commit_comment","469","idan","oauthlib","bjmc","2017-03-29 17:43:27","IMHO, requirements that are only needed for tests should go in a separate `test_requirements.txt` file, not part of the main `requirements.txt`","52f197eae760d87791f1fdc85d558da1f4554635","(None, '', u'requirements.txt')"
+"pull_request_commit_comment","469","idan","oauthlib","bjmc","2017-03-29 17:45:26","Can this be parameterized to be several different test cases, rather than one test that makes multiple assertions?","52f197eae760d87791f1fdc85d558da1f4554635","(None, '', u'tests/oauth2/rfc6749/test_utils.py')"
+"pull_request_commit_comment","469","idan","oauthlib","orenmazor","2017-03-29 17:46:33","I ran the test suite and it was failing because these guys were missing","52f197eae760d87791f1fdc85d558da1f4554635","(None, '', u'requirements.txt')"
+"pull_request_commit_comment","469","idan","oauthlib","orenmazor","2017-03-29 17:46:52","ahh didn't see the test_requirements. totally. fixing.","52f197eae760d87791f1fdc85d558da1f4554635","(None, '', u'requirements.txt')"
+"pull_request_commit_comment","469","idan","oauthlib","orenmazor","2017-03-29 17:48:33","totally. there were zero tests so I wasn't sure what strategy you guys would prefer, so I went with the laziest one. I'll split these guys up.
+
+what we should do is get some kind of better list of good/bad urls and have them iterated on.","52f197eae760d87791f1fdc85d558da1f4554635","(None, '', u'tests/oauth2/rfc6749/test_utils.py')"
+"pull_request_commit","469","idan","oauthlib","orenmazor","2017-03-29 16:36:41","missing deps","b1697259b494a28afc3f4c27fcd5863d9ef77cc8",""
+"pull_request_commit","469","idan","oauthlib","orenmazor","2017-03-29 17:12:11","add # to the pchar list","c1fd094fd013d0447fb10a3b668552d992bb1da1",""
+"pull_request_commit","469","idan","oauthlib","orenmazor","2017-03-29 17:47:12","Revert ""missing deps""
+
+This reverts commit b1697259b494a28afc3f4c27fcd5863d9ef77cc8.","09b2bdf3bc6d72034082c4bcc0ef83d1d38f8a68",""
+"pull_request_commit","469","idan","oauthlib","orenmazor","2017-03-29 17:49:38","split the tests up a bit","52f197eae760d87791f1fdc85d558da1f4554635",""

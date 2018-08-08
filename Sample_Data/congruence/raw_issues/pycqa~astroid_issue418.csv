@@ -1,0 +1,24 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","418","pycqa","astroid","degustaf","2017-03-20 01:49:58","### Fixes / new features
+- Catch exceptions raised in running pylint on enum.py from the standard library.
+","start issue","Catch exceptions raised in running pylint on enum.py."
+"issue_closed","418","pycqa","astroid","PCManticore","2017-04-13 08:34:51","","closed issue","Catch exceptions raised in running pylint on enum.py."
+"pull_request_title","418","pycqa","astroid","degustaf","2017-03-20 01:49:58","### Fixes / new features
+- Catch exceptions raised in running pylint on enum.py from the standard library.
+","a6c800a7c1ba0a108c3203c01d01eb10ae651f3b","Catch exceptions raised in running pylint on enum.py."
+"issue_comment","418","pycqa","astroid","degustaf","2017-03-20 21:44:02","@ceridwen, I think a helper function (probably in utils) that actually raises the error will minimize the duplicated code.  I'll see what I can put together for you to take a look at.","",""
+"issue_comment","418","pycqa","astroid","degustaf","2017-03-23 13:43:52","@ceridwen Something appears to be wrong with coveralls.  It looks like it is reporting the Python 2.7 results as the total coverage.","",""
+"issue_comment","418","pycqa","astroid","degustaf","2017-04-03 19:59:10","@ceridwen All the tests, including coverage, are green.  Can we get this merged in now?","",""
+"issue_comment","418","pycqa","astroid","PCManticore","2017-04-03 20:29:15","I need to make some time to review this first","",""
+"issue_comment","418","pycqa","astroid","ceridwen","2017-04-03 21:26:50","Sorry for the delay.  I've been trying to confirm or refute whether [stack introspection](http://pypy.org/performance.html#micro-tuning-tips) has anything to do with why PyPy runs pylint more slowly than CPython.  Currently, the only stack introspection we're doing is in `util.py`, calling `sys.exc_info()`when we reraise exceptions.  I haven't been able to prove that it's the problem, but I haven't been able to rule it out, either.  However, reraising exceptions is essential to getting useful tracebacks for debugging, so I've been looking for a better way to handle this that doesn't involve stack introspection.  So far, I haven't found anything that works with Python 2, which means this may be a permanent problem.
+
+This makes me reluctant to add more stack introspection.    Regardless, we currently have clutter in our stack traces from `util.reraise()`, and I'd rather have clutter than introduce more stack introspection.
+
+My only other comment is that because astroid is almost completely undocumented (this is a problem we inherited, unfortunately), it won't be apparent that `**kws` is only being used here to collect spurious arguments if something of the wrong type is being called.  Putting comments or docstrings in each function would be most transparent, but would require a lot of duplication.  Anyone else have a better idea?
+","",""
+"issue_comment","418","pycqa","astroid","ceridwen","2017-04-03 21:37:37","To be clear: I'm willing to merge after `inspect.stack` is removed, but I still want to wait for @PCManticore's review.","",""
+"issue_comment","418","pycqa","astroid","degustaf","2017-04-04 02:17:31","@ceridwen I removed the added use of inspect.stack.","",""
+"issue_comment","418","pycqa","astroid","PCManticore","2017-04-13 08:34:51","I'm closing this. Let's investigate first why _proxied isn't a ClassDef and how did that AST node got there. A more appropriate fix might be needed after figuring out these details.","",""
+"pull_request_commit_comment","418","pycqa","astroid","PCManticore","2017-04-06 14:44:02","@degustaf what exactly is the problem here? Running pylint over this snipper raises indeed a TypeError, due to ``class_context`` being passed, but why was it passed to ``getattr`` in the first place? This pull request seems to address the effect rather than the cause. Let's investigate first in what circumstances ``class_context`` gets passed and why astroid does this.","a6c800a7c1ba0a108c3203c01d01eb10ae651f3b","(5, '', u'astroid/tests/unittest_inference.py')"
+"pull_request_commit","418","pycqa","astroid","degustaf","2017-03-19 21:23:44","Catch exceptions raised in running pylint on enum.py.","c0afa1803dc06d3f3771be42d99ea5a27de73bbb",""
+"pull_request_commit","418","pycqa","astroid","degustaf","2017-04-04 02:05:57","Remove references to inspect.stack.","a6c800a7c1ba0a108c3203c01d01eb10ae651f3b",""

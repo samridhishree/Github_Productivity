@@ -1,0 +1,283 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","130","aio-libs","aioredis","aamalev","2016-06-18 15:03:34","Implementation
+","start issue","Extended HMSET"
+"issue_closed","130","aio-libs","aioredis","popravich","2016-06-23 07:01:18","","closed issue","Extended HMSET"
+"pull_request_title","130","aio-libs","aioredis","aamalev","2016-06-18 15:03:34","Implementation
+","5c00508b76f7d665956bd5b0df6af01c8a75db17","Extended HMSET"
+"pull_request_merged","130","aio-libs","aioredis","popravich","2016-06-23 07:01:18","Extended HMSET","2a12a1696b9667c1d7c85049bcdd98ec7699d9fe","Pull request merge from Unknown:master to aio-libs/aioredis:master"
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-18 15:05:46","[![Coverage Status](https://coveralls.io/builds/6654693/badge)](https://coveralls.io/builds/6654693)
+
+Coverage decreased (-0.002%) to 97.191% when pulling **27f974e517dbd63af9c537ea8e6dc21ffabcc804 on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-18 15:13:35","[![Coverage Status](https://coveralls.io/builds/6654728/badge)](https://coveralls.io/builds/6654728)
+
+Coverage increased (+0.02%) to 97.21% when pulling **40f3c9b0a68d607534b8bd99e0e96bab8aa8e0cb on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-19 12:01:21","[![Coverage Status](https://coveralls.io/builds/6658812/badge)](https://coveralls.io/builds/6658812)
+
+Coverage increased (+0.001%) to 97.194% when pulling **6820357c20ed7b4ce6f61083134b147fccb2fc6a on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-21 13:21:18","Hi, this is good feature but I dont like your implementation -- it is too complex and has bugs.
+First of all, if you add this test it will fail:
+
+``` python
+yield from redis.hmset('key', {'a': 1}, {'b': 2}, 'c', 3, d=4, a=5)
+res = yield from redis.hgetall('key')
+assert res == {b'a': b'5',
+               b'b': b'2',
+               b'c': b'3',
+               b'd': b'4'}
+```
+
+Second, implementation, the public interface must be as follows:
+`hmset(key, *args, **kwargs)`
+internally this must be handled as follows:
+- check `if not args and not kwargs` -> `TypeError`
+- if `len(args) == 1` -> `args[0]` must be a `dict`
+- or `len(args) % 2 == 0` -> args is a field-value pairs
+- finally `if len(args) != 1 or len(args) % 2 != 0` -> `TypeError`
+- add kwargs if any
+- and execute `HMSET`
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-21 17:06:20","Hi @popravich. My implementation dicts_or_pairs not supported mixed types.
+
+This test will fail in both cases in one and the same place.
+
+```
+def execute(self, command, *args, encoding=_NOTSET):
+         ...
+>       if None in set(args):
+E       TypeError: unhashable type: 'dict'
+```
+
+A similar bug in hset:
+    yield from redis.hset('key', {'a': 1}, {'b': 2})
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-21 17:15:28","[![Coverage Status](https://coveralls.io/builds/6690850/badge)](https://coveralls.io/builds/6690850)
+
+Coverage increased (+0.02%) to 97.213% when pulling **f77c6f8a1bc8a49a63bc868c8348d08ad1b7b3d5 on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-21 18:05:37","[![Coverage Status](https://coveralls.io/builds/6691651/badge)](https://coveralls.io/builds/6691651)
+
+Coverage increased (+0.003%) to 97.196% when pulling **0135a206fba668472aaf259c388ba8a33e3667ea on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-21 19:49:41","> A similar bug in hset:
+> yield from redis.hset('key', {'a': 1}, {'b': 2})
+
+This is intended behaviour
+
+> My implementation dicts_or_pairs not supported mixed types.
+
+If so it should raise exception when mixing arg types
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-21 22:00:55","[![Coverage Status](https://coveralls.io/builds/6695868/badge)](https://coveralls.io/builds/6695868)
+
+Coverage increased (+0.001%) to 97.194% when pulling **07134f97d25947241d64aabf49a8e44b525b9a6d on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-21 22:04:50","[![Coverage Status](https://coveralls.io/builds/6695943/badge)](https://coveralls.io/builds/6695943)
+
+Coverage increased (+0.001%) to 97.194% when pulling **07134f97d25947241d64aabf49a8e44b525b9a6d on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-21 22:14:56","More successful implementation
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-21 22:31:44","[![Coverage Status](https://coveralls.io/builds/6696369/badge)](https://coveralls.io/builds/6696369)
+
+Coverage increased (+0.001%) to 97.194% when pulling **42e9e4e8ecdb73aa128cb1a8bd1a830645e41a59 on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-22 11:53:05","An example of the need OrderedDict
+
+```
+redis.hmset(key, {'a': 1}, {b'a': 2}, a=3)
+```
+
+As the regular dict:
+
+```
+{'a': 3, b'a':2} or {b'a': 2, 'a':3}
+```
+
+Another crazy example:
+
+```
+redis.hmset(key, {1: 1}, {b'1': 2}, {'1': 3})
+```
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-22 12:00:21","[![Coverage Status](https://coveralls.io/builds/6703733/badge)](https://coveralls.io/builds/6703733)
+
+Coverage increased (+0.07%) to 97.262% when pulling **16314fb223692b6fa99855c31dda0dcf3e1e287e on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-22 12:15:29","OMG this is totaly crazy)
+It is end-user's responsibility to control input data.
+Ok, what is gonna happen in this case (which value will win)?
+
+``` python
+redis.hmset(key, {b'a': 1, 'a': 2}, {'a': 3, b'a': 4})
+```
+","",""
+"issue_comment","130","aio-libs","aioredis","kxepal","2016-06-22 12:18:24","I agree with @popravich: no need to be too smart. If conflicts happens, better to cry loudly instead of picking decision that user may not be aware/expected about. Only user may solve them right.
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-22 12:25:31","I like it as simple as possible -- so it 100% clear how it works and what to expect.
+Lets not break current `hmset` but create another one for dicts:
+`hmset_dict(key, *args, **kwargs)` args allowed only to hold single a dict otherwise kwargs must be provided.
+The implementation should simply unpack args[0] & kwargs into pairs and call original `hmset`
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-22 15:02:50","Convinced. Therefore, I propose a simple implementation.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-22 15:03:04","[![Coverage Status](https://coveralls.io/builds/6706459/badge)](https://coveralls.io/builds/6706459)
+
+Coverage increased (+0.02%) to 97.211% when pulling **f2e9b5706168b9ecb0d838585a9e115bbcaeb5de on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-22 21:35:40","[![Coverage Status](https://coveralls.io/builds/6713437/badge)](https://coveralls.io/builds/6713437)
+
+Coverage decreased (-1.4%) to 95.768% when pulling **5c00508b76f7d665956bd5b0df6af01c8a75db17 on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-22 21:35:40","[![Coverage Status](https://coveralls.io/builds/6713437/badge)](https://coveralls.io/builds/6713437)
+
+Coverage decreased (-1.4%) to 95.768% when pulling **5c00508b76f7d665956bd5b0df6af01c8a75db17 on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","coveralls","2016-06-22 21:35:40","[![Coverage Status](https://coveralls.io/builds/6713437/badge)](https://coveralls.io/builds/6713437)
+
+Coverage increased (+0.02%) to 97.21% when pulling **5c00508b76f7d665956bd5b0df6af01c8a75db17 on aamalev:master** into **8726c2e41d3d93dee95a835c00fa77eacf5b95b0 on aio-libs:master**.
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-23 07:01:22","thanks
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-23 07:56:01","PR is squashed and merged.
+However I've split `hmset` into original and `hmset_dict` to decrease ambiguity of arguments' combinations.
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-23 13:42:03","hmset_dict not the correct name, as well as the method of supporting the pair. Separate methods is that if someone thought to call the old hmset: 
+
+```
+redis.hmset(key, field='a', value='1', 'b', '2', 'c', '3')
+```
+
+But I do not think that someone so does
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-23 13:47:57","make_pair can also be used in mset
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-23 13:54:15","Sorry, of course kwargs at the end
+
+```
+redis.hmset(key, 'b', '2', 'c', '3', field='a', value='1')
+```
+
+crazy?
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-23 13:56:52","> `redis.hmset(key, 'b', '2', 'c', '3', field='a', value='1')`
+
+This does not work -- multiple values for positional args
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-23 14:04:32","I try to challenge the motivation of separation methods.
+This work on the old method. But I think that no one uses this form
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-23 14:27:56","Ok, I want to keep original `hmset` as is because I don't want something that would fail in current version to success in newer.
+I don't want old hmset to magically work if someone pass invalid args,
+currently everyone using hmset must call it with field-value pairs positional arguments
+and if someone try to call it with a dict -- will get TypeError.
+Now imagine something like this:
+
+``` python
+hopefully_its_pairs = get_something()
+yield from redis.hmset(key, *hopefully_its_pairs)
+
+# and assume `get_something` is a function with lots of if/else:
+def get_something():
+    if case_a:
+        return 'field', 'value'
+    elif case_b:
+        return 'field2', 'value2'
+    elif ...
+    elif ...
+    elif case_N:
+        return {'field': ""value""}
+```
+
+Such cases may not be covered with tests and/or may appear only in production environment.
+So if hmset had changed to allowed dicts this bug would suddenly disappear.
+And it sounds more like a joke -- fixing bug in user's code by upgrading 3rd-party library.
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-23 21:03:34","Reasonable.
+I did not notice that hmset_dict only works with dict. For strictness propose to change the signature on 
+
+```
+hmset_dict(key, fields: dict=None, **kwargs)
+```
+
+explicit arguments and simplified checks
+","",""
+"issue_comment","130","aio-libs","aioredis","popravich","2016-06-24 06:56:17","this may be conflicting with user's fields:
+`hmset_dict(key, {'foo': 1, 'bar': 2}, fields='foo,bar')`
+","",""
+"issue_comment","130","aio-libs","aioredis","aamalev","2016-06-24 11:14:56","but current implementation already contains conflict
+
+```
+yield from redis.hmset_dict(key, key='kw')
+```
+","",""
+"pull_request_commit_comment","130","aio-libs","aioredis","popravich","2016-06-22 06:41:24","why do you need all `args` to be dicts?
+what is the reason for calling hmset like this:
+
+``` python
+redis.hmset(key, {'a': 1}, {'b': 2})
+```
+
+and not simply with one dict?
+","5c00508b76f7d665956bd5b0df6af01c8a75db17","(None, '', u'aioredis/commands/hash.py')"
+"pull_request_commit_comment","130","aio-libs","aioredis","popravich","2016-06-22 06:49:18","no need in OrderedDict, `args` are ordered, so every next pair in args will overwrite previous (with same key).
+","5c00508b76f7d665956bd5b0df6af01c8a75db17","(None, '', u'aioredis/commands/hash.py')"
+"pull_request_commit_comment","130","aio-libs","aioredis","kxepal","2016-06-22 15:18:44","What's a point of generating tuples for every iteration? Sounds like you need in:
+
+```
+pairs = list(pairs)
+pairs.extend(chain.from_iterable(kwargs.items())
+```
+
+It's all said:
+
+```
+In [6]: %timeit make_flat(kwargs.items(), tuple())
+100 loops, best of 3: 2.45 ms per loop
+
+In [8]: %timeit list(chain.from_iterable(kwargs.items()))
+10000 loops, best of 3: 78.2 µs per loop
+```
+","5c00508b76f7d665956bd5b0df6af01c8a75db17","(None, '', u'aioredis/util.py')"
+"pull_request_commit_comment","130","aio-libs","aioredis","aamalev","2016-06-22 16:27:01","Cool, but what is your kwargs?
+
+``````
+In [46]: kwargs = dict(enumerate(string.ascii_lowercase))
+
+In [47]: %timeit make_flat(kwargs.items(), tuple())
+100000 loops, best of 3: 11.1 µs per loop
+
+In [48]: %timeit make_flat(kwargs.items())
+100000 loops, best of 3: 10.3 µs per loop
+
+In [49]: %timeit list(chain.from_iterable(kwargs.items()))
+The slowest run took 5.11 times longer than the fastest. This could mean that an intermediate result is being cached.
+100000 loops, best of 3: 6.89 µs per loop
+
+In [50]: %timeit list(chain.from_iterable(kwargs.items()))
+The slowest run took 5.22 times longer than the fastest. This could mean that an intermediate result is being cached.
+100000 loops, best of 3: 6.93 µs per loop
+
+In [51]: %timeit tuple(chain.from_iterable(kwargs.items()))
+100000 loops, best of 3: 6.04 µs per loop```
+``````
+","5c00508b76f7d665956bd5b0df6af01c8a75db17","(None, '', u'aioredis/util.py')"
+"pull_request_commit_comment","130","aio-libs","aioredis","kxepal","2016-06-22 16:31:03","`kwargs = {i:i for i in range(1000)}`
+","5c00508b76f7d665956bd5b0df6af01c8a75db17","(None, '', u'aioredis/util.py')"
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-18 14:49:18","Test extended HMSET","202441aa296b7368cfd509b18847e0e2270912e3",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-18 14:49:41","Extended HMSET","27f974e517dbd63af9c537ea8e6dc21ffabcc804",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-18 15:11:03","Cover up","40f3c9b0a68d607534b8bd99e0e96bab8aa8e0cb",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-19 11:59:11","Optimization HMSET","6820357c20ed7b4ce6f61083134b147fccb2fc6a",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-21 17:11:53","Change signature hmset","f77c6f8a1bc8a49a63bc868c8348d08ad1b7b3d5",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-21 17:52:36","hnset not supported mixed type of args","0135a206fba668472aaf259c388ba8a33e3667ea",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-21 21:58:36","HMSET: check args","f0dcdfb229a2aab406502d973436780bb757c1e3",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-21 22:00:22","HMSET: typo string","07134f97d25947241d64aabf49a8e44b525b9a6d",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-21 22:29:11","HMSET: typo test","42e9e4e8ecdb73aa128cb1a8bd1a830645e41a59",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-22 08:10:45","HMSET: test one dict","1a10df963d2f8d00ba87db3dd98bae820e24a87b",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-22 08:11:49","HMSET: effective one dict","1df3165ac861f023cc0d7b33429e0f6bca93e9d1",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-22 11:54:55","HMSET: add test","90a5546edd7fb176b3896dc50a89758fbc7472f9",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-22 11:56:01","HMSET refactoring: utils.make_pairs","16314fb223692b6fa99855c31dda0dcf3e1e287e",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-22 15:00:07","HMSET: simple","f2e9b5706168b9ecb0d838585a9e115bbcaeb5de",""
+"pull_request_commit","130","aio-libs","aioredis","aamalev","2016-06-22 21:31:25","HMSET: speed optimization","5c00508b76f7d665956bd5b0df6af01c8a75db17",""

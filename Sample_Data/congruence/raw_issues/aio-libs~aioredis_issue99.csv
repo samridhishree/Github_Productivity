@@ -1,0 +1,36 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","99","aio-libs","aioredis","brunsgaard","2015-11-29 22:17:22","Right now it is a bit cumbersome to create a pool of reconnecting connections, this is due to
+https://github.com/aio-libs/aioredis/blob/3a69dc876338207c4605439319703427c2614738/aioredis/pool.py#L169
+
+This could be improved
+","start issue","Cumbersome to create a pool of reconnecting connections"
+"issue_closed","99","aio-libs","aioredis","brunsgaard","2015-12-05 00:26:18","","closed issue","Cumbersome to create a pool of reconnecting connections"
+"issue_comment","99","aio-libs","aioredis","asvetlov","2015-11-30 11:11:39","Please elaborate.
+","",""
+"issue_comment","99","aio-libs","aioredis","popravich","2015-11-30 13:50:58","Anyway, why would you need a pool of reconnecting connections?
+Main idea behind pool is to manage connections -- drop closed & create new.
+Have you tried [reconnecting redis](http://aioredis.readthedocs.org/en/latest/api_reference.html#aioredis.create_reconnecting_redis)?
+","",""
+"issue_comment","99","aio-libs","aioredis","brunsgaard","2015-12-03 09:17:56","@popravich, Maybe I have misunderstood the connection pool, if a connection is closed due to network failure etc, will the current implementation of the pool then discard it and create a new one seamlessly? 
+","",""
+"issue_comment","99","aio-libs","aioredis","popravich","2015-12-03 09:30:55","Yes, it will create new one.
+
+Closed (disconnected) connections would not be a problem as long as connections from pool are used for short lived actions, ie:
+
+``` python
+# Bad
+with (yield from redis_pool) as redis:
+    # inside this block a single connection bound to redis variable
+    while True:
+        data = yield from wait_long_time_for_data()
+        yield from redis.set(key, data)
+
+# Good
+while True:
+    data = yield from wait_long_time_for_data()
+    with (yield from redis_pool) as redis:
+        yield from redis.set(key, data)
+```
+","",""
+"issue_comment","99","aio-libs","aioredis","brunsgaard","2015-12-05 00:26:18","Okay, Thank you for the feedback.
+","",""

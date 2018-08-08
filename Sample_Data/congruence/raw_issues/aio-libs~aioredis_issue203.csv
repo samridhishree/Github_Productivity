@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","203","aio-libs","aioredis","dfee","2017-03-26 23:18:51","The example code (below) references an iter() method on Receiver (here is the [implementation](https://github.com/aio-libs/aioredis/blob/master/aioredis/pubsub.py#L200)).
+
+There is no iter() method on Receiver. What is the correct implementation of listening on all Receiver's subscribed channels?
+
+code:
+```
+>>> from aioredis.pubsub import Receiver
+>>> from aioredis.abc import AbcChannel
+>>> mpsc = Receiver(loop=loop)
+>>> async def reader(mpsc):
+...     async for channel, msg in mpsc.iter():
+...         assert isinstance(channel, AbcChannel)
+...         print(""Got {!r} in channel {!r}"".format(msg, channel))
+>>> asyncio.ensure_future(reader(mpsc))
+>>> await redis.subscribe(mpsc.channel('channel:1'),
+...                       mpsc.channel('channel:3'))
+...                       mpsc.channel('channel:5'))
+>>> await redis.psubscribe(mpsc.pattern('hello'))
+>>> # publishing 'Hello world' into 'hello-channel'
+>>> # will print this message:
+Got b'Hello world' in channel b'hello-channel'
+>>> # when all is done:
+>>> await redis.unsubscribe('channel:1', 'channel:3', 'channel:5')
+>>> await redis.punsubscribe('hello')
+>>> mpsc.stop()
+>>> # any message received after stop() will be ignored.
+```","start issue","aioredis.pubsub.Receiver has no iter() method"
+"issue_closed","203","aio-libs","aioredis","popravich","2017-03-27 07:46:59","","closed issue","aioredis.pubsub.Receiver has no iter() method"
+"issue_comment","203","aio-libs","aioredis","dfee","2017-03-26 23:54:27","This implementation does work:
+```
+class IterableReceiver(Receiver):
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        await self.wait_message()
+        return await self.get()
+
+
+mpsc = IterableReceiver(loop=loop)
+
+async def reader(mpsc):
+    async for channel, msg in mpsc:
+        assert isinstance(channel, AbcChannel)
+        print(""Got {!r} in channel {!r}"".format(msg, channel))
+asyncio.ensure_future(reader(mpsc))
+```","",""
+"issue_comment","203","aio-libs","aioredis","popravich","2017-03-27 07:46:59","Thanks for report.
+Fixed in v0.3 branch, will make a bug-fix release soon.","",""
+"issue_comment","203","aio-libs","aioredis","dfee","2017-05-06 02:08:44","Out of curiosity, when do you intend to publish an update that addresses this? It looks like the last update was in Jan. https://pypi.org/project/aioredis/","",""
+"issue_comment","203","aio-libs","aioredis","popravich","2017-05-06 15:41:21","OMG, I thought it was like a month ago...
+I think I can do a release in a day or two.","",""

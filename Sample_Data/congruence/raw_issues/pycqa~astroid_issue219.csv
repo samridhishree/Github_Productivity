@@ -1,0 +1,49 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","219","pycqa","astroid","pylint-bot","2015-10-20 19:57:16","Originally reported by: **BitBucket: [felipeochoa](http://bitbucket.org/felipeochoa), GitHub: @felipeochoa?**
+
+---
+# Astroid confused by an `openpyxl` property defined with a setter
+
+One way to see the issue is to run `pylint`[1] with the following code:
+
+```
+#!python
+
+import openpyxl
+wb = openpyxl.Workbook()
+sheet = workbook.get_active_sheet()
+```
+
+`sheet` has its type incorrectly detected as `int` rather than `Worksheet`. The definition of `Workbook` is as follows:
+
+```
+#!python
+
+class Workbook(object):
+    ...
+    def get_active_sheet(self):
+        return self.active
+
+    @property
+    def active(self):
+        return self.worksheets[self._active_sheet_index]
+
+    @active.setter
+    def active(self, value):
+        self._active_sheet_index = value
+    ...
+    def _read_workbook_settings(self, xml_source):
+        ...
+        self.active = int(view.attrib['activeTab'])
+
+```
+
+I think the fix would be to cut off the type inference propagation for properties defining a setter, and rely solely on the getter for type inference.
+
+---
+
+[1]: I think the bug is in `astroid`, but happy to post it on `pylint` if that's a better place for it
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/219
+","start issue","Confused by property with setter"

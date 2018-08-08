@@ -1,0 +1,94 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,469,pycqa,astroid,The-Compiler,2017-12-11 09:47:39,"### Steps to reproduce
+1. Clone [qutebrowser](https://github.com/qutebrowser/qutebrowser)
+2. Run `tox -e pylint-master`
+
+Sorry, I don't have a minimal reproducer right now.
+
+### Current behavior
+
+```
+...
+************* Module qutebrowser.mainwindow.prompt
+R:146, 4: Either all return statements in a function should return an expression, or none of them should. (inconsistent-return-statements)
+Traceback (most recent call last):
+  File ""/usr/lib64/python3.6/runpy.py"", line 193, in _run_module_as_main
+    ""__main__"", mod_spec)
+  File ""/usr/lib64/python3.6/runpy.py"", line 85, in _run_code
+    exec(code, run_globals)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/__main__.py"", line 7, in <module>
+    pylint.run_pylint()
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/lint.py"", line 1326, in __init__
+    linter.check(args)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/lint.py"", line 747, in check
+    self._do_check(files_or_modules)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/lint.py"", line 880, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/lint.py"", line 959, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/utils.py"", line 994, in walk
+    self.walk(child)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/utils.py"", line 994, in walk
+    self.walk(child)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/utils.py"", line 994, in walk
+    self.walk(child)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/utils.py"", line 991, in walk
+    cb(astroid)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/pylint/pylint/checkers/typecheck.py"", line 676, in visit_attribute
+    inferred = list(node.expr.infer())
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/astroid/astroid/decorators.py"", line 82, in wrapped
+    generator = _func(node, context, **kwargs)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/astroid/astroid/inference.py"", line 138, in infer_name
+    frame, stmts = self.lookup(self.name)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/astroid/astroid/node_classes.py"", line 989, in lookup
+    return self.scope().scope_lookup(self, name)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/astroid/astroid/scoped_nodes.py"", line 2012, in scope_lookup
+    return frame._scope_lookup(node, name, offset)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/astroid/astroid/scoped_nodes.py"", line 160, in _scope_lookup
+    stmts = node._filter_stmts(self.locals[name], self, offset)
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/astroid/astroid/node_classes.py"", line 1061, in _filter_stmts
+    stmt = node.statement()
+  File ""/home/florian/proj/qutebrowser/git/.tox/pylint-master/src/astroid/astroid/node_classes.py"", line 417, in statement
+    return self.parent.statement()
+AttributeError: 'NoneType' object has no attribute 'statement'
+```
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+1.6.0",start issue,self.parent.statement() raises AttributeError because self.parent is None
+1,issue_closed,469,pycqa,astroid,PCManticore,2017-12-15 08:56:31,,closed issue,self.parent.statement() raises AttributeError because self.parent is None
+2,issue_comment,469,pycqa,astroid,PCManticore,2017-12-11 10:02:09,Thanks @The-Compiler ! Gonna check it,,
+3,issue_comment,469,pycqa,astroid,The-Compiler,2017-12-15 09:39:25,"Looks good now, thank you! 👍 ",,
+0,issue_title,462,pycqa,astroid,brycepg,2017-10-30 06:06:44,"### Fixes / new features
+This commit fixes https://github.com/PyCQA/pylint/issues/1698 unsupported-assignment-operation issues
+I implemented a transform plugin as @PCManticore suggested
+",start issue,Add Transform Plugin for attr to fix false positives due to instance attribute rewriting
+1,issue_closed,462,pycqa,astroid,PCManticore,2017-12-11 09:20:37,,closed issue,Add Transform Plugin for attr to fix false positives due to instance attribute rewriting
+2,pull_request_title,462,pycqa,astroid,brycepg,2017-10-30 06:06:44,"### Fixes / new features
+This commit fixes https://github.com/PyCQA/pylint/issues/1698 unsupported-assignment-operation issues
+I implemented a transform plugin as @PCManticore suggested
+",b72588718044fdd9fe49f5a5c785bc85987e1df4,Add Transform Plugin for attr to fix false positives due to instance attribute rewriting
+3,pull_request_merged,462,pycqa,astroid,PCManticore,2017-12-11 09:20:37,Add Transform Plugin for attr to fix false positives due to instance attribute rewriting,e0aadfb79c2e7b577924f717e8458200488c0e32,Pull request merge from brycepg/astroid:master to PyCQA/astroid:master
+4,issue_comment,462,pycqa,astroid,brycepg,2017-11-04 19:44:48,"Thanks for the feedback @PCManticore 
+
+I've made the requested changes,",,
+5,issue_comment,462,pycqa,astroid,brycepg,2017-11-13 02:34:54,Done,,
+6,issue_comment,462,pycqa,astroid,The-Compiler,2017-12-11 09:29:56,"Oh, awesome work - thanks!",,
+7,pull_request_commit_comment,462,pycqa,astroid,PCManticore,2017-11-02 13:03:11,Let's add the Licensing header like the one from the other brain tips,b72588718044fdd9fe49f5a5c785bc85987e1df4,"(None, '', u'astroid/brain/brain_attrs.py')"
+8,pull_request_commit_comment,462,pycqa,astroid,PCManticore,2017-11-02 13:03:36,"No need to have this, since it is not a pylint plugin. We already do the registration through the manager",b72588718044fdd9fe49f5a5c785bc85987e1df4,"(None, '', u'astroid/brain/brain_attrs.py')"
+9,pull_request_commit_comment,462,pycqa,astroid,PCManticore,2017-11-02 13:06:25,"We should pass the filter from the transform here instead. Something along the lines of:
+
+```
+MANAGER.register_transform(astroid.Class, attr_attributes_transform, is_decorated_with_attrs)
+```
+where `is_decorated_with_attrs` returns True or False",b72588718044fdd9fe49f5a5c785bc85987e1df4,"(None, '', u'astroid/brain/brain_attrs.py')"
+10,pull_request_commit_comment,462,pycqa,astroid,PCManticore,2017-11-02 13:08:49,Please use `.qname()` rather than `as_string()`,b72588718044fdd9fe49f5a5c785bc85987e1df4,"(None, '', u'astroid/brain/brain_attrs.py')"
+11,pull_request_commit_comment,462,pycqa,astroid,brycepg,2017-11-03 03:55:25,"qname isn't available for Attribute nodes. I could do decorator_node.inferred()[0].qname() however that returns `attr._make.attributes`; this qualified name could be changed since `_make` isn't part of the API, so I thought that using the string names would be better.
+
+What do you think?",b72588718044fdd9fe49f5a5c785bc85987e1df4,"(None, '', u'astroid/brain/brain_attrs.py')"
+12,pull_request_commit_comment,462,pycqa,astroid,PCManticore,2017-11-11 11:59:01,"Ah, I see, @brycepg, maybe we should revert back to using `as_string()`. The problem is that we should avoid doing `infer()` in transform predicates, since this could lead to circular inferences across the board, rendering everything unusable (e.g an `infer()` in a predicate could trigger a circular inference for the same object, leading to a recursion error). Sorry for misleading you down this path!",b72588718044fdd9fe49f5a5c785bc85987e1df4,"(None, '', u'astroid/brain/brain_attrs.py')"
+13,pull_request_commit_comment,462,pycqa,astroid,PCManticore,2017-11-11 11:59:35,We should expose this in tox so that the tests could run in CI: https://github.com/PyCQA/astroid/blob/be694f811f7df89c4fcc672ef09c0e1fc499cf23/tox.ini#L14,b72588718044fdd9fe49f5a5c785bc85987e1df4,"(6, '', u'astroid/tests/unittest_brain.py')"
+14,pull_request_commit_comment,462,pycqa,astroid,PCManticore,2017-11-11 12:00:29,"Sounds good, we can use `as_string`",b72588718044fdd9fe49f5a5c785bc85987e1df4,"(None, '', u'astroid/brain/brain_attrs.py')"
+15,pull_request_commit,462,pycqa,astroid,brycepg,2017-10-30 06:01:39,Add transform for attr library to fix unsupported-assignment-operation false positives,b72588718044fdd9fe49f5a5c785bc85987e1df4,

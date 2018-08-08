@@ -1,0 +1,170 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","53","idan","oauthlib","ayanamist","2012-08-27 00:26:25","I first post the issue against requests, but @kennethreitz said it's the problem of the oauthlib, so i post again here
+
+Since i pass the dict object with str and int object, an exception will be raised.
+
+> Exception on /post [POST]
+> Traceback (most recent call last):
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1687, in wsgi_app
+>     response = self.full_dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1360, in full_dispatch_request
+>     rv = self.handle_user_exception(e)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1358, in full_dispatch_request
+>     rv = self.dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1344, in dispatch_request
+>     return self.view_functions[rule.endpoint](**req.view_args)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/utils/decorators.py"", line 10, in decorated_view
+>     return func(_args, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/views/status.py"", line 19, in status_post
+>     result = flask.g.api.reTweet(id=retweet_id, include_entities=1)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 138, in <lambda>
+>     return lambda *_kwargs: self._constructFunc(key, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 155, in _constructFunc
+>     content = self._request(url, method=fn['method'], params=kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 175, in _request
+>     response = func(url, data=params, files=files)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 295, in post
+>     return self.request('post', url, data=data, **kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 252, in request
+>     r.send(prefetch=prefetch)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/models.py"", line 532, in send
+>     r = self.auth(self)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/auth.py"", line 103, in __call__
+>     unicode(r.full_url), unicode(r.method), r.data, r.headers)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 211, in sign
+>     request.oauth_params.append((u'oauth_signature', self.get_oauth_signature(request)))
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 71, in get_oauth_signature
+>     normalized_params = signature.normalize_parameters(collected_params)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/signature.py"", line 373, in normalize_parameters
+>     key_values = [(utils.escape(k), utils.escape(v)) for k, v in params]
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/utils.py"", line 52, in escape
+>     raise ValueError('Only unicode objects are escapable.')
+> ValueError: Only unicode objects are escapable.
+
+The related code is here: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=c67d65b90bdf78d07d4fe92cc1e8f9827cb5eaf8#22
+
+So i must unicode the parameters first: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=7eb65d488db14fb1ced0c848c0334f894191ab7b#20
+
+It's caused by https://github.com/idan/oauthlib/blob/1edaaf2f5e92744e4fd06c908e507a47279b3db9/oauthlib/oauth1/rfc5849/utils.py#L52 which will check the type of the parameters.
+
+But i think it's not necessary, because what common.quote do is that it encode the unicode string to utf8, call urllib.quote and decode it. I think even this unicode intermediate object is unnecessary, because the only calling is from https://github.com/idan/oauthlib/blob/989606369bd8716c97aad7c94543344f4072e7d5/oauthlib/oauth1/rfc5849/signature.py#L373 which convert the object to unicode string again in the next statement.
+
+And i think common.quote is unncessary, because the only calling is from oauth1/rfc5849/utils.py , the rest in this package is directly calling urllib.quote.
+
+So i think, we should just encoding it if it's a unicode object or do nothing else.
+","start issue","We should try to convert the variable first but not to raise an unnecessary exception."
+"issue_closed","53","idan","oauthlib","ib-lundgren","2013-02-03 17:03:25","","closed issue","We should try to convert the variable first but not to raise an unnecessary exception."
+"pull_request_title","53","idan","oauthlib","ayanamist","2012-08-27 00:26:25","I first post the issue against requests, but @kennethreitz said it's the problem of the oauthlib, so i post again here
+
+Since i pass the dict object with str and int object, an exception will be raised.
+
+> Exception on /post [POST]
+> Traceback (most recent call last):
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1687, in wsgi_app
+>     response = self.full_dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1360, in full_dispatch_request
+>     rv = self.handle_user_exception(e)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1358, in full_dispatch_request
+>     rv = self.dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1344, in dispatch_request
+>     return self.view_functions[rule.endpoint](**req.view_args)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/utils/decorators.py"", line 10, in decorated_view
+>     return func(_args, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/views/status.py"", line 19, in status_post
+>     result = flask.g.api.reTweet(id=retweet_id, include_entities=1)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 138, in <lambda>
+>     return lambda *_kwargs: self._constructFunc(key, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 155, in _constructFunc
+>     content = self._request(url, method=fn['method'], params=kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 175, in _request
+>     response = func(url, data=params, files=files)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 295, in post
+>     return self.request('post', url, data=data, **kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 252, in request
+>     r.send(prefetch=prefetch)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/models.py"", line 532, in send
+>     r = self.auth(self)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/auth.py"", line 103, in __call__
+>     unicode(r.full_url), unicode(r.method), r.data, r.headers)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 211, in sign
+>     request.oauth_params.append((u'oauth_signature', self.get_oauth_signature(request)))
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 71, in get_oauth_signature
+>     normalized_params = signature.normalize_parameters(collected_params)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/signature.py"", line 373, in normalize_parameters
+>     key_values = [(utils.escape(k), utils.escape(v)) for k, v in params]
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/utils.py"", line 52, in escape
+>     raise ValueError('Only unicode objects are escapable.')
+> ValueError: Only unicode objects are escapable.
+
+The related code is here: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=c67d65b90bdf78d07d4fe92cc1e8f9827cb5eaf8#22
+
+So i must unicode the parameters first: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=7eb65d488db14fb1ced0c848c0334f894191ab7b#20
+
+It's caused by https://github.com/idan/oauthlib/blob/1edaaf2f5e92744e4fd06c908e507a47279b3db9/oauthlib/oauth1/rfc5849/utils.py#L52 which will check the type of the parameters.
+
+But i think it's not necessary, because what common.quote do is that it encode the unicode string to utf8, call urllib.quote and decode it. I think even this unicode intermediate object is unnecessary, because the only calling is from https://github.com/idan/oauthlib/blob/989606369bd8716c97aad7c94543344f4072e7d5/oauthlib/oauth1/rfc5849/signature.py#L373 which convert the object to unicode string again in the next statement.
+
+And i think common.quote is unncessary, because the only calling is from oauth1/rfc5849/utils.py , the rest in this package is directly calling urllib.quote.
+
+So i think, we should just encoding it if it's a unicode object or do nothing else.
+","61a416bc05d99a0a243461838619925bf88e11d2","We should try to convert the variable first but not to raise an unnecessary exception."
+"issue_comment","53","idan","oauthlib","travisbot","2012-08-27 00:27:07","This pull request [fails](http://travis-ci.org/idan/oauthlib/builds/2245773) (merged b0eb331c into dcbc028f).
+","",""
+"issue_comment","53","idan","oauthlib","travisbot","2012-08-27 00:42:00","This pull request [passes](http://travis-ci.org/idan/oauthlib/builds/2245867) (merged d36595f8 into dcbc028f).
+","",""
+"issue_comment","53","idan","oauthlib","travisbot","2012-08-27 01:09:33","This pull request [passes](http://travis-ci.org/idan/oauthlib/builds/2246027) (merged a3c7c4c4 into dcbc028f).
+","",""
+"issue_comment","53","idan","oauthlib","idan","2012-08-27 07:04:57","Hey, thanks for the PR.
+
+I remember chewing on this a while back. Basically, we have two choices:
+- Guess the encoding of any strings passed to oauthlib
+- Require that all strings passed to oauthlib be unicode
+
+> In the face of ambiguity, refuse the temptation to guess.
+> [PEP 20](http://www.python.org/dev/peps/pep-0020/)
+
+I agree that it's inconvenient to have to supply all your data, even dict members, as unicode strings—however the alternative is some poor developer tearing their hair out because they're passing in strings with an encoding other than UTF-8.
+
+Down the road maybe we should be using chardet for this.
+
+It's worth noting that `urllib.quote()/unquote()` doesn't properly handle unicode data, nor is it completely safe to simply encode to UTF-8:
+1. http://bugs.python.org/issue1712522
+2. http://mail.python.org/pipermail/python-dev/2006-July/067335.html
+
+So even code like this can apparently have edge cases:
+
+``` python
+urllib.quote(foo.encode('UTF-8'))
+```
+
+I haven't looked at the code you're touching in months, and I remember that it was a source of pain when we originally wrote it—so you'll have to be a bit patient while I load it back into my brain and figure out what to do with this patch. Thanks!
+","",""
+"issue_comment","53","idan","oauthlib","idan","2012-08-27 07:06:53","Meta: this PR references kennethreitz/requests#816
+","",""
+"issue_comment","53","idan","oauthlib","travisbot","2012-08-27 10:58:13","This pull request [fails](http://travis-ci.org/idan/oauthlib/builds/2248928) (merged 6bfd90fe into dcbc028f).
+","",""
+"issue_comment","53","idan","oauthlib","ayanamist","2012-08-27 11:00:28","@idan I understand what you worried. I modify the code so that it will try to convert and check the type first, raise an exception if failed.
+Also i add another commit replace some direct callings of logging to logger object.
+I don't modify the unit test code and oauth2 because i don't catch your design purpose. So travisbot failed.
+","",""
+"issue_comment","53","idan","oauthlib","ayanamist","2012-08-28 07:30:29","@idan So what about this PR?
+","",""
+"issue_comment","53","idan","oauthlib","travisbot","2012-08-28 07:30:36","This pull request [fails](http://travis-ci.org/idan/oauthlib/builds/2258741) (merged 61a416bc into dcbc028f).
+","",""
+"issue_comment","53","idan","oauthlib","idan","2012-08-28 08:07:04","Haven't had time to review it yet—only so much time I can spend on github during work…
+","",""
+"issue_comment","53","idan","oauthlib","kennethreitz","2012-08-28 16:22:02","@ayanamist please stop being so pushy. I appreciate your enthusiasm, but we're all very busy. :)
+","",""
+"issue_comment","53","idan","oauthlib","ayanamist","2012-08-29 01:35:32","Sorry, i'm hurrying to finish something.
+
+## 
+
+Ich liebe Ayanami Rei für immer
+","",""
+"issue_comment","53","idan","oauthlib","ib-lundgren","2012-09-06 20:01:01","Will try and find time to look into this in more detail this weekend but after a first glance I'm wondering if it would not be a better idea to tackle the unicode conversion/checking in client.sign, ie the entry point, and keep the oauthlib internals all unicode.
+","",""
+"issue_comment","53","idan","oauthlib","ib-lundgren","2013-02-03 17:03:24","Default unicode (utf-8) conversion is included in oauthlib 0.3.5 for Clients. I believe its better to have conversion at the API rather than deep inside the library. It makes it easier to debug issues and allows for conversion from non utf-8 encodings. However, I'll keep the escape unicode check around until all data entry points have been accounted for.
+","",""
+"pull_request_commit","53","idan","oauthlib","ayanamist","2012-08-27 10:55:00","Check the type before quote and unquote.","6bfd90fe8a590f1ba7082e86bcdd8d6ef1a856c1",""
+"pull_request_commit","53","idan","oauthlib","ayanamist","2012-08-27 10:56:42","Use logger instead of direct call of logging.","963c789628983bb9d465b9fbb23266245ed80d0e",""
+"pull_request_commit","53","idan","oauthlib","ayanamist","2012-08-28 07:29:44","Unicode the object first.","61a416bc05d99a0a243461838619925bf88e11d2",""

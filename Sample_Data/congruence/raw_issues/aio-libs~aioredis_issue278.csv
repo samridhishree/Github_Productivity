@@ -1,0 +1,46 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","278","aio-libs","aioredis","Julien00859","2017-08-04 09:54:21","I'm not sure this issue is due to my incorrect understand of asyncio or if it is an error in aioredis or python itself. What I'm sure is the following code raised a strange exception (I've use the env var `PYTHONASYNCIODEBUG` to get the complete output)
+
+    loop = asyncio.get_event_loop()
+    loop.create_task(shared.redis.sadd(f""games:{game_id}:players"", *players_ids))
+
+	Task exception was never retrieved
+	future: Exception in __repr__ AssertionError(); value type: <class '_asyncio.Task'>
+	source_traceback: Object created at (most recent call last):
+	  File ""./start.py"", line 297, in <module>
+	    main()
+	  File ""./start.py"", line 266, in main
+	    loop.run_until_complete(stop)
+	  File ""/home/julien/Projets/WebGames/manager/games.py"", line 27, in ready_check
+	    loop.create_task(shared.redis.sadd(f""games:{game_id}:players"", *players_ids))
+	AttributeError: '_asyncio.Future' object has no attribute 'send'
+
+but not the following one
+
+    asyncio.ensure_future(shared.redis.sadd(f""games:{game_id}:players"", *players_ids))
+
+I read around about ensure_future and create_task and I don't understand why the first one failed whereas the second succeeded. If anyone could explain it.
+
+A more complete output can be found [here](https://github.com/EPHEC-TI/WebGames/issues/24)","start issue","Error when using loop.create_task, no error with asyncio.ensure_future"
+"issue_closed","278","aio-libs","aioredis","Julien00859","2017-08-04 22:37:06","","closed issue","Error when using loop.create_task, no error with asyncio.ensure_future"
+"issue_comment","278","aio-libs","aioredis","popravich","2017-08-04 14:34:08","Hi, @Julien00859 ,
+You should use `ensure_future` as it is more generic:
+the `loop.create_task` accept coroutine object as its argument, wraps it with `Task` instance
+and schedules it for execution;
+the `asyncio.ensure_future` accept either coroutine or future objects and if argument is a
+coroutine object it calls `loop.create_task`.
+
+Now back to the lib and the source of error.
+To send command to server aioredis does not need to `await` anything it just writes bytes to socket
+and creates a future waiting for response. Such futures are returned by almost all aioredis methods.
+This basically mean that `redis.sadd()` call will internally create an asynchronous task and return
+a future which will be resolved as soon as that task complete.
+So if you want to execute redis command without waiting for response you can just do:
+```python
+redis.sadd(...)  # this will send command, but no one will consume the response.
+```
+instead of:
+```python
+await redis.sadd(...)  # waiting for response
+```","",""
+"issue_comment","278","aio-libs","aioredis","Julien00859","2017-08-04 22:37:06","Thanks a lot !","",""

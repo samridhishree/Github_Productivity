@@ -1,0 +1,74 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","446","pycqa","astroid","MarKett","2017-08-11 09:51:33","### Steps to reproduce
+1. create example file example.py:
+```
+def loop_gen():
+    for y in test_gen():
+        print y
+
+def test_gen():
+    yield ""yield""
+    return
+```
+2. clear astroid_cache and than check the example file with pylint:
+```
+from pylint import lint
+from astroid import MANAGER
+MANAGER.clear_cache()
+lint.Run([""example.py""], exit=False)
+```
+3. Exception:
+```
+Traceback (most recent call last):
+  File ""<pyshell#24>"", line 1, in <module>
+    lint.Run([r""example.py""], exit=False)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\lint.py"", line 1304, in __init__
+    linter.check(args)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\lint.py"", line 935, in check_astroid_module
+    walker.walk(ast_node)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\utils.py"", line 973, in walk
+    self.walk(child)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\utils.py"", line 973, in walk
+    self.walk(child)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\utils.py"", line 970, in walk
+    cb(astroid)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\checkers\typecheck.py"", line 1252, in visit_for
+    self._check_iterable(node.iter)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\checkers\typecheck.py"", line 1232, in _check_iterable
+    if not is_iterable(infered):
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\checkers\utils.py"", line 739, in is_iterable
+    return _supports_protocol(value, _supports_iteration_protocol)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\checkers\utils.py"", line 724, in _supports_protocol
+    if protocol_callback(value):
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\checkers\utils.py"", line 675, in _supports_iteration_protocol
+    _supports_protocol_method(value, ITER_METHOD)
+  File ""D:\Program Files\Python27\lib\site-packages\pylint\checkers\utils.py"", line 643, in _supports_protocol_method
+    attributes = value.getattr(attr)
+  File ""D:\Program Files\Python27\lib\site-packages\astroid\bases.py"", line 137, in getattr
+    if self.special_attributes and name in self.special_attributes:
+  File ""D:\Program Files\Python27\lib\site-packages\astroid\util.py"", line 18, in __get__
+    return self.__class__.__get__(self, instance)
+  File ""D:\Program Files\Python27\lib\site-packages\astroid\bases.py"", line 428, in <lambda>
+    special_attributes = util.lazy_descriptor(lambda: objectmodel.GeneratorModel())
+  File ""D:\Program Files\Python27\lib\site-packages\astroid\interpreter\objectmodel.py"", line 511, in __new__
+    generator = astroid.MANAGER.astroid_cache[six.moves.builtins.__name__]['generator']
+  File ""D:\Program Files\Python27\lib\site-packages\astroid\scoped_nodes.py"", line 196, in __getitem__
+    return self.locals[item][0]
+KeyError: 'generator'
+```
+
+### Current behavior
+- exception when running pylint over a file with generator call after clearing astroid.MANAGER.astroid_cache
+- probably because of unchecked access at astroid_cache
+
+### Expected behavior
+- clearing the astroid_cache should not give different results, compared to running astroid / pylint directly after import
+
+### python 2.7.10 (64bit); astroid 1.5.3 (with pylint 1.7.2)
+
+","start issue","KeyError: ""generator"" in astroid_cache"
+"issue_comment","446","pycqa","astroid","PCManticore","2017-09-21 07:52:14","Yup, makes sense. The problem is that we are using astroid_cache for two separate things, and we should just split it in two: we use it for each analyzed module, which means the cache can grow pretty big and the same time we also use it for builtin modules that are pre-built or basically baked in astroid by raw_building and objectmodel. In this last category we have certain builtin modules, in which we dump objects such as generator and whatnot. So the fix will be to have two caches, one which can be safely cleared and another for prebaked modules for which we don't offer any clear cache support.","",""

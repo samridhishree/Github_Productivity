@@ -1,0 +1,37 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","182","idan","oauthlib","vitriol","2013-06-20 12:19:13","hi there.
+I've been playing around with the client_credentials and password grant types, as well as the refresh_token grant for tokens issued with the former.
+
+With client_credentials and password, I can  send multiple space separated scopes in the `scope` post var which gets transferred into the oauthlib.Request.scopes as a list. So far, fine.
+When I try the token_refresh grant, it seems it never looks into the scope param in the request, always looks for the scopes, which of course is not there, because the function that turns the space separated list of scopes into a list is never called.
+
+Am I missing something?
+
+Steps to reproduce:
+1.make a client_credentials request with scope = 'scope1 scope2'
+2.Use the refresh token obtained from this response and make another request with grant_type=refresh_token and scope = 'scope1 scope2'
+It will fail to validate request
+","start issue","refresh_token grant issue"
+"issue_closed","182","idan","oauthlib","ib-lundgren","2013-06-20 14:07:53","","closed issue","refresh_token grant issue"
+"issue_comment","182","idan","oauthlib","ib-lundgren","2013-06-20 14:07:56","Hey,
+
+Thanks for reporting this issue! The OAuth 2 grant types tests are still a bit lacking and for refresh token none even existed. Until now that is =) The `GrantTypeBase.validate_scopes` function was never refactored to be used in refresh token as it should have been, thus resulting in the inconsistency you observed.
+","",""
+"issue_comment","182","idan","oauthlib","vitriol","2013-06-21 10:05:25","The promptitude is much appreciated, as well as the lib itself. Thanks again
+","",""
+"issue_comment","182","idan","oauthlib","ib-lundgren","2013-06-21 10:14:18","Thanks. I did manage to mess it up a little tho, #183, but will have that fixed today.
+","",""
+"issue_comment","182","idan","oauthlib","ib-lundgren","2013-06-21 10:33:40","Should be sorted now, instead of confirm_scopes just implement get_original_scopes(refresh_token, request) to return the list of scopes granted originally and OAuthLib will do the checking for you.
+","",""
+"issue_comment","182","idan","oauthlib","ib-lundgren","2013-06-21 11:26:31","@synasius, @lepture - pinging you so you know about the upcoming change to refresh token grant.
+","",""
+"issue_comment","182","idan","oauthlib","synasius","2013-06-21 13:31:57","Thnx! I'll keep an eye on it
+Il giorno 21/giu/2013 13:26, ""Ib Lundgren"" notifications@github.com ha
+scritto:
+
+> @synasius https://github.com/synasius, @lepturehttps://github.com/lepture\- pinging you so you know about the upcoming change to refresh token grant.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/182#issuecomment-19810695
+> .
+","",""

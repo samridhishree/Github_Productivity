@@ -19,9 +19,9 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--issue_dir', help='Directory with issue files', default='data/raw_issues/')
-parser.add_argument('--output_dir', help='Directory containing active issues per burst per project', default='data/bursty_issues/')
-parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='results/daily_bursts.pickle')
+parser.add_argument('--issue_dir', help='Directory with issue files', default='Sample_Data/congruence/raw_issues/')
+parser.add_argument('--output_dir', help='Directory containing active issues per burst per project', default='Sample_Data/congruence/burst_issues/')
+parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='Sample_Data/HMM/results/daily_bursts.pickle')
 args, unknown = parser.parse_known_args()
 
 

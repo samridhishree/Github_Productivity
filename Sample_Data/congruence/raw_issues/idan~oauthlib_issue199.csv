@@ -1,0 +1,170 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","199","idan","oauthlib","squirly","2013-07-26 18:26:57","It does not make sense to return a `302` with `oob?oauth_token=...&oauth_verifier=...`.
+
+Instead the endpoint should return a `200` with the data in the body. The implementer is responsible for presenting this data to the client. This also keeps the endpoint API consistent.
+","start issue","The authorization endpoint now returns a 200 on ""oob"" oauth_callbacks."
+"issue_closed","199","idan","oauthlib","ib-lundgren","2013-08-03 18:56:18","","closed issue","The authorization endpoint now returns a 200 on ""oob"" oauth_callbacks."
+"pull_request_title","199","idan","oauthlib","squirly","2013-07-26 18:26:57","It does not make sense to return a `302` with `oob?oauth_token=...&oauth_verifier=...`.
+
+Instead the endpoint should return a `200` with the data in the body. The implementer is responsible for presenting this data to the client. This also keeps the endpoint API consistent.
+","517e01f5db428fe4c3e56119faad1760a8841c9f","The authorization endpoint now returns a 200 on ""oob"" oauth_callbacks."
+"pull_request_merged","199","idan","oauthlib","ib-lundgren","2013-08-03 18:56:18","The authorization endpoint now returns a 200 on ""oob"" oauth_callbacks.","b5f3cb2fcdc132e6fbabe78fc459b396d328b227","Pull request merge from squirly/oauthlib:master to idan/oauthlib:master"
+"issue_comment","199","idan","oauthlib","ib-lundgren","2013-07-29 10:17:30","@squirly Thanks for the PR :) and sorry for the late response. 
+
+Before I dig into code review I think this PR warrants some discussion because it attempts to add detail to a rather vague area of the OAuth 1 spec, handling out of bound ""oob"" callbacks. The definition of `oauth_callback`
+
+```
+An absolute URI back to which the server will
+redirect the resource owner when the Resource Owner
+Authorization step (Section 2.2) is completed.  If
+the client is unable to receive callbacks or a
+callback URI has been established via other means,
+the parameter value MUST be set to ""oob"" (case
+sensitive), to indicate an out-of-band
+configuration.
+```
+
+Note: The `oauth_callback` param is part of the temporary credentials request (i.e. to `RequestTokenEndpoint`, not `AuthorizationEndpoint`). 
+
+If the callback URI has been established through other means (i.e. client registration) then a reasonable approach would be that the provider replaces ""oob"" during `validate_redirect_uri` with the pre-registered URI (`https://the.client/callback`). Similarly if the intention is for the provider to show a ""Here is the verifier, please copy/paste it."" screen it would replace ""oob"" with their own URI (`https://the.provider/show-verifier`). So far none of this would require changes to `oauthlib`.
+
+If the client is unable to receive callbacks (CLI app for example) then the provider could replace ""oob"" to redirect the client to a view returning the verifier in the response body instead of the URI. This would require some extra work on the provider or alternatively this PR. However since this is not per the spec and might not be of interest to all providers I'm inclined to let each provider implement this if they want it.
+
+```
+  # https://the.provider/change-response
+  def change_response(request):
+      return Response(body=urlencode(request.query.args), status=200) 
+```
+","",""
+"issue_comment","199","idan","oauthlib","squirly","2013-07-31 18:28:17","It seems that the current response suggests that a 302 Found (Redirect) response should be returned to the user-end in all cases. Even on a ""oob"" callback. It would be more appropriate to return no status code on a ""oob"" callback from this library, as this is truly making no assumptions.
+
+As we are talking about the authorization endpoint, and how it relates to the OAuth RFC. It seems that having location returned as the first parameter is not the most straight forward API, because it convolutes the request and access token endpoints APIs. An HTTP response like object is returned by the library for all endpoints. A 302 response should have a field ""Location _uri_"", [10.3.3 302 Found](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3). Adding the URI to the header would be more intuitive, as it follows http, than having it returned as the first parameter. Though, this is not actually in the OAuth RFC as there is not obligation for the provider to return a 302 response to the client.
+
+```
+For example, the server redirects the resource owner's user-agent to
+make the following HTTP request:
+
+  GET /cb?x=1&oauth_token=hdk48Djdsa&oauth_verifier=473f82d3 HTTP/1.1
+  Host: client.example.net
+
+If the client did not provide a callback URI, the server SHOULD
+display the value of the verification code, and instruct the resource
+owner to manually inform the client that authorization is completed.
+If the server knows a client to be running on a limited device, it
+SHOULD ensure that the verifier value is suitable for manual entry.
+```
+
+[2.2 Resource Owner Authorization](http://tools.ietf.org/html/rfc5849#section-2.2)
+
+In my opinion, regardless of the OAuth RFC, I think that a 302 response is a very acceptable assumption if a callback is provided. But if this assumption is made, the URI should be moved into the headers return parameter and the URI return parameter be removed completely.
+
+I am willing to make a pull request for these changes, but I would like to further discuss before doing any coding.
+","",""
+"issue_comment","199","idan","oauthlib","ib-lundgren","2013-07-31 21:51:06","Excellent point about the Location header, that is indeed better. While oauthlib is still not stable such a change might break compatibility with existing implementations. Roping in @synasius and @lepture for input on this. If it makes sense an alternative would be to add the Location header but keep the returned URI as is. This could be confusing tho.
+
+I'm still not sure why the redirect uri would remain plain ""oob"" after request token creation. While I agree that returning a 200 with the token is more useful than an invalid redirect uri I am not sure I see which use cases this would be for. Got any example to help enlighten me?
+","",""
+"issue_comment","199","idan","oauthlib","squirly","2013-07-31 22:53:08","The API change went out to pypi 23 days ago (0.5.0 July 9, 2013). So if there is another API change sooner would be better than later.
+","",""
+"issue_comment","199","idan","oauthlib","squirly","2013-07-31 23:30:28","**EXAMPLE**
+I need to return the verifier to the user for my desktop app.
+From the flask example with the current API:
+
+```
+def post_authorize():
+        realms = request.form.getlist('realms')
+        try:
+            u, h, b, s = provider.create_authorization_response(request.url,
+                    http_method=request.method,
+                    body=request.data,
+                    headers=request.headers,
+                    realms=realms)
+                url = urlparse(u)
+                if url.path == 'oob':
+                    return 'Your verifier is: ' + str(urlparse.parse_qs(url.query)['oauth_verifier'][0])
+                else:
+                    return redirect(u)
+        except OAuth1Error as e:
+            return redirect(e.in_uri(url_for('/error')))
+```
+
+With the proposed API:
+
+```
+def post_authorize():
+        realms = request.form.getlist('realms')
+        try:
+            h, b, s = provider.create_authorization_response(request.url,
+                    http_method=request.method,
+                    body=request.data,
+                    headers=request.headers,
+                    realms=realms)
+            if status == 200:
+                assert headers['Content-Type'] == 'application/x-www-form-urlencoded'
+                return 'Your verifier is: ' + str(urlparse.parse_qs(b)['oauth_verifier'][0])
+            else:
+                return build_response(h, b, s)
+        except OAuth1Error as e:
+            return redirect(e.in_uri(url_for('/error')))
+
+def build_response(headers, body, status):
+        return Response(body, status=status, headers=headers)
+```
+
+The proposed API allows for more generic handling, `build_response` could be reused in the request and access endpoints.
+","",""
+"issue_comment","199","idan","oauthlib","lepture","2013-08-01 02:40:53","It makes sense to me, and Flask-OAuthlib is compatible with this issue now.
+","",""
+"issue_comment","199","idan","oauthlib","ib-lundgren","2013-08-01 12:46:45","There still is not a clear use case here where my previous suggestion does not apply. In your example you are really just presenting an alternate view if the callback was ""oob"" originally and never updated. If the user is able to follow a redirect why not just populate the redirect uri during the request token creation? It will result in one more request, is that your concern?
+
+```
+# in the validator for the request token endpoint
+
+   def validate_redirect_uri(self, client, redirect_uri, request,..):
+       if redirect_uri == ""oob"" and client.type in (""desktop"", ""embedded""):
+          request.redirect_uri = url_for('/present-verifier-on-oob')
+          return True
+
+# in the authorization endpoint
+
+def post_authorize():
+    # same as current example with redirect
+
+ app.route('/present-verifier-on-oob')
+ def present_verifier():
+    return 'Your verifier is: ' + request.args.get('oauth_verifier')
+```
+
+If the extra request is the concern I could see a point. We could definitely provide this return as a fallback if the oob was not set, and/or add a `get_oob_view_uri` to the validator so the checking can be done in oauthlib instead of in `validate_redirect_uri`.
+
+The only other use case I see now with returning 200 here is if the client is unable to follow a redirect and try to automate their way through the authorization step. However AFAIK most python http libraries can follow redirects. If you are driving a user-agent like webkit I see even less issue following a redirect.
+","",""
+"issue_comment","199","idan","oauthlib","squirly","2013-08-01 17:16:51","I would like to have less requests. I find that eliminating requests wherever possible can lead to easier to follow code.
+
+Also, changing the redirect URL in a function called `validate_redirect_uri` seems a bit weird. This function should probably be nullipotent based on it's name.
+
+I feel that in order to be clearer to the implementor, on an oob callback the library provides some indication that the server is responsible for displaying the verifier. This is not 100% clear by returning a redirect.
+
+What I am getting at is that my use case for oob is fairly widespread across oauth implementations.
+","",""
+"issue_comment","199","idan","oauthlib","squirly","2013-08-01 17:58:39","I see there is a `get_redirect_uri` in request validator. So that _could_ be used to modify the oob callback value.
+","",""
+"issue_comment","199","idan","oauthlib","ib-lundgren","2013-08-01 19:25:41","@squirly While I think most providers want to implement their own view for presenting the verifier I think falling back to this urlencoded response is a good idea. Thanks for taking all this time to convince me and being so thorough in the code updates :)
+
+Re-using `get_redirect_uri` in the auth endpoint could certainly be used for modifying oob, brings it closer to where it is actually used rather than having the modification in the request token endpoint. Changing it in `validate_redirect_uri` was merely an example, if it should be handled on the request token endpoint I'd prefer an ""oob"" check followed by `get_oob_uri`, `get_default_uri` or similar. However I think your suggested way works well. Fancy adding some documentation onto [get_redirect_uri](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth1/rfc5849/request_validator.py#L362) in the validator describing the ""oob"" case?
+
+I quite like removing the returned URI which mostly have been None and useless anyway. I think we should do this to all OAuth 2 endpoints as well and when that is done maybe release 0.6 rather than 0.5 since it changes the API quite a bit and users might be surprised if a small update breaks everything. Feel free to dig into this in a new PR if you'd like, if not I'll try and get around to it.
+
+@squirly Last thing. Please change `if status == 200:` to `if s == 200:` (or refactor variable names to match) in the example. And also, add yourself to authors.
+","",""
+"issue_comment","199","idan","oauthlib","ib-lundgren","2013-08-03 18:56:14","@squirly Awesome work. Looking forward to more of it ;)
+","",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-07-26 18:13:21","The authorization endpoint now returns a 200 on ""oob"" oauth_callbacks.","c4255477329a48bc01a4402c11abdb4bc178c235",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-07-26 18:35:55","Updated flask server example.","513ec6afbb6ab663fd1c9578f4a64fc734d7cb68",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-07-26 18:59:50","Added tests.","06a93d1e87ed950138c07ba036554d0d0ddfb87f",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-07-26 19:07:32","Fix for python3.","8470e680262a0ed84b7858d2184d310c7b958e46",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-08-01 00:02:56","Fixed flask server example.","6efc8c04e46d5a731962e2fae9b9599097c5a2d4",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-08-01 18:11:10","#199 Proposed API changes for endpoints.","c4a6c31ba9748947462e8e31e106215cca1d3cc9",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-08-01 19:32:53","Fixed error in example, added myself to authors.","59483c6dfbd260a4f18815edebc0bd3e4f58152d",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-08-01 23:58:57","OAuth1 endpoint documentation cleanup.","cddd41f82acbbbedd856733d2a73ec14f292d5a7",""
+"pull_request_commit","199","idan","oauthlib","squirly","2013-08-02 00:05:38","Document possibility and handling  of oob callback in get_redirect_uri.","517e01f5db428fe4c3e56119faad1760a8841c9f",""

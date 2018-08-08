@@ -1,0 +1,35 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","223","pycqa","astroid","pylint-bot","2015-10-23 18:15:04","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+I think ""CONST_CLS"" is a bit of a misnomer, primarily because the container types (lists, sets, tuples, and dicts) aren't in any sense constants in their actual use in ASTs.  Not only are lists, sets, and dicts mutable, tuples can contain mutable objects, and it's perfectly possible to build an AST where they contain objects that depend on arbitrary other AST properties and any runtime complications you want.  A closer-to-accurate description would be that CONST_CLS contains builtin types that have their own AST nodes because they have special syntactic forms in Python, so list because of [] but not frozenset because frozensets can only be built by calling the constructor, but this isn't accurate either because Ellipsis isn't listed in CONST_CLS even though it has a special syntactic form, ..., while None and NotImplemented are included even though they have no special syntactic form.
+- Split CONST_CLS into at least two dictionaries, one for builtin types that are not containers and the other for builtin containers with AST nodes.  I'll propose the name scalars for the former, from Perl.  Note that all of the former are represented in astroid with Const nodes except for Ellipsis.  I don't know what to call the latter that's accurate and not overly verbose.
+- Consider renaming node_classes.Const Scalar.  (Though, maybe we should have a discussion about type dispatch and how astroid merged types in UnaryOp, BinOp, and Const.)
+- Update const_factory to do stricter input validation to ensure it only builds actual constants.
+- Write a new function in raw_building that processes containers with non-constant values.  (As a subcase, this will handle scalars and containers of scalars, so maybe just eliminate const_factory in favor of the new function?)
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/223
+","start issue","CONST_CLS and const_factory issues"
+"issue_closed","223","pycqa","astroid","pylint-bot","2015-12-09 05:55:25","","closed issue","CONST_CLS and const_factory issues"
+"issue_comment","223","pycqa","astroid","pylint-bot","2015-10-24 13:28:39","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Ellipsis is not listed into CONST_CLS, since it's already an AST node. Unfortunately, None and NotImplemented are just Name nodes in the AST.
+
+I don't like the term scalar **at all**. It's so opaque if you don't know Perl or other language where it is named so and it makes the situation worse, because now when I read the code, I have to look what a scalar is. We should try to keep away from this kind of names.
+
+I think what would make more sense is to just get rid of const_factory and always create the nodes by hand, which will not be a problem anyway after the zipper changes are merged. Also the current const_factory is buggy, since it doesn't store the metadata (parent, lineno, col_offset).
+
+So this means that the CONST_CLS can just be removed. As well as _CONST_PROXY, by changing each node to define a _proxied method instead (List, Set and so on). The same for Const nodes, where _proxied will just dispatch to the underlying value for finding out what it should be. 
+
+Please let me know if something is unclear.
+","",""
+"issue_comment","223","pycqa","astroid","pylint-bot","2015-10-26 04:55:37","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+CONST_CLS and const_factory are removed in 68d51cfd7930.  const_factory is replaced with a combination of direct calls to node constructors and the new raw_building.ast_from_object() function.
+","",""

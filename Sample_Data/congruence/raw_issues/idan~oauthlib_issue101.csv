@@ -1,0 +1,77 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","101","idan","oauthlib","matthewlmcclure","2013-02-04 22:44:10","This looks like a regression between 0.3.4 and 0.3.5 to me. I'm guessing it was caused by  the automatic urlencoding introduced between those tags. (cf. #96)
+
+Here's a test program:
+
+```
+from __future__ import unicode_literals
+import logging
+from pprint import pprint
+
+import requests
+from requests_oauthlib import OAuth1
+
+
+logging.basicConfig(level=logging.DEBUG)
+
+client_key = 'aclientkey'
+client_secret = 'aclientsecret'
+token_credentials = {
+    'oauth_token': ['atokentoken'],
+    'oauth_token_secret': ['atokensecret']
+}
+resource_url = 'http://example.com/'
+method = 'POST'
+
+oauth = OAuth1(client_key, client_secret,
+               unicode(token_credentials['oauth_token'][0]),
+               unicode(token_credentials['oauth_token_secret'][0]),
+               signature_type='QUERY')
+req = requests.Request(method=method, url=resource_url,
+                       headers={ 'Content-Type': 'text/plain' },
+                       data='some body data that is not application/x-www-form-urlencoded',
+                       auth=oauth).prepare()
+
+pprint(req.__dict__)
+```
+
+And here's the output in 0.3.5 vs 0.3.4. Note the inclusion of the body in the base signing string in 0.3.5 and that the Content-Type somehow gets set to application/x-www-formurlencoded despite my having set it to text/plain.
+
+```
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.5)]$ pip freeze | grep 'requests\|oauthlib'
+-e git+https://github.com/matthewlmcclure/oauthlib.git@48ce49a74cb0adbe69d4737ef62ec46931e3e49a#egg=oauthlib-matthewlmcclure/improve-logging-0.3.5
+-e git+https://github.com/matthewlmcclure/requests.git@628e393b9a251c3d2b9910c697b9e4ac4f3d8d6a#egg=requests-issues/1096
+-e git+https://github.com/matthewlmcclure/requests-oauthlib.git@66021a8b323881519761d4fbab9491f0f0f9a12e#egg=requests_oauthlib-kennethreitz/requests/issues/1096[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.5)]$ python /tmp/oauthlib-0.3.5-regression.py DEBUG:oauthlib.oauth1.rfc5849:Collected params: [(u'oauth_nonce', u'125539647820718445311360017645'), (u'oauth_timestamp', u'1360017645'), (u'oauth_version', u'1.0'), (u'oauth_signature_method', u'HMAC-SHA1'), (u'oauth_consumer_key', u'aclientkey'), (u'oauth_token', u'atokentoken'), (u'some body data that is not application/x-www-form-urlencoded', u'')]
+DEBUG:oauthlib.oauth1.rfc5849:Normalized params: oauth_consumer_key=aclientkey&oauth_nonce=125539647820718445311360017645&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1360017645&oauth_token=atokentoken&oauth_version=1.0&some%20body%20data%20that%20is%20not%20application%2Fx-www-form-urlencoded=
+DEBUG:oauthlib.oauth1.rfc5849:Normalized URI: http://example.com/
+DEBUG:oauthlib.oauth1.rfc5849:Base signing string: POST&http%3A%2F%2Fexample.com%2F&oauth_consumer_key%3Daclientkey%26oauth_nonce%3D125539647820718445311360017645%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1360017645%26oauth_token%3Datokentoken%26oauth_version%3D1.0%26some%2520body%2520data%2520that%2520is%2520not%2520application%252Fx-www-form-urlencoded%3D
+DEBUG:oauthlib.oauth1.rfc5849:Signature: mKAPXv9RBJ3KojG8DJ/pcn90d2E=
+{'body': u'some body data that is not application/x-www-form-urlencoded',
+ 'headers': {u'Content-Length': u'60',
+             u'Content-Type': u'application/x-www-form-urlencoded'},
+ 'hooks': {'response': []},
+ 'method': u'POST',
+ 'url': u'http://example.com/?oauth_nonce=125539647820718445311360017645&oauth_timestamp=1360017645&oauth_version=1.0&oauth_signature_method=HMAC-SHA1&oauth_consumer_key=aclientkey&oauth_token=atokentoken&oauth_signature=mKAPXv9RBJ3KojG8DJ%2Fpcn90d2E%3D'}
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.5)]$ git checkout improve-logging-0.3.4 
+Switched to branch 'improve-logging-0.3.4'
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.4)]$ python /tmp/oauthlib-0.3.5-regression.py 
+DEBUG:oauthlib.oauth1.rfc5849:Collected params: [(u'oauth_nonce', u'79041121459018830601360017665'), (u'oauth_timestamp', u'1360017665'), (u'oauth_version', u'1.0'), (u'oauth_signature_method', u'HMAC-SHA1'), (u'oauth_consumer_key', u'aclientkey'), (u'oauth_token', u'atokentoken')]
+DEBUG:oauthlib.oauth1.rfc5849:Normalized params: oauth_consumer_key=aclientkey&oauth_nonce=79041121459018830601360017665&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1360017665&oauth_token=atokentoken&oauth_version=1.0
+DEBUG:oauthlib.oauth1.rfc5849:Normalized URI: http://example.com/
+DEBUG:oauthlib.oauth1.rfc5849:Base signing string: POST&http%3A%2F%2Fexample.com%2F&oauth_consumer_key%3Daclientkey%26oauth_nonce%3D79041121459018830601360017665%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1360017665%26oauth_token%3Datokentoken%26oauth_version%3D1.0
+DEBUG:oauthlib.oauth1.rfc5849:Signature: gX+h3Kgsp14kl93Q1/GlYbVsDU0=
+{'body': u'some body data that is not application/x-www-form-urlencoded',
+ 'headers': {'Content-Length': u'60', u'Content-Type': u'text/plain'},
+ 'hooks': {'response': []},
+ 'method': u'POST',
+ 'url': u'http://example.com/?oauth_nonce=79041121459018830601360017665&oauth_timestamp=1360017665&oauth_version=1.0&oauth_signature_method=HMAC-SHA1&oauth_consumer_key=aclientkey&oauth_token=atokentoken&oauth_signature=gX%2Bh3Kgsp14kl93Q1%2FGlYbVsDU0%3D'}
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.4)]$ 
+```
+","start issue","0.3.5 mistakenly includes non-application/x-www-form-urlencoded body in oauth params"
+"issue_closed","101","idan","oauthlib","ib-lundgren","2013-02-04 23:20:30","","closed issue","0.3.5 mistakenly includes non-application/x-www-form-urlencoded body in oauth params"
+"issue_comment","101","idan","oauthlib","ib-lundgren","2013-02-04 22:55:13","My apologies, this is indeed the case of default urlencoding doing a non-favour by converting when it shouldn't. Also interesting that Client.sign did not pick up on the already set content type, will need to revisit that check. Unfortunately its midnight here but I will have a look at this tomorrow.
+
+I'll try and simply improve the Client.sign header checking, failing that ill either revert back or add something like a urlencode=True kwarg to extract_params and urldecode, possibly to Client.sign as well.
+","",""
+"issue_comment","101","idan","oauthlib","ib-lundgren","2013-02-04 23:20:22","Just rolled back the change. 0.3.6 should equal 0.3.4 in urlencoding with the added bonus of default unicode conversion.
+","",""

@@ -1,0 +1,115 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","7","pycqa","astroid","pylint-bot","2013-10-18 21:43:10","Originally reported by: **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**
+
+---
+
+This simple script generates a (admittedly perverse) class which, when analyzed causes astroid to stack overflow.
+
+http://paste.pound-python.org/show/HvGNK3BPWVkbqY1VAlyl/
+
+If the number of methods is somewhat reduced, a huge running time is incurred instead, which is (for me) even worse. I'm trying to measure it, but currently it's ten minutes and counting.
+
+Here is a trace of the inference being performed at the time of stack overflow:
+http://paste.pound-python.org/show/QEm5Q15I1WMrHGnrWyqU/
+
+This is a real issue for us as the cheetah templating framework generates code equivalent to the above. This causes pylint to be unusable to check these generated files. I do want to check these generated python files for issues, and pylint seems like the most full-featured tool available.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/7
+","start issue","very long run time and/or stack overflow during inference"
+"issue_closed","7","pycqa","astroid","pylint-bot","2015-12-09 05:51:36","","closed issue","very long run time and/or stack overflow during inference"
+"issue_comment","7","pycqa","astroid","pylint-bot","2013-10-18 21:10:22","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
+Profile of analysis of a similar class with just 14 methods, which takes 30 seconds.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2013-10-18 21:11:28","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
+The raw data which was used to generate the above image.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2013-10-18 21:11:30","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
+The raw data which was used to generate the above image.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2013-10-28 16:40:28","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
+As a minor update, my attempt to time the inference on the somewhat smaller class is still running, ten days later. The cputime is 9 days, 20:58:43. 
+
+I'm killing it now. 
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2013-10-28 16:50:12","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+there is much probably an infinite loop somewhere which doesn't end into an
+infinite recursion error and so ends endlessly.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2013-10-28 19:07:07","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
+My hypothesis is different: I believe it's tracing all the possible assignment paths in a permutative manner, yielding O(n^n) performance. With smaller numbers (3-10), it does complete, just exponentially slower for each new method.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2014-03-12 01:12:44","_Original comment by_ **BitBucket: [eevee](http://bitbucket.org/eevee), GitHub: @eevee?**:
+
+---
+
+I looked into this a bit in the course of trying to improve pylint performance on a large and terrible codebase.  :)
+
+Buck is correct; this is equivalent to `O(n^n)`.  The following happens:
+- Encounter `trans = self.transaction` in method 1.  Try to infer `self.transaction`.
+- Encounter `self.transaction = trans` in method 1.  Infer `trans`.  Find `trans = self.transaction` in method 1.  Skip it because it's already being inferred.
+- Encounter `self.transaction = trans` in method 2.  Infer `trans`.  Find `trans = self.transaction` in method 2.  Try to infer `self.transaction`.
+- Encounter `self.transaction = trans` in method 1...
+
+This repeats rather ridiculously.  Every assignment of `self.transaction` tries to infer from every assignment _to_ it.  Method 1 tries to infer from methods 2 through `n`, which each try to infer from methods 2 through `n` except themselves, etc.  So each of `n` methods tries to infer from `n` - 1 methods which try to infer from `n` - 2 methods, and so on, producing `O(n!)`.  It only terminates at all because the inference of a particular expression is prevented from inferring itself; otherwise method 1 would try to infer itself forever.
+
+I think I have a small fix for this, which involves extending the existing recursive-inference protection to avoid inferring the same attribute on an instance of the same _class_ twice in the call stack.  I'll post it as soon as I figure out how to do that with hg and bitbucket.  :)
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2014-03-12 06:30:07","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+sounds good eevee, thanks !
+
+don't hesitate to ask for help for submitting your patch.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2014-03-12 16:36:56","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
++1 +1
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2014-03-12 16:40:50","_Original comment by_ **Buck Evan (BitBucket: [bukzor](http://bitbucket.org/bukzor), GitHub: @bukzor?)**:
+
+---
+
+@eevee Put your diff on http://paste.pound-python.org/ if you're really stuck on bitbucket/hg.
+
+This page always gives me enough information to do what I need with hg:  http://mercurial.selenic.com/wiki/GitConcepts#Command_equivalence_table
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2014-04-08 11:32:17","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+@eevee any update on this? Astroid should be released soon, it would be great if it could include a fix for this one.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2014-04-08 19:32:50","_Original comment by_ **BitBucket: [eevee](http://bitbucket.org/eevee), GitHub: @eevee?**:
+
+---
+
+Finally submitted pull request #28, which includes a commit to fix this issue.
+","",""
+"issue_comment","7","pycqa","astroid","pylint-bot","2014-04-09 06:15:00","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+Avoid recursively inferring the same attr on the same class. Closes #7
+","",""

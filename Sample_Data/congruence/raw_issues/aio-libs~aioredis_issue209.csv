@@ -1,0 +1,19 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","209","aio-libs","aioredis","pocek","2017-04-25 11:39:20","It is rather surprising/annoying that e.g. `SortedSetCommandsMixin.zrange(..., withscores=True)` returns a flat list instead of a list of (value, score) tuples. Both python-redis and asyncio_redis return tuples which I think is much more sensible for a high-level API.
+
+Current: `['a', 1, 'b', 2]`
+Expected: `[('a', 1), ('b', 2)]`
+
+Would a patch to rationalize this behavior be accepted? If it was a conscious design choice, one has to ask: why?
+
+The proposal is more or less along these lines:
+```patch
+ def pairs_int_or_float(value):
+     it = iter(value)
+-    return list(sum(([val, int_or_float(score)] for val, score in zip(it, it)),
+-                    []))
++    return [(val, int_or_float(score)) for val, score in zip(it, it)]
+```","start issue","Set commands WITHSCORES should return tuples"
+"issue_comment","209","aio-libs","aioredis","popravich","2017-04-28 07:48:08","Hi, I think it was rather oversight when reviewing some related PR.
+
+The patch would be appreciated, ofcourse with tests and documented notes on breaking changes.","",""

@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","313","pycqa","astroid","dbaum","2016-01-29 19:42:12","I have seen this happen in pylint with long chains of += assignments, though looking at the inference code I suspect it is actually a more general problem.  For example, when pylint tries to analyze this code:
+
+---
+
+def build() {
+  s = """"
+  s += """"
+  s += """"
+  ... many more copies of the += assignment
+
+BUILT = build()
+
+---
+
+I see failures such as
+
+  File ""google3/third_party/py/astroid/inference.py"", line 362, in _filter_operation_errors
+  File ""google3/third_party/py/astroid/inference.py"", line 639, in _infer_augassign
+  File ""google3/third_party/py/astroid/bases.py"", line 146, in _infer_stmts
+  File ""google3/third_party/py/astroid/bases.py"", line 108, in cache_generator
+  File ""google3/third_party/py/astroid/bases.py"", line 413, in wrapped
+  File ""google3/third_party/py/astroid/bases.py"", line 108, in cache_generator
+  File ""google3/third_party/py/astroid/bases.py"", line 413, in wrapped
+  File ""google3/third_party/py/astroid/inference.py"", line 362, in _filter_operation_errors
+  File ""google3/third_party/py/astroid/inference.py"", line 639, in _infer_augassign
+  File ""google3/third_party/py/astroid/inference.py"", line 169, in infer_name
+  File ""google3/third_party/py/astroid/node_classes.py"", line 125, in lookup
+  File ""google3/third_party/py/astroid/scoped_nodes.py"", line 693, in scope_lookup
+  File ""google3/third_party/py/astroid/scoped_nodes.py"", line 173, in _scope_lookup
+  File ""google3/third_party/py/astroid/node_classes.py"", line 208, in _filter_stmts
+  File ""google3/third_party/py/astroid/bases.py"", line 501, in __repr__
+  File ""google3/third_party/py/astroid/bases.py"", line 561, in root
+RuntimeError: maximum recursion depth exceeded
+
+At least in theory, the inference could have been done in an iterative fashion (recursing on the rhs, then iterating on the lhs).  But this is probably a significant re-work of the inferencing code.  Has there been any discussion about doing this?  Has this limitation cropped up in other bugs?
+","start issue","inference recurses per-statement, which eventually exceeds stack depth"
+"issue_comment","313","pycqa","astroid","PCManticore","2016-01-30 08:29:59","Yep, there are other similar bugs that you can find in the bug tracker, but for different samples of code. The deep problem with inference right now is that it's recursive in nature, because evaluating one statement can trigger up the inference of all the objects involved in statement, with these triggering up the inference for their components as well. This causes chaos when one of the components involved in the inference has a circular dependency with another object, each one triggering inference for the other and causing the entire process to crash.
+
+Right now, apart of doing small antirecursion guards here and there, we don't have a proper solution, but my plan is to drop the current approach and try to move it to an interpretation-kind of thing, which will need a full program analysis, rather than a node-by-node inference approach. But this is something that's probably going to be targeted for 3.0, since 2.0 is already fat with features and needs to get out relatively soon (next months). If you'd like to discuss more about these, we might use the mailing list, maybe other folks could chime in as well (probably @ceridwen is interested as well)
+","",""

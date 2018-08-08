@@ -1,0 +1,54 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","300","idan","oauthlib","jbkkd","2014-11-26 12:34:38","References https://github.com/evonove/django-oauth-toolkit/issues/158
+","start issue","Revocation endpoint should return empty string, not Python 'None'"
+"issue_closed","300","idan","oauthlib","lepture","2015-07-06 03:35:39","","closed issue","Revocation endpoint should return empty string, not Python 'None'"
+"pull_request_title","300","idan","oauthlib","jbkkd","2014-11-26 12:34:38","References https://github.com/evonove/django-oauth-toolkit/issues/158
+","dd86c4b4b05fc9574452056a1983172e66d5bf86","Revocation endpoint should return empty string, not Python 'None'"
+"pull_request_merged","300","idan","oauthlib","lepture","2015-07-06 03:35:39","Revocation endpoint should return empty string, not Python 'None'","a8471490cef639182cb8f16afe6a6658bdf28997","Pull request merge from jbkkd/oauthlib:master to idan/oauthlib:master"
+"issue_comment","300","idan","oauthlib","lepture","2014-11-27 05:40:48","@jbkkd This should be fixed in django-oauth-toolkit. The code
+
+``` python
+response = HttpResponse(content=body, status=status)
+```
+
+Should be:
+
+``` python
+response = HttpResponse(content=body or '', status=status)
+```
+","",""
+"issue_comment","300","idan","oauthlib","jbkkd","2014-11-27 07:13:42","There's already a pull request open for that fix in django-oauth-toolkit.
+
+I think this would be the better solution though. The current response object is either None or a string, why not return an empty string instead? Would love to hear comments on this.
+","",""
+"issue_comment","300","idan","oauthlib","thedrow","2015-07-01 11:34:22","@lepture I'll let you decide on this one.
+","",""
+"issue_comment","300","idan","oauthlib","lepture","2015-07-02 06:33:35","If the response body is `''`, it means the response has no content. In this case, the HTTP code should be 204.
+
+However, the spec defined the response with:
+
+> The authorization server responds with HTTP status code 200 if the
+>    token has been revoked successfully or if the client submitted an
+>    invalid token.
+
+The response code should be 200. Is it ok that a 200 response with no content? Would it be better to let the developer decide themselves?
+","",""
+"issue_comment","300","idan","oauthlib","thedrow","2015-07-02 08:48:56","I think that returning 200 OK without content is acceptable and does happen in the wild.
+No idea about the spec though. As far as I recall HTTP allows 200 OK with no content.
+","",""
+"issue_comment","300","idan","oauthlib","lepture","2015-07-02 09:08:00","We do have servers that responses with wrong content type / encoding etc in the wild. ""in the wild"" doesn't mean it is right.
+
+Here is a quote from the spec http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#status.200
+
+> Aside from responses to CONNECT, a 200 response always has a payload, though an origin server may generate a payload body of zero length. If no payload is desired, an origin server ought to send 204 (No Content) instead.
+
+It has an uncertain statement:
+
+>  though an origin server **may** generate a payload body of zero length
+","",""
+"issue_comment","300","idan","oauthlib","thedrow","2015-07-04 14:23:39","@lepture I'm waiting for a decision on this PR to merge.
+","",""
+"issue_comment","300","idan","oauthlib","lepture","2015-07-06 04:17:42","It failed
+","",""
+"pull_request_commit","300","idan","oauthlib","jbkkd","2014-11-26 12:33:53","Revocation endpoint should return empty string, not Python 'None'","ca848a242257507074d272cb72c77a4b078cbc0b",""
+"pull_request_commit","300","idan","oauthlib","jbkkd","2014-11-26 12:36:48","Updated revocation test","dd86c4b4b05fc9574452056a1983172e66d5bf86",""

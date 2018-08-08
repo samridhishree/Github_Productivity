@@ -1,0 +1,33 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","264","idan","oauthlib","prudnikov","2014-09-15 19:13:27","RFC 6749 Section 5.2 (http://tools.ietf.org/html/rfc6749#section-5.2) describes error response. It says that server should respond with HTTP 400 (Bad request). But oauthlib uses HTTP 401 (Unauthorized) instead for errors such as `InvalidClientError`, `InvalidGrantError`, `UnauthorizedClientError` and other related errors.
+
+For example https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/errors.py#L181
+","start issue","Invalid HTTP statuses on error response"
+"issue_comment","264","idan","oauthlib","ib-lundgren","2014-09-22 12:59:29","The spec mention that 401 may be used with invalid client errors and must be used when the authentication was done via the authorization header field. Although oauthlib currently does nothing to suggest that the 'WWW-Authenticate' header field should be included in the response as the spec require. I reckon keeping 401 for this error is ok but we should add a header suggestion to the exception.
+
+Regarding the other the spec does not explicitly say that 401 may be used and thus we should probably consider changing to 400. However it does seem more appropriate with a 401 in both invalid grant and especially unauthorized client errors.
+
+@asteinlein, @lepture, @masci thoughts?
+","",""
+"issue_comment","264","idan","oauthlib","samskiter","2015-02-05 01:13:54","@ib-lundgren Hi - just stumbled into this very issue and would like to chime in. From reading the spec and looking around other answers, IMO a 400 is the correct response.
+
+Firstly, the spec:
+
+> The authorization server responds with an HTTP 400 (Bad Request)
+>    status code (unless specified otherwise) and includes the following
+>    parameters with the response:
+
+There's no MUST in the 400 requirements, but there's no MAY either.
+
+Secondly, and the reason I stumbled into this was through a bug of sorts in the sun JDK on my client (see here: http://stackoverflow.com/a/7524681/1137254 )
+
+Essentially, my client's HTTP stack would close the connection early for a 401, but the OAuth stack above (google-http-oauth-client) would attempt to continue reading and parse the results. I think this was written into OpenJDK per the definition and expectations around a 401 (UPDATE: it's actually to do with 'streaming' mode). IMO OpenJDK is wrong too and I think I'd hit this same issue if I were to get an ""invalid_client"" 401 during /token endpoint requests.
+","",""
+"issue_comment","264","idan","oauthlib","jmbowman","2015-08-26 15:19:27","Adding another vote for 400 being the correct error code here.  We used to use django-oauth2-provider for oauth2 authentication from mobile apps, and it returned 400 in this case.  When switching to django-oauth-toolkit (which uses oauthlib) in order to upgrade to newer Django versions, we had to hack the token request view to return a 400 instead to keep the mobile apps working correctly.
+
+Here's one of the authors of the spec specifically stating that a 400 is the intended response for invalid authentication credentials when requesting a token, and why: https://www.ietf.org/mail-archive/web/oauth/current/msg02127.html
+
+And here's [another example](https://github.com/seegno/angular-oauth2/issues/36) of a project that's having trouble coping with oauthlib using a 401 in these circumstances.
+","",""
+"issue_comment","264","idan","oauthlib","LennyLip","2016-04-02 07:29:49","+1 for 400 
+","",""

@@ -1,0 +1,38 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","292","aio-libs","aioredis","honzasp","2017-09-19 07:15:57","I am using a connection pool created with `aioredis.create_redis_pool` and I regularly get a warning from asyncio about unhandled `CancelledError`:
+
+```
+ERROR asyncio: Task exception was never retrieved
+future: <Task finished coro=<RedisConnection._read_data() done, defined at aioredis/connection.py:161> exception=CancelledError()>
+concurrent.futures._base.CancelledError
+```
+
+Digging deeper, I reconstructed the problem as follows:
+1. A connection is created and used
+2. The connection is not used for some time, and the Redis server disconnects (we connect to AWS ElastiCache)
+3. `RedisConnection._read_data()` detects that the server disconnected (triggering the `Connection has been closed by server` debug log) and breaks the loop, calling `self._do_close`
+4. `_do_close()` closes the connection, and calls `_reader_task.cancel()`
+5. `_read_data()` immediately returns (in the same ""tick"" of the event loop), and finishes `_reader_task`
+
+Now, `_reader_task` is done, but with `CancelledError` set as exception. However, this exception is not detected anywhere and asyncio produces the warning described above.
+
+---
+
+I think this points to two potential problems (and their solutions):
+1. When `_read_data()` decides to close the connection, it should call `loop.call_sonn(self._do_close, exc)`, so that `_read_data()` returns and `_reader_task` finishes before `_do_close()` attempts to cancel the task.
+2. If `_reader_task` exits with an exception, it is completely ignored. However, I am not sure as to what the expected behaviour should be:
+   - Calling `_do_close()` with the exception is probably not desirable, because an exception here signifies a bug in `aioredis` and not an error in the user code. Moreover, the connection may have already closed, which would mean that the exception would be lost silently.
+   - Logging the exception to the aioredis logger would mean that most of the time, the exception would be lost without any trace.
+   - Relying on the asyncio `exception was never retrieved` warning may ignore the exception if the user disables the debug mode of asyncio.
+
+I am happy to contribute a PR fixing (1) and possibly (2), but I will be grateful for an advice how to test for this kind of error?
+
+EDIT: I am using Python 3.6.2, uvloop 0.8.0 and aioredis 1.0.0b2.","start issue","CancelledError in conn._reader_task"
+"issue_comment","292","aio-libs","aioredis","JendaPlhak","2017-09-28 14:56:24","Is anyone maintaining this project? This seems to be serious bug so some reaction from the maintainer would be nice. ","",""
+"issue_comment","292","aio-libs","aioredis","popravich","2017-09-28 19:32:11","Hi, @JendaPlhak 
+Sorry for silence, the project is definitely maintained, but I have not much free time these days.
+I've just added few tests for this issue (059c74f907fdc39e3f4fbc62bfeea9edc47416d3) but can't reproduce the warning message","",""
+"issue_comment","292","aio-libs","aioredis","popravich","2017-09-28 20:05:37","Ok, I managed to reproduce it with Python3.6.2; will look into...","",""
+"issue_comment","292","aio-libs","aioredis","honzasp","2017-10-01 06:23:24","I added the relevant version numbers into the first post. Sorry for not including them in the first place!","",""
+"issue_comment","292","aio-libs","aioredis","popravich","2017-10-06 07:24:30","Please proceed with PR — with option 1 — replacing `_do_close` in `_read_data` with `loop.call_soon(...)`.
+Thanks","",""

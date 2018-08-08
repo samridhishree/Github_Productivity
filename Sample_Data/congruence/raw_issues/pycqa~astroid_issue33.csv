@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","33","pycqa","astroid","pylint-bot","2014-06-06 15:21:22","Originally reported by: **BitBucket: [jcristau](http://bitbucket.org/jcristau), GitHub: @jcristau?**
+
+---
+
+On python 2, the rebuilder sets _newstyle to True on a class node if a __metaclass__ variable is set in the parent namespace.  This is wrong, per https://docs.python.org/2/reference/datamodel.html#customizing-class-creation only the global namespace matters.
+
+Test case::
+
+```
+def test_metaclass_nested(self):
+    astroid = abuilder.string_build(dedent(""""""
+    class Test:
+        __metaclass__ = type
+        class Nested: pass
+    """"""))
+    nested = astroid['Test'].locals['Nested'][0]
+    self.assertFalse(nested.newstyle)
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/33
+","start issue","wrong handling of metaclass/newstyle in rebuilder"
+"issue_closed","33","pycqa","astroid","pylint-bot","2015-12-09 05:52:07","","closed issue","wrong handling of metaclass/newstyle in rebuilder"
+"issue_comment","33","pycqa","astroid","pylint-bot","2014-06-30 09:40:30","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Handle **metaclass** defined at the module level
+
+According to the doc
+(https://docs.python.org/2/reference/datamodel.html#customizing-class-creation):
+
+The appropriate metaclass is determined by the following precedence rules:
+- If dict['**metaclass**'] exists, it is used.
+- Otherwise, if there is at least one base class, its metaclass is used
+  (this looks for a **class** attribute first and if not found, uses its
+  type).
+- Otherwise, if a global variable named **metaclass** exists, it is used.
+- Otherwise, the old-style, classic metaclass (types.ClassType) is used.
+
+The third case was not handled by node.metaclass().
+
+Remove metaclass lookup from the rebuilder, handle it all in
+Class._explicit_metaclass() instead, and use that in _newstyle_impl if
+possible.
+
+Remove test_newstyle_and_metaclass_bad, as I think the returned value in
+this test is irrelevant (it's a TypeError anyway, so you can't actually
+build that class), and replace it with a test using nested classes.
+
+Closes issue#33
+","",""

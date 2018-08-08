@@ -1,0 +1,36 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","164","aio-libs","aioredis","popravich","2016-11-14 09:27:04","Allow to pass `Channel` instances as arguments to `execute_pubsub` method:
+```python
+ch1 = Channel('ch:1', loop=loop)
+ch2 = Channel('ch:2', loop=loop)
+await redis.subscribe(ch1, ch2)
+```
+This will allow to use custom channel classes (probable use: custom decoding, custom internal queue, etc).
+
+To do:
+* [x] Implement arguments check in `execute_pubsub`:
+       allow `Channel` instances, `str` or `bytes`;
+* [x] Update `_process_pubsub/_process_data` to respect Channel arguments to `execute_pubsub`;
+* [ ] Either add `ABCChannel` or split `Channel`'s interface to public & private
+      (to allow reimplement in subclasses);
+* [x] Add tests;
+* [x] Update docs;","start issue","Pub/Sub: allow to subscribe with Channel objects."
+"issue_closed","164","aio-libs","aioredis","popravich","2016-11-30 10:03:49","","closed issue","Pub/Sub: allow to subscribe with Channel objects."
+"issue_comment","164","aio-libs","aioredis","popravich","2016-11-14 09:37:16","This is related to #127 and will allow a custom Channel with shared queue which make possible
+using single queue reader with multiple producers, something like this:
+
+``` python
+async def reader(queue):
+    while True:
+        ch, msg = await queue.get()
+        # process msg from specific channel
+
+mpsc = Queue(loop=loop)
+loop.create_task(listener(mpsc))  # start single listener
+
+# later subscribe to some set of channels which will send messaged to shared queue
+await redis.subscribe(
+    MyChannel(""ch:1"", queue=mpsc, loop=loop),
+    MyChannel(""ch:2"", queue=mpsc, loop=loop))
+```
+","",""

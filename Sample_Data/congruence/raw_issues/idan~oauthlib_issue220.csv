@@ -1,0 +1,18 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","220","idan","oauthlib","wrr","2013-10-31 16:39:48","Currently to support 'refresh_token' grant RequestValidator needs to implement get_original_scopes() method. The method must return a list of all valid scopes of the refresh_token.
+
+This approach does not allow to support implicit scopes. Say a user can have many files to which access can be granted individually with scopes such as read:/mydir/foo  write:/mydir/bar/. To support a token with scope read_all_files, a method get_original_scopes() needs to list all possible files, which is not practical.
+
+A more flexible approach would be to support a hook that would allow to determine if one scope is a sub scope of some other scope. Say a provider can implement a method is_subscope(requested_scope, original_scopes), that when called: is_subscope('read:/mydir/foo', 'read_all_files') could return True.
+
+Is there any way to achieve this currently other than implementing own RefreshTokenGrant class?
+","start issue","Dynamically check if a scope requested during a token refresh is a sub scope of the original scope."
+"issue_closed","220","idan","oauthlib","ib-lundgren","2013-11-10 22:55:33","","closed issue","Dynamically check if a scope requested during a token refresh is a sub scope of the original scope."
+"issue_comment","220","idan","oauthlib","ib-lundgren","2013-11-01 09:25:09","Good point. There is no easy way to do this but a PR would be very welcome. 
+
+I can see a slight inefficiency with `is_subscope` being called naively on all scopes/requested scope permutations. A better approach might be to hand all checking over to the implementer with a `is_within_original_scope(request.scopes, request.refresh_token, request)` method on the validator. Then the code could do the normal checking first and fall back on this method if that fails (with a default implementation returning False).
+
+@wrr what do you think?
+","",""
+"issue_comment","220","idan","oauthlib","wrr","2013-11-02 09:06:59","This sounds good. I'll work on it and send a PR so we can see how it looks in practice. 
+","",""

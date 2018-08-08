@@ -1,0 +1,69 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","192","idan","oauthlib","vitriol","2013-07-09 12:13:15","The definition of the refresh token in the specs is that of a long lasting credential for trusted clients, while at some point it does specify that the implementation MAY (their caps) chose to issue a new refresh token after the use of a refresh_token grant.
+
+Currently from what i see in the lib this is default behavior, and there is no way of keeping the same refresh token. For our needs this does not fit.
+
+Could this behavior be changed in any easy way?
+Thanks
+","start issue","Option to keep same refresh token after a bearer token is refreshed?"
+"issue_closed","192","idan","oauthlib","ib-lundgren","2013-09-19 09:20:04","","closed issue","Option to keep same refresh token after a bearer token is refreshed?"
+"issue_comment","192","idan","oauthlib","ib-lundgren","2013-07-09 12:33:35","There currently is no flag/parameter to specify refresh token re-use from a high level. This would be nice to have, Ill open an issue to add it later.
+
+In the meantime you could achieve this by passing in a custom token generator, for example
+
+```
+from your_validator import the_validator
+from oauthlib.common import generate_token
+from oauthlib.oauth2 import WebApplicationServer
+
+def keep_refresh_tokens(request, refresh_token=False):
+    return request.refresh_token if refresh_token else generate_token()
+
+server = WebApplicationServer(the_validator, token_generator=keep_refresh_tokens)
+```
+","",""
+"issue_comment","192","idan","oauthlib","vitriol","2013-07-09 12:44:43","perfect, thanks! 
+please leave a sign so I'm notified when the feature is added
+","",""
+"issue_comment","192","idan","oauthlib","ib-lundgren","2013-07-09 12:48:32","Will do :)
+
+On Tue, Jul 9, 2013 at 1:44 PM, ciupenhauer notifications@github.comwrote:
+
+> perfect, thanks!
+> please leave a sign so I'm notified when the feature is added
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/192#issuecomment-20671168
+> .
+","",""
+"issue_comment","192","idan","oauthlib","vitriol","2013-07-09 13:18:30",":-D
+just realized the above solution does not work for me because I am using Server instead of WebApplicationServer.
+I could use BackendApplicationServer and LegacyApplicationServer and decide which one gets to process the request, but is there any reason that Server, the all inclusive one, does not support that param?
+","",""
+"issue_comment","192","idan","oauthlib","ib-lundgren","2013-07-09 13:32:04","Oh, Server should support token_generators too. Its a two line fix. Will
+sort it out tonight.
+
+On Tue, Jul 9, 2013 at 2:18 PM, ciupenhauer notifications@github.comwrote:
+
+> :-D
+> just realized the above solution does not work for me because I am using
+> Server instead of WebApplicationServer, and cannot switch to
+> WebApplicationServer
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/192#issuecomment-20672990
+> .
+","",""
+"issue_comment","192","idan","oauthlib","ib-lundgren","2013-07-09 16:04:22","@vitriol The token_generator param is now available in Server on master. Will push a new release soon so it should be on Pypi, opened a new issue to track the token reuse feature.
+","",""
+"issue_comment","192","idan","oauthlib","ib-lundgren","2013-09-19 09:20:04","Added `rotate_refresh_token(request)` to the validator which can be used to determine whether to refresh or not. This will not break your work around with a custom token generator but if you want to get rid of the work around simple use
+
+```
+ def rotate_refresh_token(self, request):
+     return False
+```
+
+to keep the previous refresh token.
+
+http://oauthlib.readthedocs.org/en/latest/oauth2/validator.html#oauthlib.oauth2.RequestValidator.rotate_refresh_token
+","",""

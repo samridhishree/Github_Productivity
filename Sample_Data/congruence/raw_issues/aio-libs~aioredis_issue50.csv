@@ -1,0 +1,87 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","50","aio-libs","aioredis","kxepal","2014-10-05 14:42:54","Plus a bit better Redis version detection.
+","start issue","Pass test suite against Redis 2.6.x"
+"issue_closed","50","aio-libs","aioredis","popravich","2014-10-08 09:25:16","","closed issue","Pass test suite against Redis 2.6.x"
+"pull_request_title","50","aio-libs","aioredis","kxepal","2014-10-05 14:42:54","Plus a bit better Redis version detection.
+","7c012b1aed37727db1f2ea9489aac59f7d79a989","Pass test suite against Redis 2.6.x"
+"pull_request_merged","50","aio-libs","aioredis","popravich","2014-10-08 09:25:16","Pass test suite against Redis 2.6.x","a5edc3938e329b2c4a9251adb6a68bdb04830435","Pull request merge from Unknown:2.6-support to aio-libs/aioredis:master"
+"issue_comment","50","aio-libs","aioredis","popravich","2014-10-06 07:38:20","Hi Alexander,
+
+Do you really need that tests run agains Redis 2.6?
+Why don't you consider upgrading your Redis to newer version?
+Redis 2.8.x has many improvements and new usefull features, its a stable version
+and besides 3.0 is comming.
+
+Regarding PR:
+Currently Travis CI is configured to use latest 2.8 Redis version so your changes still runs on newer Redis and not on 2.6 (on CI, I mean). Also this changes only related to tests so it doesn't make much ""profit"" in library itself supporting old version of server.
+
+If you take a look at code coverage you'll notice that there still several places not been tests-covered (in particular `ServerCommandsMixin`) so I would have been much happier with PR providing tests.
+","",""
+"issue_comment","50","aio-libs","aioredis","kxepal","2014-10-06 08:21:07","> Do you really need that tests run agains Redis 2.6?
+> Why don't you consider upgrading your Redis to newer version?
+
+By trivial reason: I have few of them and it still the only stable version on Gentoo. Yea, not a solid argument while other distros have even 2.4 in stable, but everything has it sane limits (: IMHO 2.6 is on this edge until 3.0 will happened. 
+
+My motivation was to let it pass test suite as all other packages does during CI as far as aioredis actually works fine with 2.6 while leave version incompatibility issues for test suite of projects which uses aioredis.
+
+> Also this changes only related to tests so it doesn't make much ""profit"" in library itself supporting old version of server.
+> 
+> If you take a look at code coverage you'll notice that there still several places not been tests-covered (in particular ServerCommandsMixin) so I would have been much happier with PR providing tests.
+
+Didn't look on coverage and entire project closely yet, just meet it on this weekends, but would be happy to!
+","",""
+"issue_comment","50","aio-libs","aioredis","popravich","2014-10-06 09:58:20","I will consider merging this PR when you make travis run tests against Redis 2.6 also.
+
+PS: I've just looked at Gentoo and its packages and it just confuses me -- in terms of ""stable"" releases
+they have `python 3.3.5`, `redis 2.6.15` but no `asyncio` and `hiredis-py`. Sounds like a joke.
+","",""
+"issue_comment","50","aio-libs","aioredis","kxepal","2014-10-07 11:58:15","@popravich thanks for feedback, all bits fixed. For travis I failed to figure out how to ask it for specific database environment so have to go with plain old wget && make, but it's fine.
+","",""
+"issue_comment","50","aio-libs","aioredis","thedrow","2014-10-07 12:01:57","@kxepal Why don't you use https://launchpad.net/~chris-lea/+archive/ubuntu/redis-server when possible? I'm not sure that 2.6 is available for precise but it's worth to try.
+","",""
+"issue_comment","50","aio-libs","aioredis","kxepal","2014-10-07 12:05:57","@thedrow I'm not familiar with Ubuntu and don't have any host to check it. How the usage of PPA have to looks like?
+","",""
+"issue_comment","50","aio-libs","aioredis","asvetlov","2014-10-07 12:47:22","@kxepal http://docs.travis-ci.com/user/installing-dependencies/#Installing-Packages-from-a-custom-APT-repository
+","",""
+"issue_comment","50","aio-libs","aioredis","popravich","2014-10-07 13:58:52","Ok, I will look through the changes a bit later today.
+","",""
+"issue_comment","50","aio-libs","aioredis","kxepal","2014-10-07 14:04:59","@asvetlov thanks, good to know!
+Suddenly the only available versions are the ancient 2.2 and the current 2.8. I didn't found any 2.6 for precise so there are two options: brew the package or doing make. First is overkill, imho.
+","",""
+"issue_comment","50","aio-libs","aioredis","popravich","2014-10-07 14:13:07","There is a bunch of redis versions for ubuntu at chris lea ppa we just need a way to install two of them in travis. I just can't remember the proper way right now.
+","",""
+"issue_comment","50","aio-libs","aioredis","thedrow","2014-10-07 15:20:58","The PPA web interface shows only the latest version of the package.
+Try following http://blog.andrewbeacock.com/2007/03/how-to-install-specific-version-of.html to see if 2.6 for percise is available.
+","",""
+"issue_comment","50","aio-libs","aioredis","kxepal","2014-10-07 16:44:24","@thedrow already tried: only 2.2 or 2.8, no 2.6.
+","",""
+"issue_comment","50","aio-libs","aioredis","thedrow","2014-10-07 19:55:04","Oh well. I tried :)
+","",""
+"issue_comment","50","aio-libs","aioredis","popravich","2014-10-08 09:25:44","Fixed .travis.yml and merged
+","",""
+"pull_request_commit_comment","50","aio-libs","aioredis","popravich","2014-10-06 10:01:42","using version of client doesn't sound good;
+I agree that `redis-server --version` may not be the best way.
+Let's make properly:
+`redis-cli INFO SERVER`
+that would return redis server info retrieved by client, everybody should be happy.
+","7c012b1aed37727db1f2ea9489aac59f7d79a989","(None, '', u'Makefile')"
+"pull_request_commit_comment","50","aio-libs","aioredis","popravich","2014-10-06 10:04:03","This is realy incosistant -- you make test sleep for a 10 seconds and ""not sure"" that the value would be greater than 1?
+I think it would be better to keep this test as is and add a copy for `REDIS_VERSION < (2, 8, 0)` with a 10 seconds sleep and proper result check.
+","7c012b1aed37727db1f2ea9489aac59f7d79a989","(None, '', u'tests/generic_commands_test.py')"
+"pull_request_commit_comment","50","aio-libs","aioredis","kxepal","2014-10-07 11:46:57","Agree, was bad decision. Will fix.
+","7c012b1aed37727db1f2ea9489aac59f7d79a989","(None, '', u'tests/generic_commands_test.py')"
+"pull_request_commit_comment","50","aio-libs","aioredis","kxepal","2014-10-07 11:55:15","Good idea.
+","7c012b1aed37727db1f2ea9489aac59f7d79a989","(None, '', u'Makefile')"
+"pull_request_commit","50","aio-libs","aioredis","kxepal","2014-10-05 14:01:02","Move Redis version detection to utils","8f9bd3f11c5cef9637aba30b8380609b466bf276",""
+"pull_request_commit","50","aio-libs","aioredis","kxepal","2014-10-05 14:14:42","Pass test suite against Redis 2.6.x","f76fc022a49090126162dcb9a5822cd20a14d434",""
+"pull_request_commit","50","aio-libs","aioredis","kxepal","2014-10-05 14:19:42","Sleep more on calculating object idle time
+
+One second isn't enough to let old Redis notice that nothing
+happened with the key.","cd5f260dee7fec8f07d1026ec768d6773af7c803",""
+"pull_request_commit","50","aio-libs","aioredis","kxepal","2014-10-07 10:16:13","Multiredis travis","413dc393e44be74882d4e819cf0df8d28f1a8ff2",""
+"pull_request_commit","50","aio-libs","aioredis","kxepal","2014-10-07 11:52:47","Better Redis version detection for test suite
+
+redis-server may not be available for the end users and actually is
+required sudo to be executed. However, they have access to redis-cli
+which ships with Redis and also provides version info, but in a bit
+different format.","7c012b1aed37727db1f2ea9489aac59f7d79a989",""

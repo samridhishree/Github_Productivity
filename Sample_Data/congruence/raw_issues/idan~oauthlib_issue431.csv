@@ -1,0 +1,38 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","431","idan","oauthlib","bluekeyes","2016-07-27 21:13:07","I ran into this problem working with the GitHub API. According to [their docs](https://developer.github.com/v3/oauth/#common-errors-for-the-access-token-request), GitHub uses several error types that are not part of the RFC and thus not included in `errors.py`. When `fetch_token` eventually calls `raise_from_error` via `validate_token_parameters`, no exception is raised because the error type is not found. As a result, you get a confusing validation error about a missing token:
+
+```
+oauthlib.oauth2.rfc6749.errors.MissingTokenError: (missing_token) Missing access token parameter.
+```
+
+I don't know if GitHub is actually following the spec here, but either way the result is confusing. I'm currently patching this in my application as follows:
+
+``` python
+# in oauth2/rfc6749/parameters.py
+
+class ServerSpecificError(OAuth2Error):
+    """"""The authorization server returned an error that is not part of the
+    specification.
+    """"""
+    def __init__(self, error, **kwargs):
+        self.error = error
+        super().__init__(**kwargs)
+
+def raise_from_error(error, params=None):
+    kwargs = {
+        'description': params.get('error_description'),
+        'uri': params.get('error_uri'),
+        'state': params.get('state')
+    }
+    for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
+        if cls.error == error:
+            raise cls(**kwargs)
+    raise ServerSpecificError(error, **kwargs)
+```
+
+I'm happy to submit this as a PR if it seems like an appropriate solution.
+","start issue","fetch_token doesn't handle application-specific OAuth2 errors"
+"issue_comment","431","idan","oauthlib","sjamaan","2017-03-24 13:21:35","This would be helpful.
+
+It would probably also be helpful if the http response code (or maybe the entire response body?) would be included, that if you're hitting a web page instead of a properly formatted JSON response, you get more to work with than just a bland ""no token"" exception.","",""
+"issue_comment","431","idan","oauthlib","xmedeko","2017-03-29 14:00:55","+1 I would name it `UnknownServerError`.","",""

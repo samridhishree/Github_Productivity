@@ -1,0 +1,46 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","377","idan","oauthlib","jvanasco","2015-08-11 21:58:28","This is another request for compliance with the oddity that is Twitter.
+
+If you re-authenticate to twitter's API, twitter returns the same access token (ie, the existing one is not invalidated and replaced).
+
+I started working on a patch to support this, but could use some advice, especially in method naming.
+
+The first try is here: https://github.com/jvanasco/oauthlib/commit/7d62cc3453601a9fd5d2ec1a41748b70040a62dc
+1. I extended `create_access_token_response` with a kwarg `update_access_token`.  If set to `True`, this will try to obtain an access token dict from `create_access_token_existing`.
+2. The `create_access_token_existing` calls a hook in `request_validator.create_access_token_existing` to try and load/update an existing access token.
+
+The logic in a userland validator is below.
+
+This generally seems to work as intended, but I'm not sure on some of the data and logic flows.
+
+If the 'User' (as determined in the hook) has an existing AccessToken, it can be upgraded with the current realms, credentials, etc.  If not, a new Token String is created.  The combination of having both a request_token and verifier already available, means that determining an existing token is possible.
+
+---
+
+userland validator
+
+```
+    verifierObject = get_TokenRequest__by_oauthVerifier(
+        request.verifier,
+        active_only = True
+    )
+    if not verifierObject:
+        # we always have a verifier!
+        raise ValueError(""Invalid Verifier"")
+
+    # do we have an existing token?
+    existingAccessToken = get_TokenAccess__by_useraccountId_developerApplicationId_isActive(
+        verifierObject.useraccount_id,
+        verifierObject.developer_application_id,
+    )
+    if existingAccessToken:
+        if existingAccessToken._realms != ' '.join(request.realms):
+            existingAccessToken._realms = ' '.join(request.realms)
+        return {
+            'oauth_token': existingAccessToken.oauth_token,
+            'oauth_token_secret': existingAccessToken.oauth_token_secret,
+            'oauth_authorized_realms': ' '.join(existingAccessToken.realms)
+        }
+    return None
+```
+","start issue","oauth1 provider - `recycle` access tokens on multiple re-authorizations"

@@ -1,0 +1,62 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","136","idan","oauthlib","taestone","2013-04-18 07:45:39","line 774 in oauthlib.draft25.trant_type25
+
+```
+def validate_token_request(self, request):
+```
+
+......
+     for attr in ('user', 'state', 'scopes'):
+            if getattr(request, attr) is None:
+                log.debug('request.%s was not set on code validation.', attr)
+
+Is ""user"" needed in def validate_token_request?  AuthorizationCodeGrant  doesn't need it during token endpoint. does any other grand need it?
+","start issue","Is ""user"" needed in token_endpoint?"
+"issue_closed","136","idan","oauthlib","ib-lundgren","2013-05-28 15:04:16","","closed issue","Is ""user"" needed in token_endpoint?"
+"issue_comment","136","idan","oauthlib","ib-lundgren","2013-04-18 20:40:56","The difference here is the asynchronicity of the authorization code grant. The user authorization is captured in an authorization code. When the code is later exchanged for a token there is no way for the provider to know which user it is meant to associate the new token with unless it previously bound a user to the authorization code. All other core grant types obtain a token in a synchronous flow.
+
+The check for user is just to help remind developers of this and provide a simple way to pass a long a user to later be available in the save_bearer_token call. If you don't associate a token with a user there is not much point of having oauth tokens since the requests later will only specify token, never user.
+
+Not sure if that helped, let me know =)
+","",""
+"issue_comment","136","idan","oauthlib","taestone","2013-04-19 09:25:08","thanks for comment.
+
+I was confused because In django model, It save user_id in authcode(information about responsed authcode db) and bearer_token temporarily . For verification check with authorization code and bearer token, It seems to need for provider to have to save the both. It makes that the provider can be aware of the user who confirmed the permission. Is it just for django implementation and not common other implementation?
+
+In resource access, it's seem for client know the user.
+When accessing protected resource, the client has to know the user whose  resource it request.
+","",""
+"issue_comment","136","idan","oauthlib","ib-lundgren","2013-04-22 15:21:14","Yes, the authorization code is only meant to exist temporarily and hold the authorization/permission the user gives and which user it was, among other things. This is not specific to Django but serves as an example of what needs to be done. Exactly how is up to the developer.
+
+[This drawing from the OAuth 2 spec](http://tools.ietf.org/html/rfc6749#section-4.1) might help to clarify what is going on. This is quite similar to OAuth 1, but without the request signing.
+
+```
+ +----------+
+ | Resource |
+ |   Owner  |
+ |          |
+ +----------+
+      ^
+      |
+     (B)
+ +----|-----+          Client Identifier      +---------------+
+ |         -+----(A)-- & Redirection URI ---->|               |
+ |  User-   |                                 | Authorization |
+ |  Agent  -+----(B)-- User authenticates --->|     Server    |
+ |          |                                 |               |
+ |         -+----(C)-- Authorization Code ---<|               |
+ +-|----|---+                                 +---------------+
+   |    |                                         ^      v
+  (A)  (C)                                        |      |
+   |    |                                         |      |
+   ^    v                                         |      |
+ +---------+                                      |      |
+ |         |>---(D)-- Authorization Code ---------'      |
+ |  Client |          & Redirection URI                  |
+ |         |                                             |
+ |         |<---(E)----- Access Token -------------------'
+ +---------+       (w/ Optional Refresh Token)
+```
+
+What is happening is that the user is given an authorization code, which it carries over to the client through a redirection. This code is then exchanged for a token. The only way the provider can know which user this token should belong to is by looking it up from the authorization code. Thus we need to store user twice.
+","",""

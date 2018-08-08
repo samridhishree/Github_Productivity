@@ -1,0 +1,43 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","193","aio-libs","aioredis","joanvila","2017-01-30 19:16:05","Hi team, the library is great! Good job!
+
+I have a question which answer I cannot find in the documentation.
+
+I have two situations which I don't know how to handle. The first one, I would like to do something like:
+
+```
+SET resource value NX PX 10000
+```
+
+NX for the `create if not exists` and PX for the `ttl`
+
+The most similar way to do it that I have found is (assumming that `_connect()` returns a connection pool):
+
+```
+with await self._connect() as redis:
+            await redis.set(""resource"", ""value"")
+            await redis.expire(""resource"", 10)
+```
+
+The problem is that I cannot say if the set has the NX option and the two operations are not atomic. Is there a way to call a raw redis command through `aioredis`? If not, how can I achieve my goal?
+
+My second question is if there is a way to run Lua scripts with the library.
+
+Many thanks for your help and sorry if you have the information in the documentation and I didn't find it :)","start issue","NX and PX options"
+"issue_comment","193","aio-libs","aioredis","popravich","2017-01-30 21:58:07","Hi,
+There are two ways you can run `SET key value NX PX timeout` command:
+* run `set` with keyword args: 
+  ```python
+  await redis.set('resource', 'value', pexpire=10000, exist=redis.SET_IF_NOT_EXIST)
+  ```
+* or run raw command using `execute` method:
+  ```python
+  await redis.execute('set', 'resource', 'value', 'nx', 'px', 10000)
+  ```
+
+Here is the [Lua-scripts related docs](http://aioredis.readthedocs.io/en/v0.3.0/mixins.html#scripting-commands)
+
+Try these and return if you have any questions)","",""
+"issue_comment","193","aio-libs","aioredis","joanvila","2017-02-01 21:33:40","Thanks @popravich! 
+I will try it when I have time but it looks great 🙂 . Do you think that we could add the NX and PX options to the documentation for future users? I you point me where I will be happy to submit a PR.","",""
+"issue_comment","193","aio-libs","aioredis","popravich","2017-02-02 09:08:15","Please see #194 ","",""

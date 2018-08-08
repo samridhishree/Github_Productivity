@@ -1,0 +1,113 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","177","aio-libs","aioredis","polyn0m","2017-01-03 17:40:57","Added GeoCommandsMixin for support Redis geo commands since redis 3.2.0","start issue","Geo commands"
+"issue_closed","177","aio-libs","aioredis","popravich","2017-01-05 13:23:23","","closed issue","Geo commands"
+"pull_request_title","177","aio-libs","aioredis","polyn0m","2017-01-03 17:40:57","Added GeoCommandsMixin for support Redis geo commands since redis 3.2.0","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","Geo commands"
+"pull_request_merged","177","aio-libs","aioredis","popravich","2017-01-05 13:23:23","Geo commands","d586720f7c90594fc683b14e28c8e75bedc14fd6","Pull request merge from polyn0m/aioredis:geo-commands to aio-libs/aioredis:master"
+"issue_comment","177","aio-libs","aioredis","codecov-io","2017-01-03 19:16:12","## [Current coverage](https://codecov.io/gh/aio-libs/aioredis/pull/177?src=pr) is 97.03% (diff: 100%)
+> Merging [#177](https://codecov.io/gh/aio-libs/aioredis/pull/177?src=pr) into [master](https://codecov.io/gh/aio-libs/aioredis/branch/master?src=pr) will increase coverage by **0.09%**
+
+```diff
+@@             master       #177   diff @@
+==========================================
+  Files            49         51     +2   
+  Lines          5933       6131   +198   
+  Methods           0          0          
+  Messages          0          0          
+  Branches        445        462    +17   
+==========================================
++ Hits           5751       5949   +198   
+  Misses          139        139          
+  Partials         43         43          
+```
+
+> Powered by [Codecov](https://codecov.io?src=pr). Last update [6941cee...8a70c32](https://codecov.io/gh/aio-libs/aioredis/compare/6941ceef391ae523a374f9232d048364d0225d03...8a70c3252eb0b26ded966bf9bc954fa4a05aa496?src=pr)","",""
+"issue_comment","177","aio-libs","aioredis","popravich","2017-01-04 16:23:43","build is still failing, please fix flake errors.","",""
+"issue_comment","177","aio-libs","aioredis","polyn0m","2017-01-05 00:21:41","Manual run result http://joxi.ru/aD2PGWpiNld9m3","",""
+"issue_comment","177","aio-libs","aioredis","popravich","2017-01-05 13:23:31","Good job! Thanks","",""
+"issue_comment","177","aio-libs","aioredis","polyn0m","2017-01-05 13:27:58","You are welcome","",""
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-04 08:33:21","No need in such `encoding` parsing, it will be extracted from `kwargs` in `execute` method.","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-04 08:51:36","This looks overcomplicated. Lets make it simple.
+
+First of all I think it would be nice to have these results wrapped in `namedtuple`
+so users would not have to remember meaning of each index in a row:
+```python
+GeoCoord = namedtuple('GeoCoord', 'longtitude latitude')
+GeoRadius = namedtuple('GeoRadius', 'name distance hash coord')
+
+def make_geo_radius(name, distance=None, hash=None, coord=None):
+    if distance is not None:
+        distance = float(distance)
+    if hash is not None:
+        hash = int(hash)
+    if coord is not None:
+        hash = GeoCoord(*map(float, coord))
+    return GeoRadius(name, distance, hash, coord)
+```
+So `geo_data_row` can look like this:
+```python
+...
+for row in value:
+    if isinstance(row, list):
+        res_rows.append(make_geo_radius(*row))
+    else:
+        res_rows.append(row)
+...
+```","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-04 08:52:50","No need in separate function, just add `**kwargs` or `**opts` to `wait_convert`","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/util.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-04 12:05:36","Removed","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-04 12:05:45","Fixed","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/util.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-04 12:06:15","Added types and rewrite function","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-04 12:12:31","names should match","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-04 12:23:59","Ok, my previous example was incorrect.
+But I realy don't like this long if-elif noodles.
+How about this:
+```python
+if isinstance(row, list):
+    name = row.pop(0)
+    dist = hash = coord = None
+    if with_dist:
+        dist = float(row.pop(0))
+    if with_hash:
+        hash = int(row.pop(0))
+    if with_coord:
+        coord = GeoCoord(*map(float, row.pop(0)))
+    return GeoMember(name, dist, hash, coord)
+```","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-04 12:27:38","I think `georadius*` commands without `with_*` flags must behave same as Redis — return list of strings,
+not list of lists of strings or namedtuples.","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'tests/geo_commands_test.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-04 12:53:08","@popravich what kind names must match? GeoMember -> GeoRadius?","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-04 12:55:27","i think command must return same result - list of namedtuples, because no reason for return list of strings, it's same record without additional data. And now command always return list of GeoMember.","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'tests/geo_commands_test.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-04 13:08:31","Ahhh, typos...","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-05 12:05:20","@polyn0m, I was thinking about it and still sceptical.
+We must follow Redis `georadius` return convention, ie:
+return list of strings when no `withcoord / withhash / withdist` flags are set;
+return list of (named)tuples when any of above flags are set.
+
+In cases when no `WITH*` flags are set distance, coordinate and hash fields
+of tuple would be empty and the only usable field would be name.
+User would need to convert such list of one-item-tuples to plain list
+to use it (for instance to do join — `', '.join(['Palermo', 'Catania'])`,
+or to pass this results to other DB query...)
+
+In case we always return list of tuples there would be situations when double conversion
+happen — aioredis convert plain list to list of tuples; then user converts list of tuples to plain list.
+I think this would be uncommon case but it (returning plain list of strings) would
+make code more readable and simplier (both library- and user- sides).","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'tests/geo_commands_test.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-05 12:07:24","Add test (and fix) for the following case:
+```python
+res = yield from redis.geopos('geodata', 'Catania', 'NonExistingMember', 'Palermo')
+```","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(81, '', u'tests/geo_commands_test.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-05 12:08:43","Please add tests for each command without `encoding`","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(313, '', u'tests/geo_commands_test.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-05 12:10:00","Please keep `with_` prefixes for dist, hash and coord parameters.","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-05 12:10:34","typo: `count` can be int only","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","popravich","2017-01-05 12:11:15","See comments above regarding `with_` prefix and ""`count` typo"".","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(None, '', u'aioredis/commands/geo.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-05 13:21:20","Added *_binary tests","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(313, '', u'tests/geo_commands_test.py')"
+"pull_request_commit_comment","177","aio-libs","aioredis","polyn0m","2017-01-05 13:21:41","Added test_geo_not_exist_members test","8a70c3252eb0b26ded966bf9bc954fa4a05aa496","(81, '', u'tests/geo_commands_test.py')"
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-03 13:24:53","Added geo commands","db76f72e5a3bc5305dc0915179709b119f7cf3eb",""
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-03 17:34:30","Test for geo commands, flake and small fixes","34e3e316d87ac147a21037d5c5d6ee4e238961db",""
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-03 20:00:30","Enhance tests and fixes errors","97059073232dc1b2573dbc990a1107e5d246711b",""
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-04 12:04:08","Fix reviews notes","7b66eb524bfddee653a919f106cbcfbc0216c0b7",""
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-04 13:19:51","Refactoring geo_memeber creation","6dda4aa60dff821830c56b9b589eacd9bc10f7c8",""
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-04 22:43:53","flake errors","4a438ecc04c1ba4f29fc17c1cf69a9c51a6868dd",""
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-05 12:37:55","Return with_* prefix, fix typos, return list of strings if call georadius* command without with_* options","05e2330082431c8ad96b425fa0a9c1e931d93e13",""
+"pull_request_commit","177","aio-libs","aioredis","polyn0m","2017-01-05 12:56:46","Added some tests","8a70c3252eb0b26ded966bf9bc954fa4a05aa496",""

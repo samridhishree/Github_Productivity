@@ -1,0 +1,182 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","143","idan","oauthlib","matthewlmcclure","2013-05-02 03:58:40","The spec http://tools.ietf.org/html/rfc5849#section-3.4.1.2 indicates
+that:
+
+```
+The host and port values MUST match the content of the HTTP
+request ""Host"" header field.
+```
+
+Fixes https://github.com/idan/oauthlib/issues/142
+","start issue","Fix defect in choice of authority for signature base string"
+"issue_closed","143","idan","oauthlib","ib-lundgren","2013-05-05 16:25:09","","closed issue","Fix defect in choice of authority for signature base string"
+"pull_request_title","143","idan","oauthlib","matthewlmcclure","2013-05-02 03:58:40","The spec http://tools.ietf.org/html/rfc5849#section-3.4.1.2 indicates
+that:
+
+```
+The host and port values MUST match the content of the HTTP
+request ""Host"" header field.
+```
+
+Fixes https://github.com/idan/oauthlib/issues/142
+","4a7130d9c0c5097b2b218bafcde4667ca559111f","Fix defect in choice of authority for signature base string"
+"pull_request_merged","143","idan","oauthlib","ib-lundgren","2013-05-05 16:25:09","Fix defect in choice of authority for signature base string","d8b43f96b8e369af4fec99514040a6f9c5d14a2d","Pull request merge from matthewlmcclure/oauthlib:idan/142 to idan/oauthlib:master"
+"issue_comment","143","idan","oauthlib","ib-lundgren","2013-05-02 19:02:11","As you mention, they must match each other, which is currently a [TODO as you can see a few lines down](https://github.com/matthewlmcclure/oauthlib/blob/0a1e428802838ea8a965f90edac144dd1f8d719a/oauthlib/oauth1/rfc5849/signature.py#L140) =) 
+
+What your PR is saying with `(host or netloc)` is ""use either the URI or the headers provided host"". Please update to do a string comparison (optionally using oauthlib.common.safe_string_equals) and I'll be happy to merge.
+","",""
+"issue_comment","143","idan","oauthlib","matthewlmcclure","2013-05-02 20:56:13","Wow, somehow I overlooked that TODO. Sorry.
+
+In any case, I wonder if the defect I actually want to fix is in [requests-oauthlib](https://github.com/requests/requests-oauthlib).(1) First, to clarify the spec in RFC 5849, my understanding is that these requirements:
+
+> 3.4.1.2.  Base String URI
+> 
+>    The scheme, authority, and path of the request resource URI [RFC3986]
+>    are included by constructing an ""http"" or ""https"" URI representing
+>    the request resource (without the query or fragment) as follows:
+> 
+>    ...
+> 1.  The host and port values MUST match the content of the HTTP
+>       request ""Host"" header field.
+
+intend to say, ""The authority of the base string URI MUST be the authority from the request 'Host' header."" (modulo its case and port inclusion/exclusion specified in the other items in section 3.4.1.2). To contrast, I do not think it means, ""The authority of the 'Host' header MUST equal the authority of the request URI."" First, the latter would be meaningless on the server side, where the server reconstructs the complete request URL from a combination of the host-relative URI and the Host header; i.e., the authority of the client's request URL doesn't exist in the message received by the server, except as reconstructed from other headers. (Right?) Second, on the client side, the request URL authority and the Host header might not be equal; since allowing them to differ is the reason that [RFC 2616] specifies the client MUST include the Host header.
+
+If you agree with my interpretation of the spec, then I think the right fix might be for requests-oauthlib to pass the Host header authority rather than the client request URL authority. Something like this: https://github.com/matthewlmcclure/requests-oauthlib/compare/idan;oauthlib;issues;142
+
+What do you think?
+
+(1) I should have included the scenario that motivated my issue report in the original. Here it is:
+
+```
+[mlm@matt-mapmyfitness-macbook:~]
+$ ipython
+Python 2.7.4 (default, Apr 28 2013, 21:11:06) 
+Type ""copyright"", ""credits"" or ""license"" for more information.
+
+IPython 0.13.2 -- An enhanced Interactive Python.
+?         -> Introduction and overview of IPython's features.
+%quickref -> Quick reference.
+help      -> Python's own help system.
+object?   -> Details about 'object', use 'object??' for extra details.
+
+In [1]: import requests
+
+In [2]: from requests_oauthlib import 
+OAuth1  core    
+
+In [2]: from requests_oauthlib import OAuth1
+
+In [3]: client_key = u'a-client-key'
+
+In [4]: client_secret = u'a-client-secret'
+
+In [5]: token_key = u'a-token-key'
+
+In [6]: token_secret = u'a-token-secret'
+
+In [7]: oauth = OAuth1(client_key, client_secret, token_key, token_secret)
+
+In [8]: import logging
+
+In [9]: logging.basicConfig(level=logging.DEBUG)
+
+In [10]: requests.get('http://requesturlauthority.example.com', headers={'Host': 'hostheaderauthority.example.com'}, auth=oauth)
+DEBUG:oauthlib:Collected params: [(u'oauth_nonce', u'83464930257722797621367527886'), (u'oauth_timestamp', u'1367527886'), (u'oauth_consumer_key', u'a-client-key'), (u'oauth_signature_method', u'HMAC-SHA1'), (u'oauth_version', u'1.0'), (u'oauth_token', u'a-token-key')]
+DEBUG:oauthlib:Normalized params: oauth_consumer_key=a-client-key&oauth_nonce=83464930257722797621367527886&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1367527886&oauth_token=a-token-key&oauth_version=1.0
+DEBUG:oauthlib:Normalized URI: http://requesturlauthority.example.com/
+DEBUG:oauthlib:Base signing string: GET&http%3A%2F%2Frequesturlauthority.example.com%2F&oauth_consumer_key%3Da-client-key%26oauth_nonce%3D83464930257722797621367527886%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1367527886%26oauth_token%3Da-token-key%26oauth_version%3D1.0
+DEBUG:oauthlib:Signature: R+5ryq7G8P+o+rnMWLyejjSCufc=
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): requesturlauthority.example.com
+...
+```
+
+I believe RFC 5849 specifies that the base signing string should be:
+
+```
+DEBUG:oauthlib:Base signing string: GET&http%3A%2F%hostheaderauthority.example.com%2F&oauth_consumer_key%3Da-client-key%26oauth_nonce%3D83464930257722797621367527886%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1367527886%26oauth_token%3Da-token-key%26oauth_version%3D1.0
+```
+","",""
+"issue_comment","143","idan","oauthlib","ib-lundgren","2013-05-02 21:47:57","I still think this PR is needed, just need host to be set in supplied headers. requests-oauthlib only forwards headers from requests and I don't think the Host header is set at that point. This behavior might be different if you indicate use of proxy but have not yet looked into requests source to verify or if such indications are even possible. 
+
+Regarding the message I believe these are both valid and will indeed be seen on the server
+
+```
+GET http://requestauthority.com/
+
+GET /
+Host: requestauthority.com
+```
+
+although the second is more common. The host header is mandated in HTTP/1.1 and I'm not sure if the main use of the former is for proxies or if something else. Feel free to educate me =) Will take a look this weekend if time allows.
+","",""
+"issue_comment","143","idan","oauthlib","matthewlmcclure","2013-05-02 21:55:02","> requests-oauthlib only forwards headers from requests and I don't think the Host header is set at that point
+
+It looks like you're right. I updated the provisional change in requests-oauthlib linked in my earlier comment, and tested it with an explicit `headers={'Host', ...}` argument to `requests.get`. Now that I try it without the argument, I see that the normalized URI is missing an authority.
+
+So I'll revisit fixing this in oauthlib rather than requests-oauthlib and see if I can dig up some info on requests with fully-qualified URLs like the one in your example.
+","",""
+"issue_comment","143","idan","oauthlib","matthewlmcclure","2013-05-03 04:35:46","I added two commits to the PR.
+
+I updated existing tests and added a few new ones to cover the case for which I originally opened the issue. In your first comment, you wrote, ""update to do a string comparison"". I didn't follow that. Is the new code clearer than my original?
+
+```
+if host is not None:
+    netloc = host.lower()
+```
+
+The most recent commit addresses a few more things I think were non-conformant:
+- RFC 5849 section 3.4.1.2 indicates the signature base string includes the scheme. I can't see a working scenario where any existing caller could be using a relative URI value. So I made `normalize_base_string_uri` raise an exception if the uri value is relative. I found 3 tests using arbitrary strings as URIs, and I updated those so that they include a scheme.
+- RFC 2616 section 5.1.2 indicates that Request-Line values MUST include a path, using ""/"" if none is present in the original URI. So I made `normalize_base_string_uri` use ""/"" if the input URI path is empty.
+","",""
+"issue_comment","143","idan","oauthlib","ib-lundgren","2013-05-05 16:25:05","Great work! Thanks for addressing those additional quirks and tests too.
+
+My comment regarding string comparison was just me being tired and misreading the MUST clause as to say that the request provided host must equal the host provided one, as opposed to that the base signature uri host section must equal the one of the host. A better wording on their part would be to say that if both are present, use the host provided one (i.e. what your PR does). 
+
+Reading these sections of a spec again makes me feel sorry for the writers of the spec, all these annoying details just because they could not require the use of SSL.
+","",""
+"issue_comment","143","idan","oauthlib","matthewlmcclure","2013-05-05 17:38:42","> A better wording on their part would be to say that if both are present, use the host provided one (i.e. what your PR does).
+
+There's some ambiguity in RFC 5849, I think, since it doesn't explicitly say what a server should do in case of a request message that has an absolute URI in the Request-Line and a Host header. It only says:
+
+> The host and port values MUST match the content of the HTTP
+> request ""Host"" header field.
+
+A server using the Host header value as the authority part of the signature base string in that case would seem to contradict RFC 2616 though. Its section 5.2 says:
+
+> 1. If Request-URI is an absoluteURI, the host is part of the
+>    Request-URI. Any Host header field value in the request MUST be
+>    ignored.
+
+A client could make two equivalent requests, one by using an absolute URI in the Request-Line, the other by using a  relative URI, Host header combination. At `Client.sign` and `Client.verify_request` interfaces, oauthlib can't really tell the difference, because nothing in its `Request`, `uri`, or `header` abstractions or documentation specifies whether the URIs represent Request-Line URIs or absolute URIs that participants parse to serialize and deserialize HTTP messages. oauthlib doesn't control whether the Request-Line will be absolute or relative when the HTTP client using it ultimately sends the request.
+
+So it seemed like the only sane thing to do here was to provide backward compatibility with the existing oauthlib behavior. To do so I made it more explicit that the URIs are absolute URIs, regardless of whether a client will send absolute or relative URIs in the HTTP message; and I added a `host` override parameter, which allows an oauthlib caller to indicate that even though the corresponding URI is absolute, it intends to send a relative URI in the message, so use the `host` value in the signature base string.
+
+I believe the two specs, RFC 2616 and RFC 5849, mean that a server receiving a request with an absolute Request-Line should ignore the Host header in the signature verification. And an oauthlib with this change accomplishes that by not passing a `host` argument to `normalize_base_string_uri` in the context of `verify_request`. To make clients and servers agree on a signature base string and signature, oauthlib with this change passes a `host` argument to `normalize_base_string_uri` in the context of `Client.sign`. A client making an HTTP request signed by `Client.sign` should use that same host value either in an absolute Request-Line URI, or in a Host header with a request with a relative Request-Line URI.
+
+Unfortunately, I think the lines:
+
+```
+if host is not None:
+    netloc = host.lower()
+```
+
+superficially appear to contradict my interpretation of the spec, but hopefully the above explains the intent better. If you see a way to make the implementation read more consistently with the spec and still maintain compatibility with existing oauthlib callers, I'd love to improve it.
+","",""
+"issue_comment","143","idan","oauthlib","ib-lundgren","2013-05-05 18:19:31","I think the code as is now is quite clear. More so than the spec which is known for having ambiguity sprinkled here and there. The spec might very well contradict 2616 and mean that the host header should be used, although if this is the case and whether it is intentional or not I've not researched. Considering the initial requirements they had when creating the spec they might have felt that this was needed. 
+
+In any case I don't think this is a major issue, either for the server or client side. However I'm sure we will notice if it causes any trouble as trouble tends to be followed by a new GitHub issue =)
+","",""
+"pull_request_commit","143","idan","oauthlib","matthewlmcclure","2013-05-02 03:40:53","Fix defect in choice of authority for signature base string
+
+The spec <http://tools.ietf.org/html/rfc5849#section-3.4.1.2> indicates
+that:
+
+    The host and port values MUST match the content of the HTTP
+    request ""Host"" header field.
+
+Fixes https://github.com/idan/oauthlib/issues/142","0a1e428802838ea8a965f90edac144dd1f8d719a",""
+"pull_request_commit","143","idan","oauthlib","matthewlmcclure","2013-05-03 03:14:43","Update, comment on, and test the implementation.","a5b85002f49c5029ce7a0d73fc8576003a39237b",""
+"pull_request_commit","143","idan","oauthlib","matthewlmcclure","2013-05-03 04:18:26","Make normalize_base_string_uri handle scheme and path more conformantly
+
+* only accept absolute URIs including a scheme
+* use the root path if the input path is empty","4a7130d9c0c5097b2b218bafcde4667ca559111f",""

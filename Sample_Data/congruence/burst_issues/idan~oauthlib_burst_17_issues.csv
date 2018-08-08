@@ -1,0 +1,795 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,130,idan,oauthlib,johanmeiring,2013-04-02 11:21:41,"The documentation at https://oauthlib.readthedocs.org/en/latest/validator.html indicates that the ""scope"" item of the token dict that is sent to the save_bearer_token() function should be a list.  However, line 190-191 of tokens.py (inside the create_token() function of BearerToken class) sets the ""scope"" item as follows:
+
+``` python
+if request.scopes is not None:
+    token['scope'] = ' '.join(request.scopes)
+```
+
+... thus setting it as a space-separated string instead of a list.
+
+So, in other words, should it be a list or a space-separated string?  Should the documentation change, or should the create_token() function be altered?  Or, am I just being crazy and missing something?
+",start issue,Oauth2: Bearer token dict inconsistency
+1,issue_closed,130,idan,oauthlib,ib-lundgren,2013-05-28 15:04:05,,closed issue,Oauth2: Bearer token dict inconsistency
+2,issue_comment,130,idan,oauthlib,ib-lundgren,2013-04-02 17:11:36,"You are not crazy =) The documentation should be changed to note that it is a space separated list of scopes and that the original list is available in request.scopes. 
+",,
+3,issue_comment,130,idan,oauthlib,johanmeiring,2013-04-03 08:54:30,"That's relief ;-)  I'll make the change and submit a pull request.
+",,
+0,issue_title,164,idan,oauthlib,synasius,2013-05-28 21:26:46,"This is a proposal to solve Issue #162
+",start issue,Redirect uri on error raise
+1,issue_closed,164,idan,oauthlib,synasius,2013-05-29 12:33:11,,closed issue,Redirect uri on error raise
+2,pull_request_title,164,idan,oauthlib,synasius,2013-05-28 21:26:46,"This is a proposal to solve Issue #162
+",746d5949b649af88a5d3ac250141e60a5403caa1,Redirect uri on error raise
+3,issue_comment,164,idan,oauthlib,coveralls,2013-05-28 21:28:49,"[![Coverage Status](https://coveralls.io/builds/54489/badge)](https://coveralls.io/builds/54489)
+
+Coverage remained the same when pulling **83f18d7dd7d6000217834b73313a0c623aef4a00 on synasius:redirect-uri-error** into **21d31ee5aa2284b9a26037a99a7cf99a37131bd2 on idan:master**.
+",,
+4,issue_comment,164,idan,oauthlib,coveralls,2013-05-28 21:28:49,"[![Coverage Status](https://coveralls.io/builds/54489/badge)](https://coveralls.io/builds/54489)
+
+Coverage increased (+0%) when pulling **83f18d7dd7d6000217834b73313a0c623aef4a00 on synasius:redirect-uri-error** into **21d31ee5aa2284b9a26037a99a7cf99a37131bd2 on idan:master**.
+",,
+5,issue_comment,164,idan,oauthlib,ib-lundgren,2013-05-29 11:07:10,"Looks good but I think we should take it one step further. I think having the collected request parameters available in all OAuth2Error exceptions would be helpful, if not for anything else but debugging.
+
+Maybe pass in a keyword arg request that we extract client_id, redirect_uri, scopes etc from?
+
+```
+class OAuth2Error(Exception):
+  error = None
+
+  def __init__(self, description=None, uri=None, state=None, status_code=400, request=None):
+    ...
+    if request:
+      self.redirect_uri = request.redirect_uri
+      etc.
+```
+",,
+6,issue_comment,164,idan,oauthlib,synasius,2013-05-29 11:38:52,"Oh, that would be nice. 
+Would you like to unpack all the params collected in request._params or only some?
+",,
+7,issue_comment,164,idan,oauthlib,ib-lundgren,2013-05-29 11:43:39,"Let's start with cherry picking a few and add more as we find it helpful. Start with `client_id`, `redirect_uri`, `scopes`, `response_type` and `grant_type` maybe? Feel free to add more as you see fit. 
+
+If we add `code` or a flavour of `token` we should probably make sure they are not accidentally logged anywhere, don't think that is the case though.
+",,
+8,issue_comment,164,idan,oauthlib,synasius,2013-05-29 11:50:49,":+1: Fully agree with you! I can update this pull req or create a new one if you prefer
+",,
+9,issue_comment,164,idan,oauthlib,ib-lundgren,2013-05-29 11:52:30,"Whatever you prefer =) A new will make for a slightly cleaner commit log but that is a minor issue imo.
+",,
+10,issue_comment,164,idan,oauthlib,synasius,2013-05-29 12:03:07,"I love clean logs so i'll go with a new pr. Back in 10 minutes
+",,
+11,pull_request_commit,164,idan,oauthlib,synasius,2013-05-28 21:18:22,RedirectClientError base class that add redirect_uri on init,b981ee7b4a45b5613fe35ed811c3ba8a415827aa,
+12,pull_request_commit,164,idan,oauthlib,synasius,2013-05-28 21:19:03,Add new redirect_uri on error raise where needed,83f18d7dd7d6000217834b73313a0c623aef4a00,
+13,pull_request_commit,164,idan,oauthlib,synasius,2013-05-29 11:00:39,Fixed docstrings,746d5949b649af88a5d3ac250141e60a5403caa1,
+0,issue_title,160,idan,oauthlib,dahlia,2013-05-24 14:00:40,"The current implementation of `BearerToken.expires_in` property is hard-coded to simply return 3600, but sometimes we need to adjust this for various reasons.  For example, we want to shorten this to 1800 for more security.
+
+It should work as the way it had worked before until you touch added new option.  Two kinds of options were added by us:
+- All-in-one default implementations of server endpoints now have a new `token_expires_in` option.  It’s 3600 by default.
+- The constructor of `BearerToken` now has a new `expires_in` option.  It also is 3600 by default.
+
+Thanks!
+",start issue,Make OAuth2 BearerToken’s expiration time configurable
+1,issue_closed,160,idan,oauthlib,ib-lundgren,2013-05-24 15:33:23,,closed issue,Make OAuth2 BearerToken’s expiration time configurable
+2,pull_request_title,160,idan,oauthlib,dahlia,2013-05-24 14:00:40,"The current implementation of `BearerToken.expires_in` property is hard-coded to simply return 3600, but sometimes we need to adjust this for various reasons.  For example, we want to shorten this to 1800 for more security.
+
+It should work as the way it had worked before until you touch added new option.  Two kinds of options were added by us:
+- All-in-one default implementations of server endpoints now have a new `token_expires_in` option.  It’s 3600 by default.
+- The constructor of `BearerToken` now has a new `expires_in` option.  It also is 3600 by default.
+
+Thanks!
+",a428b2e64af8c2b48e6ad413b1f0c60a1e0708c9,Make OAuth2 BearerToken’s expiration time configurable
+3,pull_request_merged,160,idan,oauthlib,ib-lundgren,2013-05-24 15:33:23,Make OAuth2 BearerToken’s expiration time configurable,e66ea6d1479f2f4aec29338f740bc542e5f79efc,Pull request merge from bpc/oauthlib:configurable_expires_in to idan/oauthlib:master
+4,issue_comment,160,idan,oauthlib,ib-lundgren,2013-05-24 15:33:18,"This is awesome stuff. Thanks so much for doing this, a nice and long needed improvement for sure!
+",,
+5,pull_request_commit,160,idan,oauthlib,dahlia,2013-05-24 13:28:32,"Add optional expires_in parameter to BearerToken
+
+The expires_in is still 3600 by default.",14fffb8dc1c6a3fabf35bc74c3032abcae402a67,
+6,pull_request_commit,160,idan,oauthlib,dahlia,2013-05-24 13:46:25,"Add token_expires_in opt to all-in-one endpoints
+
+It still works as it has worked until use the option.",a428b2e64af8c2b48e6ad413b1f0c60a1e0708c9,
+0,issue_title,169,idan,oauthlib,dasevilla,2013-05-31 02:55:37,"When viewing the documentation source, it was hard to tell what file was for OAuth 1.0 or OAuth 2.0. To fix this issue, I've split the documentation into two directories.
+",start issue,Organize documentation into directories
+1,issue_closed,169,idan,oauthlib,ib-lundgren,2013-05-31 10:51:51,,closed issue,Organize documentation into directories
+2,pull_request_title,169,idan,oauthlib,dasevilla,2013-05-31 02:55:37,"When viewing the documentation source, it was hard to tell what file was for OAuth 1.0 or OAuth 2.0. To fix this issue, I've split the documentation into two directories.
+",fa0dbbb3b127eec9dbc86208d8fbde1d903f13ea,Organize documentation into directories
+3,pull_request_merged,169,idan,oauthlib,ib-lundgren,2013-05-31 10:51:51,Organize documentation into directories,098f1086c7a587e7db6b2488783bd7a1061bb09e,Pull request merge from dasevilla/oauthlib:organize-docs to idan/oauthlib:master
+4,issue_comment,169,idan,oauthlib,ib-lundgren,2013-05-31 08:56:10,"Wow great work! This organization was sorely needed.
+
+Want to add yourself to AUTHORS? Will merge after.
+",,
+5,pull_request_commit,169,idan,oauthlib,dasevilla,2013-05-31 02:47:35,Organize documentation into directories,fa0dbbb3b127eec9dbc86208d8fbde1d903f13ea,
+0,issue_title,152,idan,oauthlib,ib-lundgren,2013-05-21 14:40:04,"Params to the protected resource view are passed in through kwargs. This is decorator order depandant and bad practice. Change to add them in the request object. Need to update docs accordingly as well.
+",start issue,Change OAuth2 Django decorator to add params for resource view to request object
+1,issue_closed,152,idan,oauthlib,ib-lundgren,2013-05-28 15:03:03,,closed issue,Change OAuth2 Django decorator to add params for resource view to request object
+2,issue_comment,152,idan,oauthlib,ib-lundgren,2013-05-28 15:03:03,"Decorators will be moved to their own extension projects for respective framework. This will be addressed there instead.
+",,
+0,issue_title,79,idan,oauthlib,ib-lundgren,2012-11-16 19:33:35,"While most users are likely better of using requests (http://docs.python-requests.org/en/latest/index.html) to make OAuth requests some might not have that option.  A few examples of how to use the Client class would be useful. 
+
+Some users might try to use OAuthLib with urllib2 not knowing there are better alternatives out there, a little note in the docs would help them out.
+",start issue,Client usage docs
+1,issue_closed,79,idan,oauthlib,ib-lundgren,2013-05-30 11:29:39,,closed issue,Client usage docs
+2,issue_comment,79,idan,oauthlib,warsaw,2012-11-16 21:58:33,"On Nov 16, 2012, at 11:33 AM, Ib Lundgren wrote:
+
+> While most users are likely better of using requests
+> (http://docs.python-requests.org/en/latest/index.html) to make OAuth requests
+> some might not have that option.  A few examples of how to use the Client
+> class would be useful.
+> 
+> Some users might try to use OAuthLib with urllib2 not knowing there are
+> better alternatives out there, a little note in the docs would help them out.
+
+Yes, please!  There are very good reasons to want to use oauthlib without
+requests, e.g. as a straight up replacement for the long abandoned oauth.  In
+fact, a little user guide for converting from oauth to oauthlib would be
+fantastic.  It's not a difficult conversion, although it's a bit of a brain
+twister at first because of the different terminology.
+
+Sorry, my stack is too deep at the moment to contribute such documentation,
+but if pressed I could probably dig up a diff.
+",,
+3,issue_comment,79,idan,oauthlib,ib-lundgren,2012-11-16 22:25:31,"I'll try and add a few examples with urllib2 and requests soonish, unless someone beats me to it. As far as the old oauth library I've actually never used it so would not be able to create a guide on top of my head. Any chance you could dig up some code using the library?  Then I could simply port that over and show how in the docs.
+
+Is it http://pypi.python.org/pypi/oauth/1.0.1 ?
+",,
+4,issue_comment,79,idan,oauthlib,warsaw,2012-11-16 23:06:09,"On Nov 16, 2012, at 02:25 PM, Ib Lundgren wrote:
+
+> I'll try and add a few examples with urllib2 and requests soonish, unless
+> someone beats me to it. As far as the old oauth library I've actually never
+> used it so would not be able to create a guide on top of my head. Any chance
+> you could dig up some code using the library?  Then I could simply port that
+> over and show how in the docs.
+> 
+> Is it http://pypi.python.org/pypi/oauth/1.0.1 ?
+
+Yep.  Notice the Uploaded date :)
+
+Okay, piston-mini-client is one package I'm working on.  This is not fully
+tested yet (note the as yet unported PLAINTEXT signature method), but it
+should give you an idea of what I had to change to do the conversion.  Once I
+get this working, I might even submit a more detailed blurb for the
+documentation.
+
+=== modified file 'piston_mini_client/auth.py'
+--- piston_mini_client/auth.py  2012-07-30 17:09:26 +0000
++++ piston_mini_client/auth.py  2012-11-12 21:15:28 +0000
+@@ -31,17 +29,15 @@
+
+```
+ def sign_request(self, url, method, body, headers):
+     """"""Sign a request with OAuth credentials.""""""
+```
+-        # Import oauth here so that you don't need it if you're not going
+-        # Import oauthlib here so that you don't need it if you're not going
+       # to use it.  Plan B: move this out into a separate oauth module.
+-        from oauth.oauth import (OAuthRequest, OAuthConsumer, OAuthToken,
+-                                 OAuthSignatureMethod_PLAINTEXT)
+-        consumer = OAuthConsumer(self.consumer_key, self.consumer_secret)
+-        token = OAuthToken(self.token_key, self.token_secret)
+-        oauth_request = OAuthRequest.from_consumer_and_token(
+-            consumer, token, http_url=url)
+-        oauth_request.sign_request(OAuthSignatureMethod_PLAINTEXT(),
+-                                   consumer, token)
+-        headers.update(oauth_request.to_header(self.oauth_realm))
+-        from oauthlib.oauth1 import Client
+-        oauth_client = Client(self.consumer_key, self.consumer_secret,
+-                              self.token_key, self.token_secret,
+-                              realm=self.oauth_realm)
+-        uri, signed_headers, body = oauth_client.sign(
+-            url, method, body, headers)
+- ```
+     headers.update(signed_headers)
+  ```
+  
+  class BasicAuthorizer(object):
+",,
+5,issue_comment,79,idan,oauthlib,ib-lundgren,2012-11-17 00:27:30,"The oauthlib bits look alright. If you want to use plaintext as a signature method use either
+
+```
+Client(..., signature_method=""PLAINTEXT"")
+```
+
+or
+
+```
+from oauthlib.oauth1.rfc5849 import SIGNATURE_PLAINTEXT
+Client(..., signature_method=SIGNATURE_PLAINTEXT)
+```
+
+Will add imports of the constants in oauthlib.oauth1.**init**.py tomorrow so you can omit ""rfc4849"". If you are interested in RSA-SHA1 signatures have a look at https://gist.github.com/2584789
+",,
+6,issue_comment,79,idan,oauthlib,ib-lundgren,2013-02-05 21:38:42,"It might not be much but it is a start
+
+https://oauthlib.readthedocs.org/en/latest/
+",,
+0,issue_title,165,idan,oauthlib,lepture,2013-05-29 12:22:14,"Something is wrong with coverall, it should focus on the package itself.
+",start issue,"coverall only cover the package, not the tests"
+1,issue_closed,165,idan,oauthlib,ib-lundgren,2013-05-29 13:07:14,,closed issue,"coverall only cover the package, not the tests"
+2,pull_request_title,165,idan,oauthlib,lepture,2013-05-29 12:22:14,"Something is wrong with coverall, it should focus on the package itself.
+",0b15326c8314691c198a016f4566f4c0ccaf8994,"coverall only cover the package, not the tests"
+3,pull_request_merged,165,idan,oauthlib,ib-lundgren,2013-05-29 13:07:14,"coverall only cover the package, not the tests",d6f8c8822f48369122874bb29cd41b4917aaf92d,Pull request merge from lepture/oauthlib:coverall to idan/oauthlib:master
+4,issue_comment,165,idan,oauthlib,ib-lundgren,2013-05-29 13:07:02,"Looking at https://coveralls.io/builds/55283 this seems to make it work. Thanks for looking into it!
+
+Coverage should get a raise when I get rid of oauthlib.oauth2.ext.\* as everything in there is untested and will be moved into new projects.
+",,
+5,issue_comment,165,idan,oauthlib,ib-lundgren,2013-05-29 13:18:12,"Please add yourself to AUTHORS on next PR btw =)
+",,
+6,pull_request_commit,165,idan,oauthlib,lepture,2013-05-29 12:18:56,"coverall only cover the package, not the tests",77a4bf2fb595e79bb24d8173c69b8886e852fe33,
+7,pull_request_commit,165,idan,oauthlib,lepture,2013-05-29 12:26:20,it should work this way,c6c300fa33d94f875527acf52d08c05f593a3146,
+8,pull_request_commit,165,idan,oauthlib,lepture,2013-05-29 12:33:22,"add badge for coveralls, and fix travis badge",0b15326c8314691c198a016f4566f4c0ccaf8994,
+0,issue_title,117,idan,oauthlib,ib-lundgren,2013-02-18 18:01:34,"We need to make it clear in the documentation that OAuthLib separates OAuth 1 and OAuth 2 allowing the user to easily choose which to support.
+
+It would also be neat to on a very high level outline the current status of various oauth features.
+",start issue,OAuthLib feature matrix
+1,issue_closed,117,idan,oauthlib,ib-lundgren,2013-05-30 12:34:16,,closed issue,OAuthLib feature matrix
+0,issue_title,156,idan,oauthlib,stephane,2013-05-23 14:32:45,,start issue,Small fixes
+1,issue_closed,156,idan,oauthlib,stephane,2013-05-23 14:34:11,,closed issue,Small fixes
+2,pull_request_title,156,idan,oauthlib,stephane,2013-05-23 14:32:45,,b15ed5089c957a4d17d3833214b00df6cd3ca251,Small fixes
+3,pull_request_commit,156,idan,oauthlib,stephane,2013-05-13 14:51:12,Fix swapped values in example of Django choices,2f1b979c7f732b902ec4b3f0d2551ebec9958cfa,
+4,pull_request_commit,156,idan,oauthlib,stephane,2013-05-22 15:05:02,The argument request is missing in validate_code() in examples,94a25fb31d21096603695e0a68c75aa5a726f117,
+5,pull_request_commit,156,idan,oauthlib,stephane,2013-05-22 16:05:15,Fix documentation warnings,3fd2352a7c212190328d6532d0f99be8c9dbc6ad,
+6,pull_request_commit,156,idan,oauthlib,stephane,2013-05-22 16:05:28,Missing required arguments in authorize(),4ac3b4b37f7f46e7941e3738029383635dbdfcce,
+7,pull_request_commit,156,idan,oauthlib,stephane,2013-05-23 13:28:45,Wrap and trailing whitespaces in README.rst,83e2bf59db56f1fc5ce25c8fad615e7bc7369323,
+8,pull_request_commit,156,idan,oauthlib,stephane,2013-05-23 14:28:33,"Fix extracting of scope values from POST
+
+Many inputs with same name are stored in a list.",b15ed5089c957a4d17d3833214b00df6cd3ca251,
+0,issue_title,158,idan,oauthlib,lepture,2013-05-24 13:22:22,"This is a reply for #73
+",start issue,add more python version in travis and tox. #73
+1,issue_closed,158,idan,oauthlib,ib-lundgren,2013-05-28 15:00:14,,closed issue,add more python version in travis and tox. #73
+2,pull_request_title,158,idan,oauthlib,lepture,2013-05-24 13:22:22,"This is a reply for #73
+",122d1a6c4b6e34f3cec447ec8b2577a3f627cdfd,add more python version in travis and tox. #73
+3,pull_request_merged,158,idan,oauthlib,ib-lundgren,2013-05-28 15:00:14,add more python version in travis and tox. #73,7a27461a03e8ed36c1bdc45a30b08394f21b0e43,Pull request merge from lepture/oauthlib:travis to idan/oauthlib:master
+4,issue_comment,158,idan,oauthlib,lepture,2013-05-24 13:44:24,"One more thing, add coveralls.
+",,
+5,issue_comment,158,idan,oauthlib,lepture,2013-05-24 13:45:10,"@ib-lundgren You need to create an account on https://coveralls.io/ and it will calculate the coverage for you.
+",,
+6,issue_comment,158,idan,oauthlib,ib-lundgren,2013-05-24 15:56:56,"Thanks for the PR =) Never heard of coveralls.io before, will have a look. 
+
+Sadly I know very little about travis setup, is there no way to define the install requirements without resorting to a shelling out to pip? Pretty sure we had a way before we moved to tox but memory fails me.
+",,
+7,issue_comment,158,idan,oauthlib,lepture,2013-05-24 23:54:10,"@ib-lundgren We can use the requirements.txt. But there is a problem with unittest2, that's why I created a `.travis_install.py`.
+",,
+8,issue_comment,158,idan,oauthlib,lepture,2013-05-25 00:18:53,"@ib-lundgren A preview on coveralls: https://coveralls.io/r/lepture/terminal
+",,
+9,issue_comment,158,idan,oauthlib,lepture,2013-05-25 13:09:33,"Did you find an elegant way for travis ci?
+",,
+10,issue_comment,158,idan,oauthlib,ib-lundgren,2013-05-28 14:59:57,"@lepture Sorry not had time to look into it. Let's merge this and see if it works. Can try and clean up that later.
+",,
+11,issue_comment,158,idan,oauthlib,ib-lundgren,2013-05-28 15:09:45,"Can see coverage at https://coveralls.io/r/idan/oauthlib now. It seems like we need to work on the exclusion of other libraries unless I'm reading https://coveralls.io/builds/53818 wrong.
+",,
+12,pull_request_commit_comment,158,idan,oauthlib,ib-lundgren,2013-05-24 16:06:55,"Any reason to not run with coverage in the script: section? Presumably coveralls can just take the coverage report in the after_success?
+",122d1a6c4b6e34f3cec447ec8b2577a3f627cdfd,"(21, '', u'.travis.yml')"
+13,pull_request_commit_comment,158,idan,oauthlib,lepture,2013-05-24 23:52:48,"We don't want to break the test, if something is wrong with coveralls. That's why it happens after success.
+",122d1a6c4b6e34f3cec447ec8b2577a3f627cdfd,"(21, '', u'.travis.yml')"
+14,pull_request_commit,158,idan,oauthlib,lepture,2013-05-24 13:19:29,add more python version in travis and tox. #73,6c0c76c98e740b62b9dd55cf14a263a35b9f1909,
+15,pull_request_commit,158,idan,oauthlib,lepture,2013-05-24 13:27:46,"remove unittest2, since it brokes on py3",86f31769adf3d4d5b896cf4dd561ab3737533d6c,
+16,pull_request_commit,158,idan,oauthlib,lepture,2013-05-24 13:36:09,only install unittest2 on python 2.6 and 2.7,792ec98b20fb176e348bd059d42b9b663859aac6,
+17,pull_request_commit,158,idan,oauthlib,lepture,2013-05-24 13:43:43,add coveralls,122d1a6c4b6e34f3cec447ec8b2577a3f627cdfd,
+0,issue_title,163,idan,oauthlib,lepture,2013-05-28 09:15:53,"Clean some whitespace.
+",start issue,"clean whitespace, fix blank lines according to pep8"
+1,issue_closed,163,idan,oauthlib,ib-lundgren,2013-05-28 14:58:18,,closed issue,"clean whitespace, fix blank lines according to pep8"
+2,pull_request_title,163,idan,oauthlib,lepture,2013-05-28 09:15:53,"Clean some whitespace.
+",52d26568d1221baab3a4d759819d43f3cd10f9b1,"clean whitespace, fix blank lines according to pep8"
+3,pull_request_merged,163,idan,oauthlib,ib-lundgren,2013-05-28 14:58:18,"clean whitespace, fix blank lines according to pep8",12d56365a5be8d00c4a7cd5318e9f898b0567f38,Pull request merge from lepture/oauthlib:code-style to idan/oauthlib:master
+4,issue_comment,163,idan,oauthlib,ib-lundgren,2013-05-28 14:58:16,"Looks good to me =)
+",,
+5,pull_request_commit,163,idan,oauthlib,lepture,2013-05-28 09:07:51,"clean whitespace, fix blank lines according to pep8",52d26568d1221baab3a4d759819d43f3cd10f9b1,
+0,issue_title,166,idan,oauthlib,synasius,2013-05-29 12:32:17,"Proposal to solve Issue #162
+",start issue,Request parameter error
+1,issue_closed,166,idan,oauthlib,ib-lundgren,2013-05-29 13:05:24,,closed issue,Request parameter error
+2,pull_request_title,166,idan,oauthlib,synasius,2013-05-29 12:32:17,"Proposal to solve Issue #162
+",a9299988ba65287d962e5d6d67eb27ea39af2991,Request parameter error
+3,pull_request_merged,166,idan,oauthlib,ib-lundgren,2013-05-29 13:05:24,Request parameter error,d3a77dc79fdcd7c665fcf66186f732fc836c70de,Pull request merge from synasius/oauthlib:request-param-error to idan/oauthlib:master
+4,issue_comment,166,idan,oauthlib,ib-lundgren,2013-05-29 13:05:17,"Wow lot's of changes, nice work tracking them all down. Thanks for the doc changes too =)
+
+I'm currently working on moving the django decorator into its own django extension library and ran into this redirect uri issues literally minutes ago. https://github.com/ib-lundgren/django-oauthlib/blob/master/django_oauthlib/views.py#L66. 
+",,
+5,issue_comment,166,idan,oauthlib,ib-lundgren,2013-05-29 13:19:12,"Forgot to tell you on this one, for next PR please add yourself to AUTHORS =)
+",,
+6,issue_comment,166,idan,oauthlib,synasius,2013-05-29 13:37:09,"Ok!  :) And thanks for merging!
+
+By the way I have seen your new https://github.com/ib-lundgren/django-oauthlib project.
+We are on a similar project started right after DjangoConEU: https://github.com/evonove/django-oauth-toolkit
+Our goal is to provide a simple Django app that helps developer to add oauth2 and oauth1 support in their projects. We use oauthlib in the backend of course!
+
+Project is under active development and we planned to get these features at minimum:
+- oauth2 provider supporting all the standard workflows
+- oauth2 client facilities
+  If you are interested we would be happy to get you involved :-) 
+",,
+7,issue_comment,166,idan,oauthlib,ib-lundgren,2013-05-29 13:47:31,"Ah cool. Sounds exactly what I had in mind, minus the client bits as I
+think it would be better to focus solely on creating a great provider
+extension/app.
+
+I've not done very much yet, only begun yesterday and most time was spent
+getting random project structure setup. Thought I'd do it mainly to learn
+about django and see if it caught any traction but we should definitely see
+if we can merge our work. Fancy dropping into irc? #oauthlib on freenode.
+
+On Wed, May 29, 2013 at 2:37 PM, Federico Frenguelli <
+notifications@github.com> wrote:
+
+> Ok! :) And thanks for merging!
+> 
+> By the way I have seen your new
+> https://github.com/ib-lundgren/django-oauthlib project.
+> We are on a similar project started right after DjangoConEU:
+> https://github.com/evonove/django-oauth-toolkit
+> Our goal is to provide a simple Django app that helps developer to add
+> oauth2 and oauth1 support in their projects. We use oauthlib in the backend
+> of course!
+> 
+> Project is under active development and we planned to get these features
+> at minimum:
+> - oauth2 provider supporting all the standard workflows
+> - oauth2 client facilities If you are interested we would be happy to
+>   get you involved :-)
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/166#issuecomment-18616530
+> .
+",,
+8,pull_request_commit,166,idan,oauthlib,synasius,2013-05-29 12:05:57,Add request parameters to error object,4cdceb0bb6a36fb1387c400db6dd24b442535c3c,
+9,pull_request_commit,166,idan,oauthlib,synasius,2013-05-29 11:00:39,Fixed docstrings,20eb31952ecf858cf7ee395fc7749419f919f3c2,
+10,pull_request_commit,166,idan,oauthlib,synasius,2013-05-29 12:29:50,Add request param on errors raise where request is available,a9299988ba65287d962e5d6d67eb27ea39af2991,
+0,issue_title,119,idan,oauthlib,ib-lundgren,2013-02-18 18:02:06,"OAuthLib is steadily covering more and more of the OAuth specs and consequently it can simplify a number of OAuth related problems for users. There needs to be a short and sweet collection of common problems and their solutions. Short solutions could simply be inlined and longer linked to...
+- Do you support XYZ? See #117
+- What is an OAuth client?
+- (Client) Connecting to various common services like Google, Facebook, Twitter
+- OAuth 1) What is a client_key, client_secret, etc
+- OAuth 2) What is a client_id, scope, state, etc
+- What is the difference between authentication and authorization?
+- How do I secure my users and API using OAuth?
+- What is an OAuth provider?
+- In a nutshell, what is the difference between OAuth 1 & 2?
+- Some argue OAuth 2 is worse than 1, is that true?
+- When to use OAuth 1 and 2 (#118).
+- How to get started on an OAuth 1 provider
+- How to get started on an OAuth 2 provider
+  ...
+
+Please add more suggestions =)
+",start issue,OAuthLib FAQ 
+1,issue_closed,119,idan,oauthlib,ib-lundgren,2013-05-30 12:34:06,,closed issue,OAuthLib FAQ 
+2,issue_comment,119,idan,oauthlib,wiliamsouza,2013-02-18 19:40:25,"""How to get started on an OAuth 2 provider"" That is a good question in nutshell It can be basicaly, I implement the methods  of oauthlib.oauth2.RequestValidator and pass it to oauthlib.oauth2.WebApplicationServer so I can call create_authorization_response and  create_token_response?
+",,
+3,issue_comment,119,idan,oauthlib,ib-lundgren,2013-02-18 20:03:32,"Essentially. yes. Note that while OAuth 2 providers are quickly maturing they are still not quite ready for prime time and there might lurk nasty bugs there.
+
+Check out https://oauthlib.readthedocs.org/en/latest/server2.html for some info as well.
+",,
+0,issue_title,75,idan,oauthlib,ib-lundgren,2012-11-16 19:19:13,"OAuth 2 Core (http://tools.ietf.org/html/rfc6749) and Bearer Token Usage (http://tools.ietf.org/html/rfc6750) have been released and we should follow.
+
+This is a glorious and adventorous task, that includes the somewhat time consuming task of going over whats in oauth2/draft25 and making sure it matches what is instructed in the RFCs =)
+
+The code should match well but the links will need some updating. When that is done simply rename the directory and ensure all imports are ok.
+",start issue,From OAuth2 draft to RFC
+1,issue_closed,75,idan,oauthlib,ib-lundgren,2013-05-30 11:13:31,,closed issue,From OAuth2 draft to RFC
+2,issue_comment,75,idan,oauthlib,lepture,2012-11-22 05:01:48,"Great job! I am wondering what's the status of OAuth2 provider.
+",,
+3,issue_comment,75,idan,oauthlib,ib-lundgren,2012-11-22 21:18:22,"The OAuth 2 provider is taking shape nicely but due to the limited time I can put in it is still going to take a little while before it's ready for use. I've not really kept track of the status anywhere so guess I might as well give the update here as anywhere else.
+
+My current plan is along the lines of:
+- Add a number of convenience methods to common.Request to facilitate parameter finding for grant_types
+- Sort out resource endpoint error reporting and go over authorization and token endpoint error reporting and make sure it mimics the spec and my plans
+- Bearer token token_type estimation
+- Weed out the most broken bits of the endpoints and grant types by implementing extensive endpoint tests
+- Play around with making a basic but fully functional oauth provider with Django or Flask to find any missing features, annoyances and see if the API is at level of usability I'm happy with
+- Write some docs ;)
+- MAC, JWT, SAML token support
+- More docs ;)
+
+I'm already working on some of this but I've not pushed it yet. Expect to see incremental improvements each week.
+",,
+4,issue_comment,75,idan,oauthlib,wiliamsouza,2012-11-25 20:41:46,"Good job Ib,
+tell me more about Django basic oauth provider. How can I help you?
+I'm interested in oauth 2 for Installed applications like described at google documentation [1].
+
+I think that a good starting point is to learn how google do it and start write some 
+Django views that mimics the google way of do things. I mean a Django app or view to register your application,
+branding information and get your generated clients ID like google api console [2]. It can be a django admin page
+for now.
+
+What do you think?
+
+[1] https://developers.google.com/accounts/docs/OAuth2InstalledApp
+[2] https://code.google.com/apis/console/
+",,
+5,issue_comment,75,idan,oauthlib,Evlos,2012-12-23 12:20:20,"GJ guys, hope this feature could be done soon.
+",,
+6,issue_comment,75,idan,oauthlib,ib-lundgren,2013-01-15 21:12:10,"Sorry for taking so long. I'm struggling to squeeze open source in as much as I'd like but rest assured when I do I'll start crossing off my oauth 2 provider to-do list =)
+
+I have many ideas for a django-oauth extension but afraid I won't be able to get to it before the summer. It's a good idea to have a look at the Google API Console and spend time streamlining the processes around registering and maintaining clients. Essentially such an extension could boil, if done right, reduce the complexity of authorizing api use with OAuth down to a simple decorator. Now that is the future, for now I'll focus on getting the OAuth 2 support in oauthlib working, spec compliant and well tested.
+",,
+7,issue_comment,75,idan,oauthlib,ib-lundgren,2013-02-05 21:39:32,"OAuth 2 provider support is shaping up nicely. A preview available in the newly added docs
+
+https://oauthlib.readthedocs.org/en/latest/server2.html
+",,
+8,issue_comment,75,idan,oauthlib,lepture,2013-05-30 11:17:38,"Great.
+",,
+0,issue_title,172,idan,oauthlib,lepture,2013-05-31 12:00:36,"Fix the missing check secure transport.
+",start issue,another debug-mode. #170
+1,issue_closed,172,idan,oauthlib,ib-lundgren,2013-05-31 13:52:25,,closed issue,another debug-mode. #170
+2,pull_request_title,172,idan,oauthlib,lepture,2013-05-31 12:00:36,"Fix the missing check secure transport.
+",39e43961b98f79a55948db0710c8e2403408d12a,another debug-mode. #170
+3,pull_request_merged,172,idan,oauthlib,ib-lundgren,2013-05-31 13:52:25,another debug-mode. #170,31eb537e54034b7fa5602459270b276815972c63,Pull request merge from lepture/oauthlib:debug-mode to idan/oauthlib:master
+4,issue_comment,172,idan,oauthlib,lepture,2013-05-31 12:02:42,"I am happy to announce that the provider is working now. Find the example in: https://github.com/lepture/flask-oauthlib/tree/master/tests
+",,
+5,issue_comment,172,idan,oauthlib,ib-lundgren,2013-05-31 13:25:47,"We might just move lower() into the is_secure_transport. Fancy doing it in this PR? If not I'll sort it out next week.
+
+Congratulations on the provider! Will definitely take a look this afternoon.
+",,
+6,issue_comment,172,idan,oauthlib,lepture,2013-05-31 13:48:57,"@ib-lundgren yes, you are right, moved the `lower` to `is_secure_transport`.
+",,
+7,issue_comment,172,idan,oauthlib,ib-lundgren,2013-05-31 13:52:19,"Excellent. Thanks!
+",,
+8,pull_request_commit,172,idan,oauthlib,lepture,2013-05-31 11:59:09,another debug-mode. #170,13d78662ee023b201d4c954c51b2e3071aa7026e,
+9,pull_request_commit,172,idan,oauthlib,lepture,2013-05-31 13:48:17,move uri.lower() to is_secure_transport,39e43961b98f79a55948db0710c8e2403408d12a,
+0,issue_title,153,idan,oauthlib,ib-lundgren,2013-05-21 14:42:04,"Django & Flask decorator tests are currently missing.
+
+Will need to find a setup that only pulls these dependencies for development and not interfere with users that does not use the decorators. For example, address djangos need to have settings defined.
+",start issue,Test for OAuth 2 decorators
+1,issue_closed,153,idan,oauthlib,ib-lundgren,2013-05-28 15:01:17,,closed issue,Test for OAuth 2 decorators
+2,issue_comment,153,idan,oauthlib,lepture,2013-05-24 13:11:15,"@ib-lundgren I do think that it is not a good idea to put django and flask decorators in oauthlib. Oauthlib should focus on the core oauth part.
+
+It's a time to move to the rfc instead of draft 25.
+",,
+3,issue_comment,153,idan,oauthlib,ib-lundgren,2013-05-24 15:54:17,"@lepture I've begun to think the same lately which is why I am thinking about moving it out and into a new django-oauthlib project and instead of just a simple decorator let the project grow into a full fledged django extension. I've just not had time to set this up yet.
+
+Regarding moving to RFC it certainly is time and I've only put it off because moving files around is boring and that OAuth 2 is split over so many more RFCs than just the core. For the sake of keeping with consistency we might want to split the draft25 folder into several RFC folders, Bearer, Core, MAC etc but not sure if that will just confuse things. 
+
+@lepture Guess we could just start with draft25 -> rfc6749, is this something you would be interested in doing?
+",,
+4,issue_comment,153,idan,oauthlib,lepture,2013-05-25 00:00:18,"@ib-lundgren I'd like to help, since I am working on https://github.com/lepture/flask-oauthlib
+
+And I am designing the provider API right now.
+
+I have not read all the RFCs, guess I need some time. Is there any big difference between draft25 and rfc6749?
+",,
+5,issue_comment,153,idan,oauthlib,ib-lundgren,2013-05-25 11:58:10,"@lepture Ah excellent. Will check out flask-oauthlib next week. Planning to do OAuth 2 and 1? or just 2? 
+
+AFAIK the spec has only changed in wording, not logic, between 25 and RFC so should not be much differences.
+",,
+6,issue_comment,153,idan,oauthlib,lepture,2013-05-25 12:41:41,"@ib-lundgren The client part is the same as Flask-OAuth, and it works well now. I have no idea how to test the client part.
+
+Currently, I'd like to do the OAuth2 provider, when it finished and the API is pretty, I can take OAuth1 into account, if it can keep the same API.
+",,
+7,issue_comment,153,idan,oauthlib,ib-lundgren,2013-05-25 13:16:34,"@lepture I was mainly thinking about the provider part. Let me know if I can be of any help =)
+
+Regarding OAuth 1 I was planning on remaking the API to be very similar to the one of OAuth 2 (will track this in #95). You can always have a look at [flask-oauthprovider](https://github.com/ib-lundgren/flask-oauthprovider) and see if it is of any help (current, soon to be deprecated, api).
+",,
+8,issue_comment,153,idan,oauthlib,ib-lundgren,2013-05-28 15:01:15,"Closing this. Will work on moving decorators out of oauthlib over this week into their own dedicated extensions.
+",,
+0,issue_title,136,idan,oauthlib,taestone,2013-04-18 07:45:39,"line 774 in oauthlib.draft25.trant_type25
+
+```
+def validate_token_request(self, request):
+```
+
+......
+     for attr in ('user', 'state', 'scopes'):
+            if getattr(request, attr) is None:
+                log.debug('request.%s was not set on code validation.', attr)
+
+Is ""user"" needed in def validate_token_request?  AuthorizationCodeGrant  doesn't need it during token endpoint. does any other grand need it?
+",start issue,"Is ""user"" needed in token_endpoint?"
+1,issue_closed,136,idan,oauthlib,ib-lundgren,2013-05-28 15:04:16,,closed issue,"Is ""user"" needed in token_endpoint?"
+2,issue_comment,136,idan,oauthlib,ib-lundgren,2013-04-18 20:40:56,"The difference here is the asynchronicity of the authorization code grant. The user authorization is captured in an authorization code. When the code is later exchanged for a token there is no way for the provider to know which user it is meant to associate the new token with unless it previously bound a user to the authorization code. All other core grant types obtain a token in a synchronous flow.
+
+The check for user is just to help remind developers of this and provide a simple way to pass a long a user to later be available in the save_bearer_token call. If you don't associate a token with a user there is not much point of having oauth tokens since the requests later will only specify token, never user.
+
+Not sure if that helped, let me know =)
+",,
+3,issue_comment,136,idan,oauthlib,taestone,2013-04-19 09:25:08,"thanks for comment.
+
+I was confused because In django model, It save user_id in authcode(information about responsed authcode db) and bearer_token temporarily . For verification check with authorization code and bearer token, It seems to need for provider to have to save the both. It makes that the provider can be aware of the user who confirmed the permission. Is it just for django implementation and not common other implementation?
+
+In resource access, it's seem for client know the user.
+When accessing protected resource, the client has to know the user whose  resource it request.
+",,
+4,issue_comment,136,idan,oauthlib,ib-lundgren,2013-04-22 15:21:14,"Yes, the authorization code is only meant to exist temporarily and hold the authorization/permission the user gives and which user it was, among other things. This is not specific to Django but serves as an example of what needs to be done. Exactly how is up to the developer.
+
+[This drawing from the OAuth 2 spec](http://tools.ietf.org/html/rfc6749#section-4.1) might help to clarify what is going on. This is quite similar to OAuth 1, but without the request signing.
+
+```
+ +----------+
+ | Resource |
+ |   Owner  |
+ |          |
+ +----------+
+      ^
+      |
+     (B)
+ +----|-----+          Client Identifier      +---------------+
+ |         -+----(A)-- & Redirection URI ---->|               |
+ |  User-   |                                 | Authorization |
+ |  Agent  -+----(B)-- User authenticates --->|     Server    |
+ |          |                                 |               |
+ |         -+----(C)-- Authorization Code ---<|               |
+ +-|----|---+                                 +---------------+
+   |    |                                         ^      v
+  (A)  (C)                                        |      |
+   |    |                                         |      |
+   ^    v                                         |      |
+ +---------+                                      |      |
+ |         |>---(D)-- Authorization Code ---------'      |
+ |  Client |          & Redirection URI                  |
+ |         |                                             |
+ |         |<---(E)----- Access Token -------------------'
+ +---------+       (w/ Optional Refresh Token)
+```
+
+What is happening is that the user is given an authorization code, which it carries over to the client through a redirection. This code is then exchanged for a token. The only way the provider can know which user this token should belong to is by looking it up from the authorization code. Thus we need to store user twice.
+",,
+0,issue_title,73,idan,oauthlib,ib-lundgren,2012-11-16 19:09:51,"Investigate whether it would be useful to add PyPy and Jython support and what would be necessary for it to happen. As far as the OAuthLib code goes neither should be an issue but that might not be the case for the dependencies. 
+
+The biggest concern is likely to be PyCrypto. 
+
+I vaguely remember seeing threads about issues with that combination but not sure about the current status. 
+
+Jython could be tricky, there might be wrappers or suitable alternatives but needs some research.
+",start issue,Investigate possibly PyPy and Jython support
+1,issue_closed,73,idan,oauthlib,ib-lundgren,2013-05-29 14:11:30,,closed issue,Investigate possibly PyPy and Jython support
+2,issue_comment,73,idan,oauthlib,dahlia,2013-05-24 07:21:04,"PyCrypto currently works on PyPy, and oauthlib also currently works on PyPy.  (Tested on PyPy 2.0.2, Mac 10.8.3.)
+
+``` console
+$ tox -e pypy
+GLOB sdist-make: /.../oauthlib/setup.py
+pypy inst-nodeps: /.../oauthlib/.tox/dist/oauthlib-0.4.1.zip
+pypy runtests: commands[0]
+.....................................................................................................................................................
+----------------------------------------------------------------------
+Ran 149 tests in 0.846s
+
+OK
+___________________________________ summary ____________________________________
+  pypy: commands succeeded
+  congratulations :)
+```
+
+I think we could add `pypy` to `tox.ini` and `.travis.yml` files.  (`.travis.yml` seems not to contain even 2.6, 3.2 and 3.3.)
+",,
+3,issue_comment,73,idan,oauthlib,lepture,2013-05-24 09:36:45,"I don't think `Jython` worth the work.
+",,
+4,issue_comment,73,idan,oauthlib,ib-lundgren,2013-05-24 12:45:55,"@lepture Agreed, Jython is not going to be worth it.
+
+@dahlia Cool to know that pypy seem to work tho, feel free to send a PR adding it to tox.ini =)
+
+Travis is currently setup to run tox which tests 2.6, 2.7, 3.2 and 3.3, which is not obvious since the travis yaml file only mentions 2.7.
+",,
+0,issue_title,138,idan,oauthlib,epiphone,2013-04-20 21:33:02,"On the documentation for function validate_timestamp_and_nonce it reads
+
+```
+""...If invalid then immediately fail the request by returning False. If the
+nonce/timestamp pair has been used before and you may just have detected
+a replay attack. Therefore it is an essential part of OAuth security that you
+not allow nonce/timestamp reuse"".
+```
+
+However, the sample code returns True if a Nonce with given parameters is found. Wouldn't this indicate a possible replay attack? Or have I misunderstood something?
+
+The sample code:
+
+``` python
+nonces_and_timestamps_database = [
+   (u'foo', 1234567890, u'rannoMstrInghere', u'bar')
+]
+
+def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+   request_token=None, access_token=None):
+
+   return ((client_key, timestamp, nonce, request_token or access_token)
+            in self.nonces_and_timestamps_database)
+```
+",start issue,OAuth 1 Provider - Confusion with timestamp and nonce validation
+1,issue_closed,138,idan,oauthlib,ib-lundgren,2013-05-29 15:06:39,,closed issue,OAuth 1 Provider - Confusion with timestamp and nonce validation
+2,issue_comment,138,idan,oauthlib,ib-lundgren,2013-04-22 14:25:13,"You are completely right and the example should say 'not in' instead of 'in'. I'll try and update that today unless you beat me to it with a PR =)
+",,
+0,issue_title,74,idan,oauthlib,ib-lundgren,2012-11-16 19:13:43,"Timing attacks are used to reveal secrets using statistical sampling in large quantities and could in worst case reveal secret keys.
+
+It would be really awesome to have a test that could be used against OAuthLibs verify_request to ensure it does not introduce variance in execution time between different requests in a way that would allow user enumeration or secret key guessing. 
+
+A large bonus if this could easily be imported by developers implementing oauth providers and ran against their setup.
+",start issue,Timing attack test for OAuth 1 provider
+1,issue_closed,74,idan,oauthlib,ib-lundgren,2013-05-31 13:36:30,,closed issue,Timing attack test for OAuth 1 provider
+2,issue_comment,74,idan,oauthlib,ib-lundgren,2013-05-31 13:36:30,"This will be more valuable in the OAuth 2 audit test suite I am occasionally working on. 
+",,
+0,issue_title,170,idan,oauthlib,lepture,2013-05-31 03:25:31,"Add a debug mode with environment variable: `DEBUG`.
+
+This is useful when doing the testing. Since I am using oauthlib's client to test the provider, everything is over http.
+
+This patch will be helpful for testing.
+
+https://github.com/lepture/flask-oauthlib/issues/1
+",start issue,Debug mode
+1,issue_closed,170,idan,oauthlib,ib-lundgren,2013-05-31 09:28:24,,closed issue,Debug mode
+2,pull_request_title,170,idan,oauthlib,lepture,2013-05-31 03:25:31,"Add a debug mode with environment variable: `DEBUG`.
+
+This is useful when doing the testing. Since I am using oauthlib's client to test the provider, everything is over http.
+
+This patch will be helpful for testing.
+
+https://github.com/lepture/flask-oauthlib/issues/1
+",00f5de52a8fb944c968213501ccdf1bbc9e751d0,Debug mode
+3,pull_request_merged,170,idan,oauthlib,ib-lundgren,2013-05-31 09:28:24,Debug mode,5363a44434fab07ad0b201c41044b5842581a14b,Pull request merge from lepture/oauthlib:debug-mode to idan/oauthlib:master
+4,issue_comment,170,idan,oauthlib,ib-lundgren,2013-05-31 09:04:08,"Can see this being useful. Could you add that to the two other https checks in parameters.py? And maybe extract the check into its own function? 
+
+This should be added to the docs at some point too. I can do this when/if I decide to refactor part of the client API to be more consistent with the provider API.
+",,
+5,issue_comment,170,idan,oauthlib,lepture,2013-05-31 09:23:42,"@ib-lundgren Added a `is_secure_transport` function in utils.
+",,
+6,issue_comment,170,idan,oauthlib,ib-lundgren,2013-05-31 09:28:20,"Looks good =)
+",,
+7,pull_request_commit,170,idan,oauthlib,lepture,2013-05-31 03:18:31,debug support for prepare_grant_uri,55679cadef0c784317bc571b3a2d593ad6a3687a,
+8,pull_request_commit,170,idan,oauthlib,lepture,2013-05-31 03:18:57,add myself in authors,692d3d348f5ab85cc202062e0065e3143e4e62f2,
+9,pull_request_commit,170,idan,oauthlib,lepture,2013-05-31 09:15:56,use is_secure_transport to check uri,803736c30ed4a426d83daa21216c24163db5e7c6,
+10,pull_request_commit,170,idan,oauthlib,lepture,2013-05-31 09:22:54,add test case for is_secure_transport,00f5de52a8fb944c968213501ccdf1bbc9e751d0,
+0,issue_title,19,idan,oauthlib,idan,2012-04-12 13:22:13,"If I am using the oauth1 Client class to sign requests, I'd like to be able to see debugging information when signing requests: what are the parameters it sees, how do they look normalized, what is the base signing string produced, etc.
+
+Perhaps using the logging framework?
+",start issue,Add some form of debug logging
+1,issue_closed,19,idan,oauthlib,ib-lundgren,2013-05-29 15:07:29,,closed issue,Add some form of debug logging
+0,issue_title,91,idan,oauthlib,tino,2013-01-05 13:56:19,"As it took me a while to figure out how to setup a really simple, dumb, Authorization Server, I thought it would be nice to share it.
+
+This gist https://gist.github.com/4461572 shows the minimal code. Lines 7 - 72 are oauthlib specific code, the rest are the django views.
+
+I would be nice to add this to the documentation in some form.
+",start issue,Server Example
+1,issue_closed,91,idan,oauthlib,ib-lundgren,2013-05-31 11:43:03,,closed issue,Server Example
+2,issue_comment,91,idan,oauthlib,ib-lundgren,2013-01-15 21:12:44,"Thanks! Looking forward to looking it over this weekend =)
+",,
+3,issue_comment,91,idan,oauthlib,wiliamsouza,2013-02-18 19:49:50,"Thanks! @tino this will help a lot :dancers: 
+",,
+0,issue_title,32,idan,oauthlib,idan,2012-05-02 08:09:34,,start issue,Turn off Travis for branches
+1,issue_closed,32,idan,oauthlib,ib-lundgren,2013-05-29 15:07:15,,closed issue,Turn off Travis for branches
+0,issue_title,161,idan,oauthlib,dasevilla,2013-05-25 20:59:12,"This adds `oauthlib.oauth2.draft25.Client` to the documentation and paves the way for `requests-oauthlib` to link to it using _intersphinx_
+",start issue,Document Base OAuth 2 Client
+1,issue_closed,161,idan,oauthlib,ib-lundgren,2013-05-28 14:59:15,,closed issue,Document Base OAuth 2 Client
+2,pull_request_title,161,idan,oauthlib,dasevilla,2013-05-25 20:59:12,"This adds `oauthlib.oauth2.draft25.Client` to the documentation and paves the way for `requests-oauthlib` to link to it using _intersphinx_
+",8931f3ad93fa051ca81cf53dd1b1c8f7169c8142,Document Base OAuth 2 Client
+3,pull_request_merged,161,idan,oauthlib,ib-lundgren,2013-05-28 14:59:15,Document Base OAuth 2 Client,a2fbe4f3f070254e1f4c4b916f7b3eb8a5929561,Pull request merge from dasevilla/oauthlib:base-client-docs to idan/oauthlib:master
+4,issue_comment,161,idan,oauthlib,ib-lundgren,2013-05-28 14:59:11,"Nice. Thanks for adding this. Certainly need to go through pygments/sphinx and see what gems like http lexer can be used for the rest of the docs.
+",,
+5,pull_request_commit,161,idan,oauthlib,dasevilla,2013-05-25 20:50:58,Add base OAuth2 Client to documentation,b650d785223409d6ba04e906eb8c22c9efb788bd,
+6,pull_request_commit,161,idan,oauthlib,dasevilla,2013-05-25 20:51:44,Fix formatting in OAuth 2 Client docs,d1e2b1df73eaeebafaab0b03262e3e1375f81749,
+7,pull_request_commit,161,idan,oauthlib,dasevilla,2013-05-27 16:47:42,Use HttpLexer,8931f3ad93fa051ca81cf53dd1b1c8f7169c8142,
+8,pull_request_commit_comment,161,idan,oauthlib,dahlia,2013-05-27 14:02:03,"You can use Pygment’s `HttpLexer` here e.g.:
+
+``` rst
+For example, the ""bearer"" token type defined in
+[I-D.ietf-oauth-v2-bearer] is utilized by simply including the access 
+token string in the request:
+
+.. code-block:: http
+
+   GET /resource/1 HTTP/1.1
+   Host: example.com
+   Authorization: Bearer mF_9.B5f-4.1JqM 
+```
+
+It will be rendered like:
+
+> For example, the ""bearer"" token type defined in
+> [I-D.ietf-oauth-v2-bearer] is utilized by simply including the access 
+> token string in the request:
+> 
+> ``` http
+> GET /resource/1 HTTP/1.1
+> Host: example.com
+> Authorization: Bearer mF_9.B5f-4.1JqM
+> ```
+",d1e2b1df73eaeebafaab0b03262e3e1375f81749,"(None, None, None)"
+0,issue_title,171,idan,oauthlib,lepture,2013-05-31 09:26:36,"A docstring mistake.
+",start issue,docstring fix
+1,issue_closed,171,idan,oauthlib,ib-lundgren,2013-05-31 09:28:54,,closed issue,docstring fix
+2,pull_request_title,171,idan,oauthlib,lepture,2013-05-31 09:26:36,"A docstring mistake.
+",529fe69f995c8e5ba98e89dce624f2c1def9737a,docstring fix
+3,pull_request_merged,171,idan,oauthlib,ib-lundgren,2013-05-31 09:28:54,docstring fix,e92d8d52722070faf3249327cbf71dbe185d0f2b,Pull request merge from lepture/oauthlib:doc-mistakes to idan/oauthlib:master
+4,issue_comment,171,idan,oauthlib,ib-lundgren,2013-05-31 09:28:50,"Cheers!
+",,
+5,pull_request_commit,171,idan,oauthlib,lepture,2013-05-31 09:11:00,docstring fix,529fe69f995c8e5ba98e89dce624f2c1def9737a,
+0,issue_title,78,idan,oauthlib,ib-lundgren,2012-11-16 19:27:43,"Tox is great and I use it all the time to test against py 2.6 up to 3.3. In the contributing docs it would be nice to have information on how to use and setup tox for various environments. i.e. a little description together with links to OS X / Ubuntu / Fedora / Windows setup instructions.
+",start issue,Running tox docs
+1,issue_closed,78,idan,oauthlib,ib-lundgren,2013-05-30 11:56:14,,closed issue,Running tox docs
+2,issue_comment,78,idan,oauthlib,warsaw,2012-11-16 21:59:25,"On Nov 16, 2012, at 11:27 AM, Ib Lundgren wrote:
+
+> Tox is great and I use it all the time to test against py 2.6 up to 3.3. In
+> the contributing docs it would be nice to have information on how to use and
+> setup tox for various environments. i.e. a little description together with
+> links to OS X / Ubuntu / Fedora / Windows setup instructions.
+
+tox is not yet available in Debian or Ubuntu.  Yes, I am actively working on
+that :).
+",,
+3,issue_comment,78,idan,oauthlib,ib-lundgren,2012-11-16 22:22:32,"Neat! I'm using tox on Ubuntu but from PyPi which is working well although sudo pip install is a bit awkward. A package would be much appreciated.
+
+In Ubuntu it is fairly straightforward to get multiple python versions running, although mentioning step by step would be helpful. I've not looked into running multiple python versions in other OSs so hoping some unsung hero of the internets will come to the rescue =)
+",,
+0,issue_title,167,idan,oauthlib,ib-lundgren,2013-05-29 14:36:06,"Remove oauthlib.oauth2.ext.*
+
+The decorators while helpful in certain cases are not as useful as full blown extensions for respective framework. Furthermore OAuthLib is not the right place for them as it spreads the focus too much.
+
+Django support will migrate to https://github.com/evonove/django-oauth-toolkit and Flask to https://github.com/lepture/flask-oauthlib.
+
+The skeleton validator will be moved to a new extension as I complete it.
+
+Docs should be updated to redirect users of known framework specific implementation to their respective project sites and to encourage people interested in adding support to new frameworks to get in touch.
+
+The creating a provider docs will need to be updated to not use the django decorator. It should also encourage users to seek out framework specific libraries instead of using oauthlib directly.
+",start issue,Remove OAuth 2 decorators
+1,issue_closed,167,idan,oauthlib,ib-lundgren,2013-05-30 16:05:38,,closed issue,Remove OAuth 2 decorators
+2,issue_comment,167,idan,oauthlib,ib-lundgren,2013-05-30 16:05:58,"Will roll a release for this tomorrow, 0.4.2.
+",,
+0,issue_title,155,idan,oauthlib,tomchristie,2013-05-23 12:14:59,"Pinging @ib-lundgren.  Just granted you ownership of `django-oauthlib` pn PyPI. :zap: :zap: https://pypi.python.org/pypi/django-oauthlib.
+
+Apologies for the misuse of ticketing for the communiqué. :tongue:
+",start issue,django-oauthlib
+1,issue_closed,155,idan,oauthlib,ib-lundgren,2013-05-23 15:05:00,,closed issue,django-oauthlib
+2,issue_comment,155,idan,oauthlib,ib-lundgren,2013-05-23 15:04:55,"Excellent. Thanks!
+",,
+0,issue_title,173,idan,oauthlib,dasevilla,2013-05-31 16:45:33,"As suggested in #169, I'm adding myself
+",start issue,Update AUTHORS
+1,issue_closed,173,idan,oauthlib,ib-lundgren,2013-05-31 21:48:47,,closed issue,Update AUTHORS
+2,pull_request_title,173,idan,oauthlib,dasevilla,2013-05-31 16:45:33,"As suggested in #169, I'm adding myself
+",87c9a49ec3ad4793c9ef89a5216f363bf56752e0,Update AUTHORS
+3,pull_request_merged,173,idan,oauthlib,ib-lundgren,2013-05-31 21:48:47,Update AUTHORS,1f467d2f69a2c6351708d9c554b9fa5df29cbf12,Pull request merge from dasevilla/oauthlib:patch-1 to idan/oauthlib:master
+4,issue_comment,173,idan,oauthlib,ib-lundgren,2013-05-31 21:48:41,"=)
+",,
+5,pull_request_commit,173,idan,oauthlib,dasevilla,2013-05-31 16:44:35,Update AUTHORS,87c9a49ec3ad4793c9ef89a5216f363bf56752e0,
+0,issue_title,157,idan,oauthlib,stephane,2013-05-23 14:42:31,,start issue,Small fixes related to OAuth2 and Django example
+1,issue_closed,157,idan,oauthlib,ib-lundgren,2013-05-23 15:03:50,,closed issue,Small fixes related to OAuth2 and Django example
+2,pull_request_title,157,idan,oauthlib,stephane,2013-05-23 14:42:31,,7adc247d399cd3d90d6692a4f82cb170b2bdc012,Small fixes related to OAuth2 and Django example
+3,pull_request_merged,157,idan,oauthlib,ib-lundgren,2013-05-23 15:03:50,Small fixes related to OAuth2 and Django example,57e3efa3fa848cec9ef9ea827517fccc4a193449,Pull request merge from Unknown:missing-args to idan/oauthlib:master
+4,issue_comment,157,idan,oauthlib,ib-lundgren,2013-05-23 15:03:46,"Looks good as usual! Thanks for tidying.
+
+POST.getlist - ah so thats how its meant to be done =)
+",,
+5,pull_request_commit,157,idan,oauthlib,stephane,2013-05-22 15:05:02,The argument request is missing in validate_code() in examples,f6304e22ae3f8e4a3f9431a6e4455c90b4e2de0a,
+6,pull_request_commit,157,idan,oauthlib,stephane,2013-05-22 16:05:15,Fix documentation warnings,b498847d056637b405d349ea98681249aa007737,
+7,pull_request_commit,157,idan,oauthlib,stephane,2013-05-22 16:05:28,Missing required arguments in authorize(),fc2cd9a64580d00d49d309296f8691ed0c817ace,
+8,pull_request_commit,157,idan,oauthlib,stephane,2013-05-23 13:28:45,Wrap and trailing whitespaces in README.rst,2361afa930088ada30197d1817e0d14a8b8d05fc,
+9,pull_request_commit,157,idan,oauthlib,stephane,2013-05-23 14:28:33,"Fix extracting of scope values from POST
+
+Many inputs with same name are stored in a list.",7adc247d399cd3d90d6692a4f82cb170b2bdc012,
+0,issue_title,162,idan,oauthlib,synasius,2013-05-27 08:09:19,"It would be helpful to add request.redirect_uri in the error object for non FatalClientError, so one can easily redirect. Otherwise the app using oauthlib needs to evaluate the correct redirect_uri itself
+
+For instance, in Django
+
+``` python
+uri, http_method, body, headers = self._extract_params(request)
+try:
+    scopes, credentials = server.validate_authorization_request(uri, http_method, body, headers)
+    ...
+except errors.FatalClientError as e:
+    # show local error page
+
+except errors.AccessDeniedError as e:
+    # redirect the user as documented in http://tools.ietf.org/html/rfc6749#section-4.1.2.1
+    url = ""{0}?{1}"".format(e.redirect_uri, e.urlencode)
+    return HttpResponseRedirect(url)
+```
+",start issue,Add redirect_uri to non FatalClientError
+1,issue_closed,162,idan,oauthlib,ib-lundgren,2013-05-29 15:02:31,,closed issue,Add redirect_uri to non FatalClientError
+2,issue_comment,162,idan,oauthlib,ib-lundgren,2013-05-28 15:02:08,"Excellent idea. Will try and get around to this in the week. Feel free to send a PR if you want it sooner =)
+",,
+0,issue_title,159,idan,oauthlib,lepture,2013-05-24 13:58:36,"According to http://tools.ietf.org/html/rfc6749#section-3.3
+
+> The value of the scope parameter is expressed as a list of space-delimited, case-sensitive strings.
+
+To quote the scope, there are two possibilities, one is (`urllib.quote`):
+
+```
+scope=foo%20bar
+```
+
+The other is (`urllib.quote_plus`):
+
+```
+scope=foo+bar
+```
+
+And why oauthlib choose the plus one? What does the rfc really means?
+",start issue,Questions on oauth2 scope
+1,issue_closed,159,idan,oauthlib,lepture,2013-05-24 23:56:29,,closed issue,Questions on oauth2 scope
+2,issue_comment,159,idan,oauthlib,ib-lundgren,2013-05-24 15:45:03,"Since you are not allowed space characters in an URI you need to encode it. These are two different ways of representing an url encoded space character, both + and %20 are valid. Although + is imo easier on the eye. See http://en.wikipedia.org/wiki/Percent-encoding#The_application.2Fx-www-form-urlencoded_type for more details.
+",,
+3,issue_comment,159,idan,oauthlib,lepture,2013-05-24 23:56:29,"@ib-lundgren which means, `plus` is newer thant `%20` ? `%20` is the older way to encode space?
+
+I see, both are okay.
+",,

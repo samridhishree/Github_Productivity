@@ -1,0 +1,25 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","210","pycqa","astroid","pylint-bot","2015-10-10 10:05:10","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+The module was added a while ago, for fixing a recursion problem found in a PyPi package. The code was using string concatenation in order to build a huge base64-encoded image, which unfortunately hit the recursion limit in astroid.rebuilder. The problem is that the code wasn't working by default in CPython, without modifying the recursion limit to something higher. Since the peephole optimizer we have is badly named and it actually doesn't do optimizing (it's just some constant folding) and since the problem it supposed to be fixing shouldn't be handled like this, we could deprecate it and eventually remove it. This also implies the same modification in pylint, where the flag --optimize-ast is exposed.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/210
+","start issue","Deprecate and remove astpeepholeoptimizer"
+"issue_closed","210","pycqa","astroid","pylint-bot","2015-12-09 05:55:14","","closed issue","Deprecate and remove astpeepholeoptimizer"
+"issue_comment","210","pycqa","astroid","pylint-bot","2015-11-12 15:12:46","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Remove the astpeephole
+
+It was initially added in order to remove a recursion error in rebuilder, which
+happened when a lot of strings were added together, leading to an
+actual recursion error when executing the code. The peepholer was more
+of a constant folding algorithm rather than a real peepholer. Since it's
+purpose is limited and the original problem is not worth fixing in
+astroid, but in the user code, this is removed.
+Closes issue #210
+","",""

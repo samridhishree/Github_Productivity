@@ -1,0 +1,40 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","139","idan","oauthlib","dmckeone","2013-04-26 16:19:08","I've been using [flask-oauthprovider](https://github.com/ib-lundgren/flask-oauthprovider).  This issue was found from the example code in that library.
+
+When making a request like this with an HMAC signature:
+
+```
+import requests
+from requests_oauthlib import OAuth1
+
+# Assume setup of client_key, callback, and dict of oauth_credentials
+
+client = OAuth1(client_key, callback_uri=callback, **oauth_credentials)
+
+r = requests.get(`http://127.0.0.1/request_token?realm=secret`, auth=client)
+```
+
+I've found that the normalized parameters come out differently on the `Client` and the `Server` because of [this line in the `Server`](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth1/rfc5849/__init__.py#L1051): 
+`request.params = filter(lambda x: x[0] not in (""oauth_signature"", ""realm""), params)`
+
+which affects `signature.verify_hmac_sha1` because it alters `request.params`.  The result is that the `Client` has a normalized URI that includes `realm` and the `Server` has a normalized URI that does not include `realm`.  This create an incompatible HMAC-SHA1 hash, and so the request fails.
+
+Is `realm` a magic argument here?  Should it always be removed from the arguments before being normalized according to the standard?  For reference, here is the appropriate [section of the standard](http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1).  As far as I can tell it should be included, because it is part of the URI, but I'm not familiar with how other implementations handle this, so obviously it would need to be something that is compatible.
+
+Edit:  I take back the part that said realm should be included.  It says explicitly in the RFC:
+
+> The [Authorization] header's content is parsed into a list of name/value pairs excluding the ""realm"" parameter if present.
+","start issue","OAuth 1 (rfc5849) Client and Server HMAC-SHA1 inconsistency"
+"issue_closed","139","idan","oauthlib","ib-lundgren","2013-06-21 11:22:49","","closed issue","OAuth 1 (rfc5849) Client and Server HMAC-SHA1 inconsistency"
+"issue_comment","139","idan","oauthlib","ib-lundgren","2013-04-29 19:48:43","Hey!
+
+flask-oauthprovider has not had much love in a long time but hopefully I'll have time to tidy it up in the summer.
+
+I have not verified this but I fear the current implementation on the server side is faulty in that it removes realm when it should not. It is only when realm is part of the authorization header it should be removed. 
+
+The reason I allow it to be extracted from body/query is that it is much more usable that way. Realm is not very well defined in the spec and I try and fill in the gaps by approximating OAuth 2 scope, which is very similar to what realm is meant for.
+","",""
+"issue_comment","139","idan","oauthlib","dmckeone","2013-04-30 01:41:53","@ib-lundgren Happy to look into changing the behaviour.  I'll close #140 and do a separate pull request when I have it figured out.
+","",""
+"issue_comment","139","idan","oauthlib","ib-lundgren","2013-05-05 18:21:10","Let me know if you need any help =)
+","",""

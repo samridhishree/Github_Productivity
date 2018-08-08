@@ -1,0 +1,53 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,24,aio-libs,aioredis,jettify,2014-07-06 19:24:51,"Pack of _list_ commands, 100% covered. Please review.
+",start issue,list commands
+1,issue_closed,24,aio-libs,aioredis,popravich,2014-07-08 06:43:19,,closed issue,list commands
+2,pull_request_title,24,aio-libs,aioredis,jettify,2014-07-06 19:24:51,"Pack of _list_ commands, 100% covered. Please review.
+",496b34f2f7090894e82b92b763f15a38e0ea8b7a,list commands
+3,pull_request_merged,24,aio-libs,aioredis,popravich,2014-07-08 06:43:19,list commands,b6327790382aa7f9d5a9d85b49d01dc9a41b47cd,Pull request merge from jettify/aioredis:feature-list to aio-libs/aioredis:master
+4,issue_comment,24,aio-libs,aioredis,popravich,2014-07-06 19:35:41,"Looks good but I think that methods' arguments should have better validation, for instance `lindex(key, index)` method has check for `key` arg but no checks for `index` arg.
+",,
+5,issue_comment,24,aio-libs,aioredis,jettify,2014-07-06 20:21:00,"I thought the main reason to check `key` against `None` is that _redis_ replies with somewhat not obvious error response:
+
+```
+>>> redis.lindex(None, -1)
+ERR Protocol error: invalid bulk length
+```
+
+but in case wrong  `index` argument, we get more clear message: 
+
+```
+>>>redis.lindex(key, b'one')):
+ERR value is not an integer or out of range
+```
+
+note: that  ``redis.lindex(key, b'-10')` is valid command, and maybe it is not necessary to check that `index` is integer.
+
+---
+
+Anyway, I'll add more validation to arguments.
+",,
+6,issue_comment,24,aio-libs,aioredis,popravich,2014-07-07 06:35:29,"My intention of these mixins is to provide a bit simplier and at the same time more strict interface.
+For those who wish to use `b'-10'` there is always `.connection.execute` method which allows to do anything.
+",,
+7,issue_comment,24,aio-libs,aioredis,jettify,2014-07-07 16:58:22,"Done. Should I add more validation to `hash/set` commands too?
+",,
+8,pull_request_commit_comment,24,aio-libs,aioredis,popravich,2014-07-08 06:43:01,"I see you taken my note on arguments validation literally )
+",496b34f2f7090894e82b92b763f15a38e0ea8b7a,"(68, '', u'aioredis/commands/list.py')"
+9,pull_request_commit_comment,24,aio-libs,aioredis,popravich,2014-07-08 06:59:42,"Tests for blocking list operations doesn't work as expected:
+Creating a task in lines above only schedules it for execution
+and then yielding from `lpush` will first send a value to list then will give control to loop
+ which will start the `waiter` task.
+So the code above would work the same ways as if it was written like following:
+
+``` python
+yield from self.redis.lpush(key1, value1)
+yield from self.redis.blpop(key1)
+```
+",496b34f2f7090894e82b92b763f15a38e0ea8b7a,"(41, '', u'tests/list_commands_test.py')"
+10,pull_request_commit_comment,24,aio-libs,aioredis,popravich,2014-07-08 07:01:54,"I don't mind keeping the tests as is for now.
+",496b34f2f7090894e82b92b763f15a38e0ea8b7a,"(41, '', u'tests/list_commands_test.py')"
+11,pull_request_commit,24,aio-libs,aioredis,jettify,2014-07-04 21:42:59,"blpop, brpop, brpoplpush, lindex commands",2716f9ad65ed2d653aea571de72df10637af94b7,
+12,pull_request_commit,24,aio-libs,aioredis,jettify,2014-07-05 19:10:12,"lrange, lpushx, lpush, lpop, llen, linsert commands",8059e1b440511ae09fdd3c29bac6dda86b896a0f,
+13,pull_request_commit,24,aio-libs,aioredis,jettify,2014-07-06 18:06:01,"rpushx, rpush, rpoplpush, rpop, commands",c4698961dbb115e3b2cb09d77e4e3635a135cb34,
+14,pull_request_commit,24,aio-libs,aioredis,jettify,2014-07-07 16:50:29,add more validation to commands arguments,496b34f2f7090894e82b92b763f15a38e0ea8b7a,

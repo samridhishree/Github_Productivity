@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","64","idan","oauthlib","swsnider","2012-11-07 17:39:27","According to the RFC, oauth1 Temporary Credential Requests don't include a resource owner credential (an oauth_token parameter), but Server.verify doesn't correctly handle this case, despite having a flag (require_resource_owner).
+
+This patch fixes that oversight.
+","start issue","Fix OAuth1 Server so that it will work with initial oauth requests"
+"issue_closed","64","idan","oauthlib","ib-lundgren","2012-11-08 21:11:30","","closed issue","Fix OAuth1 Server so that it will work with initial oauth requests"
+"pull_request_title","64","idan","oauthlib","swsnider","2012-11-07 17:39:27","According to the RFC, oauth1 Temporary Credential Requests don't include a resource owner credential (an oauth_token parameter), but Server.verify doesn't correctly handle this case, despite having a flag (require_resource_owner).
+
+This patch fixes that oversight.
+","d1cb48b4be073b446981550e9cf66b8187fda68f","Fix OAuth1 Server so that it will work with initial oauth requests"
+"pull_request_merged","64","idan","oauthlib","ib-lundgren","2012-11-08 21:11:30","Fix OAuth1 Server so that it will work with initial oauth requests","bb87e3e9990cb101fb25cc35bc6f4d7bafac03a1","Pull request merge from Unknown:master to idan/oauthlib:master"
+"issue_comment","64","idan","oauthlib","ib-lundgren","2012-11-08 21:13:07","Well spotted and thanks a ton for the PR!
+
+I'm very intrigued as to how you are finding the provider, any suggestions for changes? I have personally not have that much time to play around with actually using it in a project apart from my first stab at it with https://github.com/ib-lundgren/flask-oauthprovider 
+","",""
+"issue_comment","64","idan","oauthlib","swsnider","2012-11-08 22:04:53","I think the existence of a fully-working, end-to-end provider implementation would have been most helpful, and would have helped expose deficiencies of the API like this one -- right now, I'm implementing the initial client key -> request token -> access token dance in my provider, and I'm running into pointy bits, like the fact that verify() doesn't make available things like the requested realm, or the client and token that were verified -- I instead have to redo some of the initial computation, which just feels awkward.
+
+If you're interested in my (probably bad) implementation, I've published what I have so far to https://github.com/swsnider/fierce_mercury
+","",""
+"issue_comment","64","idan","oauthlib","ib-lundgren","2012-11-08 22:42:14","Indeed it would be great and I have plans for finishing the Flask one and grand plans for Django, unfortunately my time is limited but will try and sketch up what I'm planning at some point and maybe someone will jump on it.
+
+Good that you pointed out the issue of access to params, I have a vague memory of running into the same. To make your life a little easier I've now updated verify to return a request object filled with most arguments you might be interested in (signature, client_key, resource_owner_key, nonce, timestamp,callback_uri, verifier, signature_method, realm). I've not pushed to pypi, only github atm.
+
+before: authorized = server.verify(...)
+now: authorized, request = server.verify(...)
+
+Please let me know if there is anything else that would be good or problems you are running into. If I can't solve them in code I'll try and add to the docs. Oh and I will definitely have a look at your implementation at some point =)
+","",""
+"issue_comment","64","idan","oauthlib","ib-lundgren","2012-11-08 22:48:47","When it comes to a fully-working, end-to-end provider implementation you might find my demo provider interesting at 
+
+https://github.com/ib-lundgren/flask-oauthprovider/tree/master/examples/demoprovider (also has some client demos) (support HMAC, RSA & Plaintext + a very basic web interface to sign new clients up with OpenID).
+
+I have been meaning to follow up with an end-to-end guide on how I implemented it but yea, time...
+","",""
+"issue_comment","64","idan","oauthlib","swsnider","2012-11-08 22:55:33","I'll take a look at that, definitely. I can write up some docs probably -- if I get that done before you, I'll send another PR.
+
+Would you mind pushing to pypi soonish? I've also had to maintain a patch in my implementation to add the realm kwparam to the Client code because the pypi version is lacking that change :(
+","",""
+"issue_comment","64","idan","oauthlib","ib-lundgren","2012-11-08 23:00:27","Pushed =)
+","",""
+"pull_request_commit","64","idan","oauthlib","swsnider","2012-11-07 17:36:23","fix problem with verification of initial OAuth requests which lack a resource_owner token","d1cb48b4be073b446981550e9cf66b8187fda68f",""

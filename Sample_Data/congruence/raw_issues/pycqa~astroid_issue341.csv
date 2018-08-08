@@ -1,0 +1,89 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","341","pycqa","astroid","hreeder","2016-06-09 09:21:32","I'm encountering a RecursionError when I run the following snippet through pylint, with pylint-flask
+
+``` python
+def make_celery(flask_app):
+    celery = Celery('appname', broker=flask_app.config['CELERY_BROKER_URL'])
+    celery.conf.update(flask_app.config)
+
+    class ContextTask(celery.Task):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with flask_app.app_context():
+                return celery.Task.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+```
+
+The line that triggers the RecursionError is `celery.Task = ContextTask` - with this commented out pylint runs as expected.
+
+This is the stack trace I get (the first two entries are repeated ad infinitum above this extract):
+
+```
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\scoped_nodes.py"", line 1690, in mro
+  mro = base.mro(context=context)
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\scoped_nodes.py"", line 1690, in mro
+  mro = base.mro(context=context)
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\scoped_nodes.py"", line 1686, in mro
+  bases = list(self._inferred_bases(context=context))
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\scoped_nodes.py"", line 1662, in _inferred_bases
+  baseobj = next(stmt.infer(context=context))
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\context.py"", line 49, in cache_generator
+  for result in generator:
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 302, in wrapped
+  for res in _func(node, context, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 325, in raise_if_nothing_inferred
+  for node in func(*args, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\inference.py"", line 156, in infer_attribute
+  for owner in self.expr.infer(context):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\context.py"", line 49, in cache_generator
+  for result in generator:
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 302, in wrapped
+  for res in _func(node, context, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 99, in _infer_stmts
+  for inferred in stmt.infer(context=context):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\context.py"", line 49, in cache_generator
+  for result in generator:
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 302, in wrapped
+  for res in _func(node, context, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 99, in _infer_stmts
+  for inferred in stmt.infer(context=context):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\context.py"", line 49, in cache_generator
+  for result in generator:
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 302, in wrapped
+  for res in _func(node, context, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 325, in raise_if_nothing_inferred
+  for node in func(*args, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\inference.py"", line 100, in infer_call
+  for callee in self.func.infer(context):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\context.py"", line 49, in cache_generator
+  for result in generator:
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 302, in wrapped
+  for res in _func(node, context, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 99, in _infer_stmts
+  for inferred in stmt.infer(context=context):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\context.py"", line 49, in cache_generator
+  for result in generator:
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 302, in wrapped
+  for res in _func(node, context, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 99, in _infer_stmts
+  for inferred in stmt.infer(context=context):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\context.py"", line 49, in cache_generator
+  for result in generator:
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\bases.py"", line 302, in wrapped
+  for res in _func(node, context, **kwargs):
+File ""c:\dev\envs\<env_name>\lib\site-packages\astroid\inference.py"", line 146, in infer_import_from
+  stmts = module.getattr(name, ignore_locals=module is self.root())
+File ""c:\dev\envs\<env_name>\lib\site-packages\wrapt\wrappers.py"", line 466, in __get__
+  self._self_binding, self)
+File ""c:\dev\envs\<env_name>\lib\site-packages\wrapt\wrappers.py"", line 426, in __init__
+  super(_FunctionWrapperBase, self).__init__(wrapped)
+File ""c:\dev\envs\<env_name>\lib\site-packages\wrapt\wrappers.py"", line 78, in __init__
+  object.__setattr__(self, '__wrapped__', wrapped)
+RecursionError: maximum recursion depth exceeded while calling a Python object
+```
+","start issue","RecursionError when extending the celery base Task class"
+"issue_comment","341","pycqa","astroid","PCManticore","2016-06-24 10:42:25","Thanks for letting us know! This is definitely tricky since you are changing a base class at runtime, tripping pylint on the way of inferring what the base classes of celery are. 
+","",""

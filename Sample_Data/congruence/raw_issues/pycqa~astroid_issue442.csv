@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","442","pycqa","astroid","jeffkaufman","2017-06-08 20:16:54","### Steps to reproduce
+1. Make tmp.py with:
+
+```
+from enum import Enum
+from typing import Optional
+
+class A(Enum):
+    B: str = 'B'
+```
+
+2. Run pylint tmp.py
+
+### Current behavior
+
+pylint crashes with an error in astroid:
+
+```
+Traceback (most recent call last):
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/pylint/lint.py"", line 896, in get_ast
+    return MANAGER.ast_from_file(filepath, modname, source=True)
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/manager.py"", line 80, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/builder.py"", line 152, in file_build
+    return self._post_build(module, encoding)
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/builder.py"", line 176, in _post_build
+    module = self._manager.visit_transforms(module)
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/manager.py"", line 62, in visit_transforms
+    return self._transform.visit(node)
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/transforms.py"", line 83, in visit
+    module.body = [self._visit(child) for child in module.body]
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/transforms.py"", line 83, in <listcomp>
+    module.body = [self._visit(child) for child in module.body]
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/transforms.py"", line 53, in _visit
+    return self._transform(node)
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/transforms.py"", line 36, in _transform
+    ret = transform_func(node)
+  File ""/Users/jeff/.virtualenvs/v6/lib/python3.6/site-packages/astroid/brain/brain_namedtuple_enum.py"", line 201, in infer_enum_class
+    if isinstance(stmt.targets[0], nodes.Tuple):
+AttributeError: 'AnnAssign' object has no attribute 'targets'
+************* Module tmp
+F:  1, 0: <class 'AttributeError'>: 'AnnAssign' object has no attribute 'targets' (astroid-error)
+```
+
+### Expected behavior
+
+No crash.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+1.5.3","start issue","Crash in Enum with type hints"
+"issue_closed","442","pycqa","astroid","PCManticore","2017-07-24 19:02:37","","closed issue","Crash in Enum with type hints"

@@ -1,0 +1,58 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","251","pycqa","astroid","pylint-bot","2015-11-11 00:15:04","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+Constructing Instance objects for classes imported from another module in raw_building requires accessing the functions for building ASTs from files in manager, which create a circular dependency because builder imports raw_building, manager imports both others, and raw_building imports manager.  Note that there are two preexisting circular dependencies that manager avoids with lazy imports, but the imports weren't sufficiently lazy to deal with the new dependency I introduced so I had to increase the laziness using lazy_object_proxy.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/251
+","start issue","Refactor circular dependency in builder, manager, and raw_building"
+"issue_comment","251","pycqa","astroid","pylint-bot","2015-11-14 08:53:15","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I have a solution for this issue which doesn't rely on laziness, which is a temporary solution anyway, but requires some changes that seems to already exist in modular-locals bookmark.
+
+First, manager's API isn't very cohesive, doing more things that it should. From my point of view, ast_from_module_name, ast_from_module and friends
+are more suited to go in AstroidBuilder rather than in manager. The manager should be more of a central point of information, containing the
+transforms, various options set from from outside and the builtin cache, all the rest can be safely moved. This will be the first step in this refactoring.
+
+The problem now is that some modules depend on the manager's ability to build an AST from a runtime object, such as inference.py, but this is fixed perfectly
+in modular-locals, which builts the AST and attaches it to the InferenceObject rather than attaching the real object.
+
+Moving on, the next and final dependency which needs to be fixed is between builder.py and raw_building.py, being now partially fixed with lazy imports.
+The thing is that I don't like this to be fixed through lazy imports, the coupling between these two modules is so high, that it might cause other problems in the future, leading to a harder understanding of the general picture when dealing with them.
+Now in order to reduce the coupling, a solution could be to reduce the cohesion by merging the two modules together. After all, they both do the same thing conceptually, they build an AST. This means a nice API for the builder module, which could offer `parse`, `ast_from_object` and `AstroidBuilder` as its public API.
+
+The problem with this solution, apart of the decrease of cohesion which I can live with, is that some components depend on raw_building.ast_builtins for doing their bussiness logic. This is again put perfectly in modular-locals, because the ast_builtins module can be put in the Manager.astroid_cache (which now
+will have no dependency at all to builder.py) and helpers and any other module which might need it will just import manager and look it up in the astroid cache.
+
+All being said, how do you feel about this solution? It could be changed in modular-locals and then we can bring it in 2.0.
+","",""
+"issue_comment","251","pycqa","astroid","pylint-bot","2015-11-14 12:10:08","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+Your plan sounds good to me claudiu
+","",""
+"issue_comment","251","pycqa","astroid","pylint-bot","2015-11-14 16:32:50","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I like your plan, in general.  I have two comments.
+
+First, for the builtins module, should the AST only be created once?  What's the purpose of being able to clear the cache in the first place?  In the current version of modular-locals the builtins AST is only created once, and then reloaded into the cache when the cache is cleared.  I didn't necessarily view this as a long-term solution, though, I did it only because for some reason trying to recreate the builtins AST in clear_cache() was causing lots of hard-to-debug bugs and greatly slowing down the tests.  That said, in the current code, clearing the cache forces the builtins AST to be rebuilt, but why is this necessary?  Are we worried that code somewhere could mutate the builtins AST in an incompatible way?  If that's the problem, there are some alternative solutions.  In the zipper, there will be methods for changing ASTs that don't mutate the underlying AST, but rather create a new one, so at that point changing the builtins AST will require deliberately violating the abstraction.  Beyond that, I think there's an argument for the making the ASTs actually immutable for reasons related to #169 and the possibility of improving inference performance through memoization.
+
+Second, the cache feels like an implementation detail to me---it's essentially a memoization table for results of the various functions that return ASTs, whether from runtime objects or from Python source.    I would definitely prefer to avoid exposing it outside astroid.  If it's necessary to expose it inside astroid, so be it, but here's an alternative proposal: kill manager entirely, move the cache into builder and make it internal, and move the parts of manager that don't make sense to put into builder into modutils.  The basic idea here is to put in modutils everything that's interacting with the import system and everything else in builder.  Then, both parts of astroid that need to import modules and external users like pylint can simply call the relevant functions to build ASTs from source or objects and don't need to know about the cache or any of the other implementation details.
+","",""
+"issue_comment","251","pycqa","astroid","pylint-bot","2015-11-14 17:20:34","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+clear_cache is only used in tests, but its use can be avoided. It can be used though by pylint, after checking a module to clear whatever side effects the already built modules had. The builtins AST is rebuilt in order to have it readily available, since some _proxied implementations always assume that it exists there.
+
+I don't like the second option, the manager is needed in order to hold various state that's global to the entire analysis, such as the transforms, some flags etc. Indeed the cache is an implementation detail and currently it's not used neither in pylint, nor in astroid as an external API (but I've seen pylint plugins which relies on it unfortunately). The cache can't be moved in builder as well, since it is used by some modules which can't import the builder due to circular dependencies (any modules which looks into the cache for the builtins module, such as scoped_nodes or node_classes). Leaving it as is in manager, maybe putting an underscore in front of it should be enough restructuring for now.
+
+That being said, can you do some of the changes mentioned here or do you want me to do them in 2.0? This mean changing object_type to look in astroid_cache instead (or asking the manager to get the builtins AST), moving AST building methods in builder.py and merging builder.py with raw_building.py.
+","",""

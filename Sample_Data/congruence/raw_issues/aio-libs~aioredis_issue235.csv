@@ -1,0 +1,28 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","235","aio-libs","aioredis","dfee","2017-05-25 21:18:02","Let me know if it'd be helpful to submit this as part of a PR. It's modeled after [`redis-py`](https://github.com/andymccurdy/redis-py/blob/master/redis/connection.py#L777) and fully tested.","start issue","Created a redis url parser for aioredis"
+"issue_comment","235","aio-libs","aioredis","asvetlov","2017-05-26 14:34:11","If you mead constructing a pool object from url string -- it makes sense.","",""
+"issue_comment","235","aio-libs","aioredis","popravich","2017-05-31 08:38:19","I think this sounds reasonable.
+Also, I think, we can amend `aioredis.create_*` coroutines to parse URL.
+Currently those functions accept either host-port tuple or string which is implied to be unix socket path.
+We can first try to parse such string as URL and if failed — assume it's a unix socket.
+However, I'm not sure about other parameters to `create_*` functions: should they override values specified in URL? or should we raise an error if some option is passed in URL and as argument?","",""
+"issue_comment","235","aio-libs","aioredis","dfee","2017-05-31 17:05:56","My implementation has the URL take priority. The kwargs are defaults. Makes sense to reason through this before I submit a PR.","",""
+"issue_comment","235","aio-libs","aioredis","popravich","2017-06-06 07:14:29","Oh, I looked through several redis client libs that are configurable via URL and its a total mess.
+redis-py itself references [redis url-scheme proposal at IANA](https://www.iana.org/assignments/uri-schemes/prov/redis) but not strictly follows it: for instance redis-py will give priority to `db` value extracted from query args (only first one argument) over `db` in path component.
+On the other hand, redis-rb extracts `db` number from path only.
+Some other lib treat `username` component of URL as password...
+Total mess...
+
+Anyway, lets get back to our kwargs first. I think we can use them as defaults with one exception:
+`ssl` parameter, if set, can be either `True` or a valid `SSLContext`. In this case if URL specifies ssl
+we should check `ssl` parameter for valid context and use it.
+Now regarding URL scheme, I'd like aioredis to handle url more strictly:
+* if URL has path and `db` query parameter (even if both are invalid) — raise an error;
+* if URL has more than one `db` query param — raise an error;
+* etc.
+In my opinion to fail is better than to guess which value is correct (though it can be not) and use it.
+
+Your thoughts?","",""
+"issue_comment","235","aio-libs","aioredis","dfee","2017-06-06 16:54:07","I'm not opposed to that methodology.","",""
+"issue_comment","235","aio-libs","aioredis","gjcarneiro","2017-08-31 14:57:26","Looking forward to this.  @dfee, are you still working on a PR?","",""
+"issue_comment","235","aio-libs","aioredis","dfee","2017-08-31 19:56:07","@gjcarneiro I'm not, as it was somewhat disputed what the best approach was. I can paste, or throw up a mini-repo with the parser and test code, though.","",""

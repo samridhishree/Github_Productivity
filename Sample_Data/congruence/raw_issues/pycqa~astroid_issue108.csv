@@ -1,0 +1,74 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","108","pycqa","astroid","pylint-bot","2015-06-20 13:15:47","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Testing with the following code:
+
+```
+#!python
+m = extract_node('...')
+c = InferenceContext()
+f = next(m['_tags'].infer(c))
+f = next(m['_tags'].infer(c))
+
+```
+
+The last `.infer()` call will result in a StopIteration, because when doing `context.push`,
+the name `_tags` is already there. Instead, the wanted behaviour would be to retrieve the already inferred result from context.inferred and return it instead (this means that the context is not used internally, since the first one already has `_tags` inside `context.inferred`)
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/108
+","start issue","Inference contexts can't be reused"
+"issue_comment","108","pycqa","astroid","pylint-bot","2015-07-03 13:13:23","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Because the inference contexts can't be reused, this example leads to a crash:
+
+```
+#!python
+
+class A:
+   def __init__(self):
+       self._depth = 2
+       type(self)._depth -= 1
+```
+","",""
+"issue_comment","108","pycqa","astroid","pylint-bot","2015-07-05 11:30:02","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This issue seriously limits the capabilities of the inference. The following code can't be inferred, because when inferring, the same context will be reused:
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+class A:
+   def meth(self):
+      pass
+classes = [A()]
+a = classes[0]
+# meth will not be A.meth
+hasattr(a, 'meth') and callable(a.meth) and getattr(a, 'meth')
+''')
+print(n.infered()) # This should be BoundMethod(A.meth) instead it's YES
+```
+","",""
+"issue_comment","108","pycqa","astroid","PCManticore","2016-03-19 13:12:18","Another example that should work after fixing this:
+
+```
+from astroid.test_utils import extract_node
+from astroid import MANAGER
+MANAGER.always_load_extensions = True
+n = extract_node('''
+from bitarray import bitarray
+b = bitarray(32)
+b.setall
+ ''')
+i = next(n.infer())
+print(i)
+```
+","",""

@@ -1,0 +1,127 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","18","idan","oauthlib","ib-lundgren","2012-03-31 09:37:33","Methods for preparing requests and parsing responses. They are all related to different client profiles although many of these profiles share functionality.
+
+The reason I have included parsing methods too is simply to have a convenient way to get from uri or json response body to a dict of parameters for validation. The client validation is quite basic but strongly recommended by the spec to avoid CSRF and open redirection. The server validation (on its way) will contain more tricky parts.
+
+A 10k overview of the 4 auth workflows (extensions not yet supported):
+
+Authorization Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'code',...)
+   # redirect user to uri, similar to oauth 1
+   # user returns, params added to redirection uri query
+   params = parse_grant_uri(redirection_uri)
+   if validate_grant_params(params):
+       body = prepare_token_request(u'authorization_code')
+       # send post request to token endpoint
+       params = parse_token_body(response.content)
+       if validate_token_params(params):
+            # everything worked, we now have an access token
+            print params.get(u'access_token')
+```
+
+Implicit Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'token',...)
+   # redirect user, similar to oauth 1
+   # user returns, params added to redirection uri fragment
+   params = parse_token_uri(redirection_uri)
+   if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')    
+```
+
+Resource Owner Password Credentials Grant:
+
+```
+ body = prepare_token_request(u'password', username=username, 
+                              password=password)
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Client Credentials Grant: 
+
+```
+ body = prepare_token_request(u'client_credentials')
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Some method renaming might be necessary. Tests also included.
+","start issue","OAuth 2 parameter handlers"
+"issue_closed","18","idan","oauthlib","ib-lundgren","2012-06-28 12:35:05","","closed issue","OAuth 2 parameter handlers"
+"pull_request_title","18","idan","oauthlib","ib-lundgren","2012-03-31 09:37:33","Methods for preparing requests and parsing responses. They are all related to different client profiles although many of these profiles share functionality.
+
+The reason I have included parsing methods too is simply to have a convenient way to get from uri or json response body to a dict of parameters for validation. The client validation is quite basic but strongly recommended by the spec to avoid CSRF and open redirection. The server validation (on its way) will contain more tricky parts.
+
+A 10k overview of the 4 auth workflows (extensions not yet supported):
+
+Authorization Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'code',...)
+   # redirect user to uri, similar to oauth 1
+   # user returns, params added to redirection uri query
+   params = parse_grant_uri(redirection_uri)
+   if validate_grant_params(params):
+       body = prepare_token_request(u'authorization_code')
+       # send post request to token endpoint
+       params = parse_token_body(response.content)
+       if validate_token_params(params):
+            # everything worked, we now have an access token
+            print params.get(u'access_token')
+```
+
+Implicit Code Grant:
+
+```
+   uri = prepare_grant_uri(...., u'token',...)
+   # redirect user, similar to oauth 1
+   # user returns, params added to redirection uri fragment
+   params = parse_token_uri(redirection_uri)
+   if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')    
+```
+
+Resource Owner Password Credentials Grant:
+
+```
+ body = prepare_token_request(u'password', username=username, 
+                              password=password)
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Client Credentials Grant: 
+
+```
+ body = prepare_token_request(u'client_credentials')
+ # post request to token endpoint
+ params = parse_token_body(response.content)
+ if validate_token_params(params):
+      # everything worked, we now have an access token
+      print params.get(u'access_token')
+```
+
+Some method renaming might be necessary. Tests also included.
+","6f05096efb7d423e8e529a3efd3854b2f4a030ab","OAuth 2 parameter handlers"
+"issue_comment","18","idan","oauthlib","kennethreitz","2012-03-31 09:39:13","Ib's a machine :)
+","",""
+"issue_comment","18","idan","oauthlib","ib-lundgren","2012-06-28 12:35:05","Cleaned up and commited into master =)
+","",""
+"issue_comment","18","idan","oauthlib","kennethreitz","2012-06-28 13:37:59",":sparkles: :cake: :sparkles:
+","",""
+"pull_request_commit","18","idan","oauthlib","ib-lundgren","2012-03-31 09:03:17","OAuth 2 parameter handlers","6f05096efb7d423e8e529a3efd3854b2f4a030ab",""

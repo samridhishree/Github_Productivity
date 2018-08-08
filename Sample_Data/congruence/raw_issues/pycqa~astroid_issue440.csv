@@ -1,0 +1,45 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","440","pycqa","astroid","ioanatia","2017-06-03 10:43:59","Fixes https://github.com/PyCQA/pylint/issues/1489
+
+#### Issue description
+Run pylint (with a version `>= 1.7.0`) on a file `test.py` with the following content:
+
+```
+import google.auth
+```
+
+Provided that `google-auth` is installed, it outputs the following warning:
+```
+W:  1, 0: Relative import 'google.auth', should be 'test.google.auth' (relative-import)
+```
+
+#### Fix description
+
+In `ExplicitNamespacePackageFinder.find_module` the value of the `submodule_path` parameter is not used. Since `test` is a valid module and `google` a valid namespace, it concludes that `test.google` is valid, returns a `ModuleSpec`, instead of returning `None`.
+
+Checking for `submodule_path` seems to fix the pylint issue.
+","start issue","Fix finder for namespace packages"
+"issue_closed","440","pycqa","astroid","PCManticore","2017-06-09 10:19:29","","closed issue","Fix finder for namespace packages"
+"pull_request_title","440","pycqa","astroid","ioanatia","2017-06-03 10:43:59","Fixes https://github.com/PyCQA/pylint/issues/1489
+
+#### Issue description
+Run pylint (with a version `>= 1.7.0`) on a file `test.py` with the following content:
+
+```
+import google.auth
+```
+
+Provided that `google-auth` is installed, it outputs the following warning:
+```
+W:  1, 0: Relative import 'google.auth', should be 'test.google.auth' (relative-import)
+```
+
+#### Fix description
+
+In `ExplicitNamespacePackageFinder.find_module` the value of the `submodule_path` parameter is not used. Since `test` is a valid module and `google` a valid namespace, it concludes that `test.google` is valid, returns a `ModuleSpec`, instead of returning `None`.
+
+Checking for `submodule_path` seems to fix the pylint issue.
+","6099e8526f38dd7f1437ec7225c673a7be444f14","Fix finder for namespace packages"
+"pull_request_merged","440","pycqa","astroid","PCManticore","2017-06-09 10:19:29","Fix finder for namespace packages","03f3ea786885d794d3cdeaa82df4ce36d60d68e1","Pull request merge from ioanatia/astroid:fix-namespace-finder to PyCQA/astroid:master"
+"pull_request_commit_comment","440","pycqa","astroid","PCManticore","2017-06-03 13:14:48","I'm not sure this is the problem or at least, I can't demonstrate it so far. From what I'm noticing, ``submodule_path`` contains the filename provided by the ``ImpFinder``, which doesn't make sense, since a file is not a valid search location. Secondly, it seems that in this test case, the submodule_path provided is the current directory. Instead of just returning when ``submodule_path`` is not empty, we could check if the submodule_path passed in this function points to different root directories than the submodule path found by looking in the module itself. Do you think this makes sense? can you check it?","6099e8526f38dd7f1437ec7225c673a7be444f14","(None, '', u'astroid/interpreter/_import/spec.py')"
+"pull_request_commit","440","pycqa","astroid","ioanatia@github.com","2017-06-03 10:06:56","Fix finder for namespace packages","6099e8526f38dd7f1437ec7225c673a7be444f14",""

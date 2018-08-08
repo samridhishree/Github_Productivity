@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","306","idan","oauthlib","flamusdiu","2015-01-18 22:58:59","Google doesn't seem to return an empty scope when authentication over Oauth2:
+
+```
+params = {
+  ""access_token"" : ""..."",
+  ""token_type"" : ""Bearer"",
+  ""expires_in"" : 3600,
+  ""id_token"" : ""...""
+}
+```
+
+This is what I get when the authentication works. It seems that https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/tokens.py#L30 contains `set(utils.scope_to_list(params.get('scope', '')))` which sets the the scope to empty because there is no scope returned from the servers. 
+
+This fails the check for [params.scope_changed](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/parameters.py#L396) even though the scope works for Google.
+
+To get this to work I changed `set(utils.scope_to_list(params.get('scope', '')))` to `set(utils.scope_to_list(params.get('scope', old_scope)))`.
+
+Oh, and if you look here: http://tools.ietf.org/html/rfc6749#section-3.3. From my understanding: ""If the issued access token scope is different from the one requested by the client, the authorization server MUST include the ""scope"" response parameter to inform the client of the actual scope granted."" Which means, since the scope didn't change, then they are not required to send it back, correct?
+
+More information about this located on my StackOverflow question: [Flask-Dance Error: Scope has changed](http://stackoverflow.com/questions/28011269/flask-dance-error-scope-has-changed)
+","start issue","Google OAuth2 returns no scope on authentication breaks scope test"
+"issue_closed","306","idan","oauthlib","ib-lundgren","2015-04-19 14:30:20","","closed issue","Google OAuth2 returns no scope on authentication breaks scope test"
+"issue_comment","306","idan","oauthlib","flamusdiu","2015-01-20 02:54:37","Closed in favor of #297 
+","",""
+"issue_comment","306","idan","oauthlib","flamusdiu","2015-01-20 03:07:29","Looks like this #297 doesn't fix this issue. I still get scope changed error because it doesn't account for a scope not being returned. 
+","",""
+"issue_comment","306","idan","oauthlib","roblinton","2015-02-10 21:43:44","I've just run into this problem too.  I agree with your interpretation of http://tools.ietf.org/html/rfc6749#section-3.3, scope appears to be an optional attribute of the returned token.
+
+I wonder if we should set _new_scope's default to None to reflect that no scopes were returned in the token and fix the validation in OAuth2Token.scope_changed:
+
+``` python
+    @property
+    def scope_changed(self):
+        return self._new_scope is not None and self._new_scope != self._old_scope
+```
+","",""
+"issue_comment","306","idan","oauthlib","roblinton","2015-02-10 22:03:18","Ok, the scopes can't be None because of all the set operations.  Rather... _new_scope could default to an empty set and the test can check the length of the set.
+
+``` python
+class OAuth2Token(dict):
+
+    def __init__(self, params, old_scope=None):
+        super(OAuth2Token, self).__init__(params)
+        self._new_scope = set(utils.scope_to_list(params.get('scope', [])))
+        if old_scope is not None:
+            self._old_scope = set(utils.scope_to_list(old_scope))
+        else:
+            self._old_scope = self._new_scope
+
+    @property
+    def scope_changed(self):
+        return len(self._new_scope) and self._new_scope != self._old_scope
+```
+","",""
+"issue_comment","306","idan","oauthlib","josephtate","2015-04-13 08:22:17","I'll work on cleaning it up so that it cleanly merges with master tip but Pull request #323 addresses this issue completely, and includes tests.
+","",""

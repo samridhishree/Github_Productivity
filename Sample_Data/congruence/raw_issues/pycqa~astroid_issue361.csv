@@ -1,0 +1,72 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","361","pycqa","astroid","jamadden","2016-09-13 13:53:16","### Steps to reproduce
+
+This occurs running
+
+```
+$ pylint --version
+pylint 1.6.4,
+astroid 1.4.8
+Python 3.4.5 (default, Jun 27 2016, 04:57:21)
+[GCC 4.2.1 Compatible Apple LLVM 7.0.2 (clang-700.1.81)]
+$ python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+1.4.8
+```
+
+on gevent's master in `src/gevent/threading.py`.
+
+It can be reproduced with this file:
+
+``` python
+# threading.py
+import threading as __threading__
+_DummyThread_ = __threading__._DummyThread
+
+class _DummyThread(_DummyThread_):
+    pass
+```
+
+We get a traceback like this:
+
+```
+$ pylint threading.py
+************* Module threading
+W:  1, 0: Module import itself (import-self)
+W:  2,16: Access to a protected member _DummyThread of a client class (protected-access)
+This option 'required-attributes' will be removed in Pylint 2.0This option 'ignore-iface-methods' will be removed in Pylint 2.0Traceback (most recent call last):
+  File ""/.../bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/.../lib/python3.4/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/.../lib/python3.4/site-packages/pylint/lint.py"", line 1310, in __init__
+    linter.check(args)
+  File ""/.../lib/python3.4/site-packages/pylint/lint.py"", line 732, in check
+    self._do_check(files_or_modules)
+  File ""/.../lib/python3.4/site-packages/pylint/lint.py"", line 863, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/.../lib/python3.4/site-packages/pylint/lint.py"", line 944, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/.../lib/python3.4/site-packages/pylint/utils.py"", line 944, in walk
+    self.walk(child)
+  File ""/.../lib/python3.4/site-packages/pylint/utils.py"", line 941, in walk
+    cb(astroid)
+  File ""/.../lib/python3.4/site-packages/pylint/checkers/classes.py"", line 345, in visit_classdef
+    self._check_bases_classes(node)
+  File ""/.../lib/python3.4/site-packages/pylint/checkers/classes.py"", line 859, in _check_bases_classes
+    unimplemented_abstract_methods(node, is_abstract).items(),
+  File ""/.../lib/python3.4/site-packages/pylint/checkers/utils.py"", line 510, in unimplemented_abstract_methods
+    mro = reversed(node.mro())
+  File ""/.../lib/python3.4/site-packages/astroid/scoped_nodes.py"", line 1693, in mro
+    mro = base.mro(context=context)
+  File ""/.../lib/python3.4/site-packages/astroid/scoped_nodes.py"", line 1693, in mro
+    mro = base.mro(context=context)
+  File ""/.../lib/python3.4/site-packages/astroid/scoped_nodes.py"", line 1693, in mro
+    mro = base.mro(context=context)
+```
+
+Debugging shows that `bases` contains one element, and that element is `self`. Adding `if base is self: continue` to the beginning of the `for base in bases` loop ""solves"" the issue (stops the crash). 
+
+Notably, this seems to be caused by the shadowing of the standard library name with the local file name. If we run `pylint src/gevent/threading.py` we do not see the issue. However, using [prospector](https://github.com/landscapeio/prospector) to invoke pylint as `prospector src/gevent/threading.py` _does_ generate the issue.
+","start issue","Maximum recursion depth in mro in shadowed module"
+"issue_closed","361","pycqa","astroid","PCManticore","2016-11-21 08:46:36","","closed issue","Maximum recursion depth in mro in shadowed module"
+"issue_comment","361","pycqa","astroid","PCManticore","2016-11-21 08:46:49","Thank you.","",""

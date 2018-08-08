@@ -1,0 +1,44 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","50","pycqa","astroid","pylint-bot","2014-10-16 07:58:33","Originally reported by: **BitBucket: [carlio](http://bitbucket.org/carlio), GitHub: @carlio?**
+
+---
+
+If a decorator returns itself, type inference in Astroid can get into an infinite loop. The following will cause Pylint to stall forever:
+
+```
+def decorator():
+    def wrapper():
+        return decorator()
+    return wrapper
+
+@decorator()
+def do_a_thing():
+    print 'hello'
+```
+
+Here is a real-world example of this code: https://github.com/allegro/ralph/blob/develop/src/ralph/util/plugin.py#L25
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/50
+","start issue","Infinite loop in inference with decorators"
+"issue_closed","50","pycqa","astroid","pylint-bot","2015-12-09 05:52:28","","closed issue","Infinite loop in inference with decorators"
+"issue_comment","50","pycqa","astroid","pylint-bot","2014-10-16 06:03:55","_Original comment by_ **BitBucket: [carlio](http://bitbucket.org/carlio), GitHub: @carlio?**:
+
+---
+
+I've tracked the issue down to `nodes_of_class` in `bases.py` on this line: https://bitbucket.org/logilab/astroid/src/3538affb576112b198837e9be187e986b666231d/bases.py?at=default#cl-561
+
+I'm not certain how to fix it however - so far my attempts have broken the unit tests.
+","",""
+"issue_comment","50","pycqa","astroid","pylint-bot","2014-10-16 06:20:48","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Fix an infinite loop with decorator call chain inference, where the decorator returns itself. Closes issue #50.
+","",""
+"issue_comment","50","pycqa","astroid","pylint-bot","2014-10-16 06:26:41","_Original comment by_ **BitBucket: [carlio](http://bitbucket.org/carlio), GitHub: @carlio?**:
+
+---
+
+That was quick :)
+","",""

@@ -1,0 +1,1586 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,264,aio-libs,aioredis,thomasst,2017-07-06 11:32:42,Fixes https://github.com/aio-libs/aioredis/issues/249,start issue,Support PING in pubsub mode
+1,issue_closed,264,aio-libs,aioredis,popravich,2017-09-26 06:51:34,,closed issue,Support PING in pubsub mode
+2,pull_request_title,264,aio-libs,aioredis,thomasst,2017-07-06 11:32:42,Fixes https://github.com/aio-libs/aioredis/issues/249,282e8803f94eb1504920bb3d13f7717f9ec9175b,Support PING in pubsub mode
+3,pull_request_merged,264,aio-libs,aioredis,popravich,2017-09-26 06:51:34,Support PING in pubsub mode,6d62869fd4a418114b79939a2cde7496501c10fc,Pull request merge from closeio/aioredis:pubsub-ping to aio-libs/aioredis:master
+4,issue_comment,264,aio-libs,aioredis,codecov[bot],2017-07-17 15:21:50,"# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=h1) Report
+> Merging [#264](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=desc) into [master](https://codecov.io/gh/aio-libs/aioredis/commit/b5604b7d0f1557ca2f6d1a036e675fd7ce69a592?src=pr&el=desc) will **increase** coverage by `0.01%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/264/graphs/tree.svg?src=pr&token=THCDhqngRB&width=650&height=150)](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff            @@
+##           master    #264      +/-   ##
+=========================================
++ Coverage   96.88%   96.9%   +0.01%     
+=========================================
+  Files          57      57              
+  Lines        7450    7463      +13     
+  Branches      587     589       +2     
+=========================================
++ Hits         7218    7232      +14     
++ Misses        172     171       -1     
+  Partials       60      60
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/pubsub\_commands\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-dGVzdHMvcHVic3ViX2NvbW1hbmRzX3Rlc3QucHk=) | `100% <100%> (ø)` | :arrow_up: |
+| [examples/py34/connection.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-ZXhhbXBsZXMvcHkzNC9jb25uZWN0aW9uLnB5) | `93.01% <0%> (-0.17%)` | :arrow_down: |
+| [tests/sentinel\_failover\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-dGVzdHMvc2VudGluZWxfZmFpbG92ZXJfdGVzdC5weQ==) | `88.72% <0%> (+0.75%)` | :arrow_up: |
+| [aioredis/locks.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-YWlvcmVkaXMvbG9ja3MucHk=) | `100% <0%> (+4.34%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=footer). Last update [b5604b7...282e880](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+5,issue_comment,264,aio-libs,aioredis,thomasst,2017-07-17 15:25:31,"Just pushed some fixes. I also wanted to get your opinion on the return value of `ping()`. Normally it returns the string ""PONG"" (which Redis returns). However, in pubsub mode is returns a (lower case) ""pong"" message, so for consistency reasons I chose to return the ""PONG"" string. We might also want to consider returning nothing or True (the regular Python Redis library returns True). What do you think?",,
+6,issue_comment,264,aio-libs,aioredis,thomasst,2017-07-31 20:24:04,@popravich could you please take another look at this PR? Thanks!,,
+7,issue_comment,264,aio-libs,aioredis,popravich,2017-09-26 06:58:39,"Thanks,
+Sorry for long delay",,
+8,pull_request_commit_comment,264,aio-libs,aioredis,popravich,2017-07-12 07:31:14,"Try removing `ping` from `_PUBSUB_COMMANDS`, that is the reason why pool tests are failing",282e8803f94eb1504920bb3d13f7717f9ec9175b,"(None, '', u'aioredis/connection.py')"
+9,pull_request_commit_comment,264,aio-libs,aioredis,thomasst,2017-07-17 11:41:31,"This will fail then though:
+
+```
+        is_pubsub = command in _PUBSUB_COMMANDS
+        if self._in_pubsub and not is_pubsub:
+>           raise RedisError(""Connection in SUBSCRIBE mode"")
+E           aioredis.errors.RedisError: Connection in SUBSCRIBE mode
+
+aioredis/connection.py:274: RedisError
+```
+
+Any other suggestions?",282e8803f94eb1504920bb3d13f7717f9ec9175b,"(None, '', u'aioredis/connection.py')"
+10,pull_request_commit_comment,264,aio-libs,aioredis,popravich,2017-07-17 11:54:37,"Yes, it will fail.
+You can extend condition of that `if` to something like:
+```python
+if self._in_pubsub and not (is_pubsub or is_ping):
+    ...
+```",282e8803f94eb1504920bb3d13f7717f9ec9175b,"(None, '', u'aioredis/connection.py')"
+11,pull_request_commit,264,aio-libs,aioredis,thomasst,2017-07-06 11:29:34,Support PING in pubsub mode,861a139832a007396b4f4d698640006d09a1704e,
+12,pull_request_commit,264,aio-libs,aioredis,thomasst,2017-07-17 15:21:12,Fixes,f2c684f56a1a435b8f1395c234464527e0f3e792,
+13,pull_request_commit,264,aio-libs,aioredis,thomasst,2017-07-17 17:02:11,Add Redis version requirement,282e8803f94eb1504920bb3d13f7717f9ec9175b,
+0,issue_title,294,aio-libs,aioredis,pyup-bot,2017-09-26 07:05:23,"
+There's a new version of [pytest-xdist](https://pypi.python.org/pypi/pytest-xdist) available.
+You are currently using **1.18.1**. I have updated it to **1.20.0**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pytest-xdist"">PyPI</a> | <a href=""https://pyup.io/changelogs/pytest-xdist/"">Changelog</a> | <a href=""https://github.com/pytest-dev/pytest-xdist"">Repo</a> 
+
+
+
+### Changelog
+> 
+>### 1.19.1
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Fix crash when transferring internal pytest warnings from workers to the
+>  master node. (`214 &lt;https://github.com/pytest-dev/pytest-
+>  xdist/issues/214&gt;`_)
+
+
+
+
+>### 1.19.0
+
+>================================
+
+>Deprecations and Removals
+>-------------------------
+
+>- ``--boxed`` functionality has been moved to a separate plugin, `pytest-forked
+>  &lt;https://github.com/pytest-dev/pytest-forked&gt;`_. This release now depends on
+>  `` pytest-forked`` and provides ``--boxed`` as a backward compatibility
+>  option. (`1 &lt;https://github.com/pytest-dev/pytest-xdist/issues/1&gt;`_)
+
+
+>Features
+>--------
+
+>- New ``--dist=loadscope`` option: sends group of related tests to the same
+>  worker. Tests are grouped by module for test functions and by class for test
+>  methods. See ``README.rst`` for more information. (`191 &lt;https://github.com
+>  /pytest-dev/pytest-xdist/issues/191&gt;`_)
+
+>- Warnings are now properly transferred from workers to the master node. (`92
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/92&gt;`_)
+
+
+>Bug Fixes
+>---------
+
+>- Fix serialization of native tracebacks (``--tb=native``). (`196
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/196&gt;`_)
+
+
+
+
+>### 1.18.2
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Removal of unnecessary dependency on incorrect version of py. (`105
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/105&gt;`_)
+
+>- Fix bug in internal event-loop error handler in the master node. This bug
+>  would shadow the original errors making extremely hard/impossible for users
+>  to diagnose the problem properly. (`175 &lt;https://github.com/pytest-
+>  dev/pytest-xdist/issues/175&gt;`_)
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",start issue,Update pytest-xdist to 1.20.0
+1,issue_closed,294,aio-libs,aioredis,popravich,2017-09-26 07:06:04,,closed issue,Update pytest-xdist to 1.20.0
+2,pull_request_title,294,aio-libs,aioredis,pyup-bot,2017-09-26 07:05:23,"
+There's a new version of [pytest-xdist](https://pypi.python.org/pypi/pytest-xdist) available.
+You are currently using **1.18.1**. I have updated it to **1.20.0**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pytest-xdist"">PyPI</a> | <a href=""https://pyup.io/changelogs/pytest-xdist/"">Changelog</a> | <a href=""https://github.com/pytest-dev/pytest-xdist"">Repo</a> 
+
+
+
+### Changelog
+> 
+>### 1.19.1
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Fix crash when transferring internal pytest warnings from workers to the
+>  master node. (`214 &lt;https://github.com/pytest-dev/pytest-
+>  xdist/issues/214&gt;`_)
+
+
+
+
+>### 1.19.0
+
+>================================
+
+>Deprecations and Removals
+>-------------------------
+
+>- ``--boxed`` functionality has been moved to a separate plugin, `pytest-forked
+>  &lt;https://github.com/pytest-dev/pytest-forked&gt;`_. This release now depends on
+>  `` pytest-forked`` and provides ``--boxed`` as a backward compatibility
+>  option. (`1 &lt;https://github.com/pytest-dev/pytest-xdist/issues/1&gt;`_)
+
+
+>Features
+>--------
+
+>- New ``--dist=loadscope`` option: sends group of related tests to the same
+>  worker. Tests are grouped by module for test functions and by class for test
+>  methods. See ``README.rst`` for more information. (`191 &lt;https://github.com
+>  /pytest-dev/pytest-xdist/issues/191&gt;`_)
+
+>- Warnings are now properly transferred from workers to the master node. (`92
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/92&gt;`_)
+
+
+>Bug Fixes
+>---------
+
+>- Fix serialization of native tracebacks (``--tb=native``). (`196
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/196&gt;`_)
+
+
+
+
+>### 1.18.2
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Removal of unnecessary dependency on incorrect version of py. (`105
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/105&gt;`_)
+
+>- Fix bug in internal event-loop error handler in the master node. This bug
+>  would shadow the original errors making extremely hard/impossible for users
+>  to diagnose the problem properly. (`175 &lt;https://github.com/pytest-
+>  dev/pytest-xdist/issues/175&gt;`_)
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",71ca5a7d99e4ce2bd3ffa2f832ff4bac4034dc74,Update pytest-xdist to 1.20.0
+3,pull_request_merged,294,aio-libs,aioredis,popravich,2017-09-26 07:06:04,Update pytest-xdist to 1.20.0,27a14ad30e7b41b43733d989ed113b23848acbe2,Pull request merge from aio-libs/aioredis:pyup-update-pytest-xdist-1.18.1-to-1.20.0 to aio-libs/aioredis:pyup
+4,pull_request_commit,294,aio-libs,aioredis,pyup-bot,2017-09-26 07:05:22,Update pytest-xdist from 1.18.1 to 1.20.0,71ca5a7d99e4ce2bd3ffa2f832ff4bac4034dc74,
+0,issue_title,273,aio-libs,aioredis,pfreixes,2017-07-25 12:44:40,"The connection opened with the server uses a customized StreamReader
+that get rid of the double buffering between the operating system and
+the Redis parser. This also allows _aioredis_ to get rid of a current bug
+with abruptly terminated connections.
+
+Current implementation does not allow to keep giving support with
+pause/resume the transport if some watermark has been overflowed,
+the current implementation of hiredis does not publish the length of the
+buffer.
+
+Worth mentioning that doing a micro benchmark [1] the performance gains
+observed is a 5%. This has been tested only with the default Asyncio loop. IMHO will worth it a discussion if a _cython_ implementation will help for environments with _uvloop_ ( I think so ).
+
+[1] https://gist.github.com/pfreixes/e320b6f398aa7644c19188ccf2f443b1",start issue,Use a custom StreamrReader #271
+1,issue_closed,273,aio-libs,aioredis,popravich,2017-09-26 07:01:00,,closed issue,Use a custom StreamrReader #271
+2,pull_request_title,273,aio-libs,aioredis,pfreixes,2017-07-25 12:44:40,"The connection opened with the server uses a customized StreamReader
+that get rid of the double buffering between the operating system and
+the Redis parser. This also allows _aioredis_ to get rid of a current bug
+with abruptly terminated connections.
+
+Current implementation does not allow to keep giving support with
+pause/resume the transport if some watermark has been overflowed,
+the current implementation of hiredis does not publish the length of the
+buffer.
+
+Worth mentioning that doing a micro benchmark [1] the performance gains
+observed is a 5%. This has been tested only with the default Asyncio loop. IMHO will worth it a discussion if a _cython_ implementation will help for environments with _uvloop_ ( I think so ).
+
+[1] https://gist.github.com/pfreixes/e320b6f398aa7644c19188ccf2f443b1",b57e753339504e23ea365d59924c56fc6c1e72cc,Use a custom StreamrReader #271
+3,pull_request_merged,273,aio-libs,aioredis,popravich,2017-09-26 07:01:00,Use a custom StreamrReader #271,3ad42bc37f9032113c63aae7bb62cb1075c25c40,Pull request merge from pfreixes/aioredis:custom_stream_reader to aio-libs/aioredis:master
+4,issue_comment,273,aio-libs,aioredis,pfreixes,2017-07-25 13:15:55,"weird error with CI              
+> PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\aioredis.1712.stdout'
+
+Any clues @popravich?",,
+5,issue_comment,273,aio-libs,aioredis,popravich,2017-07-25 13:47:17,"Hmm...
+It seems that redis server process did not shut down clearly.
+I guess we can change this [line](https://github.com/aio-libs/aioredis/blob/master/tests/conftest.py#L492) to catch `OSError` instead of `FileNotFoundError`. Hopefully we won't consume whole worker's tmp space.",,
+6,issue_comment,273,aio-libs,aioredis,codecov[bot],2017-07-25 13:56:02,"# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=h1) Report
+> Merging [#273](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=desc) into [master](https://codecov.io/gh/aio-libs/aioredis/commit/b5604b7d0f1557ca2f6d1a036e675fd7ce69a592?src=pr&el=desc) will **decrease** coverage by `0.03%`.
+> The diff coverage is `96.72%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/273/graphs/tree.svg?height=150&width=650&token=THCDhqngRB&src=pr)](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master     #273      +/-   ##
+==========================================
+- Coverage   96.88%   96.85%   -0.04%     
+==========================================
+  Files          57       59       +2     
+  Lines        7450     7503      +53     
+  Branches      587      594       +7     
+==========================================
++ Hits         7218     7267      +49     
+- Misses        172      173       +1     
+- Partials       60       63       +3
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/pool\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvcG9vbF90ZXN0LnB5) | `98.29% <100%> (ø)` | :arrow_up: |
+| [tests/transaction\_commands\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvdHJhbnNhY3Rpb25fY29tbWFuZHNfdGVzdC5weQ==) | `100% <100%> (ø)` | :arrow_up: |
+| [tests/connection\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvY29ubmVjdGlvbl90ZXN0LnB5) | `100% <100%> (ø)` | :arrow_up: |
+| [tests/stream\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvc3RyZWFtX3Rlc3QucHk=) | `100% <100%> (ø)` | |
+| [aioredis/stream.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-YWlvcmVkaXMvc3RyZWFtLnB5) | `92.3% <92.3%> (ø)` | |
+| [tests/sentinel\_failover\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvc2VudGluZWxfZmFpbG92ZXJfdGVzdC5weQ==) | `86.46% <0%> (-1.51%)` | :arrow_down: |
+| [examples/py34/connection.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-ZXhhbXBsZXMvcHkzNC9jb25uZWN0aW9uLnB5) | `92.92% <0%> (-0.26%)` | :arrow_down: |
+| [aioredis/locks.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-YWlvcmVkaXMvbG9ja3MucHk=) | `100% <0%> (+4.34%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=footer). Last update [b5604b7...e0a5d68](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+7,issue_comment,273,aio-libs,aioredis,codecov[bot],2017-07-25 13:56:03,"# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=h1) Report
+> Merging [#273](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=desc) into [master](https://codecov.io/gh/aio-libs/aioredis/commit/b5604b7d0f1557ca2f6d1a036e675fd7ce69a592?src=pr&el=desc) will **increase** coverage by `0.06%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/273/graphs/tree.svg?width=650&height=150&src=pr&token=THCDhqngRB)](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master     #273      +/-   ##
+==========================================
++ Coverage   96.88%   96.94%   +0.06%     
+==========================================
+  Files          57       59       +2     
+  Lines        7450     7505      +55     
+  Branches      587      594       +7     
+==========================================
++ Hits         7218     7276      +58     
++ Misses        172      171       -1     
++ Partials       60       58       -2
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/pool\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvcG9vbF90ZXN0LnB5) | `98.29% <100%> (ø)` | :arrow_up: |
+| [tests/transaction\_commands\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvdHJhbnNhY3Rpb25fY29tbWFuZHNfdGVzdC5weQ==) | `100% <100%> (ø)` | :arrow_up: |
+| [aioredis/stream.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-YWlvcmVkaXMvc3RyZWFtLnB5) | `100% <100%> (ø)` | |
+| [tests/connection\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvY29ubmVjdGlvbl90ZXN0LnB5) | `100% <100%> (ø)` | :arrow_up: |
+| [tests/conftest.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvY29uZnRlc3QucHk=) | `89.97% <100%> (ø)` | :arrow_up: |
+| [tests/stream\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvc3RyZWFtX3Rlc3QucHk=) | `100% <100%> (ø)` | |
+| [examples/py34/connection.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-ZXhhbXBsZXMvcHkzNC9jb25uZWN0aW9uLnB5) | `92.92% <0%> (-0.26%)` | :arrow_down: |
+| [tests/sentinel\_failover\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree#diff-dGVzdHMvc2VudGluZWxfZmFpbG92ZXJfdGVzdC5weQ==) | `88.72% <0%> (+0.75%)` | :arrow_up: |
+| ... and [2 more](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=tree-more) | |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=footer). Last update [b5604b7...b57e753](https://codecov.io/gh/aio-libs/aioredis/pull/273?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+8,issue_comment,273,aio-libs,aioredis,pfreixes,2017-07-25 14:27:43,"Now weird problems in the other CI ... 
+
+> The command ""sudo tar xjf python-3.3.tar.bz2 --directory /"" failed and exited with 2 during .
+
+Can you restart the jobs?",,
+9,issue_comment,273,aio-libs,aioredis,pfreixes,2017-07-27 07:50:43,green at last ... @popravich let me know your thoughts when you have the chance.,,
+10,issue_comment,273,aio-libs,aioredis,popravich,2017-07-27 07:51:55,Yeah) give me few days,,
+11,issue_comment,273,aio-libs,aioredis,pfreixes,2017-08-06 15:11:03,"Any thought @popravich ? Im trying to move also the part of hiredis [1] but the project has not a lot activity recently.
+
+In any case, FYI I'll be out for two weeks and fewer chances to have an internet connection.
+
+
+[1] https://github.com/redis/hiredis-py/pull/61",,
+12,issue_comment,273,aio-libs,aioredis,popravich,2017-09-26 07:01:05,Thanks,,
+13,pull_request_commit_comment,273,aio-libs,aioredis,pfreixes,2017-07-25 12:47:36,"For the sake of compatibility and consistency with the current connection signature, the parser is not set in the `StreamReader` constructor. But if you believe that we can break that let's get rid the `parser` parameter and let's pass as a new argument of the `StreamReader` constructor",b57e753339504e23ea365d59924c56fc6c1e72cc,"(51, '', u'aioredis/connection.py')"
+14,pull_request_commit_comment,273,aio-libs,aioredis,pfreixes,2017-07-25 12:49:16,"We don't have visibility, at least for the `hiredis` version, of the `len` of the buffer. My plans will pass doing the proper MR to expose this property by the `hiredis-py` project, doesn't look a rocket science.  With that attribute, we can implement the proper pause/resume option.",b57e753339504e23ea365d59924c56fc6c1e72cc,"(28, '', u'aioredis/stream.py')"
+15,pull_request_commit_comment,273,aio-libs,aioredis,pfreixes,2017-07-25 12:51:17,My understanding here is that this code had a bug? Using the old code I had a _heisentest_.,b57e753339504e23ea365d59924c56fc6c1e72cc,"(5, '', u'tests/transaction_commands_test.py')"
+16,pull_request_commit,273,aio-libs,aioredis,pfreixes,2017-07-25 12:28:14,"Use a custom StreamrReader #271
+
+The connection opened with the server uses a customized StreamReader
+that get rid of the double buffering between the operating system and
+the Redis parser. This also allows aioredis to get rid of a current bug
+with abruptly terminated connections.
+
+Current implementation does not allow to keep giving support with
+pause/resume the transport if some watermark has been overflowed,
+the current implementation of hiredis does not publish the length of the
+buffer.",b2523e7dc6d7d40db9563e1cc5df2374bc53e750,
+17,pull_request_commit,273,aio-libs,aioredis,pfreixes,2017-07-25 13:55:44,Catch any OSError when redis server is shuted down in the tests,e0a5d68339ce2b406e50000b58704e21a187a18a,
+18,pull_request_commit,273,aio-libs,aioredis,pfreixes,2017-07-27 06:41:22,Increase stream coverage,701ec6336830f301ebfbf3d9631b9f41c6b06ecb,
+19,pull_request_commit,273,aio-libs,aioredis,pfreixes,2017-07-27 07:13:59,Flake8 issue,b57e753339504e23ea365d59924c56fc6c1e72cc,
+0,issue_title,293,aio-libs,aioredis,pyup-bot,2017-09-26 01:40:44,"
+There's a new version of [sphinx](https://pypi.python.org/pypi/sphinx) available.
+You are currently using **1.6.3**. I have updated it to **1.6.4**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/sphinx"">PyPI</a> | <a href=""https://pyup.io/changelogs/sphinx/"">Changelog</a> | <a href=""http://sphinx-doc.org/"">Homepage</a> 
+
+
+
+### Changelog
+> 
+>### 1.6.4
+
+>=====================================
+
+>Features added
+>--------------
+
+>* 3926: Add ``autodoc_warningiserror`` to suppress the behavior of ``-W``
+>  option during importing target modules on autodoc
+
+>Bugs fixed
+>----------
+
+>* 3924: docname lost after dynamically parsing RST in extension
+>* 3946: Typo in sphinx.sty (this was a bug with no effect in default context)
+>* :pep: and :rfc: does not supports ``default-role`` directive (refs: 3960)
+>* 3960: default_role = &#39;guilabel&#39; not functioning
+>* Missing ``texinputs_win/Makefile`` to be used in latexpdf builder on windows.
+>* 4026: nature: Fix macOS Safari scrollbar color
+>* 3877: Fix for C++ multiline signatures.
+>* 4006: Fix crash on parallel build
+>* 3969: private instance attributes causes AttributeError
+>* 4041: C++, remove extra name linking in function pointers.
+>* 4038: C, add missing documentation of ``member`` role.
+>* 4044: An empty multicolumn cell causes extra row height in PDF output
+>* 4049: Fix typo in output of sphinx-build -h
+>* 4062: hashlib.sha1() must take bytes, not unicode on Python 3
+>* Avoid indent after index entries in latex (refs: 4066)
+>* 4070: crashes when the warning message contains format strings
+>* 4067: Return non-zero exit status when make subprocess fails
+>* 4055: graphviz: the :align: option does not work for SVG output
+>* 4055: graphviz: the :align: center option does not work for latex output
+>* 4051: ``warn()`` function for HTML theme outputs &#39;None&#39; string
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",start issue,Update sphinx to 1.6.4
+1,issue_closed,293,aio-libs,aioredis,popravich,2017-09-26 07:05:43,,closed issue,Update sphinx to 1.6.4
+2,pull_request_title,293,aio-libs,aioredis,pyup-bot,2017-09-26 01:40:44,"
+There's a new version of [sphinx](https://pypi.python.org/pypi/sphinx) available.
+You are currently using **1.6.3**. I have updated it to **1.6.4**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/sphinx"">PyPI</a> | <a href=""https://pyup.io/changelogs/sphinx/"">Changelog</a> | <a href=""http://sphinx-doc.org/"">Homepage</a> 
+
+
+
+### Changelog
+> 
+>### 1.6.4
+
+>=====================================
+
+>Features added
+>--------------
+
+>* 3926: Add ``autodoc_warningiserror`` to suppress the behavior of ``-W``
+>  option during importing target modules on autodoc
+
+>Bugs fixed
+>----------
+
+>* 3924: docname lost after dynamically parsing RST in extension
+>* 3946: Typo in sphinx.sty (this was a bug with no effect in default context)
+>* :pep: and :rfc: does not supports ``default-role`` directive (refs: 3960)
+>* 3960: default_role = &#39;guilabel&#39; not functioning
+>* Missing ``texinputs_win/Makefile`` to be used in latexpdf builder on windows.
+>* 4026: nature: Fix macOS Safari scrollbar color
+>* 3877: Fix for C++ multiline signatures.
+>* 4006: Fix crash on parallel build
+>* 3969: private instance attributes causes AttributeError
+>* 4041: C++, remove extra name linking in function pointers.
+>* 4038: C, add missing documentation of ``member`` role.
+>* 4044: An empty multicolumn cell causes extra row height in PDF output
+>* 4049: Fix typo in output of sphinx-build -h
+>* 4062: hashlib.sha1() must take bytes, not unicode on Python 3
+>* Avoid indent after index entries in latex (refs: 4066)
+>* 4070: crashes when the warning message contains format strings
+>* 4067: Return non-zero exit status when make subprocess fails
+>* 4055: graphviz: the :align: option does not work for SVG output
+>* 4055: graphviz: the :align: center option does not work for latex output
+>* 4051: ``warn()`` function for HTML theme outputs &#39;None&#39; string
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",13e71a5f3aa32fad8dd8763f869a09b810bbecbd,Update sphinx to 1.6.4
+3,pull_request_merged,293,aio-libs,aioredis,popravich,2017-09-26 07:05:43,Update sphinx to 1.6.4,f435f42dc6269f96ceea9037a3f04766008d5912,Pull request merge from aio-libs/aioredis:pyup-update-sphinx-1.6.3-to-1.6.4 to aio-libs/aioredis:pyup
+4,issue_comment,293,aio-libs,aioredis,codecov[bot],2017-09-26 02:54:16,"# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=h1) Report
+> Merging [#293](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=desc) into [pyup](https://codecov.io/gh/aio-libs/aioredis/commit/adde78e873a84a51eafd6275925f0241463635b8?src=pr&el=desc) will **decrease** coverage by `0.01%`.
+> The diff coverage is `n/a`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/293/graphs/tree.svg?height=150&width=650&src=pr&token=THCDhqngRB)](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##             pyup     #293      +/-   ##
+==========================================
+- Coverage   96.93%   96.92%   -0.02%     
+==========================================
+  Files          57       57              
+  Lines        7449     7449              
+  Branches      587      587              
+==========================================
+- Hits         7221     7220       -1     
+  Misses        169      169              
+- Partials       59       60       +1
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/sentinel\_failover\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=tree#diff-dGVzdHMvc2VudGluZWxfZmFpbG92ZXJfdGVzdC5weQ==) | `87.96% <0%> (-0.76%)` | :arrow_down: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=footer). Last update [adde78e...13e71a5](https://codecov.io/gh/aio-libs/aioredis/pull/293?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+5,pull_request_commit,293,aio-libs,aioredis,pyup-bot,2017-09-26 01:40:43,Update sphinx from 1.6.3 to 1.6.4,13e71a5f3aa32fad8dd8763f869a09b810bbecbd,
+0,issue_title,286,aio-libs,aioredis,pyup-bot,2017-08-18 11:46:42,"
+There's a new version of [pytest-xdist](https://pypi.python.org/pypi/pytest-xdist) available.
+You are currently using **1.18.1**. I have updated it to **1.20.0**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pytest-xdist"">PyPI</a> | <a href=""https://pyup.io/changelogs/pytest-xdist/"">Changelog</a> | <a href=""https://github.com/pytest-dev/pytest-xdist"">Repo</a> 
+
+
+
+### Changelog
+> 
+>### 1.19.1
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Fix crash when transferring internal pytest warnings from workers to the
+>  master node. (`214 &lt;https://github.com/pytest-dev/pytest-
+>  xdist/issues/214&gt;`_)
+
+
+
+
+>### 1.19.0
+
+>================================
+
+>Deprecations and Removals
+>-------------------------
+
+>- ``--boxed`` functionality has been moved to a separate plugin, `pytest-forked
+>  &lt;https://github.com/pytest-dev/pytest-forked&gt;`_. This release now depends on
+>  `` pytest-forked`` and provides ``--boxed`` as a backward compatibility
+>  option. (`1 &lt;https://github.com/pytest-dev/pytest-xdist/issues/1&gt;`_)
+
+
+>Features
+>--------
+
+>- New ``--dist=loadscope`` option: sends group of related tests to the same
+>  worker. Tests are grouped by module for test functions and by class for test
+>  methods. See ``README.rst`` for more information. (`191 &lt;https://github.com
+>  /pytest-dev/pytest-xdist/issues/191&gt;`_)
+
+>- Warnings are now properly transferred from workers to the master node. (`92
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/92&gt;`_)
+
+
+>Bug Fixes
+>---------
+
+>- Fix serialization of native tracebacks (``--tb=native``). (`196
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/196&gt;`_)
+
+
+
+
+>### 1.18.2
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Removal of unnecessary dependency on incorrect version of py. (`105
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/105&gt;`_)
+
+>- Fix bug in internal event-loop error handler in the master node. This bug
+>  would shadow the original errors making extremely hard/impossible for users
+>  to diagnose the problem properly. (`175 &lt;https://github.com/pytest-
+>  dev/pytest-xdist/issues/175&gt;`_)
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",start issue,Update pytest-xdist to 1.20.0
+1,issue_closed,286,aio-libs,aioredis,popravich,2017-09-26 07:05:12,,closed issue,Update pytest-xdist to 1.20.0
+2,pull_request_title,286,aio-libs,aioredis,pyup-bot,2017-08-18 11:46:42,"
+There's a new version of [pytest-xdist](https://pypi.python.org/pypi/pytest-xdist) available.
+You are currently using **1.18.1**. I have updated it to **1.20.0**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pytest-xdist"">PyPI</a> | <a href=""https://pyup.io/changelogs/pytest-xdist/"">Changelog</a> | <a href=""https://github.com/pytest-dev/pytest-xdist"">Repo</a> 
+
+
+
+### Changelog
+> 
+>### 1.19.1
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Fix crash when transferring internal pytest warnings from workers to the
+>  master node. (`214 &lt;https://github.com/pytest-dev/pytest-
+>  xdist/issues/214&gt;`_)
+
+
+
+
+>### 1.19.0
+
+>================================
+
+>Deprecations and Removals
+>-------------------------
+
+>- ``--boxed`` functionality has been moved to a separate plugin, `pytest-forked
+>  &lt;https://github.com/pytest-dev/pytest-forked&gt;`_. This release now depends on
+>  `` pytest-forked`` and provides ``--boxed`` as a backward compatibility
+>  option. (`1 &lt;https://github.com/pytest-dev/pytest-xdist/issues/1&gt;`_)
+
+
+>Features
+>--------
+
+>- New ``--dist=loadscope`` option: sends group of related tests to the same
+>  worker. Tests are grouped by module for test functions and by class for test
+>  methods. See ``README.rst`` for more information. (`191 &lt;https://github.com
+>  /pytest-dev/pytest-xdist/issues/191&gt;`_)
+
+>- Warnings are now properly transferred from workers to the master node. (`92
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/92&gt;`_)
+
+
+>Bug Fixes
+>---------
+
+>- Fix serialization of native tracebacks (``--tb=native``). (`196
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/196&gt;`_)
+
+
+
+
+>### 1.18.2
+
+>================================
+
+>Bug Fixes
+>---------
+
+>- Removal of unnecessary dependency on incorrect version of py. (`105
+>  &lt;https://github.com/pytest-dev/pytest-xdist/issues/105&gt;`_)
+
+>- Fix bug in internal event-loop error handler in the master node. This bug
+>  would shadow the original errors making extremely hard/impossible for users
+>  to diagnose the problem properly. (`175 &lt;https://github.com/pytest-
+>  dev/pytest-xdist/issues/175&gt;`_)
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",8aaceca1cc3bf5121a0b2144d235f25e00cdfcb9,Update pytest-xdist to 1.20.0
+3,pull_request_commit,286,aio-libs,aioredis,pyup-bot,2017-08-18 11:46:41,Update pytest-xdist from 1.18.1 to 1.20.0,8aaceca1cc3bf5121a0b2144d235f25e00cdfcb9,
+0,issue_title,272,aio-libs,aioredis,pyup-bot,2017-07-21 07:44:51,"
+There's a new version of [pyenchant](https://pypi.python.org/pypi/pyenchant) available.
+You are currently using **1.6.8**. I have updated it to **1.6.11**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pyenchant"">PyPI</a> | <a href=""https://pyup.io/changelogs/pyenchant/"">Changelog</a> | <a href=""https://pythonhosted.org/pyenchant/"">Homepage</a> | <a href=""http://pythonhosted.org/pyenchant/"">Docs</a> 
+
+
+*I couldn't find a changelog for this release. Do you know where I can find one? [Tell me!](https://github.com/pyupio/changelogs/issues/new)*
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",start issue,Update pyenchant to 1.6.11
+1,issue_closed,272,aio-libs,aioredis,popravich,2017-09-26 07:03:55,,closed issue,Update pyenchant to 1.6.11
+2,pull_request_title,272,aio-libs,aioredis,pyup-bot,2017-07-21 07:44:51,"
+There's a new version of [pyenchant](https://pypi.python.org/pypi/pyenchant) available.
+You are currently using **1.6.8**. I have updated it to **1.6.11**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pyenchant"">PyPI</a> | <a href=""https://pyup.io/changelogs/pyenchant/"">Changelog</a> | <a href=""https://pythonhosted.org/pyenchant/"">Homepage</a> | <a href=""http://pythonhosted.org/pyenchant/"">Docs</a> 
+
+
+*I couldn't find a changelog for this release. Do you know where I can find one? [Tell me!](https://github.com/pyupio/changelogs/issues/new)*
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",5c46f3b3ec4221ea7f5b78ead4cd6a3f2cf0cbb6,Update pyenchant to 1.6.11
+3,pull_request_merged,272,aio-libs,aioredis,popravich,2017-09-26 07:03:55,Update pyenchant to 1.6.11,a32b54ce6696ef6f38086c533d400215f5173e26,Pull request merge from aio-libs/aioredis:pyup-update-pyenchant-1.6.8-to-1.6.11 to aio-libs/aioredis:pyup
+4,issue_comment,272,aio-libs,aioredis,codecov[bot],2017-07-21 08:12:45,"# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/272?src=pr&el=h1) Report
+> Merging [#272](https://codecov.io/gh/aio-libs/aioredis/pull/272?src=pr&el=desc) into [pyup](https://codecov.io/gh/aio-libs/aioredis/commit/67c46455a6286b9e0bb85b3e8407f6d61ed8d26b?src=pr&el=desc) will **not change** coverage.
+> The diff coverage is `n/a`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/272/graphs/tree.svg?token=THCDhqngRB&src=pr&height=150&width=650)](https://codecov.io/gh/aio-libs/aioredis/pull/272?src=pr&el=tree)
+
+```diff
+@@           Coverage Diff           @@
+##             pyup     #272   +/-   ##
+=======================================
+  Coverage   96.93%   96.93%           
+=======================================
+  Files          57       57           
+  Lines        7449     7449           
+  Branches      587      587           
+=======================================
+  Hits         7221     7221           
+  Misses        169      169           
+  Partials       59       59
+```
+
+
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/272?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/272?src=pr&el=footer). Last update [67c4645...5c46f3b](https://codecov.io/gh/aio-libs/aioredis/pull/272?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+5,pull_request_commit,272,aio-libs,aioredis,pyup-bot,2017-07-21 07:44:50,Update pyenchant from 1.6.8 to 1.6.11,5c46f3b3ec4221ea7f5b78ead4cd6a3f2cf0cbb6,
+0,issue_title,290,aio-libs,aioredis,pyup-bot,2017-09-07 17:46:15,"
+There's a new version of [pytest](https://pypi.python.org/pypi/pytest) available.
+You are currently using **3.1.3**. I have updated it to **3.2.2**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pytest"">PyPI</a> | <a href=""https://pyup.io/changelogs/pytest/"">Changelog</a> | <a href=""https://github.com/pytest-dev/pytest/issues"">Repo</a> | <a href=""http://pytest.org"">Homepage</a> 
+
+
+
+### Changelog
+> 
+>### 3.2.2
+
+>=========================
+
+>Bug Fixes
+>---------
+
+>- Calling the deprecated `request.getfuncargvalue()` now shows the source of
+>  the call. (`2681 &lt;https://github.com/pytest-dev/pytest/issues/2681&gt;`_)
+
+>- Allow tests declared as ``staticmethod`` to use fixtures. (`2699
+>  &lt;https://github.com/pytest-dev/pytest/issues/2699&gt;`_)
+
+>- Fixed edge-case during collection: attributes which raised ``pytest.fail``
+>  when accessed would abort the entire collection. (`2707
+>  &lt;https://github.com/pytest-dev/pytest/issues/2707&gt;`_)
+
+>- Fix ``ReprFuncArgs`` with mixed unicode and UTF-8 args. (`2731
+>  &lt;https://github.com/pytest-dev/pytest/issues/2731&gt;`_)
+
+
+>Improved Documentation
+>----------------------
+
+>- In examples on working with custom markers, add examples demonstrating the
+>  usage of ``pytest.mark.MARKER_NAME.with_args`` in comparison with
+>  ``pytest.mark.MARKER_NAME.__call__`` (`2604
+>  &lt;https://github.com/pytest-dev/pytest/issues/2604&gt;`_)
+
+>- In one of the simple examples, use `pytest_collection_modifyitems()` to skip
+>  tests based on a command-line option, allowing its sharing while preventing a
+>  user error when acessing `pytest.config` before the argument parsing. (`2653
+>  &lt;https://github.com/pytest-dev/pytest/issues/2653&gt;`_)
+
+
+>Trivial/Internal Changes
+>------------------------
+
+>- Fixed minor error in &#39;Good Practices/Manual Integration&#39; code snippet.
+>  (`2691 &lt;https://github.com/pytest-dev/pytest/issues/2691&gt;`_)
+
+>- Fixed typo in goodpractices.rst. (`2721
+>  &lt;https://github.com/pytest-dev/pytest/issues/2721&gt;`_)
+
+>- Improve user guidance regarding ``--resultlog`` deprecation. (`2739
+>  &lt;https://github.com/pytest-dev/pytest/issues/2739&gt;`_)
+
+
+
+
+>### 3.2.1
+
+>=========================
+
+>Bug Fixes
+>---------
+
+>- Fixed small terminal glitch when collecting a single test item. (`2579
+>  &lt;https://github.com/pytest-dev/pytest/issues/2579&gt;`_)
+
+>- Correctly consider ``/`` as the file separator to automatically mark plugin
+>  files for rewrite on Windows. (`2591 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2591&gt;`_)
+
+>- Properly escape test names when setting ``PYTEST_CURRENT_TEST`` environment
+>  variable. (`2644 &lt;https://github.com/pytest-dev/pytest/issues/2644&gt;`_)
+
+>- Fix error on Windows and Python 3.6+ when ``sys.stdout`` has been replaced
+>  with a stream-like object which does not implement the full ``io`` module
+>  buffer protocol. In particular this affects ``pytest-xdist`` users on the
+>  aforementioned platform. (`2666 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2666&gt;`_)
+
+
+>Improved Documentation
+>----------------------
+
+>- Explicitly document which pytest features work with ``unittest``. (`2626
+>  &lt;https://github.com/pytest-dev/pytest/issues/2626&gt;`_)
+
+
+
+
+>### 3.2.0
+
+>=========================
+
+>Deprecations and Removals
+>-------------------------
+
+>- ``pytest.approx`` no longer supports ``&gt;``, ``&gt;=``, ``&lt;`` and ``&lt;=``
+>  operators to avoid surprising/inconsistent behavior. See `the docs
+>  &lt;https://docs.pytest.org/en/latest/builtin.htmlpytest.approx&gt;`_ for more
+>  information. (`2003 &lt;https://github.com/pytest-dev/pytest/issues/2003&gt;`_)
+
+>- All old-style specific behavior in current classes in the pytest&#39;s API is
+>  considered deprecated at this point and will be removed in a future release.
+>  This affects Python 2 users only and in rare situations. (`2147
+>  &lt;https://github.com/pytest-dev/pytest/issues/2147&gt;`_)
+
+>- A deprecation warning is now raised when using marks for parameters
+>  in ``pytest.mark.parametrize``. Use ``pytest.param`` to apply marks to
+>  parameters instead. (`2427 &lt;https://github.com/pytest-dev/pytest/issues/2427&gt;`_)
+
+
+>Features
+>--------
+
+>- Add support for numpy arrays (and dicts) to approx. (`1994
+>  &lt;https://github.com/pytest-dev/pytest/issues/1994&gt;`_)
+
+>- Now test function objects have a ``pytestmark`` attribute containing a list
+>  of marks applied directly to the test function, as opposed to marks inherited
+>  from parent classes or modules. (`2516 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2516&gt;`_)
+
+>- Collection ignores local virtualenvs by default; `--collect-in-virtualenv`
+>  overrides this behavior. (`2518 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2518&gt;`_)
+
+>- Allow class methods decorated as ``staticmethod`` to be candidates for
+>  collection as a test function. (Only for Python 2.7 and above. Python 2.6
+>  will still ignore static methods.) (`2528 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2528&gt;`_)
+
+>- Introduce ``mark.with_args`` in order to allow passing functions/classes as
+>  sole argument to marks. (`2540 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2540&gt;`_)
+
+>- New ``cache_dir`` ini option: sets the directory where the contents of the
+>  cache plugin are stored. Directory may be relative or absolute path: if relative path, then
+>  directory is created relative to ``rootdir``, otherwise it is used as is.
+>  Additionally path may contain environment variables which are expanded during
+>  runtime. (`2543 &lt;https://github.com/pytest-dev/pytest/issues/2543&gt;`_)
+
+>- Introduce the ``PYTEST_CURRENT_TEST`` environment variable that is set with
+>  the ``nodeid`` and stage (``setup``, ``call`` and ``teardown``) of the test
+>  being currently executed. See the `documentation
+>  &lt;https://docs.pytest.org/en/latest/example/simple.htmlpytest-current-test-
+>  environment-variable&gt;`_ for more info. (`2583 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2583&gt;`_)
+
+>- Introduced ``pytest.mark.filterwarnings`` mark which allows overwriting the
+>  warnings filter on a per test, class or module level. See the `docs
+>  &lt;https://docs.pytest.org/en/latest/warnings.htmlpytest-mark-
+>  filterwarnings&gt;`_ for more information. (`2598 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2598&gt;`_)
+
+>- ``--last-failed`` now remembers forever when a test has failed and only
+>  forgets it if it passes again. This makes it easy to fix a test suite by
+>  selectively running files and fixing tests incrementally. (`2621
+>  &lt;https://github.com/pytest-dev/pytest/issues/2621&gt;`_)
+
+>- New ``pytest_report_collectionfinish`` hook which allows plugins to add
+>  messages to the terminal reporting after collection has been finished
+>  successfully. (`2622 &lt;https://github.com/pytest-dev/pytest/issues/2622&gt;`_)
+
+>- Added support for `PEP-415&#39;s &lt;https://www.python.org/dev/peps/pep-0415/&gt;`_
+>  ``Exception.__suppress_context__``. Now if a ``raise exception from None`` is
+>  caught by pytest, pytest will no longer chain the context in the test report.
+>  The behavior now matches Python&#39;s traceback behavior. (`2631
+>  &lt;https://github.com/pytest-dev/pytest/issues/2631&gt;`_)
+
+>- Exceptions raised by ``pytest.fail``, ``pytest.skip`` and ``pytest.xfail``
+>  now subclass BaseException, making them harder to be caught unintentionally
+>  by normal code. (`580 &lt;https://github.com/pytest-dev/pytest/issues/580&gt;`_)
+
+
+>Bug Fixes
+>---------
+
+>- Set ``stdin`` to a closed ``PIPE`` in ``pytester.py.Testdir.popen()`` for
+>  avoid unwanted interactive ``pdb`` (`2023 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2023&gt;`_)
+
+>- Add missing ``encoding`` attribute to ``sys.std*`` streams when using
+>  ``capsys`` capture mode. (`2375 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2375&gt;`_)
+
+>- Fix terminal color changing to black on Windows if ``colorama`` is imported
+>  in a ``conftest.py`` file. (`2510 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2510&gt;`_)
+
+>- Fix line number when reporting summary of skipped tests. (`2548
+>  &lt;https://github.com/pytest-dev/pytest/issues/2548&gt;`_)
+
+>- capture: ensure that EncodedFile.name is a string. (`2555
+>  &lt;https://github.com/pytest-dev/pytest/issues/2555&gt;`_)
+
+>- The options ``--fixtures`` and ``--fixtures-per-test`` will now keep
+>  indentation within docstrings. (`2574 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2574&gt;`_)
+
+>- doctests line numbers are now reported correctly, fixing `pytest-sugar122
+>  &lt;https://github.com/Frozenball/pytest-sugar/issues/122&gt;`_. (`2610
+>  &lt;https://github.com/pytest-dev/pytest/issues/2610&gt;`_)
+
+>- Fix non-determinism in order of fixture collection. Adds new dependency
+>  (ordereddict) for Python 2.6. (`920 &lt;https://github.com/pytest-
+>  dev/pytest/issues/920&gt;`_)
+
+
+>Improved Documentation
+>----------------------
+
+>- Clarify ``pytest_configure`` hook call order. (`2539
+>  &lt;https://github.com/pytest-dev/pytest/issues/2539&gt;`_)
+
+>- Extend documentation for testing plugin code with the ``pytester`` plugin.
+>  (`971 &lt;https://github.com/pytest-dev/pytest/issues/971&gt;`_)
+
+
+>Trivial/Internal Changes
+>------------------------
+
+>- Update help message for ``--strict`` to make it clear it only deals with
+>  unregistered markers, not warnings. (`2444 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2444&gt;`_)
+
+>- Internal code move: move code for pytest.approx/pytest.raises to own files in
+>  order to cut down the size of python.py (`2489 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2489&gt;`_)
+
+>- Renamed the utility function ``_pytest.compat._escape_strings`` to
+>  ``_ascii_escaped`` to better communicate the function&#39;s purpose. (`2533
+>  &lt;https://github.com/pytest-dev/pytest/issues/2533&gt;`_)
+
+>- Improve error message for CollectError with skip/skipif. (`2546
+>  &lt;https://github.com/pytest-dev/pytest/issues/2546&gt;`_)
+
+>- Emit warning about ``yield`` tests being deprecated only once per generator.
+>  (`2562 &lt;https://github.com/pytest-dev/pytest/issues/2562&gt;`_)
+
+>- Ensure final collected line doesn&#39;t include artifacts of previous write.
+>  (`2571 &lt;https://github.com/pytest-dev/pytest/issues/2571&gt;`_)
+
+>- Fixed all flake8 errors and warnings. (`2581 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2581&gt;`_)
+
+>- Added ``fix-lint`` tox environment to run automatic pep8 fixes on the code.
+>  (`2582 &lt;https://github.com/pytest-dev/pytest/issues/2582&gt;`_)
+
+>- Turn warnings into errors in pytest&#39;s own test suite in order to catch
+>  regressions due to deprecations more promptly. (`2588
+>  &lt;https://github.com/pytest-dev/pytest/issues/2588&gt;`_)
+
+>- Show multiple issue links in CHANGELOG entries. (`2620
+>  &lt;https://github.com/pytest-dev/pytest/issues/2620&gt;`_)
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",start issue,Update pytest to 3.2.2
+1,issue_closed,290,aio-libs,aioredis,popravich,2017-09-26 07:05:30,,closed issue,Update pytest to 3.2.2
+2,pull_request_title,290,aio-libs,aioredis,pyup-bot,2017-09-07 17:46:15,"
+There's a new version of [pytest](https://pypi.python.org/pypi/pytest) available.
+You are currently using **3.1.3**. I have updated it to **3.2.2**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/pytest"">PyPI</a> | <a href=""https://pyup.io/changelogs/pytest/"">Changelog</a> | <a href=""https://github.com/pytest-dev/pytest/issues"">Repo</a> | <a href=""http://pytest.org"">Homepage</a> 
+
+
+
+### Changelog
+> 
+>### 3.2.2
+
+>=========================
+
+>Bug Fixes
+>---------
+
+>- Calling the deprecated `request.getfuncargvalue()` now shows the source of
+>  the call. (`2681 &lt;https://github.com/pytest-dev/pytest/issues/2681&gt;`_)
+
+>- Allow tests declared as ``staticmethod`` to use fixtures. (`2699
+>  &lt;https://github.com/pytest-dev/pytest/issues/2699&gt;`_)
+
+>- Fixed edge-case during collection: attributes which raised ``pytest.fail``
+>  when accessed would abort the entire collection. (`2707
+>  &lt;https://github.com/pytest-dev/pytest/issues/2707&gt;`_)
+
+>- Fix ``ReprFuncArgs`` with mixed unicode and UTF-8 args. (`2731
+>  &lt;https://github.com/pytest-dev/pytest/issues/2731&gt;`_)
+
+
+>Improved Documentation
+>----------------------
+
+>- In examples on working with custom markers, add examples demonstrating the
+>  usage of ``pytest.mark.MARKER_NAME.with_args`` in comparison with
+>  ``pytest.mark.MARKER_NAME.__call__`` (`2604
+>  &lt;https://github.com/pytest-dev/pytest/issues/2604&gt;`_)
+
+>- In one of the simple examples, use `pytest_collection_modifyitems()` to skip
+>  tests based on a command-line option, allowing its sharing while preventing a
+>  user error when acessing `pytest.config` before the argument parsing. (`2653
+>  &lt;https://github.com/pytest-dev/pytest/issues/2653&gt;`_)
+
+
+>Trivial/Internal Changes
+>------------------------
+
+>- Fixed minor error in &#39;Good Practices/Manual Integration&#39; code snippet.
+>  (`2691 &lt;https://github.com/pytest-dev/pytest/issues/2691&gt;`_)
+
+>- Fixed typo in goodpractices.rst. (`2721
+>  &lt;https://github.com/pytest-dev/pytest/issues/2721&gt;`_)
+
+>- Improve user guidance regarding ``--resultlog`` deprecation. (`2739
+>  &lt;https://github.com/pytest-dev/pytest/issues/2739&gt;`_)
+
+
+
+
+>### 3.2.1
+
+>=========================
+
+>Bug Fixes
+>---------
+
+>- Fixed small terminal glitch when collecting a single test item. (`2579
+>  &lt;https://github.com/pytest-dev/pytest/issues/2579&gt;`_)
+
+>- Correctly consider ``/`` as the file separator to automatically mark plugin
+>  files for rewrite on Windows. (`2591 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2591&gt;`_)
+
+>- Properly escape test names when setting ``PYTEST_CURRENT_TEST`` environment
+>  variable. (`2644 &lt;https://github.com/pytest-dev/pytest/issues/2644&gt;`_)
+
+>- Fix error on Windows and Python 3.6+ when ``sys.stdout`` has been replaced
+>  with a stream-like object which does not implement the full ``io`` module
+>  buffer protocol. In particular this affects ``pytest-xdist`` users on the
+>  aforementioned platform. (`2666 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2666&gt;`_)
+
+
+>Improved Documentation
+>----------------------
+
+>- Explicitly document which pytest features work with ``unittest``. (`2626
+>  &lt;https://github.com/pytest-dev/pytest/issues/2626&gt;`_)
+
+
+
+
+>### 3.2.0
+
+>=========================
+
+>Deprecations and Removals
+>-------------------------
+
+>- ``pytest.approx`` no longer supports ``&gt;``, ``&gt;=``, ``&lt;`` and ``&lt;=``
+>  operators to avoid surprising/inconsistent behavior. See `the docs
+>  &lt;https://docs.pytest.org/en/latest/builtin.htmlpytest.approx&gt;`_ for more
+>  information. (`2003 &lt;https://github.com/pytest-dev/pytest/issues/2003&gt;`_)
+
+>- All old-style specific behavior in current classes in the pytest&#39;s API is
+>  considered deprecated at this point and will be removed in a future release.
+>  This affects Python 2 users only and in rare situations. (`2147
+>  &lt;https://github.com/pytest-dev/pytest/issues/2147&gt;`_)
+
+>- A deprecation warning is now raised when using marks for parameters
+>  in ``pytest.mark.parametrize``. Use ``pytest.param`` to apply marks to
+>  parameters instead. (`2427 &lt;https://github.com/pytest-dev/pytest/issues/2427&gt;`_)
+
+
+>Features
+>--------
+
+>- Add support for numpy arrays (and dicts) to approx. (`1994
+>  &lt;https://github.com/pytest-dev/pytest/issues/1994&gt;`_)
+
+>- Now test function objects have a ``pytestmark`` attribute containing a list
+>  of marks applied directly to the test function, as opposed to marks inherited
+>  from parent classes or modules. (`2516 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2516&gt;`_)
+
+>- Collection ignores local virtualenvs by default; `--collect-in-virtualenv`
+>  overrides this behavior. (`2518 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2518&gt;`_)
+
+>- Allow class methods decorated as ``staticmethod`` to be candidates for
+>  collection as a test function. (Only for Python 2.7 and above. Python 2.6
+>  will still ignore static methods.) (`2528 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2528&gt;`_)
+
+>- Introduce ``mark.with_args`` in order to allow passing functions/classes as
+>  sole argument to marks. (`2540 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2540&gt;`_)
+
+>- New ``cache_dir`` ini option: sets the directory where the contents of the
+>  cache plugin are stored. Directory may be relative or absolute path: if relative path, then
+>  directory is created relative to ``rootdir``, otherwise it is used as is.
+>  Additionally path may contain environment variables which are expanded during
+>  runtime. (`2543 &lt;https://github.com/pytest-dev/pytest/issues/2543&gt;`_)
+
+>- Introduce the ``PYTEST_CURRENT_TEST`` environment variable that is set with
+>  the ``nodeid`` and stage (``setup``, ``call`` and ``teardown``) of the test
+>  being currently executed. See the `documentation
+>  &lt;https://docs.pytest.org/en/latest/example/simple.htmlpytest-current-test-
+>  environment-variable&gt;`_ for more info. (`2583 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2583&gt;`_)
+
+>- Introduced ``pytest.mark.filterwarnings`` mark which allows overwriting the
+>  warnings filter on a per test, class or module level. See the `docs
+>  &lt;https://docs.pytest.org/en/latest/warnings.htmlpytest-mark-
+>  filterwarnings&gt;`_ for more information. (`2598 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2598&gt;`_)
+
+>- ``--last-failed`` now remembers forever when a test has failed and only
+>  forgets it if it passes again. This makes it easy to fix a test suite by
+>  selectively running files and fixing tests incrementally. (`2621
+>  &lt;https://github.com/pytest-dev/pytest/issues/2621&gt;`_)
+
+>- New ``pytest_report_collectionfinish`` hook which allows plugins to add
+>  messages to the terminal reporting after collection has been finished
+>  successfully. (`2622 &lt;https://github.com/pytest-dev/pytest/issues/2622&gt;`_)
+
+>- Added support for `PEP-415&#39;s &lt;https://www.python.org/dev/peps/pep-0415/&gt;`_
+>  ``Exception.__suppress_context__``. Now if a ``raise exception from None`` is
+>  caught by pytest, pytest will no longer chain the context in the test report.
+>  The behavior now matches Python&#39;s traceback behavior. (`2631
+>  &lt;https://github.com/pytest-dev/pytest/issues/2631&gt;`_)
+
+>- Exceptions raised by ``pytest.fail``, ``pytest.skip`` and ``pytest.xfail``
+>  now subclass BaseException, making them harder to be caught unintentionally
+>  by normal code. (`580 &lt;https://github.com/pytest-dev/pytest/issues/580&gt;`_)
+
+
+>Bug Fixes
+>---------
+
+>- Set ``stdin`` to a closed ``PIPE`` in ``pytester.py.Testdir.popen()`` for
+>  avoid unwanted interactive ``pdb`` (`2023 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2023&gt;`_)
+
+>- Add missing ``encoding`` attribute to ``sys.std*`` streams when using
+>  ``capsys`` capture mode. (`2375 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2375&gt;`_)
+
+>- Fix terminal color changing to black on Windows if ``colorama`` is imported
+>  in a ``conftest.py`` file. (`2510 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2510&gt;`_)
+
+>- Fix line number when reporting summary of skipped tests. (`2548
+>  &lt;https://github.com/pytest-dev/pytest/issues/2548&gt;`_)
+
+>- capture: ensure that EncodedFile.name is a string. (`2555
+>  &lt;https://github.com/pytest-dev/pytest/issues/2555&gt;`_)
+
+>- The options ``--fixtures`` and ``--fixtures-per-test`` will now keep
+>  indentation within docstrings. (`2574 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2574&gt;`_)
+
+>- doctests line numbers are now reported correctly, fixing `pytest-sugar122
+>  &lt;https://github.com/Frozenball/pytest-sugar/issues/122&gt;`_. (`2610
+>  &lt;https://github.com/pytest-dev/pytest/issues/2610&gt;`_)
+
+>- Fix non-determinism in order of fixture collection. Adds new dependency
+>  (ordereddict) for Python 2.6. (`920 &lt;https://github.com/pytest-
+>  dev/pytest/issues/920&gt;`_)
+
+
+>Improved Documentation
+>----------------------
+
+>- Clarify ``pytest_configure`` hook call order. (`2539
+>  &lt;https://github.com/pytest-dev/pytest/issues/2539&gt;`_)
+
+>- Extend documentation for testing plugin code with the ``pytester`` plugin.
+>  (`971 &lt;https://github.com/pytest-dev/pytest/issues/971&gt;`_)
+
+
+>Trivial/Internal Changes
+>------------------------
+
+>- Update help message for ``--strict`` to make it clear it only deals with
+>  unregistered markers, not warnings. (`2444 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2444&gt;`_)
+
+>- Internal code move: move code for pytest.approx/pytest.raises to own files in
+>  order to cut down the size of python.py (`2489 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2489&gt;`_)
+
+>- Renamed the utility function ``_pytest.compat._escape_strings`` to
+>  ``_ascii_escaped`` to better communicate the function&#39;s purpose. (`2533
+>  &lt;https://github.com/pytest-dev/pytest/issues/2533&gt;`_)
+
+>- Improve error message for CollectError with skip/skipif. (`2546
+>  &lt;https://github.com/pytest-dev/pytest/issues/2546&gt;`_)
+
+>- Emit warning about ``yield`` tests being deprecated only once per generator.
+>  (`2562 &lt;https://github.com/pytest-dev/pytest/issues/2562&gt;`_)
+
+>- Ensure final collected line doesn&#39;t include artifacts of previous write.
+>  (`2571 &lt;https://github.com/pytest-dev/pytest/issues/2571&gt;`_)
+
+>- Fixed all flake8 errors and warnings. (`2581 &lt;https://github.com/pytest-
+>  dev/pytest/issues/2581&gt;`_)
+
+>- Added ``fix-lint`` tox environment to run automatic pep8 fixes on the code.
+>  (`2582 &lt;https://github.com/pytest-dev/pytest/issues/2582&gt;`_)
+
+>- Turn warnings into errors in pytest&#39;s own test suite in order to catch
+>  regressions due to deprecations more promptly. (`2588
+>  &lt;https://github.com/pytest-dev/pytest/issues/2588&gt;`_)
+
+>- Show multiple issue links in CHANGELOG entries. (`2620
+>  &lt;https://github.com/pytest-dev/pytest/issues/2620&gt;`_)
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",e578705d3d4bbb21fd53a7fafe96e2f99dec0939,Update pytest to 3.2.2
+3,pull_request_merged,290,aio-libs,aioredis,popravich,2017-09-26 07:05:30,Update pytest to 3.2.2,0e5dbacbe7d6cb133f1a7b17ea3aa316e48672ba,Pull request merge from aio-libs/aioredis:pyup-update-pytest-3.1.3-to-3.2.2 to aio-libs/aioredis:pyup
+4,issue_comment,290,aio-libs,aioredis,codecov[bot],2017-09-07 20:07:22,"# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=h1) Report
+> Merging [#290](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=desc) into [pyup](https://codecov.io/gh/aio-libs/aioredis/commit/67c46455a6286b9e0bb85b3e8407f6d61ed8d26b?src=pr&el=desc) will **decrease** coverage by `0.02%`.
+> The diff coverage is `n/a`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/290/graphs/tree.svg?width=650&height=150&src=pr&token=THCDhqngRB)](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##             pyup     #290      +/-   ##
+==========================================
+- Coverage   96.96%   96.93%   -0.03%     
+==========================================
+  Files          57       57              
+  Lines        7449     7449              
+  Branches      587      587              
+==========================================
+- Hits         7223     7221       -2     
+- Misses        168      169       +1     
+- Partials       58       59       +1
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/conftest.py](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=tree#diff-dGVzdHMvY29uZnRlc3QucHk=) | `89.97% <0%> (-0.51%)` | :arrow_down: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=footer). Last update [67c4645...e578705](https://codecov.io/gh/aio-libs/aioredis/pull/290?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+5,pull_request_commit,290,aio-libs,aioredis,pyup-bot,2017-09-07 17:46:14,Update pytest from 3.1.3 to 3.2.2,e578705d3d4bbb21fd53a7fafe96e2f99dec0939,
+0,issue_title,249,aio-libs,aioredis,thomasst,2017-06-20 12:59:13,Redis supports PING in SUBSCRIBE mode (see https://redis.io/commands/ping for details) but aioredis unexpectedly fails with `aioredis.errors.RedisError: Connection in SUBSCRIBE mode`.,start issue,PING command should work in SUBSCRIBE mode
+1,issue_closed,249,aio-libs,aioredis,popravich,2017-09-26 06:51:34,,closed issue,PING command should work in SUBSCRIBE mode
+0,issue_title,275,aio-libs,aioredis,pyup-bot,2017-07-28 11:31:02,"
+There's a new version of [flake8](https://pypi.python.org/pypi/flake8) available.
+You are currently using **3.3.0**. I have updated it to **3.4.1**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/flake8"">PyPI</a> | <a href=""https://pyup.io/changelogs/flake8/"">Changelog</a> | <a href=""https://gitlab.com/pycqa/flake8"">Repo</a> 
+
+
+
+### Changelog
+> 
+>### 3.4.1
+
+>-------------------
+
+>You can view the `3.4.1 milestone`_ on GitLab for more details.
+
+>- Fix minor regression when users specify only a ``--select`` list with items
+>  in the enabled/extended select list.  (See also `GitLab354`_)
+
+>.. all links
+>.. _3.4.1 milestone:
+>    https://gitlab.com/pycqa/flake8/milestones/19
+
+>.. issue links
+>.. _GitLab354:
+>    https://gitlab.com/pycqa/flake8/issues/354
+
+>.. merge request links
+
+
+
+
+>### 3.4.0
+
+>-------------------
+
+>You can view the `3.4.0 milestone`_ on GitLab for more details.
+
+>- Refine logic around ``--select`` and ``--ignore`` when combined with the
+>  default values for each. (See also `GitLab318`_)
+
+>- Handle spaces as an alternate separate for error codes, e.g.,
+>  ``--ignore &#39;E123 E234&#39;``. (See also `GitLab329`_)
+
+>- Filter out empty select and ignore codes, e.g., ``--ignore E123,,E234``.
+>  (See also `GitLab330`_)
+
+>- Specify dependencies appropriately in ``setup.py`` (See also `Gitlab341_`)
+
+>- Fix bug in parsing ``--quiet`` and ``--verbose`` from config files.
+>  (See also `GitLab!193`_)
+
+>- Remove unused import of ``os`` in the git hook template (See also
+>  `GitLab!194`_)
+
+>.. all links
+>.. _3.4.0 milestone:
+>    https://gitlab.com/pycqa/flake8/milestones/18
+
+>.. issue links
+>.. _GitLab318:
+>    https://gitlab.com/pycqa/flake8/issues/318
+>.. _GitLab329:
+>    https://gitlab.com/pycqa/flake8/issues/329
+>.. _GitLab330:
+>    https://gitlab.com/pycqa/flake8/issues/330
+>.. _GitLab341:
+>    https://gitlab.com/pycqa/flake8/issues/341
+
+>.. merge request links
+>.. _GitLab!193:
+>    https://gitlab.com/pycqa/flake8/merge_requests/193
+>.. _GitLab!194:
+>    https://gitlab.com/pycqa/flake8/merge_requests/194
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",start issue,Update flake8 to 3.4.1
+1,issue_closed,275,aio-libs,aioredis,popravich,2017-09-26 07:04:11,,closed issue,Update flake8 to 3.4.1
+2,pull_request_title,275,aio-libs,aioredis,pyup-bot,2017-07-28 11:31:02,"
+There's a new version of [flake8](https://pypi.python.org/pypi/flake8) available.
+You are currently using **3.3.0**. I have updated it to **3.4.1**
+
+
+
+These links might come in handy:  <a href=""https://pypi.python.org/pypi/flake8"">PyPI</a> | <a href=""https://pyup.io/changelogs/flake8/"">Changelog</a> | <a href=""https://gitlab.com/pycqa/flake8"">Repo</a> 
+
+
+
+### Changelog
+> 
+>### 3.4.1
+
+>-------------------
+
+>You can view the `3.4.1 milestone`_ on GitLab for more details.
+
+>- Fix minor regression when users specify only a ``--select`` list with items
+>  in the enabled/extended select list.  (See also `GitLab354`_)
+
+>.. all links
+>.. _3.4.1 milestone:
+>    https://gitlab.com/pycqa/flake8/milestones/19
+
+>.. issue links
+>.. _GitLab354:
+>    https://gitlab.com/pycqa/flake8/issues/354
+
+>.. merge request links
+
+
+
+
+>### 3.4.0
+
+>-------------------
+
+>You can view the `3.4.0 milestone`_ on GitLab for more details.
+
+>- Refine logic around ``--select`` and ``--ignore`` when combined with the
+>  default values for each. (See also `GitLab318`_)
+
+>- Handle spaces as an alternate separate for error codes, e.g.,
+>  ``--ignore &#39;E123 E234&#39;``. (See also `GitLab329`_)
+
+>- Filter out empty select and ignore codes, e.g., ``--ignore E123,,E234``.
+>  (See also `GitLab330`_)
+
+>- Specify dependencies appropriately in ``setup.py`` (See also `Gitlab341_`)
+
+>- Fix bug in parsing ``--quiet`` and ``--verbose`` from config files.
+>  (See also `GitLab!193`_)
+
+>- Remove unused import of ``os`` in the git hook template (See also
+>  `GitLab!194`_)
+
+>.. all links
+>.. _3.4.0 milestone:
+>    https://gitlab.com/pycqa/flake8/milestones/18
+
+>.. issue links
+>.. _GitLab318:
+>    https://gitlab.com/pycqa/flake8/issues/318
+>.. _GitLab329:
+>    https://gitlab.com/pycqa/flake8/issues/329
+>.. _GitLab330:
+>    https://gitlab.com/pycqa/flake8/issues/330
+>.. _GitLab341:
+>    https://gitlab.com/pycqa/flake8/issues/341
+
+>.. merge request links
+>.. _GitLab!193:
+>    https://gitlab.com/pycqa/flake8/merge_requests/193
+>.. _GitLab!194:
+>    https://gitlab.com/pycqa/flake8/merge_requests/194
+
+
+
+
+
+
+
+
+*Got merge conflicts? Close this PR and delete the branch. I'll create a new PR for you.*
+
+Happy merging! 🤖
+",de00b4cb92f23b46eb7edd33d5acf75741d8fe8e,Update flake8 to 3.4.1
+3,pull_request_merged,275,aio-libs,aioredis,popravich,2017-09-26 07:04:11,Update flake8 to 3.4.1,10b32e4f14384470eff74829b2dff9e2b4ad298f,Pull request merge from aio-libs/aioredis:pyup-update-flake8-3.3.0-to-3.4.1 to aio-libs/aioredis:pyup
+4,pull_request_commit,275,aio-libs,aioredis,pyup-bot,2017-07-28 11:31:01,Update flake8 from 3.3.0 to 3.4.1,de00b4cb92f23b46eb7edd33d5acf75741d8fe8e,
+0,issue_title,295,aio-libs,aioredis,popravich,2017-09-26 07:55:26,,start issue,Update dependencies
+1,issue_closed,295,aio-libs,aioredis,popravich,2017-09-26 08:23:15,,closed issue,Update dependencies
+2,pull_request_title,295,aio-libs,aioredis,popravich,2017-09-26 07:55:26,,566591d2567df203cc60b7f4b5e63acafde2ede0,Update dependencies
+3,pull_request_merged,295,aio-libs,aioredis,popravich,2017-09-26 08:23:15,Update dependencies,580cf58a547a0b65f40e2cd2baf2f6ab657e517d,Pull request merge from aio-libs/aioredis:pyup to aio-libs/aioredis:master
+4,issue_comment,295,aio-libs,aioredis,codecov[bot],2017-09-26 08:31:05,"# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=h1) Report
+> Merging [#295](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=desc) into [master](https://codecov.io/gh/aio-libs/aioredis/commit/7119bc10b4b9fff2555fc55b797f9133cc2e72ae?src=pr&el=desc) will **increase** coverage by `0.01%`.
+> The diff coverage is `n/a`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/295/graphs/tree.svg?width=650&src=pr&token=THCDhqngRB&height=150)](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master     #295      +/-   ##
+==========================================
++ Coverage   96.82%   96.84%   +0.01%     
+==========================================
+  Files          59       59              
+  Lines        7538     7538              
+  Branches      599      599              
+==========================================
++ Hits         7299     7300       +1     
+- Misses        174      175       +1     
++ Partials       65       63       -2
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/sentinel\_failover\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=tree#diff-dGVzdHMvc2VudGluZWxfZmFpbG92ZXJfdGVzdC5weQ==) | `87.21% <0%> (+0.75%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=footer). Last update [7119bc1...566591d](https://codecov.io/gh/aio-libs/aioredis/pull/295?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+",,
+5,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-06-27 00:45:43,Update pytest-xdist from 1.17.1 to 1.18.0,1b5d78206b2f17211b7d3107209967778e0d753a,
+6,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-07-02 11:50:53,Update sphinx from 1.6.2 to 1.6.3,92a782fded1bc6bc501edf40565389bcaf9db666,
+7,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-07-04 16:13:56,Update pytest from 3.1.2 to 3.1.3,70df7257d43deacea5a18ed19982ee7dfd0efb3c,
+8,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-07-06 10:31:00,Update pytest-xdist from 1.18.0 to 1.18.1,2f9029a9c96fb3de24cb65cdadc5179b102912eb,
+9,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-07-21 07:44:50,Update pyenchant from 1.6.8 to 1.6.11,3f7f808697d9130d344206dd928dc999c0935527,
+10,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-07-28 11:31:01,Update flake8 from 3.3.0 to 3.4.1,eb4c885df38314854601072ff6df180a9210c0f4,
+11,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-09-07 17:46:14,Update pytest from 3.1.3 to 3.2.2,1807eb91eb21e8ec56b9d32f63dfff885391d9db,
+12,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-09-09 18:10:37,Update async-timeout from 1.2.1 to 1.4.0 (#291),c52fd3fdac6127ad8a714a65ca17143fe97b044c,
+13,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-09-26 01:40:43,Update sphinx from 1.6.3 to 1.6.4,afc7993bb90156d8487fc93150fbcbe95e6675f4,
+14,pull_request_commit,295,aio-libs,aioredis,pyup-bot,2017-09-26 07:05:22,Update pytest-xdist from 1.18.1 to 1.20.0,566591d2567df203cc60b7f4b5e63acafde2ede0,

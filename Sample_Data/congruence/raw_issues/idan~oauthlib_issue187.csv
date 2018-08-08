@@ -1,0 +1,102 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","187","idan","oauthlib","Ryan-K","2013-07-03 03:13:03","There's some issues with the way that realms are handled, but I think this change solves all of the use cases that I'm aware of. I'm not entirely sure what the `(not require_resource_owner and not request.realm)` condition supports and its very possible that this change breaks that.
+
+As of 0.4.2, the only condition that needs to be met is that the supplied realm is permitted by the supplied client_key. `required_realm` is never checked and the realm check could be bypassed entirely by simply not specifying a realm header!
+
+One could even argue that the header isn't necessary as the required realm is specified in the call to `verify_request`, client key is also known via the headers, and there's a `validate_requested_realm` provided that ensures that pair is valid.
+
+It's possible that there's an issue with the way that flask_oauthprovider is interacting with oauthlib, but this seems like a glaring issue. I understand that the Server is being refactored, but until that happens and flask_oauthprovider gets updated, this change will be necessary.
+","start issue","Check to ensure that the requested realm is actually the required realm"
+"issue_closed","187","idan","oauthlib","ib-lundgren","2013-07-09 17:15:24","","closed issue","Check to ensure that the requested realm is actually the required realm"
+"pull_request_title","187","idan","oauthlib","Ryan-K","2013-07-03 03:13:03","There's some issues with the way that realms are handled, but I think this change solves all of the use cases that I'm aware of. I'm not entirely sure what the `(not require_resource_owner and not request.realm)` condition supports and its very possible that this change breaks that.
+
+As of 0.4.2, the only condition that needs to be met is that the supplied realm is permitted by the supplied client_key. `required_realm` is never checked and the realm check could be bypassed entirely by simply not specifying a realm header!
+
+One could even argue that the header isn't necessary as the required realm is specified in the call to `verify_request`, client key is also known via the headers, and there's a `validate_requested_realm` provided that ensures that pair is valid.
+
+It's possible that there's an issue with the way that flask_oauthprovider is interacting with oauthlib, but this seems like a glaring issue. I understand that the Server is being refactored, but until that happens and flask_oauthprovider gets updated, this change will be necessary.
+","1daed280c95352b50094f706b48db352db9e89a1","Check to ensure that the requested realm is actually the required realm"
+"issue_comment","187","idan","oauthlib","lepture","2013-07-03 03:39:44","@Ryan-K There is no `Server` now. Check out https://github.com/idan/oauthlib/blob/master/oauthlib/oauth1/rfc5849/__init__.py
+","",""
+"issue_comment","187","idan","oauthlib","Ryan-K","2013-07-03 04:01:00","@lepture That is correct. As I stated, I'm aware that Server is going away. However, there's dependent projects that depend on the Server class provided by oauthlib. See: https://github.com/ib-lundgren/flask-oauthprovider/blob/master/flask_oauthprovider.py#L12
+
+Sadly, there's no branch for the existing 0.4.2 release for an update, so I had to open this request against master. I haven't looked at the status of the refactor, nor what the impact will be on dependent projects supporting OAuth1, but I suspect that addressing this issue on the 0.4.2 release is a good idea.
+
+In the meantime, I'm using the branch from my repo to resolve the issue.
+","",""
+"issue_comment","187","idan","oauthlib","lepture","2013-07-03 06:23:14","@Ryan-K I think @ib-lundgren would drop `flask_oauthprovider`, let's move to [flask-oauthlib](https://github.com/lepture/flask-oauthlib), the oauth1 provider is on oauth1 branch now.
+
+OAuth1 provider is not finished yet, there are some bugs in oauthlib now, and it will be ready after the next release of oauthlib.
+","",""
+"issue_comment","187","idan","oauthlib","Ryan-K","2013-07-04 00:04:48","Yeah, I trust that everyone will do what is best. The truth is that the state of OAuth support in python is really a mixed bag, so it's awesome seeing people making things better.
+
+There's many ways to implement things, and while flask_oauthprovider certainly has some issues, a bunch of people have been making updates recently and the latest versions are relatively stable, which is what's important for my current needs.
+
+Thankfully, this is all pretty modular so its pretty easy to swap out for flask-oauthlib... I'll certainly be watching it!
+
+Thanks again!
+","",""
+"issue_comment","187","idan","oauthlib","ib-lundgren","2013-07-04 00:49:45","As @lepture mentioned flask-oauthlib is the way forward. @lepture & Co know
+flask very well and are in a much better spot to create a great and easy to
+use extension than I will ever be with flask-oauthprovider. If you can
+transition over please do so :)
+
+I'll look into what I can do with flask-oauthprovider moving forward to not
+break existing implementations when I get back from Canada next week and am
+no longer working solely from an android phone...
+On Jul 4, 2013 1:09 AM, ""Ryan-K"" notifications@github.com wrote:
+
+> Yeah, I trust that everyone will do what is best. The truth is that the
+> state of OAuth support in python is really a mixed bag, so it's awesome
+> seeing people making things better.
+> 
+> There's many ways to implement things, and while flask_oauthprovider
+> certainly has some issues, a bunch of people have been making updates
+> recently and the latest versions are relatively stable, which is what's
+> important for my current needs.
+> 
+> Thankfully, this is all pretty modular so its pretty easy to swap out for
+> flask-oauthlib... I'll certainly be watching it!
+> 
+> Thanks again!
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/187#issuecomment-20452611
+> .
+","",""
+"issue_comment","187","idan","oauthlib","lepture","2013-07-05 03:46:50","@Ryan-K @ib-lundgren The oauth1 branch is merged to master now. HMAC-SHA1 signature method is working now,  RSA is on TODO list.
+
+This will be released after the release of oauthlib.
+","",""
+"issue_comment","187","idan","oauthlib","ib-lundgren","2013-07-06 18:08:23","Cool. Will ping you when I roll out 0.5 next week :)
+On Jul 5, 2013 4:47 AM, ""Hsiaoming Yang"" notifications@github.com wrote:
+
+> @Ryan-K https://github.com/Ryan-K @ib-lundgrenhttps://github.com/ib-lundgrenThe oauth1 branch is merged to master now. HMAC-SHA1 signature method is
+> working now, RSA is on TODO list.
+> 
+> This will be released after the release of oauthlib.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/187#issuecomment-20500294
+> .
+","",""
+"issue_comment","187","idan","oauthlib","ib-lundgren","2013-07-09 17:15:24","@lepture @Ryan-K oauthlib-0.5.0 is pushed now =)
+
+Closing this PR now. Will look into what I can do to not break compatibility on flask-oauthproviders side.
+","",""
+"issue_comment","187","idan","oauthlib","lepture","2013-07-10 10:51:26","@ib-lundgren @Ryan-K Last issue for 0.3.0: https://github.com/lepture/flask-oauthlib/issues/25
+","",""
+"issue_comment","187","idan","oauthlib","lepture","2013-07-10 11:46:43","0.3.0 is out.
+","",""
+"issue_comment","187","idan","oauthlib","ib-lundgren","2013-07-10 11:48:57","Awesome :)
+
+On Wed, Jul 10, 2013 at 12:46 PM, Hsiaoming Yang
+notifications@github.comwrote:
+
+> 0.3.0 is out.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/187#issuecomment-20736738
+> .
+","",""
+"pull_request_commit","187","idan","oauthlib","Ryan-K","2013-07-03 02:36:39","Check to ensure that the requested realm is actually the required realm","1daed280c95352b50094f706b48db352db9e89a1",""

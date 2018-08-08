@@ -1,0 +1,78 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","417","idan","oauthlib","bjmc","2016-04-25 17:26:37","This is especially important because the entire Request repr() is logged as part of debug logging in various places.
+","start issue","Improves sanitizing sensitive data from Request.__repr__"
+"issue_closed","417","idan","oauthlib","thedrow","2016-04-28 10:26:28","","closed issue","Improves sanitizing sensitive data from Request.__repr__"
+"pull_request_title","417","idan","oauthlib","bjmc","2016-04-25 17:26:37","This is especially important because the entire Request repr() is logged as part of debug logging in various places.
+","e99a15b0bfa1d620623f3a6dc639880503617141","Improves sanitizing sensitive data from Request.__repr__"
+"pull_request_merged","417","idan","oauthlib","thedrow","2016-04-28 10:26:28","Improves sanitizing sensitive data from Request.__repr__","26c9db82c059d9ed4affe25744bb7ab60cf7c4a5","Pull request merge from bjmc/oauthlib:sanitize-logging to idan/oauthlib:master"
+"issue_comment","417","idan","oauthlib","bjmc","2016-04-27 20:04:08","@thedrow If you have a chance, can you look at this? It's a pretty small change, and it has security implications.
+","",""
+"issue_comment","417","idan","oauthlib","rdegges","2016-05-05 20:54:49","Doh, this broke all my unit tests =D Took a while to figure out what was happening, exactly. But this makes sense. Gonna go rewrite them all =p
+","",""
+"issue_comment","417","idan","oauthlib","bjmc","2016-05-05 20:55:35","@rdegges My apologies! On the plus side, now you're not accidentally logging sensitive information.
+","",""
+"issue_comment","417","idan","oauthlib","rdegges","2016-05-05 21:29:44","Hmm, I think there may potentially? be some issues in the library affected by this. I'm trying to get my tests working again -- here's some output:
+
+``` python
+self = <tests.mocks.test_api_auth.ApiRequestAuthenticatorTest testMethod=test_basic_api_auth_invalid_credentials>                                                         [341/2458]
+
+    def test_basic_api_auth_invalid_credentials(self):
+        app = MagicMock()
+        app._client.auth.secret = 'fakeApiKeyProperties.secret'
+        app.href = 'HREF'
+        api_keys = MagicMock()
+        api_keys.get_key = lambda k, s=None: None
+        app.api_keys = api_keys
+        basic_auth = base64.b64encode('invalid_client_id:invalid_client_secret'.encode('utf-8'))
+        uri = 'https://example.com/get'
+        http_method = 'GET'
+        # body = {}
+        body = {'grant_type': 'client_credentials', 'scope': 'test1'}
+        headers = {'Authorization': b'Basic ' + basic_auth}
+        allowed_scopes = ['test1']
+
+        authenticator = ApiRequestAuthenticator(app)
+>       result = authenticator.authenticate(headers=headers, http_method=http_method, uri=uri, body=body, scopes=allowed_scopes)
+
+tests/mocks/test_api_auth.py:126:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+stormpath/api_auth.py:397: in authenticate
+    headers, http_method, uri, body, scopes, ttl)
+stormpath/api_auth.py:434: in _get_scheme_and_token
+    self.app, scopes, http_method, uri, body, headers, ttl)
+stormpath/api_auth.py:332: in _get_bearer_token
+    uri, http_method, body, headers, {})
+../../../../.virtualenvs/stormpath-sdk-python/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/endpoints/base.py:64: in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+../../../../.virtualenvs/stormpath-sdk-python/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/endpoints/token.py:100: in create_token_response
+    request, self.default_token_type)
+../../../../.virtualenvs/stormpath-sdk-python/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py:75: in create_token_response
+    self.validate_token_request(request)
+../../../../.virtualenvs/stormpath-sdk-python/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py:101: in validate_token_request
+    raise errors.InvalidClientError(request=request)
+../../../../.virtualenvs/stormpath-sdk-python/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/errors.py:43: in __init__
+    message += ' ' + repr(request)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[TypeError(""expected string or buffer"") raised in repr()] SafeRepr object at 0x1039af170>
+
+    def __repr__(self):
+        body = self.body
+        headers = self.headers.copy()
+        if body:
+>           body = SANITIZE_PATTERN.sub('\1<SANITIZED>', body)
+E           TypeError: expected string or buffer
+
+../../../../.virtualenvs/stormpath-sdk-python/lib/python2.7/site-packages/oauthlib/common.py:419: TypeError
+```
+
+It looks like a lot of my issue can be traced back to this: https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/errors.py#L43
+
+Does that make sense to you at all?
+","",""
+"issue_comment","417","idan","oauthlib","bjmc","2016-05-05 21:37:53","What's a `SafeRepr` ? I don't think that's part of oauthlib. It looks like it's throwing an error where the body is `not None` but also not a string/buffer object that `re.sub()` can operate on. Is there any chance you're replacing the body (or the whole request?) with a Mock object that's behaving oddly?
+","",""
+"issue_comment","417","idan","oauthlib","bjmc","2016-05-05 21:39:12","You've got `body = {'grant_type': 'client_credentials', 'scope': 'test1'}` are you sure that gets properly urlencoded into a string/unicode type?
+","",""
+"pull_request_commit","417","idan","oauthlib","bjmc","2016-04-25 17:11:04","Better sanitizing for common.Request.__repr__","28f5b265f782d07e6052f2e2be49d4b0e7208188",""
+"pull_request_commit","417","idan","oauthlib","bjmc","2016-04-25 17:22:43","Tests for new sanitization","e99a15b0bfa1d620623f3a6dc639880503617141",""

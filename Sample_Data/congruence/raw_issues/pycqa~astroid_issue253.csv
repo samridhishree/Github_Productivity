@@ -1,0 +1,46 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","253","pycqa","astroid","pylint-bot","2015-11-11 00:58:50","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+This method is now redundant, given the ast_from_class function in raw_building.  Should I move these tests to unittest_raw_building?  If so, the API is different: Manager.ast_from_class always returns a ClassDef node that is the child of whatever module it's in, while raw_building.ast_from_class returns only the class itself.  Should I just write new tests?
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/253
+","start issue","[2.0 bugs] unittest_manager ast_from_class tests"
+"issue_comment","253","pycqa","astroid","pylint-bot","2015-11-11 00:06:52","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I don't follow, what's the difference in the API between the two of them? Aren't they both returning a ClassDef?
+","",""
+"issue_comment","253","pycqa","astroid","pylint-bot","2015-11-11 00:12:32","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The primary difference is that the old nodes are attached to a module, and the new nodes aren't.
+","",""
+"issue_comment","253","pycqa","astroid","pylint-bot","2015-11-11 00:19:05","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Isn't attached later on by ast_from_object? I think API wise it would be better to attach it, maybe with another API. This would be useful for pylint and for other sorts of introspection.
+","",""
+"issue_comment","253","pycqa","astroid","pylint-bot","2015-11-11 02:22:11","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+In some cases, yes.  In general, no.  For ast_from_object (the only function that I'm sure shouldn't be an internal astroid API), if you pass it a module, you get back an AST with a Module node as its root.  If you pass it a class, you get back an AST with a ClassDef node as its root.  And so on.
+
+I think you and I are approaching this from slightly different points of view.  For static analysis, it probably makes sense to enforce that all ASTs have Module nodes as their roots.  However, I'm looking at this more from a code generation and transformation perspective, where changing, combining, splicing, etc. ASTs is useful.  For stuff like macros and refactoring, there's no reason that all ASTs need to be part of modules while the internal work is going on.  Thus, I don't want to restrict functions that could return general ASTs to return only ASTs rooted by Modules---there are possible consumers of these APIs (like Macropy!) that can use general ASTs.  It should be the consumer's responsibility to make sure it only gets ASTs it can handle, not the producer's.  For Pylint, this means that it shouldn't be calling ast_from_object on non-modules, presumably.  That said, I don't want to make it unduly difficult either so if I need to add a flag to control the behavior, I can.  We'll need to talk about the design, though.
+
+There are some other reasons for the current API.  First, the primary use for this code at the moment is producing ASTs from objects that don't have Python code.  Not all of these objects have introspectable modules so it's not even possible to ensure that all ASTs have Modules as roots.  Another possible application I have in mind is dealing with situations where the dynamic code is too complicated for static analysis, but in this case it will probably end up being called on individual objects, not necessarily entire modules.  Second, introspection is slow, and building an AST for a whole module when only an AST for a class is needed is inefficient, particularly if, for instance, you're planning to immediately attach it to another module.
+
+Two examples of how I'm using this right now is generating ASTs for containers of text/binary/number types (replacing const_factory) and in building the types for builtins, creating a detached ClassDef AST that I then add to the builtins module.
+","",""
+"issue_comment","253","pycqa","astroid","pylint-bot","2015-11-12 23:14:23","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Thanks, this definitely makes sense and we also had a couple of previous discussions about this anyway. The idea was that if ast_from_object gets a Python module, then for each node in the resulting AST, .root() must return the Module in question and this is where I wasn't sure that this is happening right now. Now knowing this, the test can be changed. 
+","",""

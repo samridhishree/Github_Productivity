@@ -1,0 +1,126 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","395","pycqa","astroid","sscherfke","2017-01-30 15:29:59","### Steps to reproduce
+1. Run pylint on this code:
+    ```python
+    import pandas
+    pandas.read_sql('spam', engine=None)['key'].value
+    ```
+    The actual SQL query or engine don't matter. It seems to be the `['key']` (maybe in combination with `.value`.
+
+### Current behavior
+```
+Traceback (most recent call last):
+  File "".../bin/pylint"", line 6, in <module>
+    sys.exit(pylint.run_pylint())
+  File "".../lib/python3.6/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File "".../lib/python3.6/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File "".../lib/python3.6/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File "".../lib/python3.6/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File "".../lib/python3.6/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File "".../lib/python3.6/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File "".../lib/python3.6/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File "".../lib/python3.6/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File "".../lib/python3.6/site-packages/pylint/checkers/typecheck.py"", line 612, in
+ visit_attribute
+    infered = list(node.expr.infer())
+  File "".../lib/python3.6/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File "".../lib/python3.6/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File "".../lib/python3.6/site-packages/astroid/inference.py"", line 260, in infer_subscript
+    assigned = value.getitem(index_value, context)
+  File "".../lib/python3.6/site-packages/astroid/scoped_nodes.py"", line 1523, in getitem
+    methods = dunder_lookup.lookup(self, '__getitem__')
+  File "".../lib/python3.6/site-packages/astroid/interpreter/dunder_lookup.py"", line 54, in lookup
+    return _class_lookup(node, name)
+  File "".../lib/python3.6/site-packages/astroid/interpreter/dunder_lookup.py"", line 67, in _class_lookup
+    target=node
+astroid.exceptions.AttributeInferenceError: '__getitem__' not found on <ClassDef.generator l.0 at 0x7f06c4310860>.
+```
+
+
+### Expected behavior
+
+No exception.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+1.5.0
+PyCQA/astroid@d0b5acdfebcdda5c949584c32a8cbc0f31d5cf25
+PyCQA/pylint@7daed7b8982480c868b0f642a5251f00ffb253c6","start issue","AttributeInferenceError: __getitem__ with Pandas"
+"issue_closed","395","pycqa","astroid","PCManticore","2017-03-01 10:11:28","","closed issue","AttributeInferenceError: __getitem__ with Pandas"
+"issue_comment","395","pycqa","astroid","degustaf","2017-01-30 15:41:33","@sscherfke I can see from your traceback that you are using Python3.6, which isn't officially supported yet.  Do you get the same error with other versions of Python?","",""
+"issue_comment","395","pycqa","astroid","sscherfke","2017-01-30 19:01:45","Haven’t tried yet – will do it tomorrow. But since Py36 support is on your roadmap anyways. ;-)","",""
+"issue_comment","395","pycqa","astroid","degustaf","2017-01-30 19:45:57","@sscherfke Not trying to suggest it won't get done.  Just trying to better understand the issue :)","",""
+"issue_comment","395","pycqa","astroid","ceridwen","2017-01-30 20:22:20","What version of pandas is this with?  I can't replicate this error on Python 2.7 or 3.5 with pandas 0.19.2. For now I'm tagging this issue with 3.6.","",""
+"issue_comment","395","pycqa","astroid","sscherfke","2017-01-31 07:39:34","Hm. I can reproduce this with the system's Python 2.7 and 3.5 as well:
+```console
+$ mktmpenv --python=/usr/bin/python3
+$ pip install pandas
+Successfully installed numpy-1.12.0 pandas-0.19.2 python-dateutil-2.6.0 pytz-2016.10
+$ pip install git+https://github.com/PyCQA/astroid@d0b5acdfebcdda5c949584c32a8cbc0f31d5cf25
+Successfully installed astroid-1.5.0 lazy-object-proxy-1.2.2 wrapt-1.10.8
+$ pip install git+https://github.com/PyCQA/pylint@7daed7b8982480c868b0f642a5251f00ffb253c6
+Successfully installed editdistance-0.3.1 isort-4.2.5 mccabe-0.6.1 pylint-2.0.0
+$ cat /tmp/pylinttest.py
+import pandas
+pandas.read_sql('spam', engine=None)['key'].value
+$ pylint --version
+pylint 2.0.0,
+astroid 1.5.0
+Python 3.5.2 (default, Oct 14 2016, 12:54:53)
+[GCC 6.2.1 20160916 (Red Hat 6.2.1-2)]
+$ pylint /tmp/pylinttest.py
+************* Module pylinttest
+W:  2, 0: Expression ""pandas.read_sql('spam', engine=None)['key'].value"" is assigned to nothing (expression-not-assigned)
+Traceback (most recent call last):
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/bin/pylint"", line 11, in <module>
+    load_entry_point('pylint==2.0.0', 'console_scripts', 'pylint')()
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/pylint/checkers/typecheck.py"", line 612, in visit_attribute
+    infered = list(node.expr.infer())
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/astroid/inference.py"", line 260, in infer_subscript
+    assigned = value.getitem(index_value, context)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 1523, in getitem
+    methods = dunder_lookup.lookup(self, '__getitem__')
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/astroid/interpreter/dunder_lookup.py"", line 54, in lookup
+    return _class_lookup(node, name)
+  File ""/.virtualenvs/tmp-b168b6a226f0cec/lib/python3.5/site-packages/astroid/interpreter/dunder_lookup.py"", line 67, in _class_lookup
+    target=node
+astroid.exceptions.AttributeInferenceError: '__getitem__' not found on <ClassDef.generator l.0 at 0x7fe311ffdbe0>.
+```","",""
+"issue_comment","395","pycqa","astroid","rr-","2017-02-05 14:01:39","Minimal example
+
+```python
+from typing import Dict
+
+def test(params: Dict[str, str]):
+    pass
+```
+","",""

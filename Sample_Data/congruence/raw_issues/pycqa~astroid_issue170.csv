@@ -1,0 +1,140 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","170","pycqa","astroid","pylint-bot","2015-08-16 22:39:18","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+In spending copious amounts of time debugging my patch, I've noticed that there are lots of decorators that obscure the names of the functions they contain and break introspection.  I think it would make debugging easier if the decorators all used functools.wraps or https://pypi.python.org/pypi/wrapt to make it clear what they're wrapping.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/170
+","start issue","Use functools.wraps or wrapt for decorators"
+"issue_closed","170","pycqa","astroid","pylint-bot","2015-12-09 05:54:29","","closed issue","Use functools.wraps or wrapt for decorators"
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-17 06:39:25","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+That would be great to have and it should be a pretty simple patch.
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-26 04:37:56","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I have it mostly ready using wrapt.  Two questions: directly converting path_wrapper to use wrapt like this:
+
+``` python
+@wrapt.decorator
+def path_wrapper(func, instance, args, kwargs):
+    """"""return the given infer function wrapped to handle the path""""""
+    # This assumes that context is always passed as a keyword argument.
+    context = kwargs.pop('context', None)
+    node, = args
+    if context is None:
+        context = contextmod.InferenceContext()
+    context.push(node)
+    yielded = set()
+    print(func, node, context, kwargs)
+    for res in func(node, context, **kwargs):
+        # unproxy only true instance, not const, tuple, dict...
+        if res.__class__ is Instance:
+            ares = res._proxied
+        else:
+            ares = res
+        if ares not in yielded:
+            yield res
+            yielded.add(ares)
+```
+
+Doesn't work because Python's late-binding closures mean that by the time the inner function is called, func is bound is to an object.  The long-term solution here is to not monkey-patch methods onto classes, but in the short run, what should I do?  The obvious easy solution is to turn path_wrapper into a class, which ought to change the binding behavior to eager instead of lazy.
+
+I'm not sure I understand the purpose of cachedproperty well enough to know what functionality it should have.  Looking at it, I think it wants to be a proxy of some sort.  Does it even behave like `@property`?  `@property` normally creates a data descriptor, while cachedproperty only overrides **get** so I think it will produce a non-data descriptor.
+
+Please tell me if I'm asking too many questions and you'd rather I just make decisions about picky implementation details on my own.
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-26 05:40:39","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+@cachedproperty is a non-data descriptor, hence decorated function is
+called the first time, store result in the instance's dictionnary, and
+later access will use this value which takes precedence over the descriptor.
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-26 08:31:35","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+You're not asking too many questions, it's actually a good thing to ask if you aren't sure about something. I'm planning to remove the monkey-patching of methods onto classes, hopefully in time for astroid 1.4. Regarding the patch, why not using functools.wraps? What benefits does wrapt bring to the table for this particular use case?
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-26 13:38:31","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+To preserve introspectability during debugging, mostly.   For instance, sometimes I want to examine things like the state of closure variables to make sure they are what I think they are. 
+
+For now, since you're changing the monkey-patching anyways, I'll just use functools.wraps.  Does cachedpropery need introspection support if it's not visible during the runtime?  I'm leaning against it. 
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-26 13:43:25","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+And wrapt allows that, to examine the state of the closure variables? I think that the cachedproperty doesn't need introspection support, could be left as it is.
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-26 14:05:44","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Yes.
+
+``` python
+
+import functools
+import inspect
+import wrapt
+
+@wrapt.decorator
+def wrapt_pass_through(wrapped, instance, args, kwargs):
+    return wrapped(*args, **kwargs)
+
+def wraps_pass_through(f, *args, **kwargs):
+    @functools.wraps
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+
+def foo():
+    a = 1
+    b = 2
+    def f():
+        return a + b
+    return f
+
+def wrapt_function(f):
+    return wrapt_pass_through(f)
+
+def wraps_function(f):
+    return wraps_pass_through(f)
+
+print(inspect.getclosurevars(foo()))
+print(inspect.getclosurevars(wrapt_function(foo())))
+print(inspect.getclosurevars(wraps_function(foo())))
+```
+
+If you run this script, the first two print statements will correctly print `ClosureVars(nonlocals={'a': 1, 'b': 2}, globals={}, builtins={}, unbound=set())`, while the third will crash with a TypeError because functools.wraps doesn't even return a normal function, it returns a partial object.  There are a variety of other interesting ways to crash when introspecting decorators made with functools.wraps.  It's also worth noting that because functools.wraps doesn't respect the descriptor protocol, it's possible to get into trouble by stacking decorators, though this is a theoretical concern, as far as I know, at the moment.
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-26 14:16:29","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The main reason I asked about cachedproperty is that it does limited introspection support (it copies `__name__` and uses a property for `__doc__`), but that's not even as complete as functools.wraps (which also handles `__module__`, `__qualname__`, and some other things).  So far I haven't needed to debug cachedproperty, though.
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-27 17:05:18","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Does this issue still needs to be opened or can we close it?
+","",""
+"issue_comment","170","pycqa","astroid","pylint-bot","2015-08-27 17:59:09","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Resolved by https://bitbucket.org/logilab/astroid/pull-requests/86/improve-decorator-introspection-using/diff
+","",""

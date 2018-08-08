@@ -1,0 +1,24 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","135","idan","oauthlib","taestone","2013-04-18 07:24:13","line 190 in oauthlib.draft25.tokens.py
+
+```
+ if request.scopes is not None:
+        token['scope'] = ' '.join(request.scopes)
+```
+
+if the client send scopes like ""scopes=read-only%20write"" in HTTP, this code make scope ""r e a d - o n l y   w r i t e""
+
+how about this such like in used def validate_scopes () in draft25.grant_types.py 
+     if request.scopes is not None:
+            token['scope'] = ' '.join(utils.scope_to_list(request.scopes)) 
+
+def validate_scopes () in draft25.grant_types.py 
+        if not request.scopes:
+            request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+                    self.request_validator.get_default_scopes(request.client_id, request))
+","start issue","scopes join in generating bearer token"
+"issue_closed","135","idan","oauthlib","taestone","2013-04-18 07:46:46","","closed issue","scopes join in generating bearer token"
+"issue_comment","135","idan","oauthlib","taestone","2013-04-18 07:46:46","It mentioned at issue #130 
+","",""
+"issue_comment","135","idan","oauthlib","ib-lundgren","2013-04-18 20:46:20","Ah yea sorry about that, will try and get around to roll out a point update in the nearish future.
+","",""

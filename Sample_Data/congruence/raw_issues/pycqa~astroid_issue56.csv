@@ -1,0 +1,124 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","56","pycqa","astroid","pylint-bot","2014-11-21 05:59:31","Originally reported by: **Chris O'Hara (BitBucket: [chris6f](http://bitbucket.org/chris6f))**
+
+---
+
+I get the following error when using `astroid==1.3.0` but not with `astroid==1.2.1`
+
+```
+import MySQLdb
+try:
+    ...
+except MySQLdb.IntegrityError:
+   ...
+```
+
+```
+Module 'MySQLdb' has no 'IntegrityError' member (no-member)
+```
+
+The `MySQLdb` module definitely does have the `IntegrityError` member
+
+```
+Python 2.7.8 (default, Oct 16 2014, 14:37:02) 
+[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.51)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> from MySQLdb import IntegrityError
+>>>
+```
+
+For reference:
+
+```
+pylint 1.3.1, 
+astroid 1.3.0, common 0.63.0
+Python 2.7.8 (default, Oct 16 2014, 14:37:02) 
+[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.51)]
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/56
+","start issue","Pylint error with astroid==1.3.0 but not with 1.2.1"
+"issue_closed","56","pycqa","astroid","pylint-bot","2015-12-09 05:52:36","","closed issue","Pylint error with astroid==1.3.0 but not with 1.2.1"
+"issue_comment","56","pycqa","astroid","pylint-bot","2014-11-21 23:22:12","_Original comment by_ **Lukas Solanka (BitBucket: [lsolanka](http://bitbucket.org/lsolanka), GitHub: @lsolanka?)**:
+
+---
+
+It looks like also the issue with using numpy functions has been re-introduced with 1.3.0
+
+```
+#!
+
+$ pylint --version
+pylint 1.3.1,
+astroid 1.3.1, common 0.63.0
+Python 2.7.8 (default, Aug 24 2014, 21:26:19)
+[GCC 4.2.1 Compatible Apple LLVM 5.1 (clang-503.0.40)]
+```
+
+```
+#!python
+import numpy as np
+
+a = np.arange(10)
+
+```
+
+```
+#!
+Module 'numpy' has no 'arange' member (no-member)
+```
+
+This does not happen with 1.2.1
+","",""
+"issue_comment","56","pycqa","astroid","pylint-bot","2014-11-22 10:43:13","_Original comment by_ **Torsten Marek (BitBucket: [tmarek](http://bitbucket.org/tmarek), GitHub: @tmarek?)**:
+
+---
+
+astroid does not import C extension from outside the stdlib any more, since the only way to inspect them is to import them into the running interpreter. This has many sideeffects, because arbitrary code can run in extensions on import.
+
+We could provide a whitelist that can be controlled by users to add trusted extensions. Thoughts?
+","",""
+"issue_comment","56","pycqa","astroid","pylint-bot","2014-11-22 10:47:32","_Original comment by_ **Torsten Marek (BitBucket: [tmarek](http://bitbucket.org/tmarek), GitHub: @tmarek?)**:
+
+---
+
+See https://bitbucket.org/logilab/pylint/issue/347/please-either-disable-or-document-dynamic for the background.
+
+```
+#!python
+
+>>> import numpy
+>>> numpy.arange.__module__
+'numpy.core.multiarray'
+>>> sys.modules['numpy.core.multiarray']
+<module 'numpy.core.multiarray' from '/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/numpy/core/multiarray.so'>
+
+```
+","",""
+"issue_comment","56","pycqa","astroid","pylint-bot","2014-11-22 11:57:50","_Original comment by_ **Chris O'Hara (BitBucket: [chris6f](http://bitbucket.org/chris6f))**:
+
+---
+
+Ok, so using `from _mysql_exceptions import IntegrityError` gets rid of the warning.
+
+I understand the reason for keeping pylint static, but can this be something that lives behind an option or flag? Pylint is telling me that my code is invalid and it isn't.
+","",""
+"issue_comment","56","pycqa","astroid","pylint-bot","2014-11-22 12:25:23","_Original comment by_ **Lukas Solanka (BitBucket: [lsolanka](http://bitbucket.org/lsolanka), GitHub: @lsolanka?)**:
+
+---
+
+To me it seems like a flag would be a simpler option. That way there is no need to maintain a whitelist.
+","",""
+"issue_comment","56","pycqa","astroid","pylint-bot","2014-11-22 12:45:23","_Original comment by_ **Torsten Marek (BitBucket: [tmarek](http://bitbucket.org/tmarek), GitHub: @tmarek?)**:
+
+---
+
+astroid will not maintain a whitelist itself. I'll add an API to astroid so clients can set a whitelist, and a flag to pylint that can be used to set it
+","",""
+"issue_comment","56","pycqa","astroid","pylint-bot","2014-11-22 13:52:35","_Original comment by_ **Torsten Marek (BitBucket: [tmarek](http://bitbucket.org/tmarek), GitHub: @tmarek?)**:
+
+---
+
+Fixed. The next PyLint release will have flags to control the loading of C extensions.
+","",""

@@ -1,0 +1,79 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","369","pycqa","astroid","mgilson","2016-10-17 16:53:05","### Steps to reproduce
+1. install `pytz`
+2. Run the following script through pylint:
+
+``` py
+""""""Demonstrate the false positive.""""""
+import pytz
+
+def show_error(timezone_name=None):
+    """"""Demonstrate the error.""""""
+    timezone = pytz.UTC
+    if timezone_name is not None:
+        timezone = pytz.timezone(timezone_name)
+    return timezone
+```
+
+Note that pylint isn't necessarily wrong here.  `pytz.timezone` is ""polymorphic"" in that it can return multiple types:
+
+``` py
+print(pytz.UTC is pytz.timezone('UTC'))  # True
+print(type(pytz.UTC) is type(pytz.timezone('UTC')))  # True
+print(type(pytz.UTC) is type(pytz.timezone('US/Eastern')))  # False
+```
+
+However, the type of `pytz.UTC` is interface compatible with any returned instance of `pytz.timezone` as far as I've ever been able to tell.
+### Current behavior
+
+Warning raised for the above script.
+
+```
+sandbox (pytz_brain)*$ pylint ~/sandbox/repro_error.py 
+No config file found, using default configuration
+************* Module repro_error
+R:  9, 8: Redefinition of timezone type from type to pytz.UTC (redefined-variable-type)
+```
+### Expected behavior
+
+It would be great if we could not have this error because `pytz.timezone` returns an instance that is interface compatible with `pytz.UTC`.
+
+Following some of the other examples in the astroid brain directory, I've hacked together a ""fix"" using the pylint API:
+
+``` py
+""""""Brains for helping silence pyline errors/warnings from pytz.""""""
+
+from astroid import MANAGER, register_module_extender
+from astroid.builder import AstroidBuilder
+
+
+def pytz_transform():
+    """"""Transform pytz so pylint is OK with it.""""""
+    return AstroidBuilder(MANAGER).string_build(""""""
+def timezone(timezone_name):
+    return pytz.UTC
+"""""")
+
+
+register_module_extender(MANAGER, 'pytz', pytz_transform)
+
+def register(linter):  # pylint: disable=unused-argument
+    """"""Register the plugin with the linter.""""""
+```
+
+This just tells pylint that the `pytz.timezone` always returns an instance of `pytz.UTC`.  I'm not sure if this will end up having _other_ consequences, but it seems to work OK for me (when I load it as an extension in my pylintrc file.
+### `python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""` output
+
+The above command isn't working in my virtual environment from anaconda (I'm not sure what voodoo they're doing here...).  However, `pylint --version` returns:
+
+``` sh
+$ pylint --version
+No config file found, using default configuration
+pylint 1.5.4, 
+astroid 1.4.7
+Python 2.7.12 |Anaconda 4.2.0 (x86_64)| (default, Jul  2 2016, 17:43:17) 
+[GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)]
+```
+","start issue","pytz ""false"" type change warning."
+"issue_closed","369","pycqa","astroid","PCManticore","2016-12-03 11:14:21","","closed issue","pytz ""false"" type change warning."
+"issue_comment","369","pycqa","astroid","PCManticore","2016-12-03 11:14:21","Feel free to disable this warning, it is going to be off by default in the next release, due to its inherent limitations.","",""

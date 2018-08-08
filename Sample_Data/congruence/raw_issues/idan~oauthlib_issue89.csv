@@ -1,0 +1,19 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","89","idan","oauthlib","warsaw","2013-01-05 13:49:06","So, one other thing I had to do with a recent port of code using oauth to oauthlib is that the client required the signed request be represented as a GET query string (i.e. $3.5.3 of RFC 5849).  AFAICT, Client doesn't provide an API to return such a string, so I had to write my own ""signature triplet to query"" conversion routine.
+
+It would probably be nicer if Client had a .sign_to_query() method which took the same inputs as .sign() but returned a $3.5.3 style query string instead of the url/signed_headers/body triplet.
+","start issue","Provide a ""sign to GET query url"" API"
+"issue_closed","89","idan","oauthlib","ib-lundgren","2013-02-07 22:29:42","","closed issue","Provide a ""sign to GET query url"" API"
+"issue_comment","89","idan","oauthlib","ib-lundgren","2013-01-06 21:35:44","It is already supported but probably not as obvious as it should be nor well documented.
+
+What you are looking for is the signature_type argument which if set to 'QUERY' will add the oauth parameters to the provided url. By default parameters are added to Authorization header as that is the recommended way, they may also be added to the body using SIGNATURE_TYPE_BODY or 'BODY'.
+
+```
+from oauthlib.oauth1 import Client, SIGNATURE_TYPE_QUERY
+oauth = Client(...., signature_type=SIGNATURE_TYPE_QUERY)
+# or if you rather hard code stuff
+oauth = Client(...., signature_type='QUERY')
+```
+
+If you are only looking for the query rather than the url I'm afraid you will need to parse it out.
+","",""

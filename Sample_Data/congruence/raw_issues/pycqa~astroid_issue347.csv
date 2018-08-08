@@ -1,0 +1,114 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","347","pycqa","astroid","glennmatthews","2016-07-14 15:24:35","### Steps to reproduce
+
+With astroid 1.5.0, various context managers are being flagged with spurious `no-member` exceptions, including `contextlib.closing` and `mock.patch`. Below is a trivial example
+
+test_no-member.py:
+
+``` python
+import contextlib
+import tarfile
+
+with contextlib.closing(tarfile.open('foo.tar', 'r')) as tarf:
+    tarf.getmember('foo.txt')
+
+import mock
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
+
+with mock.patch('sys.stdout', new_callable=StringIO.StringIO) as so:
+    output = so.getvalue()
+```
+
+pylint with astroid 1.4.7:
+
+``` bash
+$ pylint test_no-member.py --disable=all --enable=no-member
+$
+```
+
+pylint with astroid 'https://github.com/PyCQA/astroid/tarball/master#egg=astroid-master-1.5':
+
+``` bash
+$ pylint test_no-member.py --disable=all --enable=no-member
+************* Module test_no-member
+E:  5, 4: Instance of 'closing' has no 'getmember' member (no-member)
+E: 14,13: Instance of 'dict' has no 'getvalue' member (no-member)
+$
+```
+### `python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""` output
+
+`1.4.7` (passing)
+`1.5.0` (failing)
+","start issue","context managers incorrectly flagged ""no-member"" exception with 1.5.0, not seen in 1.4.7"
+"issue_comment","347","pycqa","astroid","glennmatthews","2016-07-19 17:28:17","This appears to be actually because astroid 1.5.0 is being smarter than 1.4.7, but not smart enough:
+
+1.5.0:
+
+``` python
+>>> node = astroid.extract_node('''
+... import contextlib
+... import tarfile
+... with contextlib.closing(tarfile.open('foo.tar', 'r')) as tarf:
+...     tarf.getmember('foo.txt')
+... ''')
+>>> attribute_node = node.body[0].value.func
+>>> instance = list(attribute_node.expr.infer())[0]
+>>> list(attribute_node.expr.infer())
+[<Instance of contextlib.closing at 0x4465778448>]
+```
+
+1.4.7:
+
+``` python
+>>> node = test_utils.extract_node('''
+... import contextlib
+... import tarfile
+... with contextlib.closing(tarfile.open('foo.tar', 'r')) as tarf:
+...     tarf.getmember('foo.txt')
+... ''')
+>>> attribute_node = node.body[0].value.func
+>>> list(attribute_node.expr.infer())
+[YES]
+```
+","",""
+"issue_comment","347","pycqa","astroid","glennmatthews","2016-07-19 18:52:38","More data with latest astroid:
+
+``` python
+class CM1(object):
+    def __init__(self, foo):
+        self.foo = foo
+
+    def __enter__(self):
+        return self.foo
+
+class CM2(object):
+    def __init__(self, _):
+        self.foo = 'foo'
+
+    def __enter__(self):
+        return self.foo
+
+with CM1('hello') as f:
+    f.lower()
+
+with CM2('hello') as f:
+    f.lower()
+```
+
+CM1 cannot be inferred but CM2 can:
+
+``` bash
+$ pylint test-infer-context.py --disable=all --enable=no-member -rn
+No config file found, using default configuration
+************* Module test-infer-context
+E: 16, 4: Instance of 'CM1' has no 'lower' member (no-member)
+$
+```
+","",""
+"issue_comment","347","pycqa","astroid","PCManticore","2016-07-20 07:14:01","Regarding contextlib.closing, there seems to be an edge case which we are missing here https://github.com/PyCQA/astroid/blob/master/astroid/protocols.py#L403. Also, from what I'm seeing, the building of the call context is wrong, since we don't provide the actual arguments of closing(), but the instance of closing() itself. Will look into it.
+
+Regarding your last example, this happens because astroid doesn't _yet_ understand instance's arguments. There is a long standing issue about this, it needs some attention, although the solution is non trivial, which is why I didn't have time to pursue it.
+","",""

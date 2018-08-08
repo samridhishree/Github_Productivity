@@ -1,0 +1,25 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","177","idan","oauthlib","masci","2013-06-08 13:02:47","As stated in the RFC6749, during the refresh process the authorization server may release a new refresh token: in those cases (like mine) the old refresh token must be discarded. I am currently removing the old refresh token inside the validator (`save_bearer_token` method), so far so good.
+
+To refresh a token I call `create_token_response` on a proper oauthlib server instance, thus triggering token validation in this order:
+- client is authenticated
+- grant_type is validated
+- scopes are checked and validated calling `confirm_scopes` on validator
+- `validate_refresh_token` is finally invoked
+
+Now the issue: if the refresh token does not exists (either because already used or actually invalid) the error raised is `InvalidScopeError`, infact `confirm_scopes` method from my validator tries to load the refresh token from the db (failing) before the call to `validate_refresh_token`.
+
+Am I missing something or the erorr raised is actually wrong in this specific case?
+","start issue","Providing wrong refresh token raises InvalidScopeError"
+"issue_closed","177","idan","oauthlib","ib-lundgren","2013-06-09 13:00:32","","closed issue","Providing wrong refresh token raises InvalidScopeError"
+"issue_comment","177","idan","oauthlib","ib-lundgren","2013-06-09 13:00:31","The error is wrong since the token validation should come before scope validation. Fixed that now.
+
+Also noticed that the error both on authentication and token was wrong. I've updated to
+
+Invalid/expired/revoked refresh token -> InvalidGrantError
+Authentication failure -> InvalidClientError
+
+which should reflect the spec. 
+","",""
+"issue_comment","177","idan","oauthlib","ib-lundgren","2013-06-09 13:01:41","This was just a quick fix. Will need to make sure the spec is properly matched with unittests.
+","",""

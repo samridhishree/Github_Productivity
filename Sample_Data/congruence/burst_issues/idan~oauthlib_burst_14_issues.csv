@@ -1,0 +1,228 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,127,idan,oauthlib,ayanamist,2013-03-23 18:05:59,"Current design will escape string twice.
+If we use `status=%E5%95%A6%E5%95%A6` as post body input, `Request.__init__` will make it `u""status=%E5%95%A6%E5%95%A6""`,
+then `oauth1.rfc5849.signature.collect_parameters()` will call `bodyparams = extract_params(body) or []`,
+then call `common.urldecode()`,
+then call `urlparse.parse_qsl(query, keep_blank_values=True)`.
+Here, `u""status=%E5%95%A6%E5%95%A6""` will become `[(u'status', u'\xe5\x95\xa6\xe5\x95\xa6')]`, now troubles comes in because `u'\xe5\x95\xa6\xe5\x95\xa6'` is a problematic unicode string.
+When normalizing it, it will be utf8-encoded again (from `common.quote` called by `oauth1.rfc5849.utils.escape`) and become `'\xc3\xa5\xc2\x95\xc2\xa6\xc3\xa5\xc2\x95\xc2\xa6'`.
+Now everything messed up, and calculated signature is wrong.
+
+So we must abandan unnecessary body encode because body in unicode only cause problem, also we should remove `query = query.decode('utf-8') if isinstance(query, bytes_type) else query` to keep our `str` result away from converting to `unicode`. `decode_params_utf8` will decode the `str` result to correct one, and make the final calculation right.
+
+The issue is not obvious because english words only use ascii characters which are safe after multple escaping.
+",start issue,Avoid escape string twice.
+1,issue_closed,127,idan,oauthlib,ib-lundgren,2013-03-26 18:08:12,,closed issue,Avoid escape string twice.
+2,pull_request_title,127,idan,oauthlib,ayanamist,2013-03-23 18:05:59,"Current design will escape string twice.
+If we use `status=%E5%95%A6%E5%95%A6` as post body input, `Request.__init__` will make it `u""status=%E5%95%A6%E5%95%A6""`,
+then `oauth1.rfc5849.signature.collect_parameters()` will call `bodyparams = extract_params(body) or []`,
+then call `common.urldecode()`,
+then call `urlparse.parse_qsl(query, keep_blank_values=True)`.
+Here, `u""status=%E5%95%A6%E5%95%A6""` will become `[(u'status', u'\xe5\x95\xa6\xe5\x95\xa6')]`, now troubles comes in because `u'\xe5\x95\xa6\xe5\x95\xa6'` is a problematic unicode string.
+When normalizing it, it will be utf8-encoded again (from `common.quote` called by `oauth1.rfc5849.utils.escape`) and become `'\xc3\xa5\xc2\x95\xc2\xa6\xc3\xa5\xc2\x95\xc2\xa6'`.
+Now everything messed up, and calculated signature is wrong.
+
+So we must abandan unnecessary body encode because body in unicode only cause problem, also we should remove `query = query.decode('utf-8') if isinstance(query, bytes_type) else query` to keep our `str` result away from converting to `unicode`. `decode_params_utf8` will decode the `str` result to correct one, and make the final calculation right.
+
+The issue is not obvious because english words only use ascii characters which are safe after multple escaping.
+",0402e92a4fff7c706da2542456fae099e14a81af,Avoid escape string twice.
+3,issue_comment,127,idan,oauthlib,ayanamist,2013-03-24 07:57:01,"It seems that travis failed on py3.x which i'm not familiar. Maybe add some conditional judgement?
+",,
+4,issue_comment,127,idan,oauthlib,ib-lundgren,2013-03-25 18:41:37,"Ah, the joys on encoding. A unicode string holding a urlencoded string which in turn is utf-8 encoded. 
+
+This was partly solved after some G+ discussion https://plus.google.com/113049880579473797656/posts/EdApFiwcczH but never got around to testing it properly.
+
+I think you are half way to a solution and did some experimentation myself too, unfortunately I don't have time to dig into it further today. Please have a look at https://github.com/idan/oauthlib/commit/faa5dfddf1ed1e5a53e42710ab86ca0d94e46a5f and see what you think.
+
+Am i correct in that the string you try to encode is 啦啦, i.e. two CJK characters?
+",,
+5,issue_comment,127,idan,oauthlib,ayanamist,2013-03-26 00:26:38,"@ib-lundgren Yes, they are chinese characters. The issue is not only affecting chinese but all unicode characters that can be escaped to %xx.
+I don't think faa5dfd will solve anything because i reproduce the issue on PY2 which pass your `not PY3`, everything is identical then.
+I'm a clinical medicine doctor so i don't have enough time to dig into this. If you also don't have time, considering add some warnings?
+",,
+6,issue_comment,127,idan,oauthlib,ib-lundgren,2013-03-26 09:56:49,"Thanks, just wanted to make sure.
+
+I'll be happy to debug it further. Would you be able to show me the code you have in which this fails (or at least the full debug output)? I just tested https://github.com/idan/oauthlib/commit/faa5dfd against twitter and managed to upload a status of 啦啦 just fine.
+
+Regarding the PY3 check I added a comment explaining why it is there in https://github.com/idan/oauthlib/commit/9495bfde357f9977891c551549fe4deec4f42a5d which basically boils down to different logic for parsing unicode in python 2 & 3.
+",,
+7,issue_comment,127,idan,oauthlib,ayanamist,2013-03-26 12:22:03,"@ib-lundgren In fact i have no codes directly calling oauthlib. oauthlib is used by requests which is used by twython. I use twython to post something. So the full traceback is impossible. I spend a whole afternoon tracing the problem here. Please review what i write down first in this issue.
+The whole project https://code.google.com/p/gabr/source/browse/
+The related commit https://code.google.com/p/gabr/source/detail?r=954a6a384908caf0db2d55864e7f3a9252456d64
+The related methods https://code.google.com/p/gabr/source/browse/application/views/status.py?r=3b1b61bf395e115d7ee2234ad9bba4dbdcb203cf#14
+In fact you also can use https://github.com/ryanmcgrath/twython/blob/master/core_examples/update_status.py this to reproduce, ensuring status=u""啦啦"" as function arguments.
+",,
+8,issue_comment,127,idan,oauthlib,ib-lundgren,2013-03-26 12:25:44,"Thanks, will look into it later this afternoon.
+
+Oh and regarding traceback, this should do it for oauthlib at least. Add it to your ""main"" method. Although I might have enough to go on from your links. 
+
+```
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+",,
+9,issue_comment,127,idan,oauthlib,ib-lundgren,2013-03-26 13:18:13,"I'm unable to reproduce this. I modified my [twitter example](https://gist.github.com/ib-lundgren/4487236) , replacing line 88-94 with the code below, and it happily posted ""啦啦"" and ""test啦啦"" to twitter
+
+```
+update= '啦啦'
+from twython import Twython
+t = Twython(app_key=key,
+        app_secret=secret,
+        oauth_token=access_token,
+        oauth_token_secret=token_secret)
+t.updateStatus(status=update)
+t.updateStatus(status=unicode('test') + unicode(update))
+```
+
+This was installed and run the following way, using the requests 0.14 that twython wants (required an import change to my example too).
+
+```
+~$ virtualenv unicode && source unicode/bin/activate
+(unicode)~$ git clone https://github.com/idan/oauthlib.git && cd oauthlib
+(unicode)~oauthlib/$ python setup.py install
+(unicode)~$ pip install twython
+```
+",,
+10,issue_comment,127,idan,oauthlib,ayanamist,2013-03-26 13:35:12,"OK, look over my old log, find something useful.
+
+```
+2013-03-24 01:41:45.912
+Before: status=%E5%95%A6%E5%95%A6 <type 'str'>
+After: [(u'status', u'\xe5\x95\xa6\xe5\x95\xa6')]
+  File ""/python27_runtime/python27_lib/versions/1/google/appengine/runtime/runtime.py"", line 151, in HandleRequest
+    error)
+  File ""/python27_runtime/python27_lib/versions/1/google/appengine/runtime/wsgi.py"", line 298, in HandleRequest
+    return WsgiRequest(environ, handler_name, url, post_data, error).Handle()
+  File ""/python27_runtime/python27_lib/versions/1/google/appengine/runtime/wsgi.py"", line 223, in Handle
+    result = handler(dict(self._environ), self._StartResponse)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/Flask-0.9-py2.7/flask/app.py"", line 1701, in __call__
+    return self.wsgi_app(environ, start_response)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/Flask-0.9-py2.7/flask/app.py"", line 1687, in wsgi_app
+    response = self.full_dispatch_request()
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/Flask-0.9-py2.7/flask/app.py"", line 1358, in full_dispatch_request
+    rv = self.dispatch_request()
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/Flask-0.9-py2.7/flask/app.py"", line 1344, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/application/utils/decorators.py"", line 11, in decorated_view
+    return func(*args, **kwargs)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/application/views/status.py"", line 36, in status_post
+    result = flask.g.api.updateStatus(**kwargs)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/twython-2.6.0/twython/twython.py"", line 141, in <lambda>
+    return lambda **kwargs: self._constructFunc(key, **kwargs)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/twython-2.6.0/twython/twython.py"", line 157, in _constructFunc
+    content = self._request(url, method=fn['method'], params=kwargs)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/twython-2.6.0/twython/twython.py"", line 180, in _request
+    response = func(url, data=params, files=files)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/requests-1.1.0/requests/sessions.py"", line 340, in post
+    return self.request('POST', url, data=data, **kwargs)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/requests-1.1.0/requests/sessions.py"", line 276, in request
+    prep = req.prepare()
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/requests-1.1.0/requests/models.py"", line 227, in prepare
+    p.prepare_auth(self.auth)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/requests-1.1.0/requests/models.py"", line 400, in prepare_auth
+    r = auth(self)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/requests-oauthlib-0.3.0/requests_oauthlib/core.py"", line 49, in __call__
+    unicode(r.url), unicode(r.method), r.body or '', r.headers)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/oauthlib-0.3.8/oauthlib/oauth1/rfc5849/__init__.py"", line 223, in sign
+    encoding=self.encoding)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/oauthlib-0.3.8/oauthlib/common.py"", line 318, in __init__
+    self.decoded_body = extract_params(encode(body))
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/lib/oauthlib-0.3.8/oauthlib/common.py"", line 144, in extract_params
+    params = urldecode(raw)
+  File ""/base/data/home/apps/s~dabr-gae/1.366162182754792592/application/utils/monkey_patch.py"", line 50, in wrapped
+    logging.debug(""Before: %s %s\nAfter: %s\n%s"" % (params, type(params), result, """".join(traceback.format_stack())))
+```
+
+I'm using a hook function to capture urldecode input and output.
+
+```
+2013-03-24 01:41:45.921
+Collected params: [(u'oauth_nonce', u'34703150241162838851364060505'), (u'oauth_timestamp', u'1364060505'), (u'oauth_consumer_key', u'PwJUq0ekwPBiKIm0AARXA'), (u'oauth_signature_method', u'HMAC-SHA1'), (u'oauth_version', u'1.0'), (u'oauth_token', u'8104012-sfcaWo8aXsLHT2aJGlNs13yAFm5zvskNS2voU4w8'), (u'status', u'\xe5\x95\xa6\xe5\x95\xa6')]
+D 2013-03-24 01:41:45.927
+Normalized params: oauth_consumer_key=PwJUq0ekwPBiKIm0AARXA&oauth_nonce=34703150241162838851364060505&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1364060505&oauth_token=8104012-sfcaWo8aXsLHT2aJGlNs13yAFm5zvskNS2voU4w8&oauth_version=1.0&status=%C3%A5%C2%95%C2%A6%C3%A5%C2%95%C2%A6
+D 2013-03-24 01:41:45.927
+Normalized URI: http://api.twitter.com/1.1/statuses/update.json
+D 2013-03-24 01:41:45.928
+Base signing string: POST&http%3A%2F%2Fapi.twitter.com%2F1.1%2Fstatuses%2Fupdate.json&oauth_consumer_key%3DPwJUq0ekwPBiKIm0AARXA%26oauth_nonce%3D34703150241162838851364060505%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1364060505%26oauth_token%3D8104012-sfcaWo8aXsLHT2aJGlNs13yAFm5zvskNS2voU4w8%26oauth_version%3D1.0%26status%3D%25C3%25A5%25C2%2595%25C2%25A6%25C3%25A5%25C2%2595%25C2%25A6
+D 2013-03-24 01:41:45.928
+Signature: KtR6JnTiKnhM6BI1nA9pLZLyPLg=
+```
+
+Above are oauthlib logs.
+",,
+11,issue_comment,127,idan,oauthlib,ib-lundgren,2013-03-26 13:47:39,"Is this with https://github.com/idan/oauthlib/commit/faa5dfd? 
+
+My output is different than yours in terms of collected parameters `u'\u5566\u5566'` vs your `u'\xe5\x95\xa6\xe5\x95\xa6'`
+
+```
+Collected params: [
+       (u'oauth_nonce', u'70602995287506305691364305034'),
+       (u'oauth_timestamp', u'1364305034'),
+       (u'oauth_consumer_key', u'<removed>'), 
+       (u'oauth_signature_method', u'HMAC-SHA1'),
+       (u'oauth_version', u'1.0'), 
+       (u'oauth_token', u'<removed>'), 
+       (u'status', u'\u5566\u5566')
+]
+Normalized params:     oauth_consumer_key=VVq5UniipB5nXFAqtTA&oauth_nonce=70602995287506305691364305034&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1364305034&oauth_token=468875627-MJ00xJvxwH9Yo5Jfhx0w6Lp48s4PWZse5vpre2hl&oauth_version=1.0&status=%E5%95%A6%E5%95%A6
+Normalized URI: http://api.twitter.com/1/statuses/update.json
+Base signing string: POST&http%3A%2F%2Fapi.twitter.com%2F1%2Fstatuses%2Fupdate.json&oauth_consumer_key%3DVVq5UniipB5nXFAqtTA%26oauth_nonce%3D70602995287506305691364305034%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1364305034%26oauth_token%3D468875627-MJ00xJvxwH9Yo5Jfhx0w6Lp48s4PWZse5vpre2hl%26oauth_version%3D1.0%26status%3D%25E5%2595%25A6%25E5%2595%25A6
+Signature: YhdF6uNCwsdqeWx7/Jczb+re/yI=
+Starting new HTTP connection (1): api.twitter.com
+""POST /1/statuses/update.json HTTP/1.1"" 200 725
+```
+",,
+12,issue_comment,127,idan,oauthlib,ayanamist,2013-03-26 14:17:07,"@ib-lundgren No, the log is against 0.3.8
+I have tested against faa5dfd again, yes with correct result. However, after i revert the change by faa5dfd, the result is still same. So the change is not caused by faa5dfd.
+Since there are so many commits after 0.3.8, i can't trace.
+So maybe 0.3.9 is necessary?
+",,
+13,issue_comment,127,idan,oauthlib,ayanamist,2013-03-26 14:18:50,"@ib-lundgren BTW, i use simple test `oauthlib.common.urldecode(""status=%E5%95%A6%E5%95%A6"")`, so maybe another test case?
+",,
+14,issue_comment,127,idan,oauthlib,ayanamist,2013-03-26 14:21:50,"@ib-lundgren OK, after i diff them between master and 0.3.8, i have traced it. This commit b237694 by you fix it!
+",,
+15,issue_comment,127,idan,oauthlib,ib-lundgren,2013-03-26 14:58:00,"So it works, just need a new release to pypi?
+
+Was planning on releasing 0.4, just want to make sure this works first =) 
+",,
+16,issue_comment,127,idan,oauthlib,ib-lundgren,2013-03-26 18:08:12,"I've pushed 0.4, please re-open if it still an issue =)
+
+Thanks a lot for taking all this time to debug this issue, unicode is tricky and something that we really need to get right.
+",,
+17,pull_request_commit,127,idan,oauthlib,ayanamist,2013-03-23 17:46:33,Avoid escape string twice.,0402e92a4fff7c706da2542456fae099e14a81af,
+0,issue_title,128,idan,oauthlib,johanmeiring,2013-03-26 17:45:20,"Just a minor commit that fixes some (perceived) inconsistencies between what I read in the code and the documentation, while creating my own Oauth2 provider.
+",start issue,Fixes code/documentation inconsistencies
+1,issue_closed,128,idan,oauthlib,ib-lundgren,2013-03-26 17:59:16,,closed issue,Fixes code/documentation inconsistencies
+2,pull_request_title,128,idan,oauthlib,johanmeiring,2013-03-26 17:45:20,"Just a minor commit that fixes some (perceived) inconsistencies between what I read in the code and the documentation, while creating my own Oauth2 provider.
+",146cccff5131dc3a6f7de95faa286c4cb4ef2385,Fixes code/documentation inconsistencies
+3,pull_request_merged,128,idan,oauthlib,ib-lundgren,2013-03-26 17:59:15,Fixes code/documentation inconsistencies,a429b309d193ba3cb99fb63602db62565240cffd,Pull request merge from johanmeiring/oauthlib:master to idan/oauthlib:master
+4,issue_comment,128,idan,oauthlib,ib-lundgren,2013-03-26 17:59:07,"Nice catch, thanks! I'll get you a tasty drink of your choosing for every 5 more you find ;)
+",,
+5,issue_comment,128,idan,oauthlib,johanmeiring,2013-03-26 18:02:45,"Hahaha nice, I might take you up on that ;-)
+
+Thanks for the merge.
+",,
+6,pull_request_commit,128,idan,oauthlib,johanmeiring,2013-03-26 14:18:30,Fixes inconsistencies between docs and code,146cccff5131dc3a6f7de95faa286c4cb4ef2385,
+0,issue_title,124,idan,oauthlib,wiliamsouza,2013-02-28 00:03:04,"What's about the inclusion of a function to create client ids?
+",start issue,Add generate_client_id to common
+1,issue_closed,124,idan,oauthlib,ib-lundgren,2013-03-26 18:06:53,,closed issue,Add generate_client_id to common
+2,pull_request_title,124,idan,oauthlib,wiliamsouza,2013-02-28 00:03:04,"What's about the inclusion of a function to create client ids?
+",7a0783d356504867f4a4868717f6e5e7d1b90a10,Add generate_client_id to common
+3,pull_request_merged,124,idan,oauthlib,ib-lundgren,2013-03-26 18:06:53,Add generate_client_id to common,613d981830f7bd7bed9fbdcb8a790fc88b97cb70,Pull request merge from Unknown:master to idan/oauthlib:master
+4,issue_comment,124,idan,oauthlib,wiliamsouza,2013-02-28 00:11:39,"As you can see in http://tools.ietf.org/html/rfc6749#appendix-A client_secret follow the same pattern so we can add a generate_client_secret function too!
+",,
+5,issue_comment,124,idan,oauthlib,ib-lundgren,2013-03-02 20:04:16,"Good idea. Fancy having a look at OAuth 1 and see if it mentions anything regarding the structure of client keys and secrets? If not we could ""backport"" the OAuth 2 version for later use in OAuth 1 provider. If there is then we might want to move them to each respective versions specific utils module.
+
+FYI: using sets for the test might be a good idea here, something like 
+
+```
+self.assertEqual(len(set(generated) - set(allowed)), 0)
+```
+",,
+6,issue_comment,124,idan,oauthlib,wiliamsouza,2013-03-26 14:16:51,"Sory for the delay,
+OAuth 1 say nothing about how to create clients IDs, So I think we can use
+the same client key creation functions used by OAuth2 for OAuth1 what do you think?
+",,
+7,issue_comment,124,idan,oauthlib,ib-lundgren,2013-03-26 18:06:49,"Sounds good to me.
+",,
+8,pull_request_commit,124,idan,oauthlib,wiliamsouza,2013-02-27 23:59:38,Added generate_client_id function to common,7a0783d356504867f4a4868717f6e5e7d1b90a10,

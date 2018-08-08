@@ -18,12 +18,12 @@ import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--raw_commit_path', help='Directory containing raw commit (non-processed) files per project',\
-					default='data/raw_commits/')
+parser.add_argument('--raw_commit_path', help='Directory containing commit files per project',\
+					default='Sample_Data/congruence/raw_commits/')
 parser.add_argument('--project_bursts_pickle', help='Pickled list of bursts per project',
-					default='results/daily_bursts.pickle')
+					default='Sample_Data/HMM/results/daily_bursts.pickle')
 parser.add_argument('--output_pickle_path', help='Output directory to store the pickled dictionary of component experience',\
-					default='data/component_exp/')
+					default='Sample_Data/congruence/component_exp/')
 args, unknown = parser.parse_known_args()
 
 raw_commit_path = args.raw_commit_path

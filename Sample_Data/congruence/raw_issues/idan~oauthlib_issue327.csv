@@ -1,0 +1,45 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","327","idan","oauthlib","shivrams","2015-03-03 17:24:31","I'm having trouble uploading an image using a multipart/form-data request. Traceback is below, I'm using oauthlib 0.6.1
+
+```
+Traceback (most recent call last):
+  File ""*******oauth_validators.py"", line 30, in validate
+    server.verify_request(uri, method, body, headers, scopes)
+  File ""/usr/local/lib/python2.7/dist-packages/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 61, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""/usr/local/lib/python2.7/dist-packages/oauthlib/oauth2/rfc6749/endpoints/resource.py"", line 62, in verify_request
+    request = Request(uri, http_method, body, headers)
+  File ""/usr/local/lib/python2.7/dist-packages/oauthlib/common.py"", line 359, in __init__
+    self.body = encode(body)
+  File ""/usr/local/lib/python2.7/dist-packages/oauthlib/common.py"", line 354, in <lambda>
+    encode = lambda x: to_unicode(x, encoding) if encoding else x
+  File ""/usr/local/lib/python2.7/dist-packages/oauthlib/common.py"", line 288, in to_unicode
+    return unicode_type(data, encoding=encoding)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0xff in position 613: invalid start byte
+```
+
+It seems that as part of request verification, oauthlib expects the body byte string to be encoded in utf-8. Since the image's raw bytes are present in the multipart/form-data body, converting the body to unicode raises the UnicodeDecodeError.
+
+I may be understanding this incorrectly, but is there no way to upload the image as raw bytes instead of base64 encoding the image?
+","start issue","Uploading an image using a multipart request with OAuth2 access token"
+"issue_comment","327","idan","oauthlib","ThiefMaster","2015-09-13 00:48:05","https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/tokens.py#L196 is probably the culprit. The file uses `unicode_literals`, but headers should be bytes, not unicode.
+
+In my case (with Flask-OAuthlib) I simply subclassed `OAuthRemoteApp` and fixed it in `http_request`:
+
+```
+    @staticmethod
+    def http_request(uri, headers=None, data=None, method=None):
+        # WTF. oauthlib adds the token header as unicode, which
+        # breaks if the body is bytes (e.g. binary image data)
+        if headers:
+            headers = {k.encode('utf-8'): v.encode('utf-8') for k, v in headers.iteritems()}
+        return super(FixedOAuthRemoteApp, FixedOAuthRemoteApp).http_request(uri, headers, data, method)
+```
+
+If you use oauthlib directly you'll probably need to add similar code somewhere else
+","",""
+"issue_comment","327","idan","oauthlib","rcmachado","2017-11-30 16:44:26","This problem is still happening in the latest version (2.0.6).
+
+What would be the ideal solution? Not try to convert the body to unicode at all (but I imagine that this could break the backwards compatibility)?
+
+cc @ib-lundgren (sorry, not sure who is the best one to answer this).","",""

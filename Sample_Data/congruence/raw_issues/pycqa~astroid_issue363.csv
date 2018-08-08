@@ -1,0 +1,30 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","363","pycqa","astroid","jgarst","2016-09-27 00:23:28","```
+import astroid
+
+astroid.MANAGER.ast_from_module_name('functools')
+```
+
+Traceback (most recent call last):
+  File ""test.py"", line 12, in <module>
+    astroid.MANAGER.ast_from_module_name('functools')
+  File ""/home/jared/projects/astroid/astroid/manager.py"", line 147, in ast_from_module_name
+    return self.ast_from_file(found_spec.location, modname, fallback=False)
+  File ""/home/jared/projects/astroid/astroid/manager.py"", line 80, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/home/jared/projects/astroid/astroid/builder.py"", line 155, in file_build
+    return self._post_build(module, encoding)
+  File ""/home/jared/projects/astroid/astroid/builder.py"", line 175, in _post_build
+    self.delayed_assattr(delayed)
+  File ""/home/jared/projects/astroid/astroid/builder.py"", line 257, in delayed_assattr
+    if node in values:
+TypeError: argument of type 'Uninferable' is not iterable
+
+The problem appears to be `AstroidBuilder.delayed_asattr` not checking if `node._proxied` is Uninferable. 
+I can submit this as a pull request if you would like, but I thought I would submit an issue first, as this is just some cargo cult debugging.
+
+Let me know if there is anything else I can do.
+-Jared
+","start issue","asteroid generates node with uninferrable proxy in python 3.6b1"
+"issue_closed","363","pycqa","astroid","PCManticore","2016-11-21 08:25:59","","closed issue","asteroid generates node with uninferrable proxy in python 3.6b1"
+"issue_comment","363","pycqa","astroid","PCManticore","2016-11-21 08:25:59","This works with the latest changes.","",""

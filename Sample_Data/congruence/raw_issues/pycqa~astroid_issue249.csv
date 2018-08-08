@@ -1,0 +1,39 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","249","pycqa","astroid","pylint-bot","2015-11-08 06:54:03","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+These test is failing because the docstring attribute of the mock ASTs for list and int are no longer tuples: 
+
+``` python
+            self.assertEqual(len(cls.getattr('__doc__')), 1, (cls, cls.getattr('__doc__')))
+```
+
+``` python
+          self.assertEqual(len(inst.getattr('__doc__')), 1)
+```
+
+What I don't understand is why they were enclosed in tuples in the first place.  Maybe change this to a test to make sure it's a Const(str) node and call it a day?
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/249
+","start issue","[modular-locals bugs] unittest_scoped_nodes, test_cls_special_attributes_1 and test_instance_special_attributes"
+"issue_closed","249","pycqa","astroid","pylint-bot","2015-12-09 05:55:48","","closed issue","[modular-locals bugs] unittest_scoped_nodes, test_cls_special_attributes_1 and test_instance_special_attributes"
+"issue_comment","249","pycqa","astroid","pylint-bot","2015-11-08 07:10:53","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Are they really tuples? When I ran the test, I get a list of Consts, which is actually correct, because getattr returns all the possible values. 
+","",""
+"issue_comment","249","pycqa","astroid","pylint-bot","2015-11-08 15:40:16","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Hmm, for some reason it was displaying as with parentheses rather than brackets in the REPL, so I thought it was a tuple, but checking the type shows it's a list, so it's working as expected.
+","",""
+"issue_comment","249","pycqa","astroid","pylint-bot","2015-11-08 15:44:30","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+ast_from_object was double-counting **doc** and so getattr was producing a length-2 list, fixed in 6da8294.
+","",""

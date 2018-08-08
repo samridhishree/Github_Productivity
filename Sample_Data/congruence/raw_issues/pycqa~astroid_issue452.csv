@@ -1,0 +1,35 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","452","pycqa","astroid","hippo91","2017-10-08 16:00:05","This PR tries to solve ``pylint`` false positive ``no-member`` messages as encountered in PyCQA/pylint#779 and PyCQA/pylint#1477. 
+A high number of false positive ``no-member`` messages, emitted when ``numpy`` is used, are due to the fact that three ``numpy`` modules are written in c and thus can't be correctly parsed by ``astroid`` (i.e they end up being built as a *stub* module):
+
+  - ``numpy.core.umath``;
+  - ``numpy.core.multiarray``;
+  - ``numpy.random.mtrand``.
+
+Instead of listing all missing members in ``brain_numpy.py``, as it was done in PR #449 (for ``numpy.core.umath``), it seems more efficient to allow those three modules to be dynamically loaded by ``astroid``. The main lock avoiding this was the ``_can_load_extension`` method of ``AstroidManager``. I added a test to know if the module to be loaded is one of the three listed above. If it is the case then ``_can_load_extension`` returns ``True``.
+
+I also cleaned up ``brain_numpy.py`` but i added in it, the members of ``numpy.core.numerictypes`` that 
+are not correctly handled by ``astroid`` (although it is not very obvious why). 
+
+I wanted to add a unit test to ensure all ``numpy`` members are correctly detected but i don't really now how to do this in a clean way. @PCManticore, if this PR seems to be interesting,  can you explain me a little bit how to do add unit tests please?
+","start issue","Proposal for fighting against pylint false positive ``no-member`` messages when code uses ``numpy``"
+"issue_closed","452","pycqa","astroid","PCManticore","2017-10-12 07:41:49","","closed issue","Proposal for fighting against pylint false positive ``no-member`` messages when code uses ``numpy``"
+"pull_request_title","452","pycqa","astroid","hippo91","2017-10-08 16:00:05","This PR tries to solve ``pylint`` false positive ``no-member`` messages as encountered in PyCQA/pylint#779 and PyCQA/pylint#1477. 
+A high number of false positive ``no-member`` messages, emitted when ``numpy`` is used, are due to the fact that three ``numpy`` modules are written in c and thus can't be correctly parsed by ``astroid`` (i.e they end up being built as a *stub* module):
+
+  - ``numpy.core.umath``;
+  - ``numpy.core.multiarray``;
+  - ``numpy.random.mtrand``.
+
+Instead of listing all missing members in ``brain_numpy.py``, as it was done in PR #449 (for ``numpy.core.umath``), it seems more efficient to allow those three modules to be dynamically loaded by ``astroid``. The main lock avoiding this was the ``_can_load_extension`` method of ``AstroidManager``. I added a test to know if the module to be loaded is one of the three listed above. If it is the case then ``_can_load_extension`` returns ``True``.
+
+I also cleaned up ``brain_numpy.py`` but i added in it, the members of ``numpy.core.numerictypes`` that 
+are not correctly handled by ``astroid`` (although it is not very obvious why). 
+
+I wanted to add a unit test to ensure all ``numpy`` members are correctly detected but i don't really now how to do this in a clean way. @PCManticore, if this PR seems to be interesting,  can you explain me a little bit how to do add unit tests please?
+","84d31285f9925637a207839d7ae82bfded9a3c71","Proposal for fighting against pylint false positive ``no-member`` messages when code uses ``numpy``"
+"issue_comment","452","pycqa","astroid","PCManticore","2017-10-12 07:41:49","I'm sorry but I cannot agree with this. C extensions cannot be loaded for a reason, which is that it creates a security risk, which is why they have to be exempted with ``--extension-pkg-whitelist``. The problem with `numpy` though stems from the fact that it's relying heavily on dynamic features, such as generating members dynamically, which cannot be inferred correctly by pylint. What we need to do is to introduce proper hints through brain modules for these inner modules where numpy uses those dynamic features.","",""
+"issue_comment","452","pycqa","astroid","hippo91","2017-10-14 08:57:38","Ok, thanks @PCManticore for these explanation!
+I will try to make something in brain_numpy.py to handle those dynamic features.","",""
+"pull_request_commit","452","pycqa","astroid","hippo91","2017-10-08 14:57:48","Add of a test inside _can_load_extension to allow numpy c modules to be dynamically loaded","e4f08be3fb9d3eefaba64b94f671f67bf0a75f80",""
+"pull_request_commit","452","pycqa","astroid","hippo91","2017-10-08 14:58:48","Cleaning up brain for numpy just keeping the essential","84d31285f9925637a207839d7ae82bfded9a3c71",""

@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","148","idan","oauthlib","flippmoke","2013-05-07 21:39:03","Added a flask oauth2 provider to the extensions. Also made it possible for the providers both django and flask to use a function to dynamically set the scopes at the time of the request.
+","start issue","Flask OAuth2 Provider and Dynamic Scopes"
+"issue_closed","148","idan","oauthlib","ib-lundgren","2013-05-21 14:38:48","","closed issue","Flask OAuth2 Provider and Dynamic Scopes"
+"pull_request_title","148","idan","oauthlib","flippmoke","2013-05-07 21:39:03","Added a flask oauth2 provider to the extensions. Also made it possible for the providers both django and flask to use a function to dynamically set the scopes at the time of the request.
+","4735da3da8542270c5f17e6ec9f7160408172f28","Flask OAuth2 Provider and Dynamic Scopes"
+"pull_request_merged","148","idan","oauthlib","ib-lundgren","2013-05-21 14:38:48","Flask OAuth2 Provider and Dynamic Scopes","053d6cda47ff94dc7ead7317fec9387b5d53a42c","Pull request merge from flippmoke/oauthlib:master to idan/oauthlib:master"
+"issue_comment","148","idan","oauthlib","ib-lundgren","2013-05-09 21:16:22","Hey and thanks for the PR!
+
+Sorry for late reply, I completely missed the notification for this. I fear it might be a few days before I can review it fully but will try and get to it soon.
+
+Did you find that a lot of the code was shared between django and flask or is it a completely different beast? If much is shared we should try and find a a base class for decorators or maybe a set of utilities.
+","",""
+"issue_comment","148","idan","oauthlib","flippmoke","2013-05-09 21:34:48","Most of the code was very similar. If you want to have a shared way, I can help you with the flask side of it. I am in the #oauthlib chat on freenode most workdays, feel free to message me there if you want to talk.
+
+I do have some concerns on how flask deals with session data by default. When using this code myself, I make sure to change how flask deals with its default session. Most of the changes between django and flask are simply that flask has a global request object you import while django passes it around.
+","",""
+"issue_comment","148","idan","oauthlib","ib-lundgren","2013-05-14 16:11:47","We can have a look at refactoring and how to handle storage (maybe not use session?) after this PR. Should also try and look into a clean way to add tests.
+
+Just FYI I'm travelling around Italy the entire week but will get to this early next week.
+","",""
+"issue_comment","148","idan","oauthlib","flippmoke","2013-05-14 19:10:37","I think a testing structure would be great and can help implement that with Flask
+","",""
+"issue_comment","148","idan","oauthlib","flippmoke","2013-05-16 15:58:56","I took the comments Kroisse suggested and removed the use of the g object. The properties can now be accessed via the OAuth2ProviderDecorator object. 
+","",""
+"issue_comment","148","idan","oauthlib","ib-lundgren","2013-05-20 10:11:47","@flippmoke it seems you are only using the decorator/previously g object to provide certain key:values to the protected resource view. Am I missing something or would it not be easier to just update the kwargs passed into the view similarly to what the django decorator is doing?
+
+If we worry about overriding kwargs we could prefix the keywords but doubt it will be a common issue.
+
+Will try and implement a basic provider with your decorator later today =)
+","",""
+"issue_comment","148","idan","oauthlib","ib-lundgren","2013-05-20 14:22:59","Threw together a basic setup and it seems to work nicely =)
+","",""
+"issue_comment","148","idan","oauthlib","flippmoke","2013-05-20 17:09:30","Yes we could simply pass them as kwargs rather then using the decorator object, I can make those changes if you want sometime soon.
+","",""
+"issue_comment","148","idan","oauthlib","Kroisse","2013-05-21 04:46:45","@ib-lundgren In Flask, all of arguments of the view function are intended to used only for URL mapping. So sending additional kwargs to the wrapped view function seems like a bad idea.
+","",""
+"issue_comment","148","idan","oauthlib","ib-lundgren","2013-05-21 14:35:09","@Kroisse @flippmoke Hrm yea it might be better to add it to the request context. While passing them directly feels cleaner it might be a mess since the decorator order matters. This should be done to the django one too.
+","",""
+"pull_request_commit_comment","148","idan","oauthlib","Kroisse","2013-05-16 09:35:34","[flask.g](http://flask.pocoo.org/docs/api/?highlight=flask.g#application-globals) is convenient, but using it in the library can lead to conflict with end-user code. Instead, it is better to use the [request context](http://flask.pocoo.org/docs/extensiondev/#the-extension-code) directly and provide properties by other proxy object, or `OAuth2ProviderDecorator` itself. Making it to the Flask extension might be helpful.
+","4735da3da8542270c5f17e6ec9f7160408172f28","(None, '', u'oauthlib/oauth2/ext/flask.py')"
+"pull_request_commit","148","idan","oauthlib","flippmoke","2013-05-07 21:00:54","Added a new extension for oauth2 providers that integrates with flask.
+
+Modified the existing scopes argument for django provider so that it now will
+accept a function as well as a list object. This is done so that scopes can be dynamically
+set.","7b00c4d7b0eeedceb30f67ad569569a7969c4da9",""
+"pull_request_commit","148","idan","oauthlib","flippmoke","2013-05-07 21:06:29","Small modification so that the dynamnic scopes now will pass the requests object in django.","43887add3a7bdccfdc5af9bde43559101cd3ed02",""
+"pull_request_commit","148","idan","oauthlib","flippmoke","2013-05-07 21:26:23","Updated the documentation for dynamic scopes.","273d5139a880a90dc6afd658199339af8e031e6d",""
+"pull_request_commit","148","idan","oauthlib","flippmoke","2013-05-09 18:20:26","Fixed a small error with the flask extension.","b0b44762b1074af14db60da8b8db1ed2b4b48765",""
+"pull_request_commit","148","idan","oauthlib","flippmoke","2013-05-16 15:56:41","Removed the use of the flask g object from the extension, the properties can now be pulled from the OAuth2ProviderDecorator","4735da3da8542270c5f17e6ec9f7160408172f28",""

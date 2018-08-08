@@ -1,0 +1,63 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","345","idan","oauthlib","H0neyBadger","2015-06-01 12:12:01","Hello,
+Some password are revealed through the request body in debug logs.
+Could you please take a look to this issue?
+
+In the module oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials **request** objects are dumped into the debug log.
+example lines 98, 99
+
+``` python
+            log.debug('Validating access token request, %r.', request)
+                self.validate_token_request(request)
+```
+
+As a consequence the file contains the entire request (including the body of the request)
+
+```
+[DEBUG] oauthlib.oauth2.rfc6749.grant_types.resource_owner_password_credentials: Validating access token request
+...
+body=""username=foo&password=bar&grant_type=password&client_id=test""
+```
+
+This issue potentially affects all OAuth2 flows (not only the password flow)
+
+You can test this issue with the following curl request 
+
+``` bash
+curl -v -X POST -d ""grant_type=password&client_id=test&username=foo&password=bar"" ""http://localhost:8000/o/token/""
+```
+
+Oauth2 modules : 
+- Django 1.8 
+- django-oauth-toolkit
+","start issue","Passwords disclosure in debug logs"
+"issue_closed","345","idan","oauthlib","lepture","2015-07-02 07:16:44","","closed issue","Passwords disclosure in debug logs"
+"issue_comment","345","idan","oauthlib","H0neyBadger","2015-06-01 12:32:06","Maybe the best way to fix this issue is to edit request’s representation function :
+https://github.com/idan/oauthlib/blob/master/oauthlib/common.py
+line 392 
+
+``` python
+    def __repr__(self):
+        return '<oauthlib.Request url=""%s"", http_method=""%s"", headers=""%s"", body=""%s"">' % (
+            self.uri, self.http_method, self.headers, self.body)
+```
+","",""
+"issue_comment","345","idan","oauthlib","foxx","2015-07-01 20:05:13","I'm not sure if censoring the debug logs is the correct approach. In any sane deployment, you would only ever enable debug mode whilst debugging, rather than in production. Enabling such a feature by default would likely cause annoyance for little benefit. As such, I'd be -1 on this, lets see if the other maintainers chime in though.
+","",""
+"issue_comment","345","idan","oauthlib","H0neyBadger","2015-07-02 06:38:58","Censoring! I call that ""respect the privacy of others""
+In many cases the debug logs are enabled on prod and pre-prod. 
+Even worse, in many cases logs are sent directly to a SIEM through syslogd and readable by a group of people.
+Now imagine if the windows or unix pam write a log with your password.
+Only poorly implemented products needs to debug the password.
+Anyway, this must be documented!
+","",""
+"issue_comment","345","idan","oauthlib","masci","2015-07-02 07:08:23","I'm +1 on hiding sensitive data
+","",""
+"issue_comment","345","idan","oauthlib","lepture","2015-07-02 07:16:40","I agree with @H0neyBadger . I've submitted a PR in #355 
+","",""
+"issue_comment","345","idan","oauthlib","foxx","2015-07-02 16:19:32","Actually, after giving this some further thought, there could be situations where users are using real password with their debug runtimes. If they blindly paste these into pastebin or Github, it could cause for some embarrassment.
+
+After looking at how other projects do this, most will either hide sensitive log information by default (e.g. Apache2), or will remove known sensitive strings such as passwords (e.g. Dovecot).
+
+Left feedback on PR, thanks for reporting this @H0neyBadger!
+","",""

@@ -1,0 +1,40 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","220","pycqa","astroid","pylint-bot","2015-10-20 21:33:27","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+If the co_filename attribute is not found, then object_build_methoddescriptor will be called instead: https://bitbucket.org/logilab/astroid/src/6d4e198bdc7091f36c2c24d911c5ee92b64847c2/astroid/raw_building.py?at=default&fileviewer=file-view-default#raw_building.py-239
+
+The branch can be taken on PyPy and on Jython. Removing it leads to some interesting results, where some builtins can get additional information regarding their parameters (which also leads to tons of false positives on pylint):
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+NotImplementedError
+''')
+i = next(n.infer())
+i = i.getattr('__init__')[0]
+print(i.args.args)
+
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/220
+","start issue","Investigate why _build_from_function from raw_building handles differently objects with co_filename"
+"issue_closed","220","pycqa","astroid","pylint-bot","2015-12-09 05:55:23","","closed issue","Investigate why _build_from_function from raw_building handles differently objects with co_filename"
+"issue_comment","220","pycqa","astroid","pylint-bot","2015-10-21 21:35:16","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I know what this code is doing now, if I still don't understand why it's doing it.  On CPython 3, object's members are builtin_function_or_methods, method_descriptors, or slot_wrappers.  The first case is caught by inspect.isbuiltin(), which calls imported_member(), which returns False, and thus object_build_methoddescriptor().  The last two cases are caught by the inspect.ismethoddescriptor() case in inspect_build() and object_build_methoddescriptor() is again called.  On PyPy 2, object's members are functions, unbound methods, or bound methods.  All of these go down the ismethod() or isfunction() branches in inspect_build(), which calls _build_from_function.  On PyPy, these functions/methods don't have code objects, so the filename is None is taken and thus object_build_methoddescriptor() is called.
+
+TL;DR: I think this code is intended to call object_build_methoddescriptor() for certain kinds of builtin functions.  I talked to the PyPy about co_filename yesterday, though, and under some circumstances it's possible to be set on PyPy when it's not set on CPython.  This case does come up in astroid's tests, though I don't remember where off the top of my head.
+","",""
+"issue_comment","220","pycqa","astroid","pylint-bot","2015-10-26 04:59:41","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The new ast_from_object function replaces all of this functionality with new code.
+","",""

@@ -1,0 +1,51 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","263","pycqa","astroid","pylint-bot","2015-11-23 03:44:33","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+For instance, look at lazy_object_proxy.
+
+``` python
+>>> m = parse('import lazy_object_proxy; lazy_object_proxy.Proxy(lambda: None)')
+>>> proxy_call = m.body[1].value
+>>> proxy_call
+<Call l.1 at 0x7fd5f48f4fd0>
+>>> next(proxy_call.infer())
+Uninferable
+```
+
+This happens because in lazy_object_proxy's `__init__.py`, the C accelerator is tried first.  This is a typical pattern.
+
+``` python
+try:
+    from .cext import Proxy
+    from .cext import identity
+except ImportError:
+    from .slots import Proxy
+```
+
+Then, the module importing subsystem ends up building an empty module for lazy_object_proxy.cext.
+
+``` python
+(Pdb) self.astroid_cache['lazy_object_proxy.cext'].print_tree()
+Module(
+   name='lazy_object_proxy.cext',
+   doc=None,
+   package=False,
+   pure_python=True,
+   source_code=b'',
+   source_file='<?>',
+   body=[])
+```
+
+This happens even on PyPy and Jython, so the presence of any C accelerator will break inference for the pure Python equivalent.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/263
+","start issue","Inference for objects with C accelerators and pure-Python equivalents typically returns Uninferable"
+"issue_comment","263","pycqa","astroid","pylint-bot","2015-11-23 07:50:10","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+It might be worth to have a fallback on the  pure Python import, if it is available. But since we don't know apriori which import is for a C extension, this could happen whenever a TryExcept is met with two imports on each branch.
+","",""

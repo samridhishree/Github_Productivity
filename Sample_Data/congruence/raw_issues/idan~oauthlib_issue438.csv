@@ -1,0 +1,17 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","438","idan","oauthlib","delicb","2016-09-27 19:40:17","I have tried to use `oauthlib.common.verify_signed_token`, but it turns out it always fails, because `pyjwt` is checking for `aud` key in JWT payload, which can not be passed to `verify_signed_token`, as it can be seen: https://github.com/jpadilla/pyjwt/blob/1.0.0/jwt/api.py#L196:L205 (note that I have `pyjwt` 1.0.0, as it is listed in `requirements.txt`)
+
+I have locally changed behavious of verify_signed_token to include **kwargs that `jwt` expects and when I provide `audience` parameter, check passes. This is my change:
+
+```
+def verify_signed_token(public_pem, token, **kwargs):
+    import jwt
+
+    return jwt.decode(token, public_pem, algorithms=['RS256'], **kwargs)
+```
+
+Also, this function expects RSAPublicKey and JWT is usually verified with JWK, and it is not trivial to convert (at least not for me). So, it would be great if we had helper methods for this conversion, but I will be happy with just being able to use `verify_signed_token`. 
+
+If pull request would help, please tell me, I would be happy to create on (given that proposed solution is ok).
+","start issue","JWT verify always fails"
+"issue_comment","438","idan","oauthlib","duaneking","2017-11-13 16:50:41","This is a blocker for #50 ","",""

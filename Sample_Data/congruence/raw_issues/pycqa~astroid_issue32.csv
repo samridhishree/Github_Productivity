@@ -1,0 +1,67 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","32","pycqa","astroid","pylint-bot","2014-05-25 17:31:22","Originally reported by: **Edd Barrett (BitBucket: [vext01](http://bitbucket.org/vext01), GitHub: @vext01?)**
+
+---
+
+Hi,
+
+I am in the process of updating pylint and dependencies in OpenBSD ports. I have ancountered a problem with astroid's install target.
+
+In short, OpenBSD ports runs the build as a normal user, the install as root, and then removes the sources as the normal user. We package a ton of Python modules in this way.
+
+The problem with astroid is, when `setup.py install` is run as root, it puts files owned by root in the build directory which then cannot be removed by the normal user. The install target should only copy files into the python library dirs and not modify the build directory.
+
+You can reproduce this outside OpenBSD ports by making a virtualenv and running `setup.py install` as a root and then try to remove the source dir:
+
+```
+wilfred:tmp> rm -Rf astroid-1.1.1                                                                                                                                      
+rm: astroid-1.1.1/build/lib/astroid/test/data2/clientmodule_test.py: Permission denied
+rm: astroid-1.1.1/build/lib/astroid/test/data2/suppliermodule_test.py: Permission denied
+rm: astroid-1.1.1/build/lib/astroid/test/data2/__init__.py: Permission denied
+rm: astroid-1.1.1/build/lib/astroid/test/data2: Directory not empty
+rm: astroid-1.1.1/build/lib/astroid/test/data/noendingnewline.py: Permission denied
+rm: astroid-1.1.1/build/lib/astroid/test/data/absimport.py: Permission denied
+rm: astroid-1.1.1/build/lib/astroid/test/data/SSL1/__init__.py: Permission denied
+rm: astroid-1.1.1/build/lib/astroid/test/data/SSL1/Connection1.py: Permission denied
+rm: astroid-1.1.1/build/lib/astroid/test/data/SSL1: Permission denied
+...
+```
+
+Would appreciate a patch so I can continue updating pylint.
+
+Cheers
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/32
+","start issue","Install target modifies build directory."
+"issue_closed","32","pycqa","astroid","pylint-bot","2015-12-09 05:52:06","","closed issue","Install target modifies build directory."
+"issue_comment","32","pycqa","astroid","pylint-bot","2014-06-27 14:24:29","_Original comment by_ **Edd Barrett (BitBucket: [vext01](http://bitbucket.org/vext01), GitHub: @vext01?)**:
+
+---
+
+Anyone have any comment on this?
+","",""
+"issue_comment","32","pycqa","astroid","pylint-bot","2014-06-27 14:27:52","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+This is due to custom things done in setup.py, I agree it should be fixed but that's not trivial, hence one have to find some time to find an alternative and implement it.
+","",""
+"issue_comment","32","pycqa","astroid","pylint-bot","2014-06-27 15:08:19","_Original comment by_ **Edd Barrett (BitBucket: [vext01](http://bitbucket.org/vext01), GitHub: @vext01?)**:
+
+---
+
+Is there a workaround I can use in the meantime?
+","",""
+"issue_comment","32","pycqa","astroid","pylint-bot","2014-06-27 15:15:12","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+chmod/chown the build dir ? I fail to see a workaround on the python side :(
+","",""
+"issue_comment","32","pycqa","astroid","pylint-bot","2014-11-22 10:48:34","_Original comment by_ **Torsten Marek (BitBucket: [tmarek](http://bitbucket.org/tmarek), GitHub: @tmarek?)**:
+
+---
+
+The build script has been cleaned up, this should not be an issue any more.
+","",""

@@ -1,0 +1,66 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","503","idan","oauthlib","JonathanHuot","2017-11-21 09:42:29","Hi,
+I would like to raise a concern where we are not able to log and trace OAuth2.0 data on Web Server side, which prevent us to do a production-ready implementation.
+
+# Context
+Currently we can summarize the high-level architecture as below:
+Web Server -> Web Framework `oauthlib` bridge -> Server `oauthlib` -> `Request Validator`
+
+Examples of values:
+Web Server: `foobar.com`
+Web Framework `oauthlib` bridge: `flask-oauthlib`, `dango-oauth-toolkit`, `pyramid-oauthlib`, `bottle-oauthlib`
+Server `oauthlib`: the `oauthlib` project
+`Request Validator`: `xyz-auth-implementation`
+
+`foobar.com` can uses flask or any others web framework which is supported by an `oauthlib` bridge.
+`xyz-auth-implementation` can be decoupled from `foobar.com`, because it is web-framework agnostic. That's the purpose of having a bridge in between.
+
+The class `Request` is used to share data between the `oauthlib` bridge and `Request Validator` as the main link. All OAuth2.0 generated data is stored in it (client_id, username, ...) but also custom data (it can be timings, or debugging values).
+
+# Problem
+As an implementor, I'm implementing `Web Server` and `Request Validator` the way I like. However, if I want to keep this separation of concerns between `Web Framework` and `Validator`, I have to pass the OAuth data from the `Validator` to the Web Framework. It is perfectly done for resources access (e.g. `verify_request` returns `Request`), but not for the others.
+Summary of endpoints return values :
+- `authorization` / `create_authorization_response` => **no** `Request`
+- `resource` / `verify_request` => `Request` present
+- `revocation` / `create_revocation_response` => **no** `Request`
+- `token` / `create_token_response` => **no** `Request`
+
+# Solutions
+## New endpoints methods
+Changing the signature would be the quicker but not backward-compatible. So adding a new signature can be done.
+
+In addition of `create_token_response`: 
+```
+        return grant_type_handler.create_token_response(
+            request, self.default_token_type)
+```
+We could add `generate_token_response` (`names-suggestions-welcomed`): 
+```
+        return grant_type_handler.create_token_response(
+            request, self.default_token_type), request
+```
+## Add optional argument
+We could add the Request object to the call, which will be created if not present (default). 
+
+Current `create_token_response`:
+```
+    def create_token_response(self, uri, http_method='GET', body=None,
+                              headers=None, credentials=None, grant_type_for_scope=None,
+                              claims=None):
+        """"""Extract grant_type and route to the designated handler.""""""
+        request = Request(
+            uri, http_method=http_method, body=body, headers=headers)
+```
+Suggestion:
+```
+    def create_token_response(self, uri, http_method='GET', body=None,
+                              headers=None, credentials=None, grant_type_for_scope=None,
+                              claims=None, request=None):
+        """"""Extract grant_type and route to the designated handler.""""""
+        request = Request(
+            uri, http_method=http_method, body=body, headers=headers) if not request else request
+```
+
+## Any other suggestions ?
+
+Please feel free to chip in, or share how did you share data between your `Request Validator` and the Web Server implementation.","start issue","[enhancement] Add reporting capability in implementations"

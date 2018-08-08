@@ -1,0 +1,85 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,285,idan,oauthlib,garcianavalon,2014-10-27 09:07:24,"fixes #284
+The token contains a string with the scopes separated by spaces with key 'scope' instead of a list of string with key 'scopes'
+I think is the only place where the documentation is wrong, let me know if further changes are needed.
+",start issue,updated token endpoint documentation to reflect current behavior
+1,issue_closed,285,idan,oauthlib,ib-lundgren,2014-10-27 14:06:13,,closed issue,updated token endpoint documentation to reflect current behavior
+2,pull_request_title,285,idan,oauthlib,garcianavalon,2014-10-27 09:07:24,"fixes #284
+The token contains a string with the scopes separated by spaces with key 'scope' instead of a list of string with key 'scopes'
+I think is the only place where the documentation is wrong, let me know if further changes are needed.
+",f2b165cead46060cf1f60e89dc0e893136a5e2af,updated token endpoint documentation to reflect current behavior
+3,pull_request_merged,285,idan,oauthlib,ib-lundgren,2014-10-27 14:06:13,updated token endpoint documentation to reflect current behavior,4712ce05b240680c5682c529bfa598a005994237,Pull request merge from garcianavalon/oauthlib:update_docs_token_creation to idan/oauthlib:master
+4,issue_comment,285,idan,oauthlib,ib-lundgren,2014-10-27 14:06:08,"Thanks :)
+",,
+5,pull_request_commit,285,idan,oauthlib,garcianavalon,2014-10-27 09:00:18,"updated token endpoint documentation to reflect current behavior,the token contains a string with the scopes separated by spaces",f2b165cead46060cf1f60e89dc0e893136a5e2af,
+0,issue_title,283,idan,oauthlib,whit537,2014-10-17 14:13:24,"Currently on Gratipay we're using a non-released version of `oauthlib` in order to get #268. Per https://github.com/idan/oauthlib/issues/254#issuecomment-47131845 I'm creating a release issue so I can be notified when 0.6.4 has been released. S'okay? :-)
+",start issue,release 0.6.4
+1,issue_closed,283,idan,oauthlib,ib-lundgren,2014-10-27 14:05:01,,closed issue,release 0.6.4
+2,issue_comment,283,idan,oauthlib,ib-lundgren,2014-10-23 18:44:02,"I have tested this in py27, py34 and pypy (will do remaining tomorrow) for both oauthlib and flask-oauthlib, django-oauth-toolkit and requests-oauthlib. None of which the current master cause failing unittests.
+
+@lepture, @masci, @evonove, @widnyana please let me know if current master cause you any issues. If not Ill go ahead and push a new release in the weekend or early next week.
+",,
+3,issue_comment,283,idan,oauthlib,widnyana,2014-10-24 05:01:42,"@ib-lundgren I'm good, haven't found any problem yet. :)
+",,
+4,issue_comment,283,idan,oauthlib,lepture,2014-10-24 06:32:14,"@ib-lundgren I'm ok.
+",,
+5,issue_comment,283,idan,oauthlib,ib-lundgren,2014-10-24 09:15:19,"cc @singingwolfboy
+",,
+6,issue_comment,283,idan,oauthlib,masci,2014-10-24 12:01:17,"@ib-lundgren all tests pass
+",,
+7,issue_comment,283,idan,oauthlib,ib-lundgren,2014-10-27 14:05:01,"0.7.0 is now live.
+",,
+0,issue_title,284,idan,oauthlib,garcianavalon,2014-10-24 10:48:17,"Hi!
+In the documentation found here https://oauthlib.readthedocs.org/en/latest/oauth2/endpoints/token.html we can read the following bit:
+`# body will contain the token in json format and expiration from now`
+`# in seconds.`
+`{`
+    `'access_token': 'sldafh309sdf',`
+    `'refresh_token': 'alsounguessablerandomstring',`
+    `'expires_in': 3600,`
+    `'scopes': [`
+        `'https://example.com/userProfile',`
+        `'https://example.com/pictures'`
+    `],`
+    `'token_type': 'Bearer'`
+`}`
+But the returned body doesn't have a 'scopes' key, it has 'scope'. Furthermore, the value is not a list of strings, one string per each scope, but just a string with the scopes separeted by spaces.  
+Cheking the code, in [/oauth2/rfc6749/tokens.py](https://github.com/idan/oauthlib/blob/4a14f204908eb7f6fb9ac3a0ece5730b3d4146cb/oauthlib/oauth2/rfc6749/tokens.py) lines 216 and 217 I found:
+`if request.scopes is not None:`
+    `token['scope'] = ' '.join(request.scopes)`
+Which is the cause of the issue. 
+
+The fix should be to change either the documentation or this line so they match. That decission is yours but I could help fixing one of both if needed.
+Cheers!
+",start issue,Documentation error in Docs » OAuth 2.0 » Provider Endpoints » Token creation
+1,issue_closed,284,idan,oauthlib,ib-lundgren,2014-10-27 14:06:13,,closed issue,Documentation error in Docs » OAuth 2.0 » Provider Endpoints » Token creation
+2,issue_comment,284,idan,oauthlib,ib-lundgren,2014-10-24 13:50:13,"The current implementation is working as intended but the documentation should be updated.
+
+As of next release...
+- On the provider side you, e.g. in `validator.save_bearer_token`, can use `token.scopes` to access this list of scope strings.
+- On the client side side you can first load the dict with json.loads and then use `oauthlib.oauth.OAuth2Token` to access the scope as a list. (This will happen automatically in extensions like requests-oauthlib). 
+
+```
+>>> from oauthlib.oauth2 import OAuth2Token
+>>> token = OAuth2Token(json.loads(request_body))
+['https://example.com/userProfile', 'https://example.com/pictures']
+```
+
+If you fancy updating the docs that'd be awesome :)
+",,
+3,issue_comment,284,idan,oauthlib,garcianavalon,2014-10-27 08:01:44,"Hey! 
+Thanks for your answer. I'll update de docs to show the current behavior ;)
+",,
+0,issue_title,286,idan,oauthlib,thieman,2014-10-27 17:06:40,"The 0.7.3 tag in this repo is linked to the 0.7.1 release in PyPi. Should keep these consistent.
+",start issue,0.7.3 != 0.7.1
+1,issue_closed,286,idan,oauthlib,thieman,2014-11-02 14:44:27,,closed issue,0.7.3 != 0.7.1
+2,issue_comment,286,idan,oauthlib,ib-lundgren,2014-10-27 17:10:53,"This is what happens when I try to do a quick release when jet lagged. WIll look into it later today.
+",,
+3,issue_comment,286,idan,oauthlib,ib-lundgren,2014-10-27 17:11:05,"Thanks for reporting @thieman 
+",,
+4,issue_comment,286,idan,oauthlib,thieman,2014-10-27 17:11:38,"Quick fix appreciated, was happy to see it was already fixed when my build broke :smile:
+",,
+5,issue_comment,286,idan,oauthlib,thedrow,2014-11-02 10:05:54,"This issue should be closed.
+",,
+6,issue_comment,286,idan,oauthlib,thieman,2014-11-02 14:44:27,"Yup, looks like the tag has been fixed.
+",,

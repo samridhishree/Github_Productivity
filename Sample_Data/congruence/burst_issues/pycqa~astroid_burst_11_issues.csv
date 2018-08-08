@@ -1,0 +1,41 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,238,pycqa,astroid,pylint-bot,2015-10-30 23:09:51,"Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+- SuperError and SuperArgumentsTypeError is only ever raised in objects.Super.super_mro() and caught (outside the tests) in objects.Super.igetattr().  SuperError is only raised for trying to call super in an old-style class.  Is there somewhere else that the types of these two error cases need to be different?  Otherwise, I propose we combine them.
+- All MroErrors are only caught as MroError .  InconsistentMroError and DuplicateBasesError are both raised in only one place each, two functions in scoped_nodes that are both only called in ClassDef.mro.  Again, do these error types need to be different?  If not, I think we should only have one MroError.
+- The names of UnresolvableName and NotFoundError should be changed to reflect that they're related to NameError and AttributeError.  Maybe NameInferenceError and AttributeInferenceError?
+- Is there a need for a separate InferenceError and ResolveError?  If not, maybe they should be combined.  If so, maybe InferenceError should get a more specific name to indicate how it's distinct from the other subclasses of ResolveError.  What cases does it cover that the others don't?
+- Why is OperationError not an exception, if indicates a TypeError occurred in inference?  Since it's not actually an exception, having it named Error is confusing---if it should stay a different object, the name should be changed to something less confusing.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/238
+",start issue,Rename and combine exceptions
+1,issue_closed,238,pycqa,astroid,pylint-bot,2015-12-09 05:55:38,,closed issue,Rename and combine exceptions
+2,issue_comment,238,pycqa,astroid,pylint-bot,2015-10-30 22:21:08,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+- MroErrors are actually handled in pylint separately. They should be left as is.
+- SuperErrors can be merged together
+- ResolveError is a bit more general than InferenceError, since it handles some extra cases, NotFoundError and MroError for instance, which aren't necessarily equivalent with InferenceError. In my opinion they shouldn't be conflated together as is.
+- NameInferenceError and AttributeInferenceError sounds good to me.
+- OperationError is not an exception, its intention is to never be raised anywhere, just to be a container for an error. Having it inherit from Exception would be as well misleading, but I'm fine with changing its name to denote its real purpose.
+",,
+3,issue_comment,238,pycqa,astroid,pylint-bot,2015-10-31 02:15:04,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Should I use the same proxy generator as for the nodes to make sure the old names are still available?
+",,
+4,issue_comment,238,pycqa,astroid,pylint-bot,2015-10-31 09:31:06,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I think it's overkill for this case, a simple `old_name = new_name` assignment in exceptions.py should be enough.
+",,
+5,issue_comment,238,pycqa,astroid,pylint-bot,2015-11-03 02:29:50,"_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+This is fixed in structured_exceptions, 4d21fd4.
+",,

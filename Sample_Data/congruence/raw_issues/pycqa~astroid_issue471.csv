@@ -1,0 +1,81 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","471","pycqa","astroid","magnusbaeck","2017-12-15 14:39:44","### Steps to reproduce
+1. Run `pip install pylint pylint-mccabe`.
+2. Run `pylint --load-plugins=pylint_mccabe` on any Python file.
+
+### Current behavior
+
+```plain
+$ pylint --load-plugins=pylint_mccabe hello.py
+No config file found, using default configuration
+Traceback (most recent call last):
+  File ""/tmp/trash.rk6C/.py2/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/tmp/trash.rk6C/.py2/local/lib/python2.7/site-packages/pylint/__init__.py"", line 16, in run_pylint
+    Run(sys.argv[1:])
+  File ""/tmp/trash.rk6C/.py2/local/lib/python2.7/site-packages/pylint/lint.py"", line 1347, in __init__
+    linter.check(args)
+  File ""/tmp/trash.rk6C/.py2/local/lib/python2.7/site-packages/pylint/lint.py"", line 768, in check
+    self._do_check(files_or_modules)
+  File ""/tmp/trash.rk6C/.py2/local/lib/python2.7/site-packages/pylint/lint.py"", line 901, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/tmp/trash.rk6C/.py2/local/lib/python2.7/site-packages/pylint/lint.py"", line 976, in check_astroid_module
+    checker.process_module(ast_node)
+  File ""/tmp/trash.rk6C/.py2/local/lib/python2.7/site-packages/pylint_mccabe.py"", line 46, in process_module
+    code = node.file_stream.read()
+AttributeError: 'Module' object has no attribute 'file_stream'
+```
+
+### Expected behavior
+
+```plain
+$ pylint --load-plugins=pylint_mccabe hello.py
+No config file found, using default configuration
+
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 0.00/10, +10.00)
+```
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+1.6.0
+
+### Additional information
+
+```plain
+$ pylint --version
+No config file found, using default configuration
+pylint 1.8.1, 
+astroid 1.6.0
+Python 2.7.9 (default, Jun 29 2016, 13:08:31) 
+[GCC 4.9.2]
+$ pip freeze 
+argparse==1.2.1
+astroid==1.6.0
+backports.functools-lru-cache==1.4
+configparser==3.5.0
+enum34==1.1.6
+isort==4.2.15
+lazy-object-proxy==1.3.1
+mccabe==0.6.1
+pep8==1.7.1
+pylint==1.8.1
+pylint-mccabe==0.1.3
+singledispatch==3.4.0.3
+six==1.11.0
+wrapt==1.10.11
+wsgiref==0.1.2
+```
+
+Downgrading astroid to 1.5.3 fixes the problem. Sorry if I'm filing this in the wrong place, but it does appear that astroid made an unexpected backwards incompatible change when going to 1.6.0.","start issue","1.6.0 breaks pylint-mccabe"
+"issue_closed","471","pycqa","astroid","PCManticore","2017-12-15 14:44:22","","closed issue","1.6.0 breaks pylint-mccabe"
+"issue_comment","471","pycqa","astroid","PCManticore","2017-12-15 14:44:22","This should be reported upstream to `pylint-mccabe`. That method emitted DeprecationWarnings for a couple of releases now and it was scheduled to be removed in 1.6.","",""
+"issue_comment","471","pycqa","astroid","craiga","2017-12-18 11:13:16","I ran into the same issue, and found that [pylint ships with a design checker which implements McCabe complexity testing](https://pylint.readthedocs.io/en/latest/technical_reference/extensions.html#design-checker).
+
+As pylint-mccabe hasn't been updated in five years, you should probably move to this extension.
+
+I just added the following to .pylintrc:
+
+    [MASTER]
+    load-plugins=pylint.extensions.mccabe
+","",""

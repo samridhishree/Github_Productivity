@@ -1,0 +1,82 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","91","pycqa","astroid","pylint-bot","2015-04-16 09:47:39","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, pylint fails with a traceback when it tries to look for not-context-manager error:
+
+```
+#!python
+
+from django.db.backends.oracle.base import DatabaseWrapper as DjDatabaseWrapper
+
+
+class DatabaseWrapper(DjDatabaseWrapper):
+
+    def _close(self):
+        if self.connection is not None:
+            with self.wrap_database_errors:
+                return self.pool.release(self.connection)
+
+```
+
+The traceback is:
+
+```
+#!python
+
+Traceback (most recent call last):
+  File ""C:\Python34\Scripts\pylint-script.py"", line 9, in <module>
+    load_entry_point('pylint==1.4.3', 'console_scripts', 'pylint')()
+  File ""e:\projects\repos\pylint\pylint\__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 1343, in __init__
+    linter.check(args)
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 754, in check
+    self._do_check(files_or_modules)
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 877, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 958, in check_astroid_module
+    walker.walk(ast_node)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 874, in walk
+    cb(astroid)
+  File ""e:\projects\repos\pylint\pylint\checkers\typecheck.py"", line 652, in visit_with
+    infered.getattr('__enter__')
+  File ""e:\projects\repos\astroid-1\astroid\bases.py"", line 264, in getattr
+    return super(UnboundMethod, self).getattr(name, context)
+AttributeError: 'super' object has no attribute 'getattr'
+
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/91
+","start issue","UnboundMethod calls getattr from the parent, there's no getattr on the parent"
+"issue_closed","91","pycqa","astroid","pylint-bot","2015-12-09 05:53:19","","closed issue","UnboundMethod calls getattr from the parent, there's no getattr on the parent"
+"issue_comment","91","pycqa","astroid","pylint-bot","2015-04-17 17:40:19","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+UnboundMethod.getattr calls the getattr of its _proxied object.
+
+It previously crashed, since it called super(...).getattr(..) and the
+first ancestor in its mro was bases.Proxy and bases.Proxy doesn't implement
+the .getattr method. Closes issue #91.
+","",""
+"issue_comment","91","pycqa","astroid","pylint-bot","2015-11-11 15:14:12","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+UnboundMethod.getattr calls the getattr of its _proxied object.
+
+It previously crashed, since it called super(...).getattr(..) and the
+first ancestor in its mro was bases.Proxy and bases.Proxy doesn't implement
+the .getattr method. Closes issue #91.
+","",""

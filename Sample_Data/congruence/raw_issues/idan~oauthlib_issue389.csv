@@ -1,0 +1,60 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","389","idan","oauthlib","benediktschmitt","2015-09-01 19:51:24","Hi,
+
+thank you for this great library.
+
+I implemented the request validator as described in the documentation, but I get this exception after executing the _authenticate_client_ method:
+
+```
+Authenticate client must set the request.client.client_id attribute in authenticate_client.
+```
+
+https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L374
+
+Is there a difference between _request.client_id_ and _request.client.client_id_? I think the line of code should be
+
+```
+if not hasattr(request, 'client_id'):
+```
+","start issue","Is the *request.client.client_id* attribute really necessairy?"
+"issue_comment","389","idan","oauthlib","Bramas","2016-01-18 00:12:34","Hello,
+I have the same error.
+And I don't understand how can client_id can be an attribute of request.client if client is just a param extracted from the query string (ie, a string itself) 
+So I also think this should be:
+
+```
+if not hasattr(request, 'client_id'):
+```
+","",""
+"issue_comment","389","idan","oauthlib","Bramas","2016-01-18 11:22:00","In AuthorizationCodeGrant::validateTokenRequest, we have
+
+``` python
+        if self.request_validator.client_authentication_required(request):
+            if not self.request_validator.authenticate_client(request):
+                log.debug('Client authentication failed, %r.', request)
+                raise errors.InvalidClientError(request=request)
+        elif not self.request_validator.authenticate_client_id(request.client_id, request):
+
+            log.debug('Client authentication failed, %r.', request)
+            raise errors.InvalidClientError(request=request)
+
+        if not hasattr(request.client, 'client_id'):
+            raise NotImplementedError('Authenticate client must set the '
+                                      'request.client.client_id attribute '
+                                      'in authenticate_client.')
+```
+
+The error comes from the last if **but**:
+
+In authenticate_client_id function the doc says:
+
+```
+        Note, while not strictly necessary it can often be very convenient
+        to set request.client to the client object associated with the
+        given client_id.
+```
+
+So actually request.client can have an attribut client_id but this **must be set in authenticate_client_id or in authenticate_client**
+This should be indicated correctly in the doc! 
+We should replace `while not strictly necessary` by `it is strictly necessary`
+","",""

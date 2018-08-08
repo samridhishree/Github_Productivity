@@ -1,0 +1,28 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","180","pycqa","astroid","pylint-bot","2015-09-03 23:02:43","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, astroid doesn't understand the fact that the result will always be `24`, instead it returns an union between the global and the value from the enclosing scope.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+next = 42
+def wrapper(next=next):     
+     next = 24
+     def test():
+         return next
+     return test
+wrapper()() #@
+''')
+f = n.inferred()
+print(f)
+print(f[0].value)
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/180
+","start issue","Scope lookup problem when using closures"

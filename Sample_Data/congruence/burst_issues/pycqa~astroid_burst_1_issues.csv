@@ -1,0 +1,232 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,90,pycqa,astroid,pylint-bot,2015-04-16 09:13:56,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+We could try to understand this:
+
+```
+#!python
+
+from astroid.builder import AstroidBuilder as ab
+b = ab()
+node = b.string_build('''
+f = (1, 2, 3)[1:]
+''')
+f = node['f']
+print(f.infered()) # yields YES instead of Tuple
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/90
+",start issue,"Slices of list, tuples etc are the same type"
+1,issue_closed,90,pycqa,astroid,pylint-bot,2015-12-09 05:53:18,,closed issue,"Slices of list, tuples etc are the same type"
+2,issue_comment,90,pycqa,astroid,pylint-bot,2015-08-20 21:25:32,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Duplicate of #137.
+",,
+0,issue_title,92,pycqa,astroid,pylint-bot,2015-04-16 10:17:43,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+We could understand the return value of a lambda or a function, where the value is nothing but the vararg of the function, if we have a context and a callcontext at our disposal. For instance, this code should yield (1, 2, 3), not [] as it is right now.
+
+```
+#!python
+
+from astroid.builder import AstroidBuilder as ab
+b = ab()
+n = b.string_build('''
+a = lambda *args: args
+f = a(1, 2, 3)
+''')
+f = n['f']
+print(next(f.infer()).elts) # returns []
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/92
+",start issue,Understand lambda *args: args
+1,issue_closed,92,pycqa,astroid,pylint-bot,2015-12-09 05:53:20,,closed issue,Understand lambda *args: args
+2,issue_comment,92,pycqa,astroid,pylint-bot,2015-04-16 08:18:07,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This will fix a false positive with this code:
+
+```
+#!python
+
+from decimal import Decimal
+d = Decimal(2)
+a, b, c = d.as_tuple()
+
+```
+
+Pylint will emit an unbalanced-tuple-unpacking here, because it infers the fact that as_tuple returns an empty tuple.
+",,
+3,issue_comment,92,pycqa,astroid,pylint-bot,2015-09-10 22:02:25,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Fixed by 0b422f439e36682228646743fe1891b08ab49295
+",,
+0,issue_title,95,pycqa,astroid,pylint-bot,2015-04-16 12:05:32,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+This is just an idea. When trying to infer the parameters of a function, if there is no context available, we could try to  look in the function docstring for additional inference input.
+The most used documentation formats already provides type hints:
+- http://sphinx-doc.org/domains.html#info-field-lists
+- http://epydoc.sourceforge.net/manual-fields.html
+- https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
+
+Currently, the inference doesn't work very good in a function if there is no call context attached to the context object, so many errors are omitted for those functions.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/95
+",start issue,Type inference based on documentation hints?
+1,issue_closed,95,pycqa,astroid,PCManticore,2016-01-24 22:46:47,,closed issue,Type inference based on documentation hints?
+2,issue_comment,95,pycqa,astroid,PCManticore,2016-01-24 22:46:47,"This will make no sense after we'll have PEP 484 support, so closing.
+",,
+0,issue_title,91,pycqa,astroid,pylint-bot,2015-04-16 09:47:39,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, pylint fails with a traceback when it tries to look for not-context-manager error:
+
+```
+#!python
+
+from django.db.backends.oracle.base import DatabaseWrapper as DjDatabaseWrapper
+
+
+class DatabaseWrapper(DjDatabaseWrapper):
+
+    def _close(self):
+        if self.connection is not None:
+            with self.wrap_database_errors:
+                return self.pool.release(self.connection)
+
+```
+
+The traceback is:
+
+```
+#!python
+
+Traceback (most recent call last):
+  File ""C:\Python34\Scripts\pylint-script.py"", line 9, in <module>
+    load_entry_point('pylint==1.4.3', 'console_scripts', 'pylint')()
+  File ""e:\projects\repos\pylint\pylint\__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 1343, in __init__
+    linter.check(args)
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 754, in check
+    self._do_check(files_or_modules)
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 877, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""e:\projects\repos\pylint\pylint\lint.py"", line 958, in check_astroid_module
+    walker.walk(ast_node)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 877, in walk
+    self.walk(child)
+  File ""e:\projects\repos\pylint\pylint\utils.py"", line 874, in walk
+    cb(astroid)
+  File ""e:\projects\repos\pylint\pylint\checkers\typecheck.py"", line 652, in visit_with
+    infered.getattr('__enter__')
+  File ""e:\projects\repos\astroid-1\astroid\bases.py"", line 264, in getattr
+    return super(UnboundMethod, self).getattr(name, context)
+AttributeError: 'super' object has no attribute 'getattr'
+
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/91
+",start issue,"UnboundMethod calls getattr from the parent, there's no getattr on the parent"
+1,issue_closed,91,pycqa,astroid,pylint-bot,2015-12-09 05:53:19,,closed issue,"UnboundMethod calls getattr from the parent, there's no getattr on the parent"
+2,issue_comment,91,pycqa,astroid,pylint-bot,2015-04-17 17:40:19,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+UnboundMethod.getattr calls the getattr of its _proxied object.
+
+It previously crashed, since it called super(...).getattr(..) and the
+first ancestor in its mro was bases.Proxy and bases.Proxy doesn't implement
+the .getattr method. Closes issue #91.
+",,
+3,issue_comment,91,pycqa,astroid,pylint-bot,2015-11-11 15:14:12,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+UnboundMethod.getattr calls the getattr of its _proxied object.
+
+It previously crashed, since it called super(...).getattr(..) and the
+first ancestor in its mro was bases.Proxy and bases.Proxy doesn't implement
+the .getattr method. Closes issue #91.
+",,
+0,issue_title,89,pycqa,astroid,pylint-bot,2015-04-16 09:01:11,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Since we have a way to retrieve the mro, we could try to understand `super()` calls. This can be used to find errors, such as in this case:
+
+```
+#!python
+
+class A(object):
+    def do_test(self):
+        pass
+
+
+class B(A):
+    def __init__(self):
+        super(B, self).do_tes()
+
+
+B()
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/89
+",start issue,Understand super
+1,issue_closed,89,pycqa,astroid,pylint-bot,2015-12-09 05:53:18,,closed issue,Understand super
+2,issue_comment,89,pycqa,astroid,pylint-bot,2015-05-28 16:29:04,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Add a new _inference object_ called Super
+
+This patch also adds support for understanding super calls.
+astroid understands the zero-argument form of super, specific to
+Python 3, where the interpreter fills itself the arguments of the call. Also, we
+are understanding the 2-argument form of super, both for bounded lookups
+(super(X, instance)) as well as for unbounded lookups (super(X, Y)),
+having as well support for validating that the object-or-type is a subtype
+of the first argument. The unbounded form of super (one argument) is not
+understood, since it's useless in practice and should be removed from
+Python's specification. Closes issue #89.
+",,
+3,issue_comment,89,pycqa,astroid,pylint-bot,2015-11-19 14:27:03,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Add a new _inference object_ called Super
+
+This patch also adds support for understanding super calls.
+astroid understands the zero-argument form of super, specific to
+Python 3, where the interpreter fills itself the arguments of the call. Also, we
+are understanding the 2-argument form of super, both for bounded lookups
+(super(X, instance)) as well as for unbounded lookups (super(X, Y)),
+having as well support for validating that the object-or-type is a subtype
+of the first argument. The unbounded form of super (one argument) is not
+understood, since it's useless in practice and should be removed from
+Python's specification. Closes issue #89.
+",,

@@ -1,0 +1,45 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","159","pycqa","astroid","pylint-bot","2015-07-13 15:49:29","Originally reported by: **Benedikt Reinartz (BitBucket: [filmor](http://bitbucket.org/filmor), GitHub: @filmor?)**
+
+---
+
+Currently, it is not possible to properly use pylint on modules using .NET classes through Python.NET, as the imports fail. This is due to `modutils.find_from_modpath` essentially relying on `imp.find_module`, which does not work for this kind of pseudo-module.
+
+I'd gladly work on a PR if one can provide me a hint on how this is supposed to be handled.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/159
+","start issue","Support for Python.NET"
+"issue_closed","159","pycqa","astroid","PCManticore","2016-06-27 17:37:53","","closed issue","Support for Python.NET"
+"issue_comment","159","pycqa","astroid","pylint-bot","2015-07-13 15:07:03","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Python.NET is IronPython or it's different? I will be happy to assist you on a PR, but first I got to see why it fails. ;-)
+","",""
+"issue_comment","159","pycqa","astroid","pylint-bot","2015-07-14 11:38:29","_Original comment by_ **Benedikt Reinartz (BitBucket: [filmor](http://bitbucket.org/filmor), GitHub: @filmor?)**:
+
+---
+
+No, [Python.NET](http://pythonnet.github.io/) is a library to import and use CLR assemblies like Python modules.
+
+I don't know yet what the exact loading mechanism is, it's not exposed to Python, but it allows you to do stuff like `from System import String` to use .NET classes.
+","",""
+"issue_comment","159","pycqa","astroid","pylint-bot","2015-07-31 07:41:20","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Probably we could fix this by adding AST transforms. Have a look at astroid.brain, there's a bunch of transforms that could be useful for inspiration. Adding support for this in modutils doesn't seem the right approach.
+","",""
+"issue_comment","159","pycqa","astroid","filmor","2015-12-09 14:30:38","Hi again, I now know a bit more about the loading mechanism. Basically, Python.NET overloads `__import__` in a brute-force way as soon as you `import clr`. I will have a look at `astroid.brain`, didn't have the time, yet.
+","",""
+"issue_comment","159","pycqa","astroid","PCManticore","2016-01-04 08:07:04","Hi @filmor I somehow missed your comment. Yes, astroid.brain seems the proper way for solving this. Just ping me if you need any help.
+","",""
+"issue_comment","159","pycqa","astroid","denfromufa","2016-01-30 04:03:07","@filmor this would be really useful! let me know how it goes?
+","",""
+"issue_comment","159","pycqa","astroid","PCManticore","2016-06-27 17:37:53","Closing for the lack of activity. I don't have a particular interest in Python .NET, but I would be happy to help anyone that wants to tackle this issue, by implementing transforms or other changes required for astroid to work on this platform, but there is no point, for now, to keep this issue opened if there is no interest in supporting it by the core.
+","",""
+"issue_comment","159","pycqa","astroid","denfromufa","2016-09-14 03:37:46","@PCManticore @filmor by building pure python skeletons programmatically (reflection on imported .NET types) like in pycharm this should be possible even without patching pylint and other static analysis tools:
+
+https://github.com/JetBrains/python-skeletons/blob/master/numpy/core/multiarray.py
+","",""

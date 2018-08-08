@@ -1,0 +1,150 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,419,pycqa,astroid,rr-,2017-03-25 07:41:21,"### Steps to reproduce
+
+```python3
+class Command:
+    name: str
+
+class PlayCommand(Command):
+    name = 'play'
+```
+
+### Current behavior
+
+```
+Traceback (most recent call last):
+  File ""/home/rr-/.local/bin//pylint"", line 11, in <module>
+    load_entry_point('pylint==2.0.0', 'console_scripts', 'pylint')()
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/checkers/classes.py"", line 536, in visit_classdef
+    self._check_bases_classes(node)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/checkers/classes.py"", line 1114, in _check_bases_classes
+    unimplemented_abstract_methods(node, is_abstract).items(),
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/checkers/utils.py"", line 547, in unimplemented_abstract_methods
+    infered = safe_infer(obj)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/pylint/checkers/utils.py"", line 767, in safe_infer
+    value = next(inferit)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/home/rr-/.local/lib/python3.6/site-packages/astroid/bases.py"", line 93, in _infer_stmts
+    context.lookupname = stmt._infer_name(frame, name)
+AttributeError: 'NoneType' object has no attribute '_infer_name'
+```
+
+### Expected behavior
+
+```
+************* Module test
+R:  1, 0: Too few public methods (0/1) (too-few-public-methods)
+R:  4, 0: Too few public methods (0/1) (too-few-public-methods)
+
+------------------------------------------------------------------
+Your code has been rated at 5.00/10 (previous run: 9.38/10, -4.38)
+```
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+`1.5.0`
+",start issue,Crash on overridden typed properties when base has no value
+1,issue_closed,419,pycqa,astroid,rogalski,2017-04-02 12:55:20,,closed issue,Crash on overridden typed properties when base has no value
+2,issue_comment,419,pycqa,astroid,rr-,2017-03-25 07:44:22,"Switching to a slightly more verbose idiom:
+
+```
+class Command:
+    @property
+    def name(self) -> str:
+        raise NotImplementedError()
+```
+
+as well as providing default value:
+
+```
+class Command:
+    name: str = 'INVALID'
+```
+
+works, nonetheless `astroid` shouldn't crash like this.",,
+3,issue_comment,419,pycqa,astroid,rogalski,2017-03-27 20:21:37,Possible dupe of PyCQA/pylint#1389,,
+0,issue_title,408,pycqa,astroid,rogalski,2017-02-28 21:19:38,Fixes PyCQA/pylint#1348,start issue,builder: fix detection of whether found file is a package when there is a __init__.py in file name
+1,issue_closed,408,pycqa,astroid,rogalski,2017-04-02 11:55:28,,closed issue,builder: fix detection of whether found file is a package when there is a __init__.py in file name
+2,pull_request_title,408,pycqa,astroid,rogalski,2017-02-28 21:19:38,Fixes PyCQA/pylint#1348,093f16b1f35464f84203689d94710cb72367f9eb,builder: fix detection of whether found file is a package when there is a __init__.py in file name
+3,pull_request_merged,408,pycqa,astroid,rogalski,2017-04-02 11:55:28,builder: fix detection of whether found file is a package when there is a __init__.py in file name,92665fe273b9e5899fa28ef7f67d4794db42478f,Pull request merge from rogalski/astroid:builder_fix_detection_of_package to PyCQA/astroid:master
+4,issue_comment,408,pycqa,astroid,PCManticore,2017-03-01 09:23:36,"I don't think that this is the root cause of that bug. In the reproducing example provided there, the package had a ``__init__.py`` file. We should check where astroid is raising the ImportError in the first place, in order to know what triggers the bug.",,
+5,issue_comment,408,pycqa,astroid,rogalski,2017-03-05 09:20:08,"@PCManticore Well, all I know is that it fixes reported issue. I'm just no sure where is a place for an automated test.",,
+6,pull_request_commit,408,pycqa,astroid,rogalski,2017-02-28 21:19:22,"builder: fix detection of whether found file is a package when there is a __init__.py in file name
+
+Fixes PyCQA/pylint#1348",d8791ff449ef5cb8518a9ac0e59c1084842fdf7d,
+7,pull_request_commit,408,pycqa,astroid,rogalski,2017-03-27 19:56:47,Add unit test,5a88003f5c366c81cf209cb7d8faa8dcb76efde7,
+8,pull_request_commit,408,pycqa,astroid,rogalski,2017-03-27 19:57:06,Merge branch 'master' into builder_fix_detection_of_package,f1257b9265eea33a0969ca45f790dd2e6090653c,
+9,pull_request_commit,408,pycqa,astroid,rogalski,2017-04-02 11:42:47,remove not needed test,f0dd1d23dddfe5ed571a73d6e96d2e9e5805ca77,
+10,pull_request_commit,408,pycqa,astroid,rogalski,2017-04-02 11:48:21,remove not needed empty line removal,093f16b1f35464f84203689d94710cb72367f9eb,
+0,issue_title,351,pycqa,astroid,rogalski,2016-07-23 22:07:41,"### Steps to reproduce
+
+```
+def test_namedtuple_instance_attrs(self):
+    result = builder.extract_node('''
+    from collections import namedtuple
+    namedtuple('a', 'def class', rename=True)(1, 2) #@
+    ''')
+    inferred = next(result.infer())
+    for name, attr in inferred.instance_attrs.items():
+        self.assertEqual(attr[0].attrname, name)
+```
+### Current behavior
+
+Test passed.
+### Expected behavior
+
+Test fails, since created tuple has renamed fields.
+
+```
+>>> from collections import namedtuple
+>>> namedtuple('a', 'def class', rename=True)(1, 2)
+a(_0=1, _1=2)
+```
+
+Astroid version: repository tip.
+",start issue,namedtuple: rename keyword argument is not handled properly
+1,issue_closed,351,pycqa,astroid,rogalski,2017-04-02 17:32:49,,closed issue,namedtuple: rename keyword argument is not handled properly
+2,issue_comment,351,pycqa,astroid,PCManticore,2016-07-26 17:45:06,"Yes, we could support this field as well. Will look into your pull request soon (probably I won't have time today)
+",,
+3,issue_comment,351,pycqa,astroid,rogalski,2017-03-27 20:22:25,#415 contain a fix.,,
+0,issue_title,415,pycqa,astroid,rogalski,2017-03-12 11:43:33,Fixes PyCQA/pylint#1367,start issue,Support rename=True in named tuple inference
+1,issue_closed,415,pycqa,astroid,rogalski,2017-04-02 17:32:48,,closed issue,Support rename=True in named tuple inference
+2,pull_request_title,415,pycqa,astroid,rogalski,2017-03-12 11:43:33,Fixes PyCQA/pylint#1367,b6cbe714549d98cd11b1753de5b1bcf362a86d86,Support rename=True in named tuple inference
+3,pull_request_merged,415,pycqa,astroid,rogalski,2017-04-02 17:32:48,Support rename=True in named tuple inference,12b673267dce7c899ca384792386ed9b657fe66a,Pull request merge from rogalski/astroid:astroid_rename to PyCQA/astroid:master
+4,issue_comment,415,pycqa,astroid,rogalski,2017-03-27 19:49:09,Is there a change to having it merged before 1.5.0?,,
+5,issue_comment,415,pycqa,astroid,rogalski,2017-04-02 12:36:59,@PCManticore @ceridwen @degustaf it would be nice to get any form of input before it'll be merged.,,
+6,pull_request_commit_comment,415,pycqa,astroid,PCManticore,2017-04-02 13:04:01,"If it raises StopIteration, then it is a bug. Let's not mask it, so we could know what exactly fails.",b6cbe714549d98cd11b1753de5b1bcf362a86d86,"(None, '', u'astroid/brain/brain_namedtuple_enum.py')"
+7,pull_request_commit_comment,415,pycqa,astroid,PCManticore,2017-04-02 13:06:32,``enumerate(field_names)``,b6cbe714549d98cd11b1753de5b1bcf362a86d86,"(None, '', u'astroid/brain/brain_namedtuple_enum.py')"
+8,pull_request_commit,415,pycqa,astroid,rogalski,2017-04-02 15:45:57,"Support rename=True in named tuple inference
+
+Fixes PyCQA/pylint#1367",e2a233e58bb427a970b84bf87a1e5808aab874dd,
+9,pull_request_commit,415,pycqa,astroid,rogalski,2017-04-02 16:25:54,Fix clashing tests,0fb82cee2684351e8db1253aab16d97215ab95a1,
+10,pull_request_commit,415,pycqa,astroid,rogalski,2017-04-02 17:01:29,add a test case for uninferable rename argument,9ad88dddf957aa7cee55f0574c3b3e03bcc4020a,
+11,pull_request_commit,415,pycqa,astroid,rogalski,2017-04-02 17:08:16,fix test,85b0867aba6b7cecaed26c69229bab3ccbca7e55,
+12,pull_request_commit,415,pycqa,astroid,rogalski,2017-04-02 17:21:35,add changelog entry,b6cbe714549d98cd11b1753de5b1bcf362a86d86,
+0,issue_title,420,pycqa,astroid,rogalski,2017-03-28 21:13:59,,start issue,Fix assigned_stmts() for AnnAssign nodes without value
+1,issue_closed,420,pycqa,astroid,rogalski,2017-04-02 12:55:19,,closed issue,Fix assigned_stmts() for AnnAssign nodes without value
+2,pull_request_title,420,pycqa,astroid,rogalski,2017-03-28 21:13:59,,db1074e84dec6fa8b68d44598c1d2b0ead9233fe,Fix assigned_stmts() for AnnAssign nodes without value
+3,pull_request_merged,420,pycqa,astroid,rogalski,2017-04-02 12:55:19,Fix assigned_stmts() for AnnAssign nodes without value,6c224ce95ce1c5b1c6e6209d620313a09caf0491,Pull request merge from rogalski/astroid:annassign_heritance to PyCQA/astroid:master
+4,issue_comment,420,pycqa,astroid,rogalski,2017-04-02 12:36:55,@PCManticore @ceridwen @degustaf it would be nice to get any form of input before it'll be merged.,,
+5,issue_comment,420,pycqa,astroid,PCManticore,2017-04-02 12:51:02,This looks simple enough.,,
+6,pull_request_commit,420,pycqa,astroid,rogalski,2017-03-28 21:04:12,"Fix assigned_stmts() for AnnAssign nodes without value
+
+Fixes #419 and PyCQA/pylint#1389",fa2bbce797c49b9a4627c03fddd20753fc28d838,
+7,pull_request_commit,420,pycqa,astroid,rogalski,2017-03-28 21:04:50,Merge remote-tracking branch 'PyCQA/master' into annassign_heritance,e2f57d34f87be182e89022325ec47a930f9b09c1,
+8,pull_request_commit,420,pycqa,astroid,rogalski,2017-03-28 21:11:53,Fix assertion,db1074e84dec6fa8b68d44598c1d2b0ead9233fe,

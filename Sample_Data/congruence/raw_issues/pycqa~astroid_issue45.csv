@@ -1,0 +1,165 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","45","pycqa","astroid","pylint-bot","2014-08-01 00:02:43","Originally reported by: **Brian Lane (BitBucket: [bcl](http://bitbucket.org/bcl), GitHub: @bcl?)**
+
+---
+
+We have this bug report in Fedora - https://bugzilla.redhat.com/show_bug.cgi?id=1125259
+
+It looks like the Method class is missing a _type attribute.
+
+```
+#!python
+
+Version-Release number of selected component:
+pylint-1.2-6.fc20
+
+Additional info:
+reporter:       libreport-2.2.3
+cmdline:        /usr/bin/python /usr/bin/pylint '--msg-template={path}:{line}: [{msg_id}] {msg}' -r n scenarios/Apache.py --disable=C0103,W1201
+dso_list:       python-astroid-1.1-3.fc20.noarch
+executable:     /usr/bin/pylint
+kernel:         3.14.4-200.fc20.x86_64
+runlevel:       N 5
+type:           Python
+uid:            1000
+
+Truncated backtrace:
+scoped_nodes.py:686:_is_metaclass:AttributeError: 'Module' object has no attribute '_type'
+
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==1.2.0', 'console_scripts', 'pylint')()
+  File ""/usr/lib/python2.7/site-packages/pylint/__init__.py"", line 21, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/lib/python2.7/site-packages/pylint/lint.py"", line 1047, in __init__
+    linter.check(args)
+  File ""/usr/lib/python2.7/site-packages/pylint/lint.py"", line 626, in check
+    self.check_astroid_module(astroid, walker, rawcheckers, tokencheckers)
+  File ""/usr/lib/python2.7/site-packages/pylint/lint.py"", line 712, in check_astroid_module
+    walker.walk(astroid)
+  File ""/usr/lib/python2.7/site-packages/pylint/utils.py"", line 715, in walk
+    self.walk(child)
+  File ""/usr/lib/python2.7/site-packages/pylint/utils.py"", line 712, in walk
+    cb(astroid)
+  File ""/usr/lib/python2.7/site-packages/pylint/checkers/classes.py"", line 249, in visit_class
+    if node.type == 'class':
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 702, in _class_type
+    if _is_metaclass(klass):
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 686, in _is_metaclass
+    if baseobj._type == 'metaclass':
+AttributeError: 'Module' object has no attribute '_type'
+
+Local variables in innermost frame:
+baseobj: <Module(scenarios.GenericTest) l.0 [scenarios.GenericTest] at Ox139f710>
+base: <Name(GenericTest) l.12 [scenarios.Apache] at Ox109d150>
+klass: <Class(Apache) l.12 [scenarios.Apache] at Ox10a2350>
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/45
+","start issue","AttributeError: 'Module' object has no attribute '_type'"
+"issue_closed","45","pycqa","astroid","pylint-bot","2015-12-09 05:52:21","","closed issue","AttributeError: 'Module' object has no attribute '_type'"
+"issue_comment","45","pycqa","astroid","pylint-bot","2014-08-01 04:14:20","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Does this replicate with Astroid 1.2?
+","",""
+"issue_comment","45","pycqa","astroid","pylint-bot","2014-08-01 17:07:38","_Original comment by_ **Brian Lane (BitBucket: [bcl](http://bitbucket.org/bcl), GitHub: @bcl?)**:
+
+---
+
+I don't have any way to check, but from looking at the current code in astroid I don't see _type set on Module and the _is_metaclass code looks the same. Are there other changes that may prevent it from getting that far?
+","",""
+"issue_comment","45","pycqa","astroid","pylint-bot","2014-08-01 17:36:42","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Well, only Class nodes should be processed by _is_metaclass. Could you provide a small sample that reproduces the code?
+","",""
+"issue_comment","45","pycqa","astroid","pylint-bot","2014-08-23 03:58:57","_Original comment by_ **Andrew Kuchev (BitBucket: [4soon](http://bitbucket.org/4soon))**:
+
+---
+
+I have similar problem when checking the following code:
+
+```
+#!python
+
+def decor(f):
+    return f
+
+
+class Foo:
+    @decor
+    def prop(self):
+        pass
+
+
+if __name__ == '__main__':
+    f = Foo()
+    f.prop = 42
+```
+
+The stacktrace is:
+
+```
+#!python
+
+$ pylint main.py
+No config file found, using default configuration
+************* Module main
+C: 13, 0: Final newline missing (missing-final-newline)
+C:  1, 0: Missing module docstring (missing-docstring)
+W:  1,10: Redefining name 'f' from outer scope (line 12) (redefined-outer-name)
+C:  1, 0: Invalid argument name ""f"" (invalid-name)
+C:  1, 0: Missing function docstring (missing-docstring)
+C:  5, 0: Missing class docstring (missing-docstring)
+W:  5, 0: Class has no __init__ method (no-init)
+C:  7, 4: Missing method docstring (missing-docstring)
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==1.3.0', 'console_scripts', 'pylint')()
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/__init__.py"", line 21, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/lint.py"", line 991, in __init__
+    linter.check(args)
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/lint.py"", line 585, in check
+    self.check_astroid_module(astroid, walker, rawcheckers, tokencheckers)
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/lint.py"", line 662, in check_astroid_module
+    walker.walk(astroid)
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/utils.py"", line 804, in walk
+    self.walk(child)
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/utils.py"", line 804, in walk
+    self.walk(child)
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/utils.py"", line 801, in walk
+    cb(astroid)
+  File ""/usr/lib/python3.4/site-packages/pylint-1.3.0-py3.4.egg/pylint/checkers/classes.py"", line 347, in visit_function
+    if overridden_frame.type == 'method':
+AttributeError: 'Module' object has no attribute 'type'
+
+```
+
+Version: 
+
+```
+$ pylint --version
+No config file found, using default configuration
+pylint 1.3.0, 
+astroid 1.2.0, common 0.62.1
+Python 3.4.1 (default, May 19 2014, 17:23:49) 
+[GCC 4.9.0 20140507 (prerelease)]
+```
+","",""
+"issue_comment","45","pycqa","astroid","pylint-bot","2014-08-23 07:33:15","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Thanks, Andrew, I fixed that in https://bitbucket.org/logilab/pylint/commits/e9ae6b39983942a2d47b2725458aca988ebd93ff. Unfortunately, it's not the same as the other failure.
+","",""
+"issue_comment","45","pycqa","astroid","pylint-bot","2015-02-06 15:25:07","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Since there's no way to reproduce this, I'll close the issue in the mean time.
+","",""

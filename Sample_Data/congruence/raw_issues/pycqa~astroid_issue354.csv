@@ -1,0 +1,32 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","354","pycqa","astroid","PCManticore","2016-07-28 18:45:04","Just leaving this to take in consideration later.
+
+Currently, if one uses a transform that returns a completely new node, instead of patching the node that was given, everything works just fine, with the caveat that the old name might still exist somewhere in the parent's scope, such as in the frame of the module where the function was defined.
+Ideally, the new node will become the authoritative source, replacing all the other occurences of the past node and hopefully, we can achieve this later on with zipper or with another approach.
+
+This is an example that shows the current situation
+
+```
+from astroid import MANAGER
+import astroid
+
+
+def transform_function(node):
+    new_func = astroid.FunctionDef(name=""new_node"", doc=node.name,
+                                     lineno=node.lineno, col_offset=node.col_offset,
+                                     parent=node.parent)
+    new_func.postinit(node.args, node.body, node.decorators, node.returns)
+    return new_func
+
+MANAGER.register_transform(astroid.FunctionDef, transform_function)
+
+
+from astroid import extract_node
+n = extract_node('''
+def test():
+   pass
+''')
+print(n)
+print(n.parent.scope().frame().locals)
+```
+","start issue","Replacing transforms are not ensuring that the old node is not used"

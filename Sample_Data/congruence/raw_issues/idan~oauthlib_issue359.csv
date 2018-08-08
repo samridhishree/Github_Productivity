@@ -1,0 +1,58 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","359","idan","oauthlib","bjmc","2015-07-15 19:53:01","Hello, I'm not sure if this is a bug or if I'm doing something wrong, but I'm trying to create an OAuth2 Provider, and one of the grant types we want to support is the client_credentials grant. According to [RFC 6749](https://tools.ietf.org/html/rfc6749#section-4.4.2), a client can optionally include the `scope` parameter in the Access Token Request
+
+```
+scope
+         OPTIONAL.  The scope of the access request as described by Section 3.3.
+```
+
+However, I can't figure out any way to actually use this scope parameter with OAuthlib because the TokenEndpoint [instantiates a new Request object and then sets scopes to None:](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/endpoints/token.py#L93)
+
+``` python
+@catch_errors_and_unavailability
+def create_token_response(self, uri, http_method='GET', body=None,
+                          headers=None, credentials=None):
+    """"""Extract grant_type and route to the designated handler.""""""
+    request = Request(
+        uri, http_method=http_method, body=body, headers=headers)
+    request.scopes = None
+    ...
+    return grant_type_handler.create_token_response(
+        request, self.default_token_type)
+```
+
+Then the ClientCredentialsGrant [tries to validate scopes](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/client_credentials.py#L112) by invoking [GrantTypeBase.validate_scopes()](https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/grant_types/base.py#L34) where it checks for the existence of `request.scopes`:
+
+``` python
+def validate_scopes(self, request):
+    if not request.scopes:
+        request.scopes = utils.scope_to_list(request.scope) or utils.scope_to_list(
+            self.request_validator.get_default_scopes(request.client_id, request))
+```
+
+I guess I can work around this by setting the scope inside `get_default_scopes()` in my validator, but that doesn't really seem like the right approach.
+
+Am I missing something, or is this a bug? Why does the TokenEndpoint set `request.scopes = None` instead of respecting a scope parameter passed by the client? I'm happy to put together a pull request if something should be changed here.
+","start issue","ClientCredentialsGrant: why does the TokenEndpoint set request.scopes = None?"
+"issue_comment","359","idan","oauthlib","thedrow","2015-07-25 07:42:06","This sounds like a bug. Pull requests are welcome.
+","",""
+"issue_comment","359","idan","oauthlib","leonid-s-usov","2015-11-04 19:52:00","After looking into the code it seems that this is not a bug. 
+
+The line that clears `request.scopes` does not clear the wanted `request.scope` RFC parameter from the request, which is actually used to construct scopes _list_ in the `validate_scopes()`: `request.scopes = utils.scope_to_list(request.scope) or ...`
+","",""
+"issue_comment","359","idan","oauthlib","thedrow","2015-11-05 09:49:30","In that case, I'll close the issue.
+","",""
+"issue_comment","359","idan","oauthlib","leonid-s-usov","2015-11-05 10:03:25","Probably it should be tester first
+
+Sent from mobile device, typos and false corrections are possible
+
+Regards,
+Leonid S. Usov
+
+5 лист. 2015 р. о 11:49 Omer Katz notifications@github.com написав(ла):
+
+> In that case, I'll close the issue.
+> 
+> —
+> Reply to this email directly or view it on GitHub.
+","",""

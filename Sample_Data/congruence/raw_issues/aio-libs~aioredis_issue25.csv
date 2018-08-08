@@ -1,0 +1,94 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","25","aio-libs","aioredis","jettify","2014-07-09 21:43:01","Here my attempt to fix tests for blocking commands. I do not know why, but it is not possible to create other connection inside test:
+
+``` python
+other_redis = yield from create_redis('localhost', self.redis_port, loop=self.loop)
+```
+
+results in:
+
+``` python
+  File ""tests/_testutil.py"", line 18, in wrapper
+    ret = loop.run_until_complete(fun(test, *args, **kw))
+  File ""/usr/lib/python3.4/asyncio/base_events.py"", line 208, in run_until_complete
+    return future.result()
+  File ""/usr/lib/python3.4/asyncio/futures.py"", line 243, in result
+    raise self._exception
+  File ""/usr/lib/python3.4/asyncio/tasks.py"", line 321, in _step
+    result = next(coro)
+  File ""tests/list_commands_test.py"", line 30, in test_blpop
+    other = yield from create_redis('localhost', self.redis_port, loop=self.loop)
+  File ""/home/nick/sources/python/aioredis/aioredis/commands/__init__.py"", line 90, in create_redis
+    conn = yield from create_connection(address, db, password, loop=loop)
+  File ""/home/nick/sources/python/aioredis/aioredis/connection.py"", line 36, in create_connection
+    address, loop=loop)
+  File ""/usr/lib/python3.4/asyncio/streams.py"", line 114, in open_unix_connection
+    lambda: protocol, path, **kwds)
+  File ""/usr/lib/python3.4/asyncio/unix_events.py"", line 188, in create_unix_connection
+    yield from self.sock_connect(sock, path)
+  File ""/usr/lib/python3.4/asyncio/futures.py"", line 350, in __iter__
+    return self.result()  # May raise too.
+  File ""/usr/lib/python3.4/asyncio/futures.py"", line 243, in result
+    raise self._exception
+  File ""/usr/lib/python3.4/asyncio/selector_events.py"", line 295, in _sock_connect
+    sock.connect(address)
+FileNotFoundError: [Errno 2] No such file or directory
+```
+
+So I added new connection creation to `setUp()` and everithing works just fine.
+Is this something with my `redis`?
+","start issue","proper test for blocking commands"
+"issue_closed","25","aio-libs","aioredis","popravich","2014-07-14 06:29:24","","closed issue","proper test for blocking commands"
+"pull_request_title","25","aio-libs","aioredis","jettify","2014-07-09 21:43:01","Here my attempt to fix tests for blocking commands. I do not know why, but it is not possible to create other connection inside test:
+
+``` python
+other_redis = yield from create_redis('localhost', self.redis_port, loop=self.loop)
+```
+
+results in:
+
+``` python
+  File ""tests/_testutil.py"", line 18, in wrapper
+    ret = loop.run_until_complete(fun(test, *args, **kw))
+  File ""/usr/lib/python3.4/asyncio/base_events.py"", line 208, in run_until_complete
+    return future.result()
+  File ""/usr/lib/python3.4/asyncio/futures.py"", line 243, in result
+    raise self._exception
+  File ""/usr/lib/python3.4/asyncio/tasks.py"", line 321, in _step
+    result = next(coro)
+  File ""tests/list_commands_test.py"", line 30, in test_blpop
+    other = yield from create_redis('localhost', self.redis_port, loop=self.loop)
+  File ""/home/nick/sources/python/aioredis/aioredis/commands/__init__.py"", line 90, in create_redis
+    conn = yield from create_connection(address, db, password, loop=loop)
+  File ""/home/nick/sources/python/aioredis/aioredis/connection.py"", line 36, in create_connection
+    address, loop=loop)
+  File ""/usr/lib/python3.4/asyncio/streams.py"", line 114, in open_unix_connection
+    lambda: protocol, path, **kwds)
+  File ""/usr/lib/python3.4/asyncio/unix_events.py"", line 188, in create_unix_connection
+    yield from self.sock_connect(sock, path)
+  File ""/usr/lib/python3.4/asyncio/futures.py"", line 350, in __iter__
+    return self.result()  # May raise too.
+  File ""/usr/lib/python3.4/asyncio/futures.py"", line 243, in result
+    raise self._exception
+  File ""/usr/lib/python3.4/asyncio/selector_events.py"", line 295, in _sock_connect
+    sock.connect(address)
+FileNotFoundError: [Errno 2] No such file or directory
+```
+
+So I added new connection creation to `setUp()` and everithing works just fine.
+Is this something with my `redis`?
+","387c1d82384e30dd1945d6039d5276c54714fa2c","proper test for blocking commands"
+"pull_request_merged","25","aio-libs","aioredis","popravich","2014-07-14 06:29:24","proper test for blocking commands","634083f66d1dfb56c298d68c8771f6bcdc422506","Pull request merge from jettify/aioredis:fix-tests-for-bl-commands to aio-libs/aioredis:master"
+"issue_comment","25","aio-libs","aioredis","popravich","2014-07-10 07:10:57","Well, there's a typo in `create_redis` call -- host/port must be tuple not separate arguments:
+
+``` python
+other_redis = yield from create_redis(('localhost', self.redis_port), loop=self.loop)
+```
+","",""
+"issue_comment","25","aio-libs","aioredis","jettify","2014-07-13 19:05:37","fixed. I added two tasks: consumer and producer with two separate connections. Consumer holds blocking command and producer puts data to required list with delay 0.2 sec. 
+","",""
+"issue_comment","25","aio-libs","aioredis","popravich","2014-07-14 06:29:22","Looks good. Thanks
+","",""
+"pull_request_commit","25","aio-libs","aioredis","jettify","2014-07-09 21:28:08","proper test for blocking commands","e02f938581f91c0c7e72e584cadb16b4368ea75b",""
+"pull_request_commit","25","aio-libs","aioredis","jettify","2014-07-10 19:16:49","move redis connection creation to the test","2904530e318de1e7f316c30c5c332e842c6f047e",""
+"pull_request_commit","25","aio-libs","aioredis","jettify","2014-07-10 20:56:31","pep8","387c1d82384e30dd1945d6039d5276c54714fa2c",""

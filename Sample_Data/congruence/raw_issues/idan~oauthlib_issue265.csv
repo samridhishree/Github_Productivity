@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","265","idan","oauthlib","singingwolfboy","2014-09-15 23:16:43","Because `warnings.catch_warnings()` is not thread-safe.
+https://docs.python.org/3/library/warnings.html#warnings.catch_warnings
+","start issue","Turn off raising warnings via parameter"
+"issue_closed","265","idan","oauthlib","singingwolfboy","2014-09-18 14:59:37","","closed issue","Turn off raising warnings via parameter"
+"pull_request_title","265","idan","oauthlib","singingwolfboy","2014-09-15 23:16:43","Because `warnings.catch_warnings()` is not thread-safe.
+https://docs.python.org/3/library/warnings.html#warnings.catch_warnings
+","2323609dc88ff4ea3add9d6e377b7aaf579a3ec0","Turn off raising warnings via parameter"
+"issue_comment","265","idan","oauthlib","singingwolfboy","2014-09-15 23:23:16","We should maybe also use `warnings.warn()` instead of raising a Warning directly: https://docs.python.org/2/library/warnings.html#warnings.warn
+","",""
+"issue_comment","265","idan","oauthlib","whit537","2014-09-18 12:55:44","Another way to do this would be with an envvar. That's what's used for [insecure transports](https://github.com/idan/oauthlib/blob/8fcceae9ef2d6e3c0cdf38b12ac71bc538dd6432/oauthlib/oauth2/rfc6749/utils.py#L89), for example, and it's also the approach I took in #268 for relaxing the `token_type` requirement in `parse_token_response`. Is this a knob one wants to configure for the whole application or do we need per-call configuration?
+
+If we proceed with the additional parameter to `parse_token_response` as implemented here then it seems that we should also expose that in the other `client/*_application.py` files.
+","",""
+"issue_comment","265","idan","oauthlib","singingwolfboy","2014-09-18 13:38:53","@whit537 using an envvar seems like a great idea, actually -- let me switch my pull request to do that. I don't think per-call configuration is necessary.
+","",""
+"issue_comment","265","idan","oauthlib","whit537","2014-09-18 13:40:26","@singingwolfboy Next question is what the default should be. Per the [robustness principle](http://en.wikipedia.org/wiki/Robustness_principle) I went with a non-strict default on #268.
+","",""
+"issue_comment","265","idan","oauthlib","singingwolfboy","2014-09-18 14:06:03","@whit537 I think it makes sense to raise the warning by default. First of all, it maintains backwards compatibility. Second, in single-threaded applications, you can just use `warnings.catch_warnings()` to silence the warning (which I assume is why the Warning exception was chosen in the first place). Third, receiving a different scope from the scope you requested seems like an exceptional situation, and exceptional situations warrant exceptions.
+
+If only `warnings.catch_warnings()` was threadsafe, this whole pull request would be unnecessary. :(
+","",""
+"issue_comment","265","idan","oauthlib","whit537","2014-09-18 14:09:58","@singingwolfboy Couldn't you just use try/except to catch warnings?
+
+``` python
+try:
+    parse_token_response(token_response)
+except Warning:
+    pass
+```
+","",""
+"issue_comment","265","idan","oauthlib","singingwolfboy","2014-09-18 14:23:26","@whit537 not for my use case, because I need the output from the function that I'm calling, and raising an exception prevents me from getting the return value. Specifically, [this is the code where the exception gets raised](https://github.com/singingwolfboy/flask-dance/blob/c306ad936/flask_dance/consumer/oauth2.py#L107-L111): `flask_dance.consumer.OAuth2ConsumerBlueprint.authorized()` is calling `requests_oauthlib.OAuth2Session.fetch_token()` is calling `WebApplicationClient.parse_token_response()`.
+","",""
+"issue_comment","265","idan","oauthlib","whit537","2014-09-18 14:46:48","Ah, okay. That makes sense.
+","",""
+"issue_comment","265","idan","oauthlib","singingwolfboy","2014-09-18 14:59:37","I figured it would be better to leave this PR as-is and simply create a new one, rather than removing my work. (Could be useful as a reference, or for comparison.) I've opened #269, and we can continue this discussion there.
+","",""
+"pull_request_commit","265","idan","oauthlib","singingwolfboy","2014-09-15 23:15:19","Turn off raising warnings via parameter
+
+Because warnings.catch_warnings() is not thread-safe.
+https://docs.python.org/3/library/warnings.html#warnings.catch_warnings","2323609dc88ff4ea3add9d6e377b7aaf579a3ec0",""

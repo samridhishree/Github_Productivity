@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","240","pycqa","astroid","pylint-bot","2015-11-01 16:40:37","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+Several decorators, for instance scoped_nodes.remove_nodes and decorators.raise_if_nothing_inferred, currently raise InferenceErrors that provide no useful information for debugging at all.  It's possible to write generic error messages, but that doesn't improve the situation much since, for instance, it's obvious from the stack trace that raise_if_nothing_inferred raised because the generator it's decorating returned an empty iterator, but that doesn't get at _why_ the generator returned an empty iterator.  There are really only two reasonable ways I can see to solve this problem.
+1. Use StopIteration to pass information from the generator to the decorator.  This will require some explicit StopIteration handling code to remain Py2/3 compatible, but as of adding `yield from` in Python 3.3, using [StopIteration values is the official method for returning values from a generator](https://www.python.org/dev/peps/pep-0380/#use-of-stopiteration-to-return-values).  (In fact, these decorators would be greatly simplified by the use of `yield from` in the first place, but maintaining Python 2 compatibility makes that impossible.)  The idea is that when the generator terminates, it always adds some information to the StopIteration it raises.  If the decorator decides there was an error condition, it uses that information to create a structured InferenceError to raise.
+2. Perform introspection on the generator when the decorator is called.  This requires some additional complexity in the decorator to split off as much introspection computation as possible to the point where the function is decorated, so as not to redo it every time the decorated function is called, and then some heuristics to figure out what the decorated function is doing with its arguments so that the decorator knows which arguments it received to attach to the InferenceError.
+
+I think the first option is better, primarily because it puts the responsibility for figuring out what arguments the InferenceError should have in the right place, but it is maybe more hackish.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/240
+","start issue","Decorators that raise InferenceErrors don't provide debugging information"
+"issue_closed","240","pycqa","astroid","pylint-bot","2015-12-09 05:55:40","","closed issue","Decorators that raise InferenceErrors don't provide debugging information"
+"issue_comment","240","pycqa","astroid","pylint-bot","2015-11-02 02:18:30","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I've looked both eliminating raise_if_nothing_inferred and raising a custom exception.  The first fails because when raise_if_nothing_inferred is called after path_wrapper uses return to raise StopIteration, raise_if_nothing_inferred will raise InferenceError; and because raise_if_nothing_inferred is at the moment catching StopIterations in the other inference generators themselves.  Neither of these behaviors can be easily duplicated at the level of the generators themselves.  For the second, there are cases where path_wrapper is called after raise_if_nothing_inferred and vice versa, and meanwhile, there are also cases where the same function is wrapped by only one or both.  This means that both path_wrapper and raise_if_nothing_inferred can potentially need to raise the custom exception for the other one.
+
+I think this takes us back to the only practical solutions being the two I first proposed.
+","",""
+"issue_comment","240","pycqa","astroid","pylint-bot","2015-11-03 16:28:57","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+One possible workaround when using StopIteration: create two versions of the decorators, one for use on Python < 3.3. and one for use on Python > 3.3.  This would require using exec or doing a dynamic import, replacing the explicit raise StopIteration in one version with return in the other.
+","",""
+"issue_comment","240","pycqa","astroid","pylint-bot","2015-11-05 14:53:12","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+We could use StopIteration for now and change later on with a decorator implementation. Another thing is that when 3.7 comes out, we might consider dropping support for Python 2.7, depending how things evolve until then.
+","",""
+"issue_comment","240","pycqa","astroid","pylint-bot","2015-11-06 17:12:39","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+e17cea5afccd uses StopIteration to pass information from and into raise_if_nothing_inferred and path_wrapper and removes removes_nodes altogether.
+","",""

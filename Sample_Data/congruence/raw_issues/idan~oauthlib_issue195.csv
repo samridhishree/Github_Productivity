@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","195","idan","oauthlib","masci","2013-07-12 09:08:14","It seems to be an error in validate_scopes inside GrantTypeBase when user passes in request.scopes variable:
+the first part of the request.scopes assignment, the one before the _or_, will never be assigned. 
+This fix let my tests pass, does it sound reasonable?
+","start issue","fix scopes normalization in validate_scopes method"
+"issue_closed","195","idan","oauthlib","masci","2013-07-12 13:43:42","","closed issue","fix scopes normalization in validate_scopes method"
+"pull_request_title","195","idan","oauthlib","masci","2013-07-12 09:08:14","It seems to be an error in validate_scopes inside GrantTypeBase when user passes in request.scopes variable:
+the first part of the request.scopes assignment, the one before the _or_, will never be assigned. 
+This fix let my tests pass, does it sound reasonable?
+","d6b3c2e28dd71749d07b0e6a06055eeca5e59364","fix scopes normalization in validate_scopes method"
+"issue_comment","195","idan","oauthlib","ib-lundgren","2013-07-12 12:14:29","There is a subtle difference between your PR and current code. The current code parses request.scope (not request.scopes) which is a comma separated string and defined as an optional parameter of all grant types into a list (request.scopes). request.scopes is mainly internal to oauthlib (and validators) and should always be a list of strings.
+
+request.scope is what should be set by clients and if the client supplied request.scopes instead that is an error on their side and is the reason AuthorizationEndpoint blanks out request.scopes in validate_authorization_request (this should be done in token endpoint too but is currently not). 
+
+The only time scopes is provided explicitly (by provider, not client) is in the post authorization form step of auth code and implicit grant since how the authorization form is structured is undefined and up to the provider. It is important to note that the scopes extracted from the authorization form may very well be a subset (but never superset or intersection) of the pre-authorization scope (as given in the url query)
+
+Please correct me if I misunderstood your problem entirely
+","",""
+"issue_comment","195","idan","oauthlib","masci","2013-07-12 13:43:42","Thanks for your explanation, the problem as you suspect is in the client, where `scopes` is set instead of `scope`, too bad I didn't get it. 
+
+As you pointed out, I am working in a _client credential_ workflow where `request.scopes` is not blanked causing a subtle error; let me know If I can help addressing this problem in the token endpoint.
+","",""
+"issue_comment","195","idan","oauthlib","ib-lundgren","2013-07-12 13:53:17","Good thing you found it. Sorry for the scope/scopes confusion, get me quite often too. 
+
+Since the fix was only a one liner I just went ahead and pushed it. Thanks for the offer tho =)
+
+https://github.com/idan/oauthlib/commit/6fe70413ee6c87720ea6421d64683624f230795a
+","",""
+"pull_request_commit","195","idan","oauthlib","masci@evonove.it","2013-07-12 08:56:28","fix scopes normalization in validate_scopes method","d6b3c2e28dd71749d07b0e6a06055eeca5e59364",""

@@ -1,0 +1,9 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","393","idan","oauthlib","astrodsg","2015-09-18 19:08:12","**SETUP:**  The endpoints have some sort of response generator (e.g. `TokenEndpoint.create_token_response`). These methods have a decorator `catch_errors_and_unavailability` and within them they call some `grant_type_handler`. Each `grant_type_handler` has it's own response generator (e.g. `AuthorizationCodeGrant.create_token_response`). 
+
+**PROBLEM:** The `grant_type_handler` is hard coded to catch OAuth2Error and mask the actual error returning some response parameters. This means that the `catch_errors_and_unavailability` decorate never has a chance to catch errors. Furthermore, it doesn't allow a developer to catch the errors raised by the endpoint and provide custom response based on the error type. 
+
+**SOLUTION:** Have grant_type handlers raise OAuth2Error when validating. Note, in most cases,  response headers need to be added to the error, perhaps even a response attribute with all necessary bits. `catch_errors_and_unavailability` when `endpoint.catch_errors` is true should probably not raise but actually catch the errors, returning some response. Then the developer has the option to set the `endpoint.catch_errors` and have it be meaningful.
+
+The RevocationEndpoint, AuthorizationEndpoint, and TokenEndpoint endpoints all do this problematic masking. The ResourceEndpoint will actually raise OAuth2Error errors in the response.
+","start issue","grant_types should raise OAuth2Errors not mask them"

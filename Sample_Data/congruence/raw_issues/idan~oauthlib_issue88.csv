@@ -1,0 +1,58 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","88","idan","oauthlib","tino","2013-01-05 13:18:07","Hi,
+
+I needed a really simple OAuth 2 server implementation to test my client against, and figured I would use this lib. I is not very easy, partly because you have to go back and forth through the source code, and quite some class constructors have arguments with defaults that don't make sense, as you can't use the class with those defaults. 
+
+I'll give some examples:
+
+``` python
+class AuthorizationEndpoint(object):
+    def __init__(self, default_response_type, default_token=None,
+            response_types=None):
+        self._response_types = response_types or {}
+        self._default_response_type = default_response_type
+        self._default_token = default_token or tokens.BearerToken()
+```
+
+`response_types` needs to be a dict with with at least one grant type class.
+
+``` python
+class TokenEndpoint(object):
+
+    def __init__(self, default_grant_type, default_token=None,
+            grant_types=None):
+        self._grant_types = grant_types or {}
+        self._default_token = default_token or tokens.BearerToken()
+        self._default_grant_type = default_grant_type
+```
+
+`default_token` can be left `None`, but that will result in an error later on, as `tokens.BearerToken` is a placeholder-class that needs to be overriden to define it's `save_token` method. 
+
+``` python
+class BearerToken(TokenBase):
+
+    def __init__(self, request_validator=None):
+        self.request_validator = request_validator
+```
+
+Later on `self.request_validator` is assumed a class with methods, and not `None`. If will fail with an obscure `AttributeError: 'NoneType' object has no attribute 'validate_bearer_token`.
+
+So I think we should make them all args instead of kwargs, or at least fail if they are ill defined.
+","start issue","Insensible defaults in constructors"
+"issue_closed","88","idan","oauthlib","ib-lundgren","2013-02-07 22:33:00","","closed issue","Insensible defaults in constructors"
+"issue_comment","88","idan","oauthlib","ib-lundgren","2013-01-15 21:03:41","Not very easy is mildly put considering this is still very much in development and I would not even consider it alpha as the api changes with almost every commit =) Well done on figuring it all out!
+
+There will be a guide / tutorial / some docs detailing how to implement an oauth 2 provider and as you hint it would be a good idea to assert that the various classes are initialized correctly as to avoid weird errors down the road.
+
+One example of api change is that I'm trying to move to inheritance by composition style (request validator) and avoid having to subclass just to override a method or two (save_token) but this is still not complete. The reason of the oauth 2 provider taking so long is a mix of very limited time on my side and the extreme flexibility of the protocol making an implementation that nicely support all of it tricky.
+
+The seemingly insensible defaults stems from the defaults not imposing any specific grant type or token type on the developer and thus everyone is forced to actively pick them and supply them. This might change in the future depending on what people wish for...
+","",""
+"issue_comment","88","idan","oauthlib","tino","2013-01-15 21:19:57","I understand that it is hard to impose a specific grant type, but I guess we could impose that people insert something of their own rather than `None` right?
+
+I'll see if I can make a sensible PR
+","",""
+"issue_comment","88","idan","oauthlib","ib-lundgren","2013-02-07 22:33:00","I've update the provider quite substantially and begun working on some docs, readable at https://oauthlib.readthedocs.org/en/latest/server2.html#creating-an-oauth-2-provider 
+
+I'm playing around with the idea of having different pre-configured endpoints associated with certain grant types. Also, the constructor defaults are now gone as all arguments are required.
+","",""

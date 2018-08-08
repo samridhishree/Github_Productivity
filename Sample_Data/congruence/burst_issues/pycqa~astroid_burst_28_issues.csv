@@ -1,0 +1,167 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,410,pycqa,astroid,cpennington,2017-03-08 15:27:14,"Since https://github.com/PyCQA/astroid/commit/3e27213914271309a4716662b09fda91fca9efa1,
+`is_subtype` and `is_supertype` raise exceptions when they can't find a relationship between types. This is caught by the callers of `_infer_binary_operation`. However, the error is only thrown after the generator return by `_infer_binary_operation` is started.
+
+Prior to this patch, the generator is only started inside the `else` clause of:
+
+```
+try:
+    results = _infer_binary_operation(lhs, rhs, self, context, _get_binop_flow)
+except exceptions._NonDeducibleTypeHierarchy:
+    yield util.Uninferable
+else:
+    for result in results:
+        yield result
+```
+
+To address this, the `quickstart` decorator pulls the first value from the generator when it's called, and then buffers that first result until it is needed by the later iteration.",start issue,Quickstart _infer_binary_operation to raise errors that occur during startup
+1,issue_closed,410,pycqa,astroid,PCManticore,2017-03-12 11:57:56,,closed issue,Quickstart _infer_binary_operation to raise errors that occur during startup
+2,pull_request_title,410,pycqa,astroid,cpennington,2017-03-08 15:27:14,"Since https://github.com/PyCQA/astroid/commit/3e27213914271309a4716662b09fda91fca9efa1,
+`is_subtype` and `is_supertype` raise exceptions when they can't find a relationship between types. This is caught by the callers of `_infer_binary_operation`. However, the error is only thrown after the generator return by `_infer_binary_operation` is started.
+
+Prior to this patch, the generator is only started inside the `else` clause of:
+
+```
+try:
+    results = _infer_binary_operation(lhs, rhs, self, context, _get_binop_flow)
+except exceptions._NonDeducibleTypeHierarchy:
+    yield util.Uninferable
+else:
+    for result in results:
+        yield result
+```
+
+To address this, the `quickstart` decorator pulls the first value from the generator when it's called, and then buffers that first result until it is needed by the later iteration.",3179195b225baed9c27e774124ba3a5ba9269959,Quickstart _infer_binary_operation to raise errors that occur during startup
+3,issue_comment,410,pycqa,astroid,cpennington,2017-03-08 19:31:49,"@degustaf: Yup, I added a test case that demonstrates the issue.",,
+4,issue_comment,410,pycqa,astroid,ceridwen,2017-03-08 20:51:21,"""However, the error is only throw after the generator return by _infer_binary_operation is iterated over, which means the current except:/else: structure doesn't work.""  I'm having trouble understanding what you mean here.  Could you revise that sentence?",,
+5,issue_comment,410,pycqa,astroid,cpennington,2017-03-08 21:13:26,@ceridwen: I've update the commit message and the PR body. Please let me know if you want any additional clarification.,,
+6,issue_comment,410,pycqa,astroid,ceridwen,2017-03-11 14:07:19,"@cpennington, thanks for rewriting the description, that's much clearer.  @PCManticore, I haven't run the tests yet but that code looks like it ought to fix the bug.  If that's sufficient, I suggest we do that, though we should also add @cpennington's test.",,
+7,issue_comment,410,pycqa,astroid,PCManticore,2017-03-11 14:15:34,"@ceridwen Yep, if the code works, we should include @cpennington test.",,
+8,issue_comment,410,pycqa,astroid,PCManticore,2017-03-12 11:57:56,"Merged manually, with the iteration of results inside the try branch. Thank you @cpennington !",,
+9,pull_request_commit,410,pycqa,astroid,cpennington,2017-03-08 19:30:55,Add a test of binary operations on types with unknown bases,dfc8141c0ec3df56180c84b3633e966c61b2f585,
+10,pull_request_commit,410,pycqa,astroid,cpennington,2017-03-08 15:21:25,"Quickstart _infer_binary_operation to raise errors that occur during startup.
+
+Since https://github.com/PyCQA/astroid/commit/3e27213914271309a4716662b09fda91fca9efa1,
+is_subtype and is_supertype raise exceptions when they can't find a
+relationship between types. This is caught by the callers of
+_infer_binary_operation. However, the error is only thrown after the
+generator return by _infer_binary_operation is started.
+
+Prior to this patch, the generator is only started inside the else
+clause of:
+
+try:
+    results = _infer_binary_operation(lhs, rhs, self, context, _get_binop_flow)
+except exceptions._NonDeducibleTypeHierarchy:
+    yield util.Uninferable
+else:
+    for result in results:
+        yield result
+
+To address this, the quickstart decorator pulls the first value from the
+generator when it's called, and then buffers that first result until it is
+needed by the later iteration.",3179195b225baed9c27e774124ba3a5ba9269959,
+0,issue_title,411,pycqa,astroid,cpennington,2017-03-08 15:27:25,This implements the fix suggested in https://github.com/PyCQA/pylint/issues/922 for the result of `json.load` being inferred as a `bool`.,start issue,Add a brain for the json module.
+1,issue_closed,411,pycqa,astroid,PCManticore,2017-04-13 10:19:51,,closed issue,Add a brain for the json module.
+2,pull_request_title,411,pycqa,astroid,cpennington,2017-03-08 15:27:25,This implements the fix suggested in https://github.com/PyCQA/pylint/issues/922 for the result of `json.load` being inferred as a `bool`.,25bb64117665e1b11b3383166ee73c1910b43213,Add a brain for the json module.
+3,issue_comment,411,pycqa,astroid,ceridwen,2017-03-08 20:48:48,"Someone else reported on IRC that pyilnt thought that json.loads was returning a bool in their code, but when they tried to give us a MWE, I tried it and couldn't replicate.  Under what conditions is this showing up?  Do you have a MWE to demonstrate the bug?",,
+4,issue_comment,411,pycqa,astroid,cpennington,2017-03-08 21:08:01,"With master of both pylint and astroid:
+
+```
+import json
+
+foo = json.loads('bar')
+foo.get('baz')
+```
+
+Output:
+
+```
+************* Module pylint_test
+C:  4, 0: Final newline missing (missing-final-newline)
+C:  1, 0: Missing module docstring (missing-docstring)
+C:  3, 0: Black listed name ""foo"" (blacklisted-name)
+E:  4, 0: Instance of 'bool' has no 'get' member (no-member)
+
+---------------------------------------------------------------------
+Your code has been rated at -16.67/10 (previous run: 0.00/10, -16.67)
+```",,
+5,issue_comment,411,pycqa,astroid,degustaf,2017-03-08 21:17:36,"I can replicate the error with master branches of astroid and pylint, and python 2.7.6.",,
+6,issue_comment,411,pycqa,astroid,ceridwen,2017-03-11 22:46:16,"I can finally replicate this error.  I'm not sure what changed, but between the last release and the current master, the inference result for json.loads changed from `[Uninferable]` to `[Uninferable, <Const.NoneType l.42 at 0x7fa032b9b6d8>, <Const.bool l.44 at 0x7fa032b9bc88>, <Const.bool l.46 at 0x7fa032b10748>]`.  These come from this code in the standard library `json/scanner.py`:
+
+```
+        elif nextchar == 'n' and string[idx:idx + 4] == 'null':
+            return None, idx + 4
+        elif nextchar == 't' and string[idx:idx + 4] == 'true':
+            return True, idx + 4
+        elif nextchar == 'f' and string[idx:idx + 5] == 'false':
+            return False, idx + 5
+```
+The tuples are split in `json/decoder.py` by `JSONDecoder.raw_decode` and `JSONDecoder.decode`.  Meanwhile, it's giving up on all the other returns in that function from `scanner.py`.  Those are functions passed in from `json.loads`, and they all have default values which (I think) astroid isn't finding.  Figuring out where precisely it's failing will take more work.
+
+I'm leery of this fix, since it's essentially patching the underlying problem, which is that astroid isn't finding the defaults correctly, for one specific standard library module.  The problem with this approach is that for any particular inference false positive, the easiest patch is going to be to write a brain module for it.  Taken to its logical conclusion, there won't be any limitation on how many patches get put into brain, which (IMO) is already a maintenance headache.  As far as I'm concerned, we should be trying to shrink brain, not grow it.  If we decide we want to allow this particular patch in, we should write up a policy for what patches to accept/not accept for brain and announce in the docs, to prevent unlimited growth.  Also, if taken, it needs to be applied to `json.load`, which will suffer from the same bug.
+
+For pylint, how is the checker for this bug defined, inclusively or exclusively?  I mean, if astroid's inference returns a list of possible types to pylint, does pylint complain if *any* of those types don't have a particular attribute, or if *all* of those types don't have a particular attribute?  Since this problem resulted from an inference improvement, I'm concerned that improving the inference will start creating more false positives like this, so maybe we should be trying to complain less when astroid really has no idea what the return value is because so many of the code paths are opaque.
+
+The actual message pylint is returning is also misleading, because as far as astroid knows, it could be either None or a bool.  I definitely think mentioning all the possible types that could cause problems would improve the pylint message.",,
+7,issue_comment,411,pycqa,astroid,ceridwen,2017-03-13 02:24:17,"I traced this problem all the way down to `py_make_scanner()` in `json/scanner.py`.  The `_default_encoder` in `__init__.py` is a `decoder.JSONDecoder` object.  Inference on the `scanner.make_scanner(self)` line returns Uninferable, as does inference on all the lines in `py_make_scanner` that involve assigning from `context`.  Here, `context`is the `_default_encoder` object.  Thus, the inference is failing to find the functions assigned to this object.",,
+8,issue_comment,411,pycqa,astroid,rogalski,2017-04-02 12:17:42,"While I agree with an idea of having brain shrinking instead of growing, JSON is too popular of the module to have such spurious errors. I'd vote to have it merged for 1.5.0 release of astroid and figure out proper way to fix it later.",,
+9,issue_comment,411,pycqa,astroid,ceridwen,2017-04-03 21:33:04,"Do we know how many other standard library modules have easy-to-find false positives?  I'm asking because if we make this the policy, it would be nice to know how many other modules will need to be included in brain.",,
+10,issue_comment,411,pycqa,astroid,PCManticore,2017-04-13 10:19:50,"I agree with @ceridwen that we need to find a compromise between an ever increasing brain and not having false positives in pylint. Here's what I'm using as a rule for adding brain plugins:
+
+- does it fix something that is implemented in a dynamic way, that cannot be understood by pylint? e.g enum and namedtuple, where they use ``exec``. Then a brain plugin is okay.
+- does the module in question changes a lot over time, having different signatures and whatnot for each release? This is the case for ``subprocess.Popen`` for example. Then a brain plugin is okay as well.
+- does the brain plugin **fixes** a deficiency in astroid's inference? This one is the trickiest and I think is the case of this json plugin as well. The answer for this subpoint can be different if:
+   * the feature that the inference needs is hard to implement, but is implementable. E.g. control flow. If it takes too much time to implement that feature, e.g. 6 months - 1 year, then having a brain plugin to fix it in the meantime is acceptable.
+   * the feature that the inference needs is probably not implementable, e.g fully interpreting the code for some reason. In that case, a brain plugin is probably the only acceptable solution.
+
+For this one, I think it's simple enough that it warrants being merged. But at the same time, I do agree with @ceridwen that if astroid is returning opaque inference results to pylint, then pylint **shouldn't** assume it can go ahead and emit a warning, since it *might* be wrong. To that effect, I added a new fix in pylint which makes obsolete this current patch: https://github.com/PyCQA/pylint/commit/bf3e06fcb86fef4d0273ba40f8254377a050aa00
+With this new change, whenever pylint gets an ``Uninferable`` from astroid, it won't emit ``no-member`` any longer, unless explicitly configured to do the opposite. This will hide a plethora of warnings where astroid couldn't infer some branch of the code. I think it is a good compromise for now, between having an useful linter and a fully fledged interpreter/inference engine written in Python",,
+11,pull_request_commit,411,pycqa,astroid,cpennington,2017-03-08 15:25:08,"Add a brain for the json module.
+
+This implements the fix suggested in https://github.com/PyCQA/pylint/issues/922
+for the result of `json.load` being inferred as a `bool`.",713ef82146e2e8538fba75f1c9d5e00712516b1e,
+12,pull_request_commit,411,pycqa,astroid,cpennington,2017-03-08 20:08:34,fixup! Add a brain for the json module.,25bb64117665e1b11b3383166ee73c1910b43213,
+0,issue_title,412,pycqa,astroid,cpennington,2017-03-08 19:12:38,"For example:
+
+```
+class AccessResponse(object):
+    def __init__(self, has_access):
+        self.has_access = has_access
+
+    def __nonzero__(self):
+        return self.has_access
+
+not AccessResponse(False)
+```",start issue,Fix an infinite loop that could occur during inference of __nonzero__.
+1,issue_closed,412,pycqa,astroid,PCManticore,2017-03-11 13:17:40,,closed issue,Fix an infinite loop that could occur during inference of __nonzero__.
+2,pull_request_title,412,pycqa,astroid,cpennington,2017-03-08 19:12:38,"For example:
+
+```
+class AccessResponse(object):
+    def __init__(self, has_access):
+        self.has_access = has_access
+
+    def __nonzero__(self):
+        return self.has_access
+
+not AccessResponse(False)
+```",50cad740924a2ba984a3b0dd7d02719f23a92981,Fix an infinite loop that could occur during inference of __nonzero__.
+3,pull_request_merged,412,pycqa,astroid,PCManticore,2017-03-11 13:17:40,Fix an infinite loop that could occur during inference of __nonzero__.,acae0ce721d63fce5c46fa81a5297af36f3cd04a,Pull request merge from cpennington/astroid:fix-bool-inference-infinite-loop to PyCQA/astroid:master
+4,issue_comment,412,pycqa,astroid,ceridwen,2017-03-08 20:14:07,Could you add a test case for this issue that passes with your changes?  Same for the other pull requests.  This one should probably go in unittest_regrtest.py.,,
+5,issue_comment,412,pycqa,astroid,cpennington,2017-03-08 20:18:32,"@ceridwen: Yeah, I just added a test for the other PRs (and for this one, actually). I'm happy to move it to `regrtest.py` if that would be better than `unittest_inference.py` (which is where I just put it).",,
+6,issue_comment,412,pycqa,astroid,ceridwen,2017-03-08 20:52:52,It's probably fine in `unittest_inference`.,,
+7,issue_comment,412,pycqa,astroid,PCManticore,2017-03-11 13:17:24,Thanks for the pull request @cpennington !,,
+8,pull_request_commit,412,pycqa,astroid,cpennington,2017-03-08 19:10:15,"Fix an infinite loop that could occur during inference of __nonzero__.
+
+For example:
+
+class AccessResponse(object):
+    def __init__(self, has_access):
+        self.has_access = has_access
+
+    def __nonzero__(self):
+        return self.has_access
+
+not AccessResponse(False)",50cad740924a2ba984a3b0dd7d02719f23a92981,
+9,pull_request_commit,412,pycqa,astroid,cpennington,2017-03-08 20:17:36,Add a test for variable-value __nonzero__ methods,46e5ac18f1c6d6fc0f53f6eb19ec0c45c8aaca0d,

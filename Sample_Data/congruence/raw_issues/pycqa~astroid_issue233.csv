@@ -1,0 +1,45 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","233","pycqa","astroid","pylint-bot","2015-10-28 04:43:43","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+The urlparse module in 2 was consolidated into the urllib module on Python 3.  I tried replacing urlparse with six.moves.urllib.urlparse.
+
+``` python
+result = test_utils.extract_node(""""""
+import six
+
+result = __(six.moves.urllib.parse.urlparse('gopher://'))
+"""""")
+```
+
+This seems to work for now, but it's not exactly a clean test case, we should consider replacing it.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/233
+","start issue","test_namedtuple_advanced_inference fails on Python 3 because urlparse no longer exists"
+"issue_closed","233","pycqa","astroid","pylint-bot","2015-12-09 05:55:33","","closed issue","test_namedtuple_advanced_inference fails on Python 3 because urlparse no longer exists"
+"issue_comment","233","pycqa","astroid","pylint-bot","2015-11-03 15:41:06","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Why should it be replaced? If it works with this change, that's great, but we shouldn't change old regression tests, unless it's absolutely necessary.
+","",""
+"issue_comment","233","pycqa","astroid","pylint-bot","2015-11-03 16:39:31","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+According to the comments, this is for testing the case where a class inherits from both a namedtuple and another class.  However, that's sensitive to the underlying implementation of urllib, so it's not good for testing namedtuple.  We should manufacture a test that explicitly tests namedtuple multiple inheritance.  If we're worried about urllib breaking, we should move this test somewhere else, maybe to a collection of tests explicitly for testing the stdlib?  However, this has been broken ever since Python 3.0 and as far as I know no one's complained about it, which makes me think it's not an issue...
+","",""
+"issue_comment","233","pycqa","astroid","pylint-bot","2015-11-03 17:34:02","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+It's mostly about testing that we don't broke urllib and it makes sense to be moved somewhere else. Also, the test was disabled on Python 3, so it's not a surprise that it was broken on Python 3.0.
+","",""
+"issue_comment","233","pycqa","astroid","pylint-bot","2015-11-06 23:49:30","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Changed in b68ee1186e5f.  This replaced urlparse with the appropriate six.moves module, but still depends on urllib's implementation.
+","",""

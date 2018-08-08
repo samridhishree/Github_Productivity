@@ -1,0 +1,79 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","269","idan","oauthlib","singingwolfboy","2014-09-18 14:58:45","See https://github.com/idan/oauthlib/pull/265 for explanation/discussion
+","start issue","Ignore scope change on setting envvar"
+"issue_closed","269","idan","oauthlib","ib-lundgren","2014-10-23 18:45:00","","closed issue","Ignore scope change on setting envvar"
+"pull_request_title","269","idan","oauthlib","singingwolfboy","2014-09-18 14:58:45","See https://github.com/idan/oauthlib/pull/265 for explanation/discussion
+","3c8261bec13e15b3845f7dd1e87e46b329329d6f","Ignore scope change on setting envvar"
+"issue_comment","269","idan","oauthlib","whit537","2014-09-18 15:00:41","lgtm
+","",""
+"issue_comment","269","idan","oauthlib","singingwolfboy","2014-09-18 15:00:46","I'm not sure where is the best place to document this environment variable and what it does. @whit537, any thoughts?
+","",""
+"issue_comment","269","idan","oauthlib","singingwolfboy","2014-09-18 15:05:35","Actually, further testing seems to indicate that using `warnings.warn()` doesn't actually raise an exception, which allows me to get the return value:
+
+``` python
+% python
+Python 2.7.6 (default, Nov 19 2013, 10:11:04) 
+[GCC 4.2.1 Compatible Apple LLVM 5.0 (clang-500.2.79)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> import warnings
+>>> def f():
+...   warnings.warn(""ohnoz"")
+...   return 4
+... 
+>>> result = f()
+__main__:2: UserWarning: ohnoz
+>>> result
+4
+```
+
+Maybe I should just switch the `raise Warning` to `warnings.warn()` and be done with it?
+","",""
+"issue_comment","269","idan","oauthlib","whit537","2014-09-18 17:08:19","> Maybe I should just switch the `raise Warning` to `warnings.warn()` and be done with it?
+
+Could do, though as you mentioned earlier that would break backward-compatibility.
+
+I don't think a `warnings.warn()` is sufficient. The purpose here is to signal to the application that scope has changed, so the application can respond accordingly (by reasking for the denied permission, or downgrading the experience, or ...). The more I think about it, the more it seems like making this a per-call configuration is better than an envvar. I can easily imagine an application that wants to ignore scope changes in some contexts but not in others. The onus is then on #268 as to why an envvar is appropriate there instead of yet another parameter.
+","",""
+"issue_comment","269","idan","oauthlib","singingwolfboy","2014-09-18 18:35:47","@whit537 True. Raising an exception may be going too far, but printing a warning to `stderr` may not be going far enough. I'm skeptical that this needs to be a per-call configuration: if the application wants to ignore scope changes in some contexts but not others, the application can easily enable this exception (or whatever solution we end up with), and just take action when necessary:
+
+``` python
+try:
+    parse_token_response(token_response)
+except Warning as w:
+    if need_to_handle(w):
+        ask_user_to_reauthenticate()
+    else:
+        pass
+```
+","",""
+"issue_comment","269","idan","oauthlib","singingwolfboy","2014-09-18 18:41:51","If oauthlib supported signals, I feel like that might strike the right balance between alert/notification vs destroying the stack. [Flask supports signals](http://flask.pocoo.org/docs/0.10/signals/), so perhaps we could do something similar? (I realize that Flask and oauthlib operate at two _very_ different conceptual levels, I'm just suggesting that we can take inspiration from Flask's API. Which I think is all-around awesome.)
+","",""
+"issue_comment","269","idan","oauthlib","ib-lundgren","2014-09-22 13:23:07","Signals sound interesting. Will take a look :)
+","",""
+"issue_comment","269","idan","oauthlib","ib-lundgren","2014-09-22 13:30:31","As @whit537 mentions users can simply catch the exception and deal with it as they please. We could make this even easier for them by subclassing the warning, maybe ScopeChangedWarning?
+","",""
+"issue_comment","269","idan","oauthlib","whit537","2014-09-22 14:12:15","> [U]sers can simply catch the exception and deal with it as they please.
+
+Copying @singingwolfboy's response from https://github.com/idan/oauthlib/pull/265#issuecomment-56045238: 
+
+> [N]ot for my use case, because I need the output from the function that I'm calling, and raising an exception prevents me from getting the return value.
+","",""
+"issue_comment","269","idan","oauthlib","whit537","2014-09-22 14:16:07","> I'm not sure where is the best place to document this environment variable and what it does. @whit537, any thoughts?
+
+Over at https://github.com/idan/oauthlib/pull/268#issuecomment-56370244 I decided to go with http://oauthlib.readthedocs.org/en/latest/oauth2/tokens/tokens.html.
+","",""
+"issue_comment","269","idan","oauthlib","ib-lundgren","2014-09-22 15:03:37","Thanks @whit537 
+
+So if I understand this right the problem is that since raising a Warning interrupts the flow the token is never returned. On top of my head there are a few approaches here
+1. Not raising but merely logging/warning. This is awkward to ""catch"".
+2. Transporting the token on the warning itself. This assumes no other modification/checking is done and complicates the logical flow.
+3. Returning the warning/differing scope/etc a long with the token. Breaks current API.
+4. Adding more parameters to the token like (oauthlib_)scope_changed (boolean) and (oauthlib_)old_scope. No change in flow and user would check the token items rather than catching a warning.
+5. Similar to 4 but rather create a Token class (extending dict) which could have properties such as scope_changed.
+6. Introduce a signalling system. Think this is a bit overkill here but maybe worth it in the long run, will have to look into signals and how they might fit a bit more.
+
+I'm currently leaning towards 5. Thoughts?
+","",""
+"pull_request_commit_comment","269","idan","oauthlib","ib-lundgren","2014-09-22 13:28:19","Better indent the entire scope check or else I might sleepily forget about it and add unrelated code to the end of the file :)
+","3c8261bec13e15b3845f7dd1e87e46b329329d6f","(16, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+"pull_request_commit","269","idan","oauthlib","singingwolfboy","2014-09-18 14:57:46","Set OAUTHLIB_IGNORE_SCOPE_CHANGE envvar to disable raising a warning for scope change","3c8261bec13e15b3845f7dd1e87e46b329329d6f",""

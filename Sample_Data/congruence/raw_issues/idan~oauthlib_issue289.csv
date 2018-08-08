@@ -1,0 +1,28 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","289","idan","oauthlib","whit537","2014-10-30 13:03:45","Over at https://github.com/gratipay/gratipay.com/issues/2869 we're seeing that [`raise_from_error`](https://github.com/idan/oauthlib/blob/04631866c058defb480462db1ec13cb7f88780a9/oauthlib/oauth2/rfc6749/errors.py#L249-L259) sometimes doesn't raise from the error. Here's the `params` in question:
+
+```
+{'error': {'type': u'OAuthException', 'message': u'This authorization code has been used.', 'code': 100}}
+```
+
+It looks like `raise_from_error` expects `error` to be a simple string, not a dictionary. How did it get to be a dictionary? One clue: we're seeing this when interacting with Facebook. Please let me know what other information might be helpful and I'll try to provide it.
+
+Zooming out: I would expect `raise_from_error` never to not raise. It should always raise. I would expect a fallback exception, maybe something like `UnknownOAuth2Error`, if no other `OAuth2Error` matches.
+
+P.S. As an aside (I can reticket separately if you like), `params.get` on [line 253](https://github.com/idan/oauthlib/blob/04631866c058defb480462db1ec13cb7f88780a9/oauthlib/oauth2/rfc6749/errors.py#L253) will fail with an `AttributeError` if `params` is `None`, which is the default value for that function parameter.
+","start issue","`raise_from_error` doesn't always raise from error"
+"issue_comment","289","idan","oauthlib","ib-lundgren","2014-11-06 19:48:25","Thanks for another great report :) 
+
+I agree that revisiting this could is well overdue and a generic fall back should definitely be in place.
+
+Regarding the error dict. Facebook has not always been very keen on spec compliance. I can't recall extending this error field with more fancy data structures but will revisit the spec. In either case we should find a way to deal with it. 
+
+I think there is plenty of details already but will let you know if I can't reproduce when I look into it next week, or maybe tomorrow if I find the time.
+","",""
+"issue_comment","289","idan","oauthlib","ContrastWeb","2014-11-15 07:46:44","Would like to add that in accordance with this issue, that even when the content of the 'error' field is a string, if the text does not match the text of any of the Oauth2Error subclasses, no error is raised.
+
+So for example, when an invalid auth code is sent, the Twitch.tv API returns:
+{""error"":""Bad Request"",""status"":400,&quot;message"":""Invalid authorization code""}
+
+And since ""Bad Request"" doesn't match anything in the spec, raise_from_error returns silently.  This causes issues in various related modules which rely on raise_from_error to handle errors returned in the HTTP response (such as requests-oauthlib).
+","",""

@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","367","idan","oauthlib","masci","2015-07-25 09:15:54","It seems that latest commits didn't trigger any build on Travis, thus PyPi still shows 1.0.0 as the latest version. Details here: https://travis-ci.org/idan/oauthlib/requests
+
+I wasn't able to tell Travis to manually trigger a build, does any of you know how to do it?
+","start issue","Push release 1.0.1 on PyPi "
+"issue_closed","367","idan","oauthlib","thedrow","2015-07-28 09:54:14","","closed issue","Push release 1.0.1 on PyPi "
+"issue_comment","367","idan","oauthlib","devoto13","2015-07-27 15:10:48","From the reason (pushes disabled) on the requests page it seems that Travis builds were [disabled in settings](https://github.com/travis-ci/travis-core/blob/master/lib/travis/model/request/approval.rb). So probably the first step is to enable them.
+
+Also found [this article](http://docs.travis-ci.com/user/triggering-builds/) on how to trigger builds though API. Related articles on how to [create Github token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) and [exchange it to Travis token](http://docs.travis-ci.com/api/#with-a-github-token).
+
+Managed to trigger build on one of my own repos using following:
+
+```
+$ curl -s -X POST \
+  -H ""Content-Type: application/json"" \
+  -H ""Accept: application/json"" \
+  -d '{""github_token"":""GITHUB_TOKEN_HERE""}' \
+  https://api.travis-ci.org/auth/github
+
+$ curl -s -X POST \
+  -H ""Content-Type: application/json"" \
+  -H ""Accept: application/json"" \
+  -H ""Travis-API-Version: 3"" \
+  -H ""Authorization: token TOKEN_FROM_PREVIOUS_REQUEST_HERE"" \
+  -d '{""request"":{""branch"":""master""}}' \
+  https://api.travis-ci.org/repo/idan%2Foauthlib/requests
+```
+","",""
+"issue_comment","367","idan","oauthlib","masci","2015-07-27 21:04:54","@devoto13 thanks for the info, very precious.
+I've tried your method and it actually works, I can trigger builds on Travis.
+The problem is even if I specify `tag`, `commit_id`, or just the branch name, like this:
+
+```
+curl -s -X POST \
+  -H ""Content-Type: application/json"" \
+  -H ""Accept: application/json"" \
+  -H ""Travis-API-Version: 3"" \
+  -H ""Authorization: token xxx"" \
+  -d '{""request"":{""commit_id"":""fecf37b""}}' \
+  https://api.travis-ci.org/repo/idan%2Foauthlib/requests
+```
+
+ the build successfuly completes but with this message:
+`Skipping a deployment with the pypi provider because this is not a tagged commit`
+even if I swear `fecf37b` is a tagged commit.
+Ideas?
+","",""
+"issue_comment","367","idan","oauthlib","devoto13","2015-07-27 21:37:21","@masci as from what I see in the previous builds, it seems you need to pass tag as branch name, e.g.:
+
+```
+curl -s -X POST \
+  -H ""Content-Type: application/json"" \
+  -H ""Accept: application/json"" \
+  -H ""Travis-API-Version: 3"" \
+  -H ""Authorization: token xxx"" \
+  -d '{""request"":{""branch"":""1.0.1""}}' \
+  https://api.travis-ci.org/repo/idan%2Foauthlib/requests
+```
+","",""
+"issue_comment","367","idan","oauthlib","masci","2015-07-27 22:07:34","@devoto13 thanks, it actually works and repo goes in detached head, still no luck with the deployment step...
+","",""
+"issue_comment","367","idan","oauthlib","devoto13","2015-07-27 22:48:15","@masci I see... Sorry have no idea what else can be done here.
+
+The only quick dirty solution I can imagine is to commit version bump, tag it as 1.0.2 and let Travis build it  in a usual way.
+","",""
+"issue_comment","367","idan","oauthlib","devoto13","2015-07-28 01:39:09","Also take a look at the [solution](https://github.com/travis-ci/travis-ci/issues/4577#issuecomment-125400553) suggested by Travis CI developers.
+","",""
+"issue_comment","367","idan","oauthlib","masci","2015-07-28 06:20:34","@devoto13 thanks again for your help, since we now have #368 to merge, I think we will release a 1.0.2, this time with pushes enabled!
+","",""
+"issue_comment","367","idan","oauthlib","devoto13","2015-07-28 09:50:23","Great! Looking forward for release then.
+","",""
+"issue_comment","367","idan","oauthlib","thedrow","2015-07-28 09:54:14","Released to PyPi https://pypi.python.org/pypi/oauthlib/1.0.1
+","",""

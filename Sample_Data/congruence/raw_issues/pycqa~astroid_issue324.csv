@@ -1,0 +1,21 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","324","pycqa","astroid","aragilar","2016-03-25 12:37:37","The commit 1d5bf7ec3c74496e2b9b5772cbe953a962ccd3d9 seems to cause pylint to mistake the return value of numpy.array as a list, meaning that using any numpy specific attributes cause a ""no-member"" warning. This makes running pylint on code that uses numpy irritating, as it flags a whole bunch of useless errors (and are sufficiently common marking them is a waste of time).
+
+A MWE is:
+    import numpy as np
+    a = np.array([[1,2],[3,4]])
+    a_T = a.T
+","start issue","Change in 1.4.5 causes pylint to misidenify return value of np.array as list"
+"issue_comment","324","pycqa","astroid","PCManticore","2016-03-25 12:46:02","That commit has nothing to do with this, in fact without it, np.array wasn't found at all. The issue seems to be that np.array's result is inferred as both numpy.records.recarray and as a list at the same time, as seen with this script:
+
+```
+from astroid.test_utils import extract_node
+n = extract_node('''
+import numpy as np
+np.array([[1,2],[3,4]])
+''')
+print(n.inferred())
+```
+","",""
+"issue_comment","324","pycqa","astroid","ceridwen","2016-03-29 22:15:05","To clarify what @PCManticore said, the commit increased what pylint can analyze about numpy, but because astroid isn't correctly inferring the type of np.array, pylint is producing spurious messages.  @PCManticore, the numpy brain module is currently setting `__all__`, which is probably unnecessary now.  I investigated why it thinks that numpy.array's type includes list, but it just leads to a complicated set of nested imports.  The starting points are `from core import *` and `from lib import *` statements, but numpy.lib doesn't have an `array` attribute set, so it's possible there's some place in its nested imports where an array bound to a list that's not included in `__all__`, or there may be something else going on.
+","",""

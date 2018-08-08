@@ -1,0 +1,101 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,413,pycqa,astroid,cpennington,2017-03-10 16:33:23,"Before:
+```
+Command exited with non-zero status 30
+305.85user 11.24system 5:17.37elapsed 99%CPU (0avgtext+0avgdata 584308maxresident)k
+0inputs+888outputs (0major+168864minor)pagefaults 0swaps
+```
+
+After:
+```
+Command exited with non-zero status 30
+296.86user 11.82system 5:09.93elapsed 99%CPU (0avgtext+0avgdata 584008maxresident)k
+208inputs+480outputs (0major+169539minor)pagefaults 0swaps
+```",start issue,Improving caching
+1,issue_closed,413,pycqa,astroid,ceridwen,2017-03-13 20:52:45,,closed issue,Improving caching
+2,pull_request_title,413,pycqa,astroid,cpennington,2017-03-10 16:33:23,"Before:
+```
+Command exited with non-zero status 30
+305.85user 11.24system 5:17.37elapsed 99%CPU (0avgtext+0avgdata 584308maxresident)k
+0inputs+888outputs (0major+168864minor)pagefaults 0swaps
+```
+
+After:
+```
+Command exited with non-zero status 30
+296.86user 11.82system 5:09.93elapsed 99%CPU (0avgtext+0avgdata 584008maxresident)k
+208inputs+480outputs (0major+169539minor)pagefaults 0swaps
+```",432c519234798563c5b7b16d4c107acd3ed04d04,Improving caching
+3,pull_request_merged,413,pycqa,astroid,ceridwen,2017-03-13 20:52:45,Improving caching,6edf633dd61092d80349420d02540e16d3a7fd35,Pull request merge from cpennington/astroid:cache-finders to PyCQA/astroid:master
+4,issue_comment,413,pycqa,astroid,cpennington,2017-03-10 19:50:36,Oops. My latest set of changes seems to have changed the semantics.,,
+5,issue_comment,413,pycqa,astroid,ceridwen,2017-03-11 23:19:08,"Caching finders looks like it produces a major speed up, but I'm not immediately sure this is the right way to do it.  I'm assuming the slow steps are the calls to the standard library import machinery?  Is the search_path key unique across modules?  (I assume yes, but I don't completely understand this code.)  Rather than the cache as a nested dictionary accessed by a global variable, can we move it into separate caches on the finders?  @PCManticore, any comments?
+
+Using an lru cache on ObjectModel.attributes looks good to me.
+
+Based on @cpennington's performance results, caching MROs doesn't get us much.  If we want to do it, adding another mutable attribute to ClassDef nodes is the wrong way, because the MRO is a property not only of the ClassDef node itself but of the tree it's embedded in.  Any memoization would have to take place at the tree level and require cache invalidation in the case of tree mutation.",,
+6,issue_comment,413,pycqa,astroid,cpennington,2017-03-13 13:42:55,"@ceridwen: IIRC (and from looking at the set of finders), I think the biggest culprit in the Finders was the `ZipFinder`. We could maybe just do an `lru_cache` on `_precache_zipimporters`. Although... that depends on `sys.path` and the `sys.path_importer_cache`.
+
+I'm going to do a bit of digging to see if there's a more targeted approach.",,
+7,pull_request_commit_comment,413,pycqa,astroid,PCManticore,2017-03-13 20:56:58,"Sorry for being late to the party, I thought this was still work-in-progress.
+
+Why don't we use https://pypi.python.org/pypi/backports.functools_lru_cache/ instead? this is what we use in pylint and it seems official, rather than functools32.",432c519234798563c5b7b16d4c107acd3ed04d04,"(6, '', u'astroid/__pkginfo__.py')"
+8,pull_request_commit_comment,413,pycqa,astroid,ceridwen,2017-03-14 00:51:03,"Good point, thanks.  We had some conversation about it in IRC this afternoon, and I've been trying to prevent any more pull requests than we already have from languishing.",432c519234798563c5b7b16d4c107acd3ed04d04,"(6, '', u'astroid/__pkginfo__.py')"
+9,pull_request_commit,413,pycqa,astroid,cpennington,2017-03-10 19:28:11,Make functools.lru_cache available in all python versions,76acbb5f6cfefef92121b757e223be61413c014d,
+10,pull_request_commit,413,pycqa,astroid,cpennington,2017-03-10 19:28:21,Cache object attributes,432c519234798563c5b7b16d4c107acd3ed04d04,
+0,issue_title,416,pycqa,astroid,cpennington,2017-03-13 19:59:11,"On https://github.com/edx/edx-platform/tree/master/common/lib/xmodule/xmodule, this resulted in the following performance improvement (with no change in the errors detected):
+
+This gets most of the performance benefits of #413, but should be much more of an unambiguous win.
+
+Before:
+
+```
+Command exited with non-zero status 30
+619.70user 322.11system 15:44.25elapsed 99%CPU (0avgtext+0avgdata 587068maxresident)k
+0inputs+464outputs (0major+201145minor)pagefaults 0swaps
+```
+
+After:
+
+```
+Command exited with non-zero status 30
+294.99user 10.76system 5:05.97elapsed 99%CPU (0avgtext+0avgdata 583536maxresident)k
+0inputs+440outputs (0major+167856minor)pagefaults 0swaps
+```",start issue,Use set-difference rather than nested loops
+1,issue_closed,416,pycqa,astroid,ceridwen,2017-03-13 20:13:16,,closed issue,Use set-difference rather than nested loops
+2,pull_request_title,416,pycqa,astroid,cpennington,2017-03-13 19:59:11,"On https://github.com/edx/edx-platform/tree/master/common/lib/xmodule/xmodule, this resulted in the following performance improvement (with no change in the errors detected):
+
+This gets most of the performance benefits of #413, but should be much more of an unambiguous win.
+
+Before:
+
+```
+Command exited with non-zero status 30
+619.70user 322.11system 15:44.25elapsed 99%CPU (0avgtext+0avgdata 587068maxresident)k
+0inputs+464outputs (0major+201145minor)pagefaults 0swaps
+```
+
+After:
+
+```
+Command exited with non-zero status 30
+294.99user 10.76system 5:05.97elapsed 99%CPU (0avgtext+0avgdata 583536maxresident)k
+0inputs+440outputs (0major+167856minor)pagefaults 0swaps
+```",1c1babdb6e1fd91d92d0c13aaf96d4ae41707867,Use set-difference rather than nested loops
+3,pull_request_merged,416,pycqa,astroid,ceridwen,2017-03-13 20:13:16,Use set-difference rather than nested loops,5f1220455b6ee85ea4a28f3a4175431949cf847d,Pull request merge from cpennington/astroid:use-set-difference to PyCQA/astroid:master
+4,pull_request_commit,416,pycqa,astroid,cpennington,2017-03-13 19:57:50,"Use set-difference rather than nested loops
+
+On https://github.com/edx/edx-platform/tree/master/common/lib/xmodule/xmodule,
+this resulted in the following performance improvement (with no change in the
+errors detected):
+
+Before:
+
+Command exited with non-zero status 30
+619.70user 322.11system 15:44.25elapsed 99%CPU (0avgtext+0avgdata 587068maxresident)k
+0inputs+464outputs (0major+201145minor)pagefaults 0swaps
+
+After:
+
+Command exited with non-zero status 30
+294.99user 10.76system 5:05.97elapsed 99%CPU (0avgtext+0avgdata 583536maxresident)k
+0inputs+440outputs (0major+167856minor)pagefaults 0swaps",1c1babdb6e1fd91d92d0c13aaf96d4ae41707867,

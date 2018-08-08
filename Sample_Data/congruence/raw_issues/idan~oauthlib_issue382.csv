@@ -1,0 +1,28 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","382","idan","oauthlib","jvanasco","2015-08-12 18:05:01","I'd like to propose a backwards-incompatible change -- adding a `context` keyword argument to `oauthlib.common.generate_token`.  (A backwards-compatible, but messier, version would be to specify and track multiple token generators).
+
+Why?
+
+This function is re-used multiple times throughout the library without regard to context, and context can be important.
+
+The token generator is currently used in these situations:
+
+oauth-1
+- rfc5849-access_token
+- rfc5849-access_token_secret
+- rfc5849-request_token
+- rfc5849-request_token_secret
+- rfc5849-verifier
+
+oauth-2
+- rfc6749-authorization_code
+- rfc6749-prepare_authorization_request
+- oauth2-generate_client_id
+- BearerToken-access_token
+- BearerToken-refresh_token
+
+utilities
+- random_token_generator
+
+When generating a custom token, it's not uncommon for providers to prefix/suffix a token with a public identifier for faster lookup.  If the token_generator were contextually aware, this feature would be possible in this library.
+","start issue","Contextually-Aware token generator"

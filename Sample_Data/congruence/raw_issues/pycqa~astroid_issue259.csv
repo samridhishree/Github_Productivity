@@ -1,0 +1,112 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","259","pycqa","astroid","pylint-bot","2015-11-19 17:48:13","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+I'm currently getting this test failure:
+
+``` python
+ERROR: test_numpy (unittest_brain.NumpyBrainTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""~/code/astroid/.tox/py27/lib/python2.7/site-packages/astroid/tests/unittest_brain.py"", line 464, in test_numpy
+    inferred = next(node.infer())
+  File ""astroid/decorators.py"", line 100, in wrapped
+    res = next(generator)
+  File ""astroid/decorators.py"", line 158, in raise_if_nothing_inferred
+    raise exceptions.InferenceError(**error.args[0])
+InferenceError: Inference failed for <Attribute.ones l.3 at 0x7f1c1b30ea90>.
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/259
+","start issue","[2.0 bugs] Adding nodes to the end of module bodies doesn't work with the new locals handling"
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-21 05:20:01","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I've tracked down the reason for this problem.  It turns out that numpy's `__init__.py` has an `__all__` declaration.   (This isn't immediately obvious because it's enclosed in an If block.)  Previously, the direct assignment to the locals just overwrote the list that contained this declaration.  Now, I changed the inference so it appends nodes to the end of the module's body, so when get_locals() is called on this tree, it finds both Assign nodes, but it puts the one in numpy's `__init__.py` first, so because lookup using `__getitem__` on a Module always picks the first item in the list, it finds that node rather than the one from brain.  There's an obvious cheap hack to fix this, add nodes to the front rather than the end of the Module body, but I'm not not sure that won't cause other problems.  Beyond that, I'm not quite sure what to do---this is an unpleasant confluence of flow-insensitive analysis and astroid not understanding dynamically building a list for `__all__` at runtime in numpy's `__init__.py`.  Since this is all implemented in Python, correctly processing C extensions won't help, though using runtime information would.  There's no good way to decide how to do that, though.
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-21 09:16:07","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+In this case, the old way of patching locals was a lot simpler to deal with and it wasn't needing understanding of dynamically building `__all__`.  We shouldn't rely on this support being implemented anytime soon and on using runtime information (that's the point of the transform, to not use runtime information, otherwise we fall into the trap that pychecker felled into long time ago).
+
+But after investigating this a couple of days back, this wasn't totally caused by not understanding `__all__`. wildcard_import_names returns just fine whatever is expected, but it doesn't propagate the imports back into the parent scope.
+
+Let me use the same line of thought that I wrote on IRC:
+
+First, `ones` is added by  a module transform as a new statement in the tree, while previously it was directly added into .locals. Now, ones is added in numpy by `from .core.numeric import *`, which triggers a call to Module.wildcard_import_names. This function will look into .keys() for retrieving the names that should be exported, .keys() being here the keys of .locals(), which means that on astroid 2.0, get_locals will be called. At this point almost everything is the same, except this
+https://bitbucket.org/logilab/astroid/src/473f94bc7afddb40295c6225861512e9485fbd3e/astroid/builder.py?at=default&fileviewer=file-view-default#builder.py-209, which basically added into parent's locals the names that were imported with a star import. This is something that's not currently implemented correctly in 2.0, because if you call numpy.locals you'll get the incorrect set comparing to the master bookmark, while numpy.core.locals does indeed return what it should return on both bookmarks. Hope this makes sense.
+
+Did you take a look at this behaviour by any chance?
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-21 09:29:06","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+In fact, you might be right. The situation I described was occurring when I modified the transform to put stuff directly into locals, which manifested the behaviour with locals, so ignore my comment.
+
+In this case, a simpler solution would be to take the last `__all__`, by self.locals[name][-1]. This isn't necessary correct in all the cases, especially if there are flow-dependent cases, as would be the case for two `__all__` in an if-else statement. Or if `__all__` is built on multiple lines. Anyway, a temporary hack for now should do it, with the intent of replacing it when we'll have more capabilities at our disposal.
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-21 15:28:21","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Only in wildcard_import_names(), or more generally?
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-21 15:38:21","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Only in wildcard_import_names for now.
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-21 17:47:51","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Changed wildcard_import_names() to use the last element of the list for `__all__` in locals in 652bdde.
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-22 15:13:58","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Unfortunately, I've found another test failure that's from the same underlying cause.  I think we need to fix this in the module transforms, not elsewhere.
+
+``` python
+FAIL: test_parser (unittest_brain.DateutilBrainTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_brain.py"", line 453, in test_parser
+    self.assertEqual(d_type.qname(), ""datetime.datetime"")
+AssertionError: 'builtins.tuple' != 'datetime.datetime'
+- builtins.tuple
++ datetime.datetime
+```
+
+brain_dateutil adds a parse() function at the end of the dateutil module, AFAICT, and so the parse() function already defined in dateutil ends up first in the list from get_locals() and is used instead of the parse() defined in brain_dateutil.  I see two reasonable ways to fix this: add the module extension nodes to the beginning of the modules rather than the end so the inference's heuristic of ""always pick the first instance of a name"" works, or do node replacement if a node with the same name is already available in the module to be extended.
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-23 07:54:14","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Replacement sounds better, since we don't know what would happen if the same node were to be placed before the others. For instance, it might be something like this:
+
+```
+#!python
+
+__all__ = [...] + some_import.__all__
+from some_import import __all__ # oups, not defined before
+```
+
+It also sounds that we should have an API exposed especially for this, instead of doing manual searches all the time for every transform. Something along the lines of astroid.replace_node(tree, node, 'name')? 
+","",""
+"issue_comment","259","pycqa","astroid","pylint-bot","2015-11-24 20:20:30","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The replacement solution is very hard to get right, as I've been fighting with it on and off since yesterday, and I still haven't finished it.  I pushed a bookmark containing what I have in replace_with_extension_nodes.  I'm going to add another proposal that I think is a good idea independently which would simplify both this and the zipper implementation.  It might be simpler and less bug-prone to simply use the hack I was using at one point to handle the special values for the builtins local variables, which was registering a special implementation of get_locals() for special node types, in this case subclasses of Module for each of the extension modules.
+","",""
+"issue_comment","259","pycqa","astroid","ceridwen","2016-01-10 15:53:45","With #266 fixed, I've merged 2.0 into this branch.  It now fails less often but there are still substantial issues: at the moment, for instance, because the locals dictionary contains AssignName nodes, the replace code takes AssignName nodes and directly adds them to the body of Modules, which causes crashes because they should be enclosed by Assign nodes.  I don't know of a good way to deal with this problem, which is that the replacement code needs to know how to look up what parts need to be replaced by using the locals dictionary but then move whole trees containing nodes in the locals dictionary, in the case of arbitrary complexity code involving with statements, multiple assignments, etc.
+","",""

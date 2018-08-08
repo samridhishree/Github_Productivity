@@ -1,0 +1,323 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,71,idan,oauthlib,tomchristie,2012-11-16 14:01:12,,start issue,Tweak README as requested in #70.
+1,issue_closed,71,idan,oauthlib,ib-lundgren,2012-11-16 14:13:07,,closed issue,Tweak README as requested in #70.
+2,pull_request_title,71,idan,oauthlib,tomchristie,2012-11-16 14:01:12,,d9c53e719a1e74865659adb1fcc87935cded6639,Tweak README as requested in #70.
+3,pull_request_merged,71,idan,oauthlib,ib-lundgren,2012-11-16 14:13:07,Tweak README as requested in #70.,48de235dfccfadb9da2f2865fef92d0790429a7b,Pull request merge from Unknown:master to idan/oauthlib:master
+4,pull_request_commit,71,idan,oauthlib,tomchristie,2012-11-16 14:00:43,Tweak readme,d9c53e719a1e74865659adb1fcc87935cded6639,
+0,issue_title,79,idan,oauthlib,ib-lundgren,2012-11-16 19:33:35,"While most users are likely better of using requests (http://docs.python-requests.org/en/latest/index.html) to make OAuth requests some might not have that option.  A few examples of how to use the Client class would be useful. 
+
+Some users might try to use OAuthLib with urllib2 not knowing there are better alternatives out there, a little note in the docs would help them out.
+",start issue,Client usage docs
+1,issue_closed,79,idan,oauthlib,ib-lundgren,2013-05-30 11:29:39,,closed issue,Client usage docs
+2,issue_comment,79,idan,oauthlib,warsaw,2012-11-16 21:58:33,"On Nov 16, 2012, at 11:33 AM, Ib Lundgren wrote:
+
+> While most users are likely better of using requests
+> (http://docs.python-requests.org/en/latest/index.html) to make OAuth requests
+> some might not have that option.  A few examples of how to use the Client
+> class would be useful.
+> 
+> Some users might try to use OAuthLib with urllib2 not knowing there are
+> better alternatives out there, a little note in the docs would help them out.
+
+Yes, please!  There are very good reasons to want to use oauthlib without
+requests, e.g. as a straight up replacement for the long abandoned oauth.  In
+fact, a little user guide for converting from oauth to oauthlib would be
+fantastic.  It's not a difficult conversion, although it's a bit of a brain
+twister at first because of the different terminology.
+
+Sorry, my stack is too deep at the moment to contribute such documentation,
+but if pressed I could probably dig up a diff.
+",,
+3,issue_comment,79,idan,oauthlib,ib-lundgren,2012-11-16 22:25:31,"I'll try and add a few examples with urllib2 and requests soonish, unless someone beats me to it. As far as the old oauth library I've actually never used it so would not be able to create a guide on top of my head. Any chance you could dig up some code using the library?  Then I could simply port that over and show how in the docs.
+
+Is it http://pypi.python.org/pypi/oauth/1.0.1 ?
+",,
+4,issue_comment,79,idan,oauthlib,warsaw,2012-11-16 23:06:09,"On Nov 16, 2012, at 02:25 PM, Ib Lundgren wrote:
+
+> I'll try and add a few examples with urllib2 and requests soonish, unless
+> someone beats me to it. As far as the old oauth library I've actually never
+> used it so would not be able to create a guide on top of my head. Any chance
+> you could dig up some code using the library?  Then I could simply port that
+> over and show how in the docs.
+> 
+> Is it http://pypi.python.org/pypi/oauth/1.0.1 ?
+
+Yep.  Notice the Uploaded date :)
+
+Okay, piston-mini-client is one package I'm working on.  This is not fully
+tested yet (note the as yet unported PLAINTEXT signature method), but it
+should give you an idea of what I had to change to do the conversion.  Once I
+get this working, I might even submit a more detailed blurb for the
+documentation.
+
+=== modified file 'piston_mini_client/auth.py'
+--- piston_mini_client/auth.py  2012-07-30 17:09:26 +0000
++++ piston_mini_client/auth.py  2012-11-12 21:15:28 +0000
+@@ -31,17 +29,15 @@
+
+```
+ def sign_request(self, url, method, body, headers):
+     """"""Sign a request with OAuth credentials.""""""
+```
+-        # Import oauth here so that you don't need it if you're not going
+-        # Import oauthlib here so that you don't need it if you're not going
+       # to use it.  Plan B: move this out into a separate oauth module.
+-        from oauth.oauth import (OAuthRequest, OAuthConsumer, OAuthToken,
+-                                 OAuthSignatureMethod_PLAINTEXT)
+-        consumer = OAuthConsumer(self.consumer_key, self.consumer_secret)
+-        token = OAuthToken(self.token_key, self.token_secret)
+-        oauth_request = OAuthRequest.from_consumer_and_token(
+-            consumer, token, http_url=url)
+-        oauth_request.sign_request(OAuthSignatureMethod_PLAINTEXT(),
+-                                   consumer, token)
+-        headers.update(oauth_request.to_header(self.oauth_realm))
+-        from oauthlib.oauth1 import Client
+-        oauth_client = Client(self.consumer_key, self.consumer_secret,
+-                              self.token_key, self.token_secret,
+-                              realm=self.oauth_realm)
+-        uri, signed_headers, body = oauth_client.sign(
+-            url, method, body, headers)
+- ```
+     headers.update(signed_headers)
+  ```
+  
+  class BasicAuthorizer(object):
+",,
+5,issue_comment,79,idan,oauthlib,ib-lundgren,2012-11-17 00:27:30,"The oauthlib bits look alright. If you want to use plaintext as a signature method use either
+
+```
+Client(..., signature_method=""PLAINTEXT"")
+```
+
+or
+
+```
+from oauthlib.oauth1.rfc5849 import SIGNATURE_PLAINTEXT
+Client(..., signature_method=SIGNATURE_PLAINTEXT)
+```
+
+Will add imports of the constants in oauthlib.oauth1.**init**.py tomorrow so you can omit ""rfc4849"". If you are interested in RSA-SHA1 signatures have a look at https://gist.github.com/2584789
+",,
+6,issue_comment,79,idan,oauthlib,ib-lundgren,2013-02-05 21:38:42,"It might not be much but it is a start
+
+https://oauthlib.readthedocs.org/en/latest/
+",,
+0,issue_title,75,idan,oauthlib,ib-lundgren,2012-11-16 19:19:13,"OAuth 2 Core (http://tools.ietf.org/html/rfc6749) and Bearer Token Usage (http://tools.ietf.org/html/rfc6750) have been released and we should follow.
+
+This is a glorious and adventorous task, that includes the somewhat time consuming task of going over whats in oauth2/draft25 and making sure it matches what is instructed in the RFCs =)
+
+The code should match well but the links will need some updating. When that is done simply rename the directory and ensure all imports are ok.
+",start issue,From OAuth2 draft to RFC
+1,issue_closed,75,idan,oauthlib,ib-lundgren,2013-05-30 11:13:31,,closed issue,From OAuth2 draft to RFC
+2,issue_comment,75,idan,oauthlib,lepture,2012-11-22 05:01:48,"Great job! I am wondering what's the status of OAuth2 provider.
+",,
+3,issue_comment,75,idan,oauthlib,ib-lundgren,2012-11-22 21:18:22,"The OAuth 2 provider is taking shape nicely but due to the limited time I can put in it is still going to take a little while before it's ready for use. I've not really kept track of the status anywhere so guess I might as well give the update here as anywhere else.
+
+My current plan is along the lines of:
+- Add a number of convenience methods to common.Request to facilitate parameter finding for grant_types
+- Sort out resource endpoint error reporting and go over authorization and token endpoint error reporting and make sure it mimics the spec and my plans
+- Bearer token token_type estimation
+- Weed out the most broken bits of the endpoints and grant types by implementing extensive endpoint tests
+- Play around with making a basic but fully functional oauth provider with Django or Flask to find any missing features, annoyances and see if the API is at level of usability I'm happy with
+- Write some docs ;)
+- MAC, JWT, SAML token support
+- More docs ;)
+
+I'm already working on some of this but I've not pushed it yet. Expect to see incremental improvements each week.
+",,
+4,issue_comment,75,idan,oauthlib,wiliamsouza,2012-11-25 20:41:46,"Good job Ib,
+tell me more about Django basic oauth provider. How can I help you?
+I'm interested in oauth 2 for Installed applications like described at google documentation [1].
+
+I think that a good starting point is to learn how google do it and start write some 
+Django views that mimics the google way of do things. I mean a Django app or view to register your application,
+branding information and get your generated clients ID like google api console [2]. It can be a django admin page
+for now.
+
+What do you think?
+
+[1] https://developers.google.com/accounts/docs/OAuth2InstalledApp
+[2] https://code.google.com/apis/console/
+",,
+5,issue_comment,75,idan,oauthlib,Evlos,2012-12-23 12:20:20,"GJ guys, hope this feature could be done soon.
+",,
+6,issue_comment,75,idan,oauthlib,ib-lundgren,2013-01-15 21:12:10,"Sorry for taking so long. I'm struggling to squeeze open source in as much as I'd like but rest assured when I do I'll start crossing off my oauth 2 provider to-do list =)
+
+I have many ideas for a django-oauth extension but afraid I won't be able to get to it before the summer. It's a good idea to have a look at the Google API Console and spend time streamlining the processes around registering and maintaining clients. Essentially such an extension could boil, if done right, reduce the complexity of authorizing api use with OAuth down to a simple decorator. Now that is the future, for now I'll focus on getting the OAuth 2 support in oauthlib working, spec compliant and well tested.
+",,
+7,issue_comment,75,idan,oauthlib,ib-lundgren,2013-02-05 21:39:32,"OAuth 2 provider support is shaping up nicely. A preview available in the newly added docs
+
+https://oauthlib.readthedocs.org/en/latest/server2.html
+",,
+8,issue_comment,75,idan,oauthlib,lepture,2013-05-30 11:17:38,"Great.
+",,
+0,issue_title,77,idan,oauthlib,ib-lundgren,2012-11-16 19:24:19,"Most people are likely to use OAuthLib indirectly, either through requests or through an extension to their favorite web framework, it would be good to make this explicit in the docs. 
+
+However some will be interested in installing (rather than cloning) and at least PyPi instructions would be useful. Furthermore OAuthLib is included in ubuntu and possibly in other distros, maybe a few unices too, have a look around and add installation instructions.
+",start issue,Installation instruction docs
+1,issue_closed,77,idan,oauthlib,ib-lundgren,2013-09-19 14:30:40,,closed issue,Installation instruction docs
+0,issue_title,70,idan,oauthlib,tomchristie,2012-11-13 13:13:02,,start issue,Add link to readthedocs documentation.
+1,issue_closed,70,idan,oauthlib,kennethreitz,2012-11-16 01:56:19,,closed issue,Add link to readthedocs documentation.
+2,pull_request_title,70,idan,oauthlib,tomchristie,2012-11-13 13:13:02,,466600ce8fe53a433883ee6fd2f29026cb0c48a4,Add link to readthedocs documentation.
+3,pull_request_merged,70,idan,oauthlib,kennethreitz,2012-11-16 01:56:19,Add link to readthedocs documentation.,2ce42e566a92b2fe3ef15269c8d4d3ac3722e679,Pull request merge from Unknown:master to idan/oauthlib:master
+4,issue_comment,70,idan,oauthlib,tomchristie,2012-11-13 14:15:27,"Note: The travis failure is just travis being wonky.  There's no code changes here.
+",,
+5,issue_comment,70,idan,oauthlib,sontek,2012-11-13 14:23:22,"There is a development branch, make the pull request against that instead of master
+",,
+6,issue_comment,70,idan,oauthlib,tomchristie,2012-11-13 14:36:44,"@sontek - Okay, I'm officially confused.
+
+I don't see a development branch mentioned here https://oauthlib.readthedocs.org/en/latest/contributing.html or from the README.
+
+The latest set of merged pull reqs were against `master`, eg: #69, #67, #66
+
+The branches against this project are named `master`, `oauth2_provider`, `oauth2_draft25_server`, `use_request_objects`, it's not obvious which of these you're referring to.
+",,
+7,issue_comment,70,idan,oauthlib,ib-lundgren,2012-11-14 22:23:59,"Thanks for the PR =) I think ""All documentation is available at Read the Docs."" might read better. Just a nitpick, feel free to disagree. 
+
+_Since ""all docmentation"" is rather limited I now need to find a way to lure you into writing some docs..._
+",,
+8,issue_comment,70,idan,oauthlib,kennethreitz,2012-11-16 01:56:15,"thanks!
+",,
+9,issue_comment,70,idan,oauthlib,tomchristie,2012-11-16 14:14:49,"> Since ""all docmentation"" is rather limited I now need to find a way to lure you into writing some docs...
+
+@ib-lundgren @kennethreitz - I have considered contributing, but I think it'd be more like to be in the form of helping maintain a Django implementation, ideally also contributing compatible auth classes to django-rest-framework and django-tastypie to help converge the community on a single well documented and well maintained implementation.
+
+I don't know whether that's pre-mature at the moment, and I'm a bit unsure what the current state of the project is...
+- Should I consider OAuth1 useable yet?
+- Will the OAuth2 server API be different or are all the differences implementation-only?
+- Are there many/any well maintained implementations using this yet, or anyone else planning a Django implementation?
+  I see https://github.com/craigbruce/django-oauth, but It's not clear how complete that currently is.
+",,
+10,issue_comment,70,idan,oauthlib,ib-lundgren,2012-11-16 15:08:02,"Even better! I've long had a wish to start a django implementation myself but I have not and will not have time to anytime soon. 
+
+```
+Should I consider OAuth1 useable yet?
+```
+
+I think OAuth1 is usable and the next step really is to get some implementations going to weed out the remaining quirks and features needed.
+
+```
+Will the OAuth2 server API be different or are all the differences implementation-only?
+```
+
+OAuth2 is quite different from OAuth 1 in that it supports a great many more variations of obtaining tokens as well as types of tokens. I'm working quite actively on OAuth 2 provider support in the oauth2_provider branch but it needs a fair amount of work before it is complete.
+
+I'm not sure whether you would want to mix OAuth 1 and 2 in the same extension or whether it makes more sense to split it into django-oauth and django-oauth2. It certainly is possible to mix them and differentiate between oauth 1 & 2 requests. Django more or less enforcing users to use their ORM makes creating a fully working drop-in oauth (1 or 2) provider extension possible. It could basically boil down to users simply decorating the views they want to protect and configure an authorization page.
+
+```
+Are there many/any well maintained implementations using this yet, or anyone else planning a Django implementation? I see https://github.com/craigbruce/django-oauth, but It's not clear how complete that currently is.
+```
+
+I'm fairly oblivious to who are actually using OAuthLib and do not really know of any (first time i see the one you mention there). If you have time to do some research into whats available and contact those working on various implementations in order to join efforts that would be super awesome. I would love to collaborate more closely with people using OAuthLib, especially for the purpose of providing OAuth. \* note to self - encourage people to get in touch somewhere *.
+
+Let me know if you'd like to have a chat over a G+ hangout to discuss this in more detail.
+
+Cheers
+",,
+11,issue_comment,70,idan,oauthlib,tomchristie,2012-11-16 15:11:23,"I fear I may be backing myself into a corner here ;)
+",,
+12,issue_comment,70,idan,oauthlib,ib-lundgren,2012-11-16 15:22:06,"Hehe, no pressure =) All contributions are much appreciated, dig in where it seems most fun. I'll lurk around here, with a very varied response latency, in case you want to ball some ideas. 
+
+If an extension seems daunting I have a little coffee stained post-it note with issues I mean to add this weekend of various sizes.
+",,
+13,pull_request_commit,70,idan,oauthlib,tomchristie,2012-11-13 13:11:53,Add link to readthedocs,bf7e0d21af2199eae5f445fa13a1d30d1a0bc494,
+14,pull_request_commit,70,idan,oauthlib,tomchristie,2012-11-13 13:12:36,Include self in authors,466600ce8fe53a433883ee6fd2f29026cb0c48a4,
+0,issue_title,73,idan,oauthlib,ib-lundgren,2012-11-16 19:09:51,"Investigate whether it would be useful to add PyPy and Jython support and what would be necessary for it to happen. As far as the OAuthLib code goes neither should be an issue but that might not be the case for the dependencies. 
+
+The biggest concern is likely to be PyCrypto. 
+
+I vaguely remember seeing threads about issues with that combination but not sure about the current status. 
+
+Jython could be tricky, there might be wrappers or suitable alternatives but needs some research.
+",start issue,Investigate possibly PyPy and Jython support
+1,issue_closed,73,idan,oauthlib,ib-lundgren,2013-05-29 14:11:30,,closed issue,Investigate possibly PyPy and Jython support
+2,issue_comment,73,idan,oauthlib,dahlia,2013-05-24 07:21:04,"PyCrypto currently works on PyPy, and oauthlib also currently works on PyPy.  (Tested on PyPy 2.0.2, Mac 10.8.3.)
+
+``` console
+$ tox -e pypy
+GLOB sdist-make: /.../oauthlib/setup.py
+pypy inst-nodeps: /.../oauthlib/.tox/dist/oauthlib-0.4.1.zip
+pypy runtests: commands[0]
+.....................................................................................................................................................
+----------------------------------------------------------------------
+Ran 149 tests in 0.846s
+
+OK
+___________________________________ summary ____________________________________
+  pypy: commands succeeded
+  congratulations :)
+```
+
+I think we could add `pypy` to `tox.ini` and `.travis.yml` files.  (`.travis.yml` seems not to contain even 2.6, 3.2 and 3.3.)
+",,
+3,issue_comment,73,idan,oauthlib,lepture,2013-05-24 09:36:45,"I don't think `Jython` worth the work.
+",,
+4,issue_comment,73,idan,oauthlib,ib-lundgren,2013-05-24 12:45:55,"@lepture Agreed, Jython is not going to be worth it.
+
+@dahlia Cool to know that pypy seem to work tho, feel free to send a PR adding it to tox.ini =)
+
+Travis is currently setup to run tox which tests 2.6, 2.7, 3.2 and 3.3, which is not obvious since the travis yaml file only mentions 2.7.
+",,
+0,issue_title,57,idan,oauthlib,sontek,2012-09-06 17:00:49,"https://oauthlib.readthedocs.org/en/latest/   would be great to have in the readme so people do realize that there are docs for this project :)
+",start issue,Add a link to RTD in the README
+1,issue_closed,57,idan,oauthlib,ib-lundgren,2012-11-16 14:42:23,,closed issue,Add a link to RTD in the README
+2,issue_comment,57,idan,oauthlib,ib-lundgren,2012-09-06 20:08:43,"It would be neat with a link indeed, and even neater if it came as a pull request from @sontek =)
+",,
+3,issue_comment,57,idan,oauthlib,tomchristie,2012-11-13 13:13:44,"See #70
+",,
+4,issue_comment,57,idan,oauthlib,tomchristie,2012-11-16 14:17:47,"To be closed.
+",,
+0,issue_title,74,idan,oauthlib,ib-lundgren,2012-11-16 19:13:43,"Timing attacks are used to reveal secrets using statistical sampling in large quantities and could in worst case reveal secret keys.
+
+It would be really awesome to have a test that could be used against OAuthLibs verify_request to ensure it does not introduce variance in execution time between different requests in a way that would allow user enumeration or secret key guessing. 
+
+A large bonus if this could easily be imported by developers implementing oauth providers and ran against their setup.
+",start issue,Timing attack test for OAuth 1 provider
+1,issue_closed,74,idan,oauthlib,ib-lundgren,2013-05-31 13:36:30,,closed issue,Timing attack test for OAuth 1 provider
+2,issue_comment,74,idan,oauthlib,ib-lundgren,2013-05-31 13:36:30,"This will be more valuable in the OAuth 2 audit test suite I am occasionally working on. 
+",,
+0,issue_title,72,idan,oauthlib,tomchristie,2012-11-16 14:23:58,"Tedious pull req to fix up the link to match the text so it doesn't display a trailing underscore.
+",start issue,Fix link (Was displaying trailing underscore)
+1,issue_closed,72,idan,oauthlib,ib-lundgren,2012-11-16 14:42:15,,closed issue,Fix link (Was displaying trailing underscore)
+2,pull_request_title,72,idan,oauthlib,tomchristie,2012-11-16 14:23:58,"Tedious pull req to fix up the link to match the text so it doesn't display a trailing underscore.
+",79824fd90dbb0e9a68d4d602263f8950f308ad15,Fix link (Was displaying trailing underscore)
+3,pull_request_merged,72,idan,oauthlib,ib-lundgren,2012-11-16 14:42:15,Fix link (Was displaying trailing underscore),27bed6d3dc40cfe2826a5f510112b880ff4d4687,Pull request merge from Unknown:master to idan/oauthlib:master
+4,issue_comment,72,idan,oauthlib,ib-lundgren,2012-11-16 14:42:11,"Sorry, I should have picked up on that.
+",,
+5,pull_request_commit,72,idan,oauthlib,tomchristie,2012-11-16 14:22:18,Fix link (had trailing underscore),79824fd90dbb0e9a68d4d602263f8950f308ad15,
+0,issue_title,78,idan,oauthlib,ib-lundgren,2012-11-16 19:27:43,"Tox is great and I use it all the time to test against py 2.6 up to 3.3. In the contributing docs it would be nice to have information on how to use and setup tox for various environments. i.e. a little description together with links to OS X / Ubuntu / Fedora / Windows setup instructions.
+",start issue,Running tox docs
+1,issue_closed,78,idan,oauthlib,ib-lundgren,2013-05-30 11:56:14,,closed issue,Running tox docs
+2,issue_comment,78,idan,oauthlib,warsaw,2012-11-16 21:59:25,"On Nov 16, 2012, at 11:27 AM, Ib Lundgren wrote:
+
+> Tox is great and I use it all the time to test against py 2.6 up to 3.3. In
+> the contributing docs it would be nice to have information on how to use and
+> setup tox for various environments. i.e. a little description together with
+> links to OS X / Ubuntu / Fedora / Windows setup instructions.
+
+tox is not yet available in Debian or Ubuntu.  Yes, I am actively working on
+that :).
+",,
+3,issue_comment,78,idan,oauthlib,ib-lundgren,2012-11-16 22:22:32,"Neat! I'm using tox on Ubuntu but from PyPi which is working well although sudo pip install is a bit awkward. A package would be much appreciated.
+
+In Ubuntu it is fairly straightforward to get multiple python versions running, although mentioning step by step would be helpful. I've not looked into running multiple python versions in other OSs so hoping some unsung hero of the internets will come to the rescue =)
+",,
+0,issue_title,76,idan,oauthlib,ib-lundgren,2012-11-16 19:20:12,"Not sure if Travis supports Python 3 yet, if it does we should add that to our config.
+",start issue,Travis & Python 3
+1,issue_closed,76,idan,oauthlib,ib-lundgren,2013-02-18 19:39:00,,closed issue,Travis & Python 3
+2,issue_comment,76,idan,oauthlib,lepture,2012-11-22 05:37:53,"yes. it does.
+",,
+3,issue_comment,76,idan,oauthlib,sigmavirus24,2012-11-22 05:41:34,"It supports 3.1 and 3.2 afaik. No response from them on 3.3 yet.
+",,
+4,issue_comment,76,idan,oauthlib,ib-lundgren,2013-02-18 18:36:09,"Travis does not support 3.1, 3.2 and 3.3 should work when we find a way to exclude the installation of unittest2 for python 3 envs.
+",,
+5,issue_comment,76,idan,oauthlib,sigmavirus24,2013-02-18 18:40:42,"@ib-lundgren you're correct that they stopped supporting 3.1 and now only support 3.2 and 3.3. If you want I can write something for you that will manage the dependencies based on python version, but you'll have to use `python setup.py install` for the install command, not `pip install -r requirements.txt`. 
+",,
+6,issue_comment,76,idan,oauthlib,ondrowan,2013-02-18 18:47:45,"I started to (really) slowly implement oauthlib to Django and this is setup i'm using for testing: https://github.com/ondrowan/django-oauthlib/blob/master/.travis.yml. It should solve unittest2 issues.
+",,
+7,issue_comment,76,idan,oauthlib,ib-lundgren,2013-02-18 18:48:20,"We are using pip + crate.io currently as setup.py has been flaky with PyCrypto (falls back on a ftp that quite often is unavailable if I remember correctly). 
+",,
+8,issue_comment,76,idan,oauthlib,ib-lundgren,2013-02-18 18:49:38,"Hrm, using tox might very well work. Will reduce duplication of dependency spec slightly too =)
+",,
+9,issue_comment,76,idan,oauthlib,ib-lundgren,2013-02-18 19:39:00,"Updated to use tox, only failed a few times... Removed 3.1 from tox.ini, will continue to test it locally but don't think it's a major issue not having everything go through it.
+",,

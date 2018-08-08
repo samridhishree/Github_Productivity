@@ -1,0 +1,85 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","58","idan","oauthlib","sontek","2012-09-06 19:39:36","The documentation is very slim and was just wondering if this can handle two-legged auth like python-oauth2 can.
+
+This is what I need:
+https://sites.google.com/site/oauthgoog/2leggedoauth/2opensocialrestapi
+","start issue","Does this provide two-legged auth as well?"
+"issue_closed","58","idan","oauthlib","dgouldin","2012-09-06 19:48:16","","closed issue","Does this provide two-legged auth as well?"
+"issue_comment","58","idan","oauthlib","dgouldin","2012-09-06 19:48:15","The purpose of oauthlib is to be a strict to-spec implementation. Since 2-legged oauth isn't defined in the spec, it's outside the scope of this project. If I'm wrong here (and I certainly could be), please point me at the bit of the oauth rfc that deals with 2-legged oauth, and if it's not already working we'll add it:
+
+http://tools.ietf.org/html/rfc5849
+","",""
+"issue_comment","58","idan","oauthlib","pydanny","2012-09-06 19:52:47","This is part of the problem with the global OAuth community - the lack of community consensus on how to define things.
+
+@sontek - If two legged auth isn't in the spec, I wonder if it might be worth it to start a project that uses OAuthlib as a foundation to provide it. In fact, that's the poorly stated (which is all my fault) purpose of the project. To be the foundation of other projects.
+","",""
+"issue_comment","58","idan","oauthlib","ib-lundgren","2012-09-06 19:55:17","@dgouldin it's as far as I am aware unspecified and everyone seem to have their own idea of what it does. Google describes one use in https://developers.google.com/accounts/docs/OAuth which is basically oauth without user authorization, which we do indeed support since it basically just omit the oauth token & token secret.
+
+I've not looked into how open social do things but can see if I find some time this weekend.
+","",""
+"issue_comment","58","idan","oauthlib","dgouldin","2012-09-06 20:03:49","@ib-lundgren this is the closest thing I could find to a spec:
+
+http://oauth.googlecode.com/svn/spec/ext/consumer_request/1.0/drafts/2/spec.html
+
+Given it's a draft from 4 years ago with no work done since, I'm skeptical it will actually become a standard, but if somebody (like Google) is actively using it, @pydanny is right: it could live as its own project on top of oauthlib.
+","",""
+"issue_comment","58","idan","oauthlib","ib-lundgren","2012-09-06 20:05:59","Google might still be using it but they have officially deprecated OAuth 1 (and flavours like 2 legged) since April. http://googledevelopers.blogspot.com/2012/04/changes-to-deprecation-policies-and-api.html
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:06:59","Yeah, it is not in the spec, its just a common use case for handling authentication for APIs.
+
+My current use case is for my mobile app to communicate to my own API.  I wont be authorizing 3rd party applications to talk to this API, so I just need to make sure the API is coming from the trusted source (my app).
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:09:54","I would be willing to implement the 2-legged auth version of this but right now i'm still reading through the code to figure out how everything works and familiarizing myself with the spec itself.     I think some documentation on using oauthlib would be really beneficial, since currently there aren't any true examples. 
+
+Something like a base wsgi app or a small flask app utilizing oauthlib as a server would be great.
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:18:48","Looks like https://github.com/ib-lundgren/flask-oauthprovider  might be enough of an example for me to work off of.  I'm not using flask but I was just looking for a _real_ example of using oauthlib.
+","",""
+"issue_comment","58","idan","oauthlib","ib-lundgren","2012-09-06 20:19:42","OAuth is for authorization and not authentication. You should look into creating some unique identifier (which cant be forged by other mobile apps) and use SSL to your API. Authenticate using whichever method your research finds best (http basic auth is quite common).
+
+You can never entirely trust a mobile app or any app not living in an environment outside of your control (ie in browser js app) which renders OAuth 1 pretty useless. OAuth 2 attempts to address the issue to some extent but not very successfully. 
+
+When you want to open up your API for third party devs then come back and enjoy some OAuth. For documentation look at https://github.com/idan/oauthlib/blob/master/docs/server.rst or the flask extension you just found.
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:23:15","I think OAuth can still serve the purpose of securing the request.  I plan on using it for my browser js requests as well.
+
+Obviously having the private key in the website isn't _that_ secure but at least its going to be per app, per user key and verifies that the request coming in is fairly legit.
+
+If I wasn't using two-legged oauth I would basically just re-invent the wheel and implement most of the features myself anyways.
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:25:12","@ib-lundgren I did see the server.rst but for me at least that wasn't enough documentation to get started without reading through the source. So they probably could be improved but could just be because this is my first time doing oauth.
+","",""
+"issue_comment","58","idan","oauthlib","ib-lundgren","2012-09-06 20:32:00","It might be a bit terse, improving/adding documentation is a big bold thing on my todo list. Don't fear the source thou, it's not that bad =)
+
+Before doing javascript OAuth 1 please read http://rdist.root.org/2010/11/29/final-post-on-javascript-crypto/ 
+
+What you might want to use instead is OAuth 2 Implicit Grant which will (if i find time) be in oauthlib in the not too distant future. To get an idea what it is without reading the spec have a look at https://developers.google.com/accounts/docs/OAuth2UserAgent which is using the implicit grant workflow under a different name.
+","",""
+"issue_comment","58","idan","oauthlib","pydanny","2012-09-06 20:37:50","@ib-lundgren I do fear the source. Always. Which is why I spend so much time documenting. :-)
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:42:24","@ib-lundgren Yeah, I've read that oauth2 provides better support for what I want to do for javascript but I'm working with the tools I have available ;)
+
+I would love me some OAuth2 Server support if you get the chance!   I'm not even close to familiar enough with this stuff to think about doing it myself.
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:47:48","@ib-lundgren I do have beer money and will be at PyCon  if support for it somehow lands in this repository
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 20:48:50","If support for it comes with documentation I'll have coffee money for the morning after as well!
+","",""
+"issue_comment","58","idan","oauthlib","ib-lundgren","2012-09-06 20:57:26","Hehe sounds good but not sure I'll make PyCon. I'll try and get some initial support + docs going as soon as I can find time =)
+","",""
+"issue_comment","58","idan","oauthlib","dgouldin","2012-09-06 21:11:58","@sontek you're not at djangocon are you? I'm planning a djangocon oauthlib sprint. I'll be sprinting Friday and Saturday.
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-06 21:22:18","@dgouldin I'm not but I would be happy to sprint remotely.  I'm living in Santiago right now so trips to the US for conferences aren't as easy as they used to be
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-07 15:08:14","@dgouldin @ib-lundgren   I'm still working on it but I got bored lastnight and started building out an OAuth2 Provider:
+
+https://github.com/sontek/oauth2_provider
+
+Right now I have the legs for 4.1.1  and 4.2.1 implemented.   Which is response_type  'code' and 'token'    with  grant_type as authentication_code.    I still have a long way to go but I had never even looked at this spec before so I have to learn a lot to implement a little.
+","",""
+"issue_comment","58","idan","oauthlib","ib-lundgren","2012-09-09 22:56:12","Seems like you are heading in a similar direction as I took with my branch. Will try and clean it up and push it this week so we can develop together =)
+","",""
+"issue_comment","58","idan","oauthlib","sontek","2012-09-10 00:33:08","Yeah, I would prefer to get all this in oauthlib, primarily because I don't want to be the maintainer of it ;)
+
+I have a completely working OAuth2 Authorization server with 100% test coverage in my repo, Let me know when you get all your stuff pushed and we'll see how to get everything integrated together
+","",""

@@ -1,0 +1,96 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","239","idan","oauthlib","al-the-x","2014-03-21 19:44:38","In attempting to connect to Pearson's Learning Center LMS product using their custom OAuth 1.0A Provider implementation via `requests` + `requests-oauthlib` + `oauthlib`, I need the ability to define a custom signature method for requests made via `oauth1.Client`. Pearson requires `CMAC-AES` encryption to sign requests and does so in a manner wholly different from the standard `HMAC-SHA1` method defined in the RFC. However, this is their prerogative as the Provider, per the RFC:
+
+> OAuth provides three methods for the client to prove its rightful ownership of the credentials: ""HMAC-SHA1"", ""RSA-SHA1"", and ""PLAINTEXT"".  These methods are generally referred to as signature methods, even though ""PLAINTEXT"" does not involve a signature.  In addition, ""RSA-SHA1"" utilizes an RSA key instead of the shared-secrets associated with the client credentials.
+> 
+> OAuth does not mandate a particular signature method, as each implementation can have its own unique requirements.  Servers are free to implement and document their own custom methods. Recommending any particular method is beyond the scope of this specification.  Implementers should review the Security Considerations section (Section 4) before deciding on which method to support.
+
+Currently, `oauth1.Client` only permits signature methods `HMAC-SHA1`, `RSA-SHA1` and `PLAINTEXT` via hard-coded conditional statements; see:
+- [`oauthlib/oauth1/rfc5849/__init__.py:30-133`](https://github.com/idan/oauthlib/blob/a66fe9800c7c7732491a213e1cacf7b82f2b1282/oauthlib/oauth1/rfc5849/__init__.py#L30-L33) – constants for valid signature methods
+- [`oauthlib/oauth1/rfc5849/__init__.py:107-110`](https://github.com/idan/oauthlib/blob/a66fe9800c7c7732491a213e1cacf7b82f2b1282/oauthlib/oauth1/rfc5849/__init__.py#L107-L110) – process `PLAINTEXT` signature method
+- [`oauthlib/oauth1/rfc5849/__init__.py:131-137`](https://github.com/idan/oauthlib/blob/a66fe9800c7c7732491a213e1cacf7b82f2b1282/oauthlib/oauth1/rfc5849/__init__.py#L131-L137) – process `HMAC-SHA1` and `RSA-SHA1` signature methods; raise `ValueError` otherwise
+
+_Proposed_
+
+In order to support custom signature methods, `oauth.Client` should provide an API for registering new signature methods by name. For example, to provide `PLAINTEXT` method:
+
+```
+from oauthlib.oauth1 import Client
+
+## Register the PLAINTEXT signature method as a callback...
+Client.register_signature_method(""PLAINTEXT"", 
+    lambda client, base_string: 
+        return base_string)
+```
+
+Then `oauth1.Client.sign` should look up the signature method in the registered methods and invoke the registered callable, throwing `ValueError` if the value of `oauth_signature_method` has not been registered. Callables passed to `oauth1.Client.register_signature_method` should accept the `client` instance (`self`) and the `base_string` to be signed, as whatever information the signature method needs should be available as a property on the client instance. The current signature method functions – `sign_hmac_sha1`,  `sign_rsa_sha1`, and `sign_plaintext` – can easily be refactored to match this signature.
+
+Any existing tests for `oauth1.Client` or the `sign_*` functions should be updated accordingly, and new tests for `oauth1.Client.register_signature_method` should be added, along with supporting tests (re #28). 
+","start issue","Add support for custom signature methods to `oauth1.Client`"
+"issue_closed","239","idan","oauthlib","ib-lundgren","2014-04-12 10:07:17","","closed issue","Add support for custom signature methods to `oauth1.Client`"
+"pull_request_title","239","idan","oauthlib","al-the-x","2014-03-26 04:07:29","In attempting to connect to Pearson's Learning Center LMS product using their custom OAuth 1.0A Provider implementation via `requests` + `requests-oauthlib` + `oauthlib`, I need the ability to define a custom signature method for requests made via `oauth1.Client`. Pearson requires `CMAC-AES` encryption to sign requests and does so in a manner wholly different from the standard `HMAC-SHA1` method defined in the RFC. However, this is their prerogative as the Provider, per the RFC:
+
+> OAuth provides three methods for the client to prove its rightful ownership of the credentials: ""HMAC-SHA1"", ""RSA-SHA1"", and ""PLAINTEXT"".  These methods are generally referred to as signature methods, even though ""PLAINTEXT"" does not involve a signature.  In addition, ""RSA-SHA1"" utilizes an RSA key instead of the shared-secrets associated with the client credentials.
+> 
+> OAuth does not mandate a particular signature method, as each implementation can have its own unique requirements.  Servers are free to implement and document their own custom methods. Recommending any particular method is beyond the scope of this specification.  Implementers should review the Security Considerations section (Section 4) before deciding on which method to support.
+
+Currently, `oauth1.Client` only permits signature methods `HMAC-SHA1`, `RSA-SHA1` and `PLAINTEXT` via hard-coded conditional statements; see:
+- [`oauthlib/oauth1/rfc5849/__init__.py:30-133`](https://github.com/idan/oauthlib/blob/a66fe9800c7c7732491a213e1cacf7b82f2b1282/oauthlib/oauth1/rfc5849/__init__.py#L30-L33) – constants for valid signature methods
+- [`oauthlib/oauth1/rfc5849/__init__.py:107-110`](https://github.com/idan/oauthlib/blob/a66fe9800c7c7732491a213e1cacf7b82f2b1282/oauthlib/oauth1/rfc5849/__init__.py#L107-L110) – process `PLAINTEXT` signature method
+- [`oauthlib/oauth1/rfc5849/__init__.py:131-137`](https://github.com/idan/oauthlib/blob/a66fe9800c7c7732491a213e1cacf7b82f2b1282/oauthlib/oauth1/rfc5849/__init__.py#L131-L137) – process `HMAC-SHA1` and `RSA-SHA1` signature methods; raise `ValueError` otherwise
+
+_Proposed_
+
+In order to support custom signature methods, `oauth.Client` should provide an API for registering new signature methods by name. For example, to provide `PLAINTEXT` method:
+
+```
+from oauthlib.oauth1 import Client
+
+## Register the PLAINTEXT signature method as a callback...
+Client.register_signature_method(""PLAINTEXT"", 
+    lambda client, base_string: 
+        return base_string)
+```
+
+Then `oauth1.Client.sign` should look up the signature method in the registered methods and invoke the registered callable, throwing `ValueError` if the value of `oauth_signature_method` has not been registered. Callables passed to `oauth1.Client.register_signature_method` should accept the `client` instance (`self`) and the `base_string` to be signed, as whatever information the signature method needs should be available as a property on the client instance. The current signature method functions – `sign_hmac_sha1`,  `sign_rsa_sha1`, and `sign_plaintext` – can easily be refactored to match this signature.
+
+Any existing tests for `oauth1.Client` or the `sign_*` functions should be updated accordingly, and new tests for `oauth1.Client.register_signature_method` should be added, along with supporting tests (re #28). 
+","1fa7cf1823faa477b88e6b62e80a4e13dbd48809","Add support for custom signature methods to `oauth1.Client`"
+"pull_request_merged","239","idan","oauthlib","ib-lundgren","2014-04-12 10:07:17","Add support for custom signature methods to `oauth1.Client`","82e33e4d2c3e4c53ef55fa2a5c5b34400a2697d9","Pull request merge from Unknown:master to idan/oauthlib:master"
+"issue_comment","239","idan","oauthlib","al-the-x","2014-03-21 19:46:40","Sorry for the verbosity on this issue, folks, but I'm using this with a client and want to cover all my bases. Please treat as an RFC for proposed solution. Suggestions for improvement are welcomed, as I'm actively working on the code.
+","",""
+"issue_comment","239","idan","oauthlib","ib-lundgren","2014-03-23 23:20:59","I definitely think this is worth doing and the proposed solution sounds good :)
+
+I might not have much time to help out coding until summer but definitely able to answer any questions you might have.
+","",""
+"issue_comment","239","idan","oauthlib","al-the-x","2014-03-25 13:52:54","@ib-lundgren No worries. I can handle it, I think, although I'll happily accept advice as I go! Thanks!
+","",""
+"issue_comment","239","idan","oauthlib","al-the-x","2014-03-25 19:11:53","Looks like test coverage for the `verify_*()` functions is missing. Since `verify_hmac_sha1()` utilizes `sign_hmac_sha1()`, I started down the path of writing some tests, but I couldn't get the `base_string` calculated by `verify_hmac_sha1()` to match the expected `control_base_string` in the tests. I'm probably doing something wrong.
+","",""
+"issue_comment","239","idan","oauthlib","al-the-x","2014-03-25 22:04:15","Change of strategy: since so much else in the library relies on the current `sign_*()` methods, I've wrapped them with the proposed signature instead. PR shortly.
+","",""
+"issue_comment","239","idan","oauthlib","ib-lundgren","2014-03-26 22:58:44","Looking forward to it :)
+
+On Tue, Mar 25, 2014 at 10:04 PM, David Rogers notifications@github.comwrote:
+
+> Change of strategy: since so much else in the library relies on the
+> current sign_*() methods, I've wrapped them with the proposed signature
+> instead. PR shortly.
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/239#issuecomment-38627024
+> .
+","",""
+"issue_comment","239","idan","oauthlib","al-the-x","2014-03-28 13:14:25","Attached the PR to this issue, as you can still do that on Github. Instead of refactoring the `sign_*()` functions directly, I've shimmed them with e.g. `sign_hmac_sha1_with_client()` that has a different signature. These `sign_*_with_client()` functions are registered via `oauth1.Client.register_signature_method()`, a `@classmethod`, that adds the callable into a `dict`. This allows a programmer to override an existing signature method, if necessary, and use a custom signature method with all instances of `oauth1.Client`. Please advise. Thanks.
+","",""
+"issue_comment","239","idan","oauthlib","ib-lundgren","2014-04-12 10:07:13","Looks great @al-the-x! Very neat :) Opened an issue to add similar functionality to the server side as well.
+
+Sorry it took me so long to get back to you. I will go ahead and merge this in now. Let me know if you would like to be added to AUTHORS (via a PR or comment).
+","",""
+"pull_request_commit","239","idan","oauthlib","al-the-x","2014-03-25 21:52:35","Enforcing a common interface for `sign_*()` methods...
+
+In order to support adding custom signature methods, the current signature methods -- HMAC-SHA1, RSA-SHA1, and PLAINTEXT -- need to be implemented with a common interface. In a previous attempt, I tried changing those functions directly, but there are too many dependencies on their current signatures. By shimming them instead with these thin wrappers, I can provide the common interface I need without breaking everything else in the library.","ea106971af90556e5c682e0a367314111f7f0162",""
+"pull_request_commit","239","idan","oauthlib","al-the-x","2014-03-25 21:55:20","Allowing custom signature methods to be registered and used...
+
+The ""PIZZA"" signature method signs all requests with the string ""PIZZA"" as a trivial example of a custom signing method.","1fa7cf1823faa477b88e6b62e80a4e13dbd48809",""

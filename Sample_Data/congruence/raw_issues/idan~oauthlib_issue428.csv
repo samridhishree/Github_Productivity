@@ -1,0 +1,35 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","428","idan","oauthlib","RobWilco","2016-07-01 22:26:16","Using a grant type of `password`, when I supply a header of `Content-Type: application/json` the body is still sent url-encoded instead of as JSON. From the debug logs:
+
+```
+Supplying headers {'Content-Type': 'application/json'} and
+  data {'username': 'XXX', 'client_secret': 'XXX',
+  'password': 'XXX', 'grant_type': 'password', 'client_id': 'XXX'}
+
+Prepared fetch token request body grant_type=password&username=XXX&
+  client_id=XXX&client_secret=XXX&password=XXX
+```
+
+Other platforms (e.g., ruby) seem to do the right thing. Am I missing something?
+","start issue","Can't send token request body as JSON"
+"issue_closed","428","idan","oauthlib","RobWilco","2016-07-02 04:30:12","","closed issue","Can't send token request body as JSON"
+"issue_comment","428","idan","oauthlib","RobWilco","2016-07-02 00:44:58","See line 211. `data=dict(urldecode(body))`\- I suspect that's why. (Note: `headers` is supplied with `Content-Type: application/json`.)
+
+```
+> /Library/Python/2.7/site-packages/requests_oauthlib/oauth2_session.py(210)fetch_token()
+-> if method.upper() == 'POST':
+(Pdb) l
+205             headers = headers or {
+206                 'Accept': 'application/json',
+207                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+208             }
+209             self.token = {}
+210  ->         if method.upper() == 'POST':
+211                 r = self.post(token_url, data=dict(urldecode(body)),
+212                     timeout=timeout, headers=headers, auth=auth,
+213                     verify=verify)
+214                 log.debug('Prepared fetch token request body %s', body)
+```
+","",""
+"issue_comment","428","idan","oauthlib","RobWilco","2016-07-02 04:30:12","Filed with the wrong project! [Re-filed under requests-oauthlib](https://github.com/requests/requests-oauthlib/issues/244).
+","",""

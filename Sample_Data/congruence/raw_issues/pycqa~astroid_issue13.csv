@@ -1,0 +1,244 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","13","pycqa","astroid","pylint-bot","2014-01-18 11:36:22","Originally reported by: **Nikolay Golub (BitBucket: [ngolub](http://bitbucket.org/ngolub))**
+
+---
+
+I've moved my project to python 3 and my tests, which using pylint and httpretty fails with this error:
+
+File ""/usr/local/lib/python3.3/dist-packages/logilab/common/modutils.py"", line 297, in file_from_modpath
+    return _file_from_modpath(modpath, path, context)`
+  File ""/usr/local/lib/python3.3/dist-packages/logilab/common/modutils.py"", line 556, in _file_from_modpath
+    mtype, mp_filename = _module_file(modpath, path)
+  File ""/usr/local/lib/python3.3/dist-packages/logilab/common/modutils.py"", line 663, in _module_file
+    data = stream.read(4096)
+  File ""/usr/lib/python3.3/encodings/ascii.py"", line 26, in decode
+    return codecs.ascii_decode(input, self.errors)[0]
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xc3 in position 133: ordinal not in range(128)
+
+I've found, that if fails on httpretty module indexing, because it contains:
+# #!/usr/bin/env python
+
+# -_\- coding: utf-8 -_-
+
+# <HTTPretty - HTTP client mock for Python>
+
+# Copyright (C) <2011-2013>  Gabriel Falcão <...
+
+Why pylint tries to decode utf-8 source as ascii?
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/13
+","start issue","Python 3: Pylint can't check package source code in unicode format"
+"issue_closed","13","pycqa","astroid","pylint-bot","2015-12-09 05:51:47","","closed issue","Python 3: Pylint can't check package source code in unicode format"
+"issue_comment","13","pycqa","astroid","pylint-bot","2014-04-08 12:17:15","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+it sounds like this is because an `__init__.py` file contains non ascii string, and attempt to read its content by lgc.modutils fails in such case. This needs deeper investigation for a proper fix.
+","",""
+"issue_comment","13","pycqa","astroid","pylint-bot","2014-07-24 08:19:01","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I can't reproduce it using latest astroid / pylint. Also, pylint knows how to handle files in unicode format. Maybe you used an older version of astroid?
+","",""
+"issue_comment","13","pycqa","astroid","pylint-bot","2014-10-08 08:58:46","_Original comment by_ **Duncan Booth (BitBucket: [duncan_booth](http://bitbucket.org/duncan_booth))**:
+
+---
+
+I came across this problem running pylint 1.3.1, astroid 1.2.1 (so the current versions) when running pylint over a package that depends on Unidecode 0.04.16.
+The `Unidecode/__init__.py` file contains non-ascii characters.
+
+This is not an issue when I run pylint from the bash shell with the environment variable `LANG=en_US.UTF-8`, however when run as a sub-process inside the editor I use, the editor sets `LANG=C` and that causes astroid to fail when attempting to read the non-ascii `__init__.py` file.
+
+```
+#!sh
+
+(wyatt)duncan@ubuntu:~$ cat test.py
+from unidecode import unidecode
+(wyatt)duncan@ubuntu:~$ LANG=en_US.UTF-8 pylint test.py
+No config file found, using default configuration
+************* Module test
+C:  1, 0: Missing module docstring (missing-docstring)
+W:  1, 0: Unused import unidecode (unused-import)
+
+
+Report
+======
+2 statements analysed.
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |1      |1        |=          |
++-----------+-------+---------+-----------+
+|refactor   |0      |0        |=          |
++-----------+-------+---------+-----------+
+|warning    |1      |1        |=          |
++-----------+-------+---------+-----------+
+|error      |0      |0        |=          |
++-----------+-------+---------+-----------+
+
+
+
+Messages
+--------
+
++------------------+------------+
+|message id        |occurrences |
++==================+============+
+|unused-import     |1           |
++------------------+------------+
+|missing-docstring |1           |
++------------------+------------+
+
+
+
+Global evaluation
+-----------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |=          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+
+
+External dependencies
+---------------------
+::
+
+    unidecode (test)
+
+
+
+Raw metrics
+-----------
+
++----------+-------+-------+---------+-----------+
+|type      |number |%      |previous |difference |
++==========+=======+=======+=========+===========+
+|code      |2      |100.00 |2        |=          |
++----------+-------+-------+---------+-----------+
+|docstring |0      |0.00   |0        |=          |
++----------+-------+-------+---------+-----------+
+|comment   |0      |0.00   |0        |=          |
++----------+-------+-------+---------+-----------+
+|empty     |0      |0.00   |0        |=          |
++----------+-------+-------+---------+-----------+
+
+
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |1      |1          |=          |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+|method   |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+|function |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+(wyatt)duncan@ubuntu:~$ LANG= pylint test.py
+No config file found, using default configuration
+************* Module test
+C:  1, 0: Missing module docstring (missing-docstring)
+Traceback (most recent call last):
+  File ""/home/duncan/.virtualenvs/wyatt/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==1.3.1', 'console_scripts', 'pylint')()
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/__init__.py"", line 21, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/lint.py"", line 991, in __init__
+    linter.check(args)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/lint.py"", line 585, in check
+    self.check_astroid_module(astroid, walker, rawcheckers, tokencheckers)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/lint.py"", line 662, in check_astroid_module
+    walker.walk(astroid)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/utils.py"", line 804, in walk
+    self.walk(child)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/utils.py"", line 801, in walk
+    cb(astroid)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/checkers/imports.py"", line 270, in visit_from
+    self._add_imported_module(node, '%s.%s' % (importedmodnode.name, name))
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/pylint/checkers/imports.py"", line 304, in _add_imported_module
+    importedmodname = get_module_part(importedmodname)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/astroid/modutils.py"", line 330, in get_module_part
+    context_file=context_file)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/astroid/modutils.py"", line 275, in file_from_modpath
+    return _file_from_modpath(modpath, path, context)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/astroid/modutils.py"", line 482, in _file_from_modpath
+    mtype, mp_filename = _module_file(modpath, path)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/site-packages/astroid/modutils.py"", line 603, in _module_file
+    data = stream.read(4096)
+  File ""/home/duncan/.virtualenvs/wyatt/lib/python3.4/encodings/ascii.py"", line 26, in decode
+    return codecs.ascii_decode(input, self.errors)[0]
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xce in position 449: ordinal not in range(128)
+(wyatt)duncan@ubuntu:~$ 
+
+```
+","",""
+"issue_comment","13","pycqa","astroid","pylint-bot","2014-10-30 06:51:18","_Original comment by_ **Vadim Markovtsev (BitBucket: [vmarkovtsev](http://bitbucket.org/vmarkovtsev), GitHub: @vmarkovtsev?)**:
+
+---
+
+I have this issue, too. It breaks my CI distributed builds in Jenkins.
+Developers, do you know anything about default codecs? Let me explain you...
+
+Usually, the default codec is utf-8 - in terminal, etc. This is why you are not able to reproduce the problem ""using latest astroid / pylint"".
+But, consider the scenario when pylint is run through a non-interactive SSH session. Not OpenSSH, but things like Paramiko or JSCh. Why this is important, you would ask? Because, OpenSSH is smart enough to pass over environment variables like LC_* and LANG which define the locale **and default encoding** which python3 uses, but this is not the case with other dumb SSH clients.
+
+When Python3 does not recognize a sane environment, it defaults to (tada!) ascii encoding. And (oh shit) even the following code will fail:
+
+```
+#!python
+with open(""file_with_utf8_chars.txt"", ""r"") as f:
+    mystr = f.read()
+```
+
+>  File ""/usr/lib/python3.4/encodings/ascii.py"", line 26, in decode
+> 
+>    return codecs.ascii_decode(input, self.errors)[0]
+> 
+>    UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 50864: ordinal not in range(128)
+
+Yes, this is bad, bad Python3 habit. And yes, many people complain about it, see e.g. [this link](http://lucumr.pocoo.org/2011/12/7/thoughts-on-python3/) (ctrl-f ssh).
+
+How to reproduce it? Set the default encoding to ascii (LANG= as suggested by Duncan).
+
+How to fix it? [Read the docs](https://docs.python.org/3/howto/unicode.html) and open('file', encoding='utf-8')
+","",""
+"issue_comment","13","pycqa","astroid","pylint-bot","2015-06-11 01:38:37","_Original comment by_ **C N Kiser (BitBucket: [ckiser](http://bitbucket.org/ckiser))**:
+
+---
+
+I am still having this problem - because of Jenkins. On the server I can run pylint from the virtualenv my Jenkins server creates. Works fine if I am on the command line and fails when I try to execute the same command from Jenkins. Since I am building from a bash script, I can add `export LANG=en_US.UTF-8` to the script and it looks like that fixes the problem. But it would be great if this worked out of the box if possible.
+","",""
+"issue_comment","13","pycqa","astroid","pylint-bot","2015-06-11 04:19:42","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+> How to fix it? Read the docs and open('file', encoding='utf-8')
+
+That's not really a good fix, IMHO. Just using UTF-8 is just a guess, like open without an encoding (i.e. the system's default encoding) is as well.
+
+The real solution (if pylint doesn't yet) would be to use [tokenize.open](https://docs.python.org/3.4/library/tokenize.html#tokenize.open) on Python3, which detects the [PEP263](https://www.python.org/dev/peps/pep-0263/) encoding markers and opens the file correctly, even if it ends up having an `encoding: latin1` marker ;)
+
+That being said, I have source files with UTF-8 in them, and I can run pylint on them just fine with `LANG=C` (pylint 1.4.3, astroid 1.3.6, common 0.63.2).
+","",""

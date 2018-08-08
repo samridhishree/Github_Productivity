@@ -1,0 +1,136 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","466","pycqa","astroid","JoaoFelipe","2017-11-27 19:39:16","### Steps to reproduce
+Run the following code to infer variables of `*a = [1,2,3,4]`
+```python
+from astroid.builder import MANAGER, AstroidBuilder
+
+class Visitor(object):
+    
+    def visit(self, node):
+        for child in node.get_children():
+            child.accept(self)
+    visit_module = visit
+    visit_assign = visit
+    visit_starred = visit
+            
+    def visit_assignname(self, node):
+        for var in node.infer():
+            pass
+    
+builder = AstroidBuilder(manager=MANAGER, apply_transforms=True)
+parsed = builder.string_build(""""""
+*a = [1,2,3,4]
+"""""")
+
+parsed.accept(Visitor())
+```
+
+### Current behavior
+
+It currently throws an AttributeError, which does not represent the actual error and is a bit generic:
+```
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-1-5938fe2de6c6> in <module>()
+     19 """""")
+     20 
+---> 21 parsed.accept(Visitor())
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/node_classes.py in accept(self, visitor)
+    293     def accept(self, visitor):
+    294         func = getattr(visitor, ""visit_"" + self.__class__.__name__.lower())
+--> 295         return func(self)
+    296 
+    297     def get_children(self):
+
+<ipython-input-1-5938fe2de6c6> in visit(self, node)
+      5     def visit(self, node):
+      6         for child in node.get_children():
+----> 7             child.accept(self)
+      8     visit_module = visit
+      9     visit_assign = visit
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/node_classes.py in accept(self, visitor)
+    293     def accept(self, visitor):
+    294         func = getattr(visitor, ""visit_"" + self.__class__.__name__.lower())
+--> 295         return func(self)
+    296 
+    297     def get_children(self):
+
+<ipython-input-1-5938fe2de6c6> in visit(self, node)
+      5     def visit(self, node):
+      6         for child in node.get_children():
+----> 7             child.accept(self)
+      8     visit_module = visit
+      9     visit_assign = visit
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/node_classes.py in accept(self, visitor)
+    293     def accept(self, visitor):
+    294         func = getattr(visitor, ""visit_"" + self.__class__.__name__.lower())
+--> 295         return func(self)
+    296 
+    297     def get_children(self):
+
+<ipython-input-1-5938fe2de6c6> in visit(self, node)
+      5     def visit(self, node):
+      6         for child in node.get_children():
+----> 7             child.accept(self)
+      8     visit_module = visit
+      9     visit_assign = visit
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/node_classes.py in accept(self, visitor)
+    293     def accept(self, visitor):
+    294         func = getattr(visitor, ""visit_"" + self.__class__.__name__.lower())
+--> 295         return func(self)
+    296 
+    297     def get_children(self):
+
+<ipython-input-1-5938fe2de6c6> in visit_assignname(self, node)
+     11 
+     12     def visit_assignname(self, node):
+---> 13         for var in node.infer():
+     14             pass
+     15 
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/decorators.py in wrapped(node, context, _func, **kwargs)
+     80 
+     81         yielded = set()
+---> 82         generator = _func(node, context, **kwargs)
+     83         try:
+     84             while True:
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/inference.py in infer_assign(self, context)
+    762         return stmt.infer(context)
+    763 
+--> 764     stmts = list(self.assigned_stmts(context=context))
+    765     return bases._infer_stmts(stmts, context)
+    766 nodes.AssignName._infer = infer_assign
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/decorators.py in yes_if_nothing_inferred(func, instance, args, kwargs)
+    106 def yes_if_nothing_inferred(func, instance, args, kwargs):
+    107     inferred = False
+--> 108     for node in func(*args, **kwargs):
+    109         inferred = True
+    110         yield node
+
+~/anaconda3/envs/py36/lib/python3.6/site-packages/astroid/protocols.py in starred_assigned_stmts(self, node, context, asspath)
+    568 
+    569         elts = collections.deque(rhs.elts[:])
+--> 570         if len(lhs.elts) > len(rhs.elts):
+    571             raise exceptions.InferenceError('More targets, {targets!r}, than '
+    572                                             'values to unpack, {values!r}.',
+
+AttributeError: 'Starred' object has no attribute 'elts'
+```
+
+### Expected behavior
+
+I was expecting either an InferenceError or an AstroidSyntaxError.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+1.5.3
+","start issue","Unexpected exception type on Starred Syntax Error"
+"issue_comment","466","pycqa","astroid","PCManticore","2017-12-11 09:22:20","Thanks @JoaoFelipe ! I can reproduce the issue","",""
+"issue_comment","466","pycqa","astroid","PCManticore","2017-12-15 09:10:00","After I took a look, it made sense why it happens like this. First of all, this seems to not be interpreted as a SyntaxError by Python at the AST level, that is to say you can still do `ast.parse('*target = [1, 2, 3]')`, the actual validation happens at byte-code interpretation time, which is the reason why it doesn't fail with `SyntaxError` right away. Next, since astroid's main consumer is pylint, we wanted for syntax errors like this to not stop the entire parsing of the file, which is why it's not handled at astroid's level. `pylint` actually has a error message for this construct, `invalid-star-assignment-target`.
+Now I see that having `astroid` raise SyntaxErrors as well would be useful for other use cases than pylint. What we'll probably add is an extra layer of validation, for instance after the AST gets rebuilt by `rebuilder.py`, where we can look for these kind of SyntaxErrors. `pylint` will deactivate that layer in order for it to still be able to emit those error messages.","",""

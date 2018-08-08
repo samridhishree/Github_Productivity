@@ -1,0 +1,309 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","238","idan","oauthlib","lsmag","2014-03-20 23:05:38","Hello,
+
+I've been reading the [OpenID Connect spec](http://openid.net/specs/openid-connect-core-1_0.html) to implement it on top of [Django-OAuth-Toolkit](https://github.com/evonove/django-oauth-toolkit/issues/110#issuecomment-36942476), but I think this feature belongs to oauthlib, what do you think?
+
+I have some code (inside DOT, not oauthlib) which defines a new server and grant_types needed to succesfully process an OIDC Authorization Request. If you agree, I'll move that to my fork of oauthlib and write proper tests covering the spec.
+","start issue","OpenID Connect"
+"issue_closed","238","idan","oauthlib","thedrow","2016-11-13 14:21:24","","closed issue","OpenID Connect"
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-03-23 23:21:32","That would be awesome :)
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-03-24 19:51:24","Awesome!
+
+I'm commiting everything on [this repo](https://github.com/intelie/python-openidconnect). Yep, it's not a fork, but it's only because we were afraid you could not like to implement OIDC _inside_ OAuthlib. I can now make a fork and migrate everything asap.
+
+This is a very primary code: I'm still getting used to testing with a friend of mine and I tried to implement the spec following all patterns ans structure of oauthlib, so I'm sending you this for feedback.
+
+So, shortly, my idea is: have a new server, `OpenIDConnectServer`, and one grant_type class for each flow (auth code, implicit and hybrid). There's also a new RequestValidator with some OIDC-specific code and a new BearerToken which creates an id_token. This way I can reuse all endpoint mixins and respect the same flow made in OAuth2 server.
+
+Problem is: an OIDC Endpoint is still and OAuth2 endpoint. For example, an authorization request without the 'openid' scope may still be a valid OAuth2 request. I don't know exactly how to do this right now, any ideas are welcome.
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-03-25 10:35:16","Will skim the spec today or tomorrow and see what comes to mind. I've not
+looked into connect before and only know its meant to be a layer above
+oauth, hopefully we can do the same.
+
+On 24 Mar 2014 19:51, ""lsmag"" notifications@github.com wrote:
+
+> Awesome!
+> 
+> I'm commiting everything on this repo. Yep, it's not a fork, but it's
+> only because we were afraid you could not like to implement OIDC inside
+> OAuthlib. I can now make a fork and migrate everything asap.
+> 
+> This is a very primary code: I'm still getting used to testing with a
+> friend of mine and I tried to implement the spec following all patterns ans
+> structure of oauthlib, so I'm sending you this for feedback.
+> 
+> So, shortly, my idea is: have a new server, OpenIDConnectServer, and one
+> grant_type class for each flow (auth code, implicit and hybrid). There's
+> also a new RequestValidator with some OIDC-specific code and a new
+> BearerToken which creates an id_token. This way I can reuse all endpoint
+> mixins and respect the same flow made in OAuth2 server.
+> 
+> Problem is: an OIDC Endpoint is still and OAuth2 endpoint. For example,
+> an authorization request without the 'openid' scope may still be a valid
+> OAuth2 request. I don't know exactly how to do this right now, any ideas
+> are welcome.
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHub.
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-03-26 23:09:14","I've had a little look now and I think only a fairly small set of additions should be needed. Ideally only an extra grant type or two should suffice along with a couple of new error types. 
+
+However, that requires that some modifications are done to allow for multiple response types (e.g. response_type=""id_token token"") which oauthlib does not handle currently but this should be straightforward.
+
+The main things to look into is how do we handle multiple response/grant type validation. Will they need to interact? Or can they be done separately? This might become clear by reading the connect and multiple response oauth 2 spec in more detail (or reading your fork, not done my homework yet...).
+
+For example, could we simple iterate over response type handlers at https://github.com/idan/oauthlib/blob/master/oauthlib/oauth2/rfc6749/endpoints/authorization.py#L93? or do we create ""joint"" handlers that interact? or other?
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-03-26 23:14:48","Actually, I made a [workaround](https://github.com/intelie/python-openidconnect/blob/master/oidclib/server.py#L42) for this, just to avoid changing oauthlib's code (since I had no idea at the time that an OIDC pull request could be accepted).
+
+I created a README.md and commented most things I decided until now. Some little rework is necessary in order to put this inside oauthlib, since now we can change some of its machinery. This can also solve the ""two-servers"" problem I described without nasty hacks.
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-03-26 23:20:13","Will take a look at your code tomorrow :) One thing that occurred to me now tho is that oauthlib has so far done little to inspect the actual scopes whereas openid will do so that _might_ influence quite a few things like token issuing etc.
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-03-26 23:23:54","Ok, I'll wait =D
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-03-27 17:59:27","Just to note, about your ""multiple response/grant type"" question: I think they can be done in separate .  I'm thinking of something that returns auth_code, id_token and token separately, based on what's listed on response_type. This covers all 3 OIDC flows (Auth, Implicit and Hybrid), and can be done like this:
+
+```
+# NOTE: pseudo-code
+response_types = {
+    'code': code_handler,
+    'id_token': id_token_handler,
+    'token': token_handler
+}
+
+handlers = [handler 
+            for k, handler in response_types.items() 
+            if k in request.respnse_type]
+
+return handle_response_type(handlers, request, default_token_type)
+
+def handle_response_type(handlers, request, token_type):
+    response = handlers[0].create_authorization_response(request, token_type)
+
+    for handler in handlers[1:]:
+        response = handler.modify_authorization_response(response, request, token_type)
+
+    return response
+```
+
+This is just a brainsform, I think there are better ways to do this. What do you think?
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-04-18 14:42:18","@lsmag you are not forgotten! I just struggle to find time since its exam crunch at uni. Will have plenty more late May for reviewing and helping out coding / testing however.
+
+I've been thinking a little about how to deal with multiple response types and it seems like most of their use cases will be to extend one ""core"" response type with additional functionality as opposed to being two orthogonal responses batched together. Since one extends the other it might be awkward to chain them up like we first considered, especially since ""create_authorization_response"" does calls out to DB to save token etc.
+
+Another, possibly better, approach would be to identify extension points in the endpoints/grants for which these new grants can register methods. For OpenID this might just need something like
+- register_post_validation_method (e.g. additional checks on top of authorization code)
+- register_token_modifier (e.g. to add id_token)
+
+These were just ideas from the top of my head, other extension points might be far superior and would need to look a bit closer at the spec. Thoughts?
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-04-22 14:23:36","Hi @ib-lundgren , no problem! Do what you need to do on your college, until then I'll proceed with my implementation.
+
+About my last suggestion, I concluded it was a bad idea when I start coding =S My current solution is simpler, though, because we're needing an OIDC backend asap, basically porting the solution I made on my Django-OAuth-Toolkit fork:
+- Endpoints will decide which grant type use based on the response_type param
+- 3 grant types: auth code, implicit, hybrid (not implemented yet)
+- inside each grant type, an additional if-code will check for OIDC and patch the response accordinly
+
+But I'm curious about your last idea about extension points. Who's going to implement those methods, and where? Maybe just let the door open to third-party developers implement something they need, which includes OIDC? Seems nice to me, and easy to code. So, shall we begin?
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-04-22 18:43:18","> Maybe just let the door open to third-party developers implement something they need, which includes OIDC?
+
+Exactly. Instead of the if-check in various grants just add a ""hook"" method for extension grants like OIDC to patch with. So if OIDC need to patch the token dictionary, add something like `register_token_modifier` and inside the grant/endpoint/token have
+
+```
+ token = ...
+ for modifier in self.token_modifiers:
+      token = modifier(self, token, request)
+ self.request_validator.save_token(token)
+```
+
+where the modifier could look like
+
+```
+ def add_id_token(self, grant, token, request):
+        token['id_token'] = generate_id_token()
+```
+
+and maybe registered on the endpoint by and OIDC extension
+
+```
+  class OIDC(object):
+       def __init__(self, endpoint):
+             endpoint.register_token_modifier(self.add_id_token)
+       ...
+
+  server = oauthlib.oauth2.Server(....)
+  oidc = OIDC(server)
+```
+
+These are just ideas (heavily borrowed from requests/flask) and the details will most definitely change :) Thoughts?
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-04-22 19:00:07","Yup, seems nice to me. But there's something left to discuss: multiple response-types[1](http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html).
+
+Right now it's hardcoded in each grant_type class. We can change it to an init parameter like `__init__(self, ..., allowed_response_types='code token id_token')` to comply the spec, for example:
+
+```
+# Change this
+if request.response_type != 'code':
+    raise SomeError()
+
+# To this
+if not self.is_response_type_valid(request.response_type):
+     raise SomeError()
+
+# where the method is
+def is_response_type_valid(self, request):
+    # assuming allowed_response_types is a set
+    return set(request.response_type).issubset(self.allowed_response_types)
+```
+
+With this kind of change I think we can then implement OIDC[2](http://openid.net/specs/openid-connect-core-1_0.html#Authentication) as a completely new layer, like you suggested (about your OIDC class, wouldn't be better if it was an subclass of Server, instead of a wrapper?). We may need to document some new validator methods, but I'm not certain yet.
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-04-22 22:16:33","Sounds good. I think response types have to be space separated so can just split the string and do subset checking as you suggest. 
+
+We might need to ""enable"" OIDC when ""id_token"" is part of the scope, so that id_token is not  returned for scope without it. Although some providers (e.g. Google if I'm not mistaken) always return it no matter which scope.
+
+Regarding subclass or not I don't think OIDC here will be an endpoint as much as a grant type, albeit one that mainly extends others (auth code & implicit). It might be useful to subclass the base grant type however.
+
+Probably will be a few validator methods but that is no problem.
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-04-22 22:44:36","Ok, I already did this new `is_response_type_valid` thing.
+
+Just clarifying: an oauth2 request is also an OIDC request when 'openid' is one of the scopes listed, so the implementation I'm working take this in consideration... if it has 'openid' in scopes, then id_token should be returned, immediately (implicit or hybrid flows) or later on token exchange.
+
+Then again, about subclassing: I'm sorry, I think I said something wrong in my last message =S ... I think we could create a new pre-configured server, including the `add_id_token` hook we discussed. The only new grant_type I'm creating is for the Hybrid Flow.
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-04-24 09:48:28","Sounds good. Maybe providing these scopes to take into consideration during register methods would be useful? e.g.
+
+```
+  endpoint.register_token_modifier(self.add_id_token, ""openid"")
+```
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-04-24 14:20:59","Thinking about that, maybe it's too limiting. I was thinking in something like a hook that receives the current token, the request and validator objects and expires_in, and it returns either the original token unmodified or patched. So, my current solution is:
+
+```
+class OpenIDConnectServer(...):
+    def __init__(...):
+        auth_grant = AuthGrant()
+        implicit_grant = ImplicitGrant()
+        hybrid_grant = HybridGrant()
+
+        bearer = BearerToken()
+        bearer.register_token_modifier(id_token_modifier)
+
+        AuthorizationEndpoint.__init__(self,
+            default_response_type='code',
+            response_types=[
+                ('code', auth_grant),
+                ('token id_token', implicit_grant),
+                ('code token id_token', hybrid_grant)
+            ],
+            default_token_type=bearer)
+        # ...
+```
+
+Of course all grants are tweaked to allow OIDC requests (including the 'scopes' flexibility we discussed earlier).
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-04-25 19:51:19","Hi,
+
+I implemented something in my [fork](https://github.com/intelie/oauthlib/tree/openid-connect). There are things still missing (like hybrid flow), but I think we can discuss the core idea.
+
+Also, tests and docs are purposely missing. I'm still not used to testing, so I need some guidance in this matter, and I don't think document everything is a good idea right now, because things are subtle to change.
+
+It's usable enough for us to start testing with Django-OAuth-Toolkit for our own use, but we want to make it generic and complete enough for everybody. So, what do you think?
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-05-27 13:21:16","Hope things have been going well! My exams are finally over and thought I'd help get this merged over the next week. 
+
+I'll be happy to help out with testing and give guidance too, the current tests might be a bit confusing but in general I prefer more ""end-to-end"" like test over super targeted unittests, e.g. create an endpoint and send in the http params and inspect the result / invoked methods.
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-06-18 13:32:14","Hi @ib-lundgren , sorry for taking so long to answer!
+
+I stopped works on the my fork because we just did the minimum to get OIDC working for our project, but of course I want to contribute to merge it upstream. Can we proceed on this?
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-07-03 17:32:16","Certainly can :)
+
+Did you discover a good approach in your project?
+","",""
+"issue_comment","238","idan","oauthlib","lsmag","2014-07-03 19:04:22","Yep, I did. I followed (more or less) your advices and basically extended the current grant_types. In resume:
+- I created a [new validator](https://github.com/intelie/oauthlib/blob/openid-connect/oauthlib/oauth2/rfc6749/id_token_validator.py), which has additional methods for id tokens (I think it's possible to merge with request_validator)
+- a new [pre-configured server](https://github.com/intelie/oauthlib/blob/openid-connect/oauthlib/oauth2/rfc6749/endpoints/pre_configured.py#L204) uses the new validator and other settings (like the id_token specific module)
+- also, I tweaked the [GrantTypeHandler](https://github.com/intelie/oauthlib/blob/openid-connect/oauthlib/oauth2/rfc6749/utils.py#L101) a little to allow [multi response-types](https://github.com/intelie/oauthlib/blob/openid-connect/oauthlib/oauth2/rfc6749/endpoints/pre_configured.py#L234). I just tried to allow extensions to OpenID Connect without have to change any other code (but it may be a bad idea, I think we should only support one format).
+- the hybrid flow is still not implemented =S
+
+I'll update my fork with upstream so we can start. Of course anything I did is open to changes, I only did my best to get oauthlib working for us quickly.
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-07-03 21:46:21","Sounds good :)
+
+Looking forward to digging into your fork in detail this weekend
+","",""
+"issue_comment","238","idan","oauthlib","ib-lundgren","2014-07-06 17:49:48","Begun sketching out some grant types but spent most time browsing the spec so only scratched the surface of the validation. As always with OAuth there is not much logic involved but a lot of subtle points so will require some iterations to get there. What I really need to do is draft the whole OIDC server in a toy project or some tests to get a feel for the best API so the logic I sketched out is likely to change around as I get more familiar with OIDC. 
+
+I've pushed a new openid_connect branch and the skeleton code is at [openid_connect.py](https://github.com/idan/oauthlib/blob/openid_connect/oauthlib/oauth2/rfc6749/grant_types/openid_connect.py).
+
+I reckon we can reuse your code more or less verbatim for the token creation but need to read up on that bit of the spec as well as claims. We can likely reuse [generate_signed_token](https://github.com/idan/oauthlib/blob/master/oauthlib/common.py#L242) for the signing/encoding.
+
+Not revisited response type handling yet.
+
+Currently mainly using composition as opposed to inheritance, not made up my mind of what I prefer here yet.
+
+As always, please jump in wherever you want and be as critical as you need :) Currently not much to see but hope some will take form over the coming week(s).
+","",""
+"issue_comment","238","idan","oauthlib","ryanhiebert","2014-12-17 19:43:04","Looks like this has stalled. I'm still figuring out OpenID Connect, but is there anything I might be able to do to help the work along?
+","",""
+"issue_comment","238","idan","oauthlib","corentone","2015-01-10 08:14:16","I would like to help too!
+I might fork and try to start myself unless you can share a headstart :)
+","",""
+"issue_comment","238","idan","oauthlib","fgaudin","2015-01-30 18:15:08","I'm interested as well, any news on the subject?
+","",""
+"issue_comment","238","idan","oauthlib","juanifioren","2015-02-12 21:35:14","@ryanhiebert @fgaudin Because of needs I start a new project, an OIDC implementation for the Django Frameworks. If someone is interested.
+https://github.com/juanifioren/django-oidc-provider
+","",""
+"issue_comment","238","idan","oauthlib","skion","2015-05-22 09:41:23","If anyone's interested, I've [rebased](https://github.com/skion/oauthlib/tree/openid_connect) the original `openid_connect` branch to master some time ago, and did some small modifications (some from this thread) to make it work for my case. It [applies cleanly](https://github.com/idan/oauthlib/compare/master...skion:openid_connect) to 0.7.2 at the moment (was 0.6.x before rebase), but is definitely not ready for merging to master. I'd be willing to help get it in a better state, though also don't feel confidently acquainted with oauthlib's innards.
+","",""
+"issue_comment","238","idan","oauthlib","bjmc","2015-07-24 00:45:41","Has there been any more progress on this issue? I'm looking to implement an OAuth2 provider + OpenIDConnect support.
+","",""
+"issue_comment","238","idan","oauthlib","bjmc","2015-08-06 00:51:12","@ib-lundgren 
+
+I'm really interested in having this feature available. I've [rebased the existing openid_connect branch](https://github.com/idan/oauthlib/compare/master...bjmc:openid_connect?expand=1) onto the current master. What else do you think is needed to move this issue to completion? I'm happy to make further changes and put together a pull request if somebody is willing to review it.
+","",""
+"issue_comment","238","idan","oauthlib","bjmc","2015-09-21 18:22:46","Sorry to sound like a broken record here, but is there any interest in getting this feature completed/merged? I don't want to put time against it unless there's interest upstream.
+","",""
+"issue_comment","238","idan","oauthlib","ntcong","2016-01-12 04:41:13","any update on this? since there's no reply from the team, should we consider this feature is not interested ?
+","",""
+"issue_comment","238","idan","oauthlib","bjmc","2016-01-12 04:54:01","I'm not sure if this project is actively maintained or not. Would people be interested in a fork, with a more limited scope? (say, only OAuth2 + OIDC, and only server-side implementation, no client)
+","",""
+"issue_comment","238","idan","oauthlib","clintonb","2016-01-12 05:01:00","Note that there is also an issue tracking this in a consuming project: evonove/django-oauth-toolkit#110. However, no progress has been made there, either.
+","",""
+"issue_comment","238","idan","oauthlib","bjmc","2016-01-12 05:44:52","We need this feature for a project I'm working on. If there's no movement on this by February, I will probably be forking and merging on my fork--but I would prefer not to maintain a long running fork--and I hope that upstream maintainers will take an interest in this feature. @ib-lundgren
+","",""
+"issue_comment","238","idan","oauthlib","clintonb","2016-01-26 18:33:33","@bjmc @ib-lundgren @idan we at edX are very interested in seeing this feature merged and supported in django-oauth-toolkit. What do you need from us to make that happen?
+","",""
+"issue_comment","238","idan","oauthlib","fgaudin","2016-01-28 23:22:51","Now I'm using https://github.com/juanifioren/django-oidc-provider which is working well enough for our needs.
+","",""
+"issue_comment","238","idan","oauthlib","clintonb","2016-03-22 17:37:50","@ib-lundgren @idan we at edX are very interested in seeing this feature merged and supported in django-oauth-toolkit. What do you need from us to make that happen?
+","",""
+"issue_comment","238","idan","oauthlib","bjmc","2016-03-22 19:12:36","@clintonb At [Globus](https://www.globus.org/) we are discussing the possibility of forking oauthlib to get this feature merged. Would you or other edX devs be interested in sharing the work of maintaining a fork until such time as upstream maintainers want to incorporate our changes?
+","",""
+"issue_comment","238","idan","oauthlib","clintonb","2016-03-22 21:44:44","@bjmc We are interested; but, I want to get some assurances from @ib-lundgren @idan that the fork will be merged. We already have a fork of the now-dead django-oauth2-provider that we want to get rid of.
+","",""
+"issue_comment","238","idan","oauthlib","joelstevenson","2016-04-20 01:28:14","@clintonb, @bjmc, and @idan I've done some work to get the `openid_connect` branch updated and submitted a PR https://github.com/idan/oauthlib/pull/416 in the hopes that the code might eventually get there.  This may only serve as a straw-man to see what else needs to happen to get the code eventually merged but, as it is all the tests pass and I'm using Authorization Code flow in a Django app (via `django-oauth2-toolkit` updated to integrate with this version of `oauthlib`), FWIW.
+","",""
+"issue_comment","238","idan","oauthlib","bjmc","2016-04-20 19:03:07","Thanks @joelstevenson! I made some comments on the pull request. Let's see if we can get this in a state we're happy with and get it merged.
+","",""
+"issue_comment","238","idan","oauthlib","joelstevenson","2016-04-21 00:38:42","Great, thanks much!  I'll be continuing to work on this tomorrow and Friday, I don't want to lose any momentum although today I was stuck dealing with other things.
+
+> On Apr 20, 2016, at 12:03 PM, Brendan McCollam notifications@github.com wrote:
+> 
+> Thanks @joelstevenson https://github.com/joelstevenson! I made some comments on the pull request. Let's see if we can get this in a state we're happy with and get it merged.
+> 
+> —
+> You are receiving this because you were mentioned.
+> Reply to this email directly or view it on GitHub https://github.com/idan/oauthlib/issues/238#issuecomment-212559994
+","",""
+"issue_comment","238","idan","oauthlib","thedrow","2016-11-13 14:21:24","This is fixed with #416 
+","",""

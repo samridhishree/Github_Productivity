@@ -1,0 +1,57 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","501","idan","oauthlib","dhrp","2017-11-18 19:53:45","First of; thanks for the recent addition of the OpenID Connect improvements! (@wiliamsouza)!
+
+This is exactly what I need. 
+
+However, I seem to have ran into a snag; the `get_id_token()` method of my own class never gets called. After careful tracing it appears that happens because there is something wrong with the order of execution.
+
+In order words (code-snippets)
+
+My own validator:
+```
+class OAuth2OpenIDConnectValidator(OAuth2Validator):
+   def get_id_token(self, token, token_handler, request):
+```
+
+get_id_token() never gets called because
+
+```
+class OpenIDConnectAuthCode(OpenIDConnectBase):
+    def __init__(self, request_validator=None, **kwargs):
+       [ ... snip ... ]
+       self.register_token_modifier(self.add_id_token)
+```
+happens *after*
+
+```
+def create_token_response(self, request, token_handler):
+[ .. snip .. ]
+        for modifier in self._token_modifiers:
+            token = modifier(token, token_handler, request)
+```
+
+which is the place where the get_id_token() in my custom validator would be called. 
+
+It's not 100% clear to me whether this is a bug, if it is because I use oauthlib through django-oauth-toolkit here; or that I'm doing something wrong.
+
+
+
+Additionally; from the [documentation](https://oauthlib.readthedocs.io/en/stable/oauth2/oidc/validator.html) (note this is 'stable', not 'latest'?) I understood that there are four methods that need to be implemented; however, I noticed that I also had to override `validate_response_type` because otherwise the client auth would fail on an invalid response type.
+ 
+","start issue","In openIDConnect validator get_id_token is never called"
+"issue_closed","501","idan","oauthlib","dhrp","2017-11-19 20:31:14","","closed issue","In openIDConnect validator get_id_token is never called"
+"issue_comment","501","idan","oauthlib","dhrp","2017-11-19 20:31:14","It looks like I was still doing things wrong and misunderstanding..
+
+Some mistakes I made:
+* the improvements by @wiliamsouza were merged, but the the issue with backwards incompatibilty was not fixed, but it was reverted in 2.06.
+* I didn't properly understand that request type 'id_token' was (only) for the implicit grant types. 
+* The implementation is not quite complete yet; I got parts to work, but only by disabling some checks
+
+I'm now going to use django-oidc-provider instead of django-oauth-toolkit. It works out of the box and is more full-featured for oidc, even if the issues here were to be fixed.","",""
+"issue_comment","501","idan","oauthlib","wiliamsouza","2017-11-20 16:28:53","@dhrp Hi!
+I'm working on add oidc support work in django-oauth-toolkit  here is the branch https://github.com/evonove/django-oauth-toolkit/compare/master...wiliamsouza:openid-connect","",""
+"issue_comment","501","idan","oauthlib","dhrp","2017-11-20 17:55:52","cool @wiliamsouza, It think that will be super useful; it feels right to have it on oauthlib and on django-oauth-toolkit.
+
+Is it ready to try? -- I see you have not made it into an actual PR yet.
+
+","",""

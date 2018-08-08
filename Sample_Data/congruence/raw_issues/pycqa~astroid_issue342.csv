@@ -1,0 +1,144 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","342","pycqa","astroid","Lothiraldan","2016-06-10 09:19:04","I was doing some tests and make Pylint crash into a RecursionError.
+
+I managed to reproduce a minimal test case:
+
+```
+class Klass(object):
+
+    def __init__(self, attr):
+        self.attr = attr
+
+    @property
+    def property(self):
+        return self.attr
+```
+
+The stacktrace is:
+
+```
+Traceback (most recent call last):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/lint.py"", line 1315, in __init__
+    linter.check(args)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/lint.py"", line 736, in check
+    self._do_check(files_or_modules)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/lint.py"", line 867, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/lint.py"", line 947, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/utils.py"", line 938, in walk
+    self.walk(child)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/utils.py"", line 935, in walk
+    cb(astroid)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/pylint/checkers/base.py"", line 417, in visit_functiondef
+    self._check_redefinition(node.is_method() and 'method' or 'function', node)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 882, in is_method
+    return self.type != 'function' and isinstance(self.parent.frame(), ClassDef)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/decorators.py"", line 73, in __get__
+    val = self.wrapped(inst)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 821, in type
+    _type = _infer_decorator_callchain(inferred)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 643, in _infer_decorator_callchain
+    result = next(node.infer_call_result(node.parent))
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 970, in infer_call_result
+    for inferred in returnnode.value.infer(context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 325, in raise_if_nothing_inferred
+    for node in func(*args, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/inference.py"", line 156, in infer_attribute
+    for owner in self.expr.infer(context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 99, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/inference.py"", line 299, in infer_assign
+    stmts = list(self.assigned_stmts(context=context))
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/protocols.py"", line 304, in _arguments_infer_argname
+    functype = self.parent.type
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/decorators.py"", line 73, in __get__
+    val = self.wrapped(inst)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 821, in type
+    _type = _infer_decorator_callchain(inferred)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 643, in _infer_decorator_callchain
+    result = next(node.infer_call_result(node.parent))
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 970, in infer_call_result
+    for inferred in returnnode.value.infer(context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 325, in raise_if_nothing_inferred
+    for node in func(*args, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/inference.py"", line 156, in infer_attribute
+    for owner in self.expr.infer(context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 99, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/inference.py"", line 299, in infer_assign
+    stmts = list(self.assigned_stmts(context=context))
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/protocols.py"", line 304, in _arguments_infer_argname
+    functype = self.parent.type
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/decorators.py"", line 73, in __get__
+    val = self.wrapped(inst)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 821, in type
+    _type = _infer_decorator_callchain(inferred)
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 643, in _infer_decorator_callchain
+    result = next(node.infer_call_result(node.parent))
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 970, in infer_call_result
+    for inferred in returnnode.value.infer(context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 325, in raise_if_nothing_inferred
+    for node in func(*args, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/inference.py"", line 156, in infer_attribute
+    for owner in self.expr.infer(context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 99, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/lothiraldan/.virtualenvs/sqreen/lib/python2.7/site-packages/astroid/inference.py"", line 299, in infer_assign
+    stmts = list(self.assigned_stmts(context=context))
+```
+
+It the continue to loop `infer_assign -> infer_call_result -> infer_attribute -> infer_assing`.
+
+Here are my versions:
+
+```
+astroid==1.4.6
+pylint==1.5.6
+```
+
+Reproduce on Mac OS X 10.11.5 and Ubuntu 14.04.
+","start issue","RecursionError on property + attribute"
+"issue_closed","342","pycqa","astroid","PCManticore","2016-06-24 10:38:39","","closed issue","RecursionError on property + attribute"
+"issue_comment","342","pycqa","astroid","PCManticore","2016-06-24 10:38:39","Thanks, forgot about answering! It is actually fixed with pylint==2.0 and astroid==1.5.0, you can install them from the repositories. Can you let me know if they work for you? Otherwise, just reopen the ticket and I'll take a look.
+","",""
+"issue_comment","342","pycqa","astroid","howsiwei","2017-06-16 10:35:34","Where can I install pylint==2.0?
+From what I see from pylint repo the newest version is 1.7.1.","",""
+"issue_comment","342","pycqa","astroid","rogalski","2017-06-16 11:03:09","@howsiwei use 1.7.1. Originally there were plans to ship this release as 2.0, but ultimately it was decided that it would be 1.7.x. ","",""
+"issue_comment","342","pycqa","astroid","ceridwen","2017-06-16 21:13:05","This bug looks similar to #375, which was reported in astroid 1.5.  Are they related?","",""

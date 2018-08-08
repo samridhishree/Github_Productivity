@@ -1,0 +1,186 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","362","pycqa","astroid","vadim-ex","2016-09-20 17:37:35","### summary
+
+When `functool` imported, `pylint` tries to access `visit_joinedstr` in `TreeRebuilder3k` (`astroid`: `rebuild.py`). 
+
+Apparently, the `node` points to line 286 col 20 (I presume, in the `functool.py` -- please disregard this paragraph otherwise):
+
+``` py
+        args.extend(f""{k}={v!r}"" for (k, v) in self.keywords.items())
+                   ^^^
+```
+
+I also created [`pylint` issue #1113](https://github.com/PyCQA/pylint/issues/1113) (sorry for noise, I am not sure what is the best place).
+### Steps to reproduce
+1. Create `test.py`:
+
+``` py
+#!/usr/bin/env python3
+
+import functools
+```
+1. run pylint:
+
+``` sh
+> pylint test.py
+```
+### Current behavior
+
+```
+No config file found, using default configuration
+************* Module test
+C:  1, 0: Missing module docstring (missing-docstring)
+Traceback (most recent call last):
+  File ""/usr/local/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/usr/local/lib/python3.6/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/local/lib/python3.6/site-packages/pylint/lint.py"", line 1310, in __init__
+    linter.check(args)
+  File ""/usr/local/lib/python3.6/site-packages/pylint/lint.py"", line 732, in check
+    self._do_check(files_or_modules)
+  File ""/usr/local/lib/python3.6/site-packages/pylint/lint.py"", line 863, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/local/lib/python3.6/site-packages/pylint/lint.py"", line 944, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/local/lib/python3.6/site-packages/pylint/utils.py"", line 944, in walk
+    self.walk(child)
+  File ""/usr/local/lib/python3.6/site-packages/pylint/utils.py"", line 941, in walk
+    cb(astroid)
+  File ""/usr/local/lib/python3.6/site-packages/pylint/checkers/variables.py"", line 1037, in visit_import
+    module = next(node.infer_name_module(parts[0]))
+  File ""/usr/local/lib/python3.6/site-packages/astroid/context.py"", line 49, in cache_generator
+    for result in generator:
+  File ""/usr/local/lib/python3.6/site-packages/astroid/bases.py"", line 302, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/usr/local/lib/python3.6/site-packages/astroid/inference.py"", line 123, in infer_import
+    yield self.do_import_module(name)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/mixins.py"", line 129, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/scoped_nodes.py"", line 492, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/manager.py"", line 136, in ast_from_module_name
+    return self.ast_from_file(filepath, modname, fallback=False)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/manager.py"", line 86, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/builder.py"", line 141, in file_build
+    module = self._data_build(data, modname, path)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/builder.py"", line 185, in _data_build
+    module = builder.visit_module(node, modname, node_file, package)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 154, in visit_module
+    newnode.body = [self.visit(child, newnode) for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 154, in <listcomp>
+    newnode.body = [self.visit(child, newnode) for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 167, in visit
+    return visit_method(node, parent, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 957, in visit_classdef
+    newnode = super(TreeRebuilder3k, self).visit_classdef(node, parent, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 357, in visit_classdef
+    for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 357, in <listcomp>
+    for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 167, in visit
+    return visit_method(node, parent, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 543, in visit_functiondef
+    assign_ctx=assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 528, in _visit_functiondef
+    for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 528, in <listcomp>
+    for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 167, in visit
+    return visit_method(node, parent, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 447, in visit_expr
+    newnode.value = self.visit(node.value, newnode, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 167, in visit
+    return visit_method(node, parent, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 315, in visit_call
+    for child in node.args]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 315, in <listcomp>
+    for child in node.args]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 167, in visit
+    return visit_method(node, parent, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 549, in visit_generatorexp
+    newnode.elt = self.visit(node.elt, newnode, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 165, in visit
+    visit_method = getattr(self, visit_name)
+AttributeError: 'TreeRebuilder3k' object has no attribute 'visit_joinedstr'
+```
+### Expected behavior
+
+No exception.
+### pylint --version output
+
+``` sh
+> pylint --version
+No config file found, using default configuration
+pylint 1.6.4, 
+astroid 1.4.8
+Python 3.6.0b1 (default, Sep 19 2016, 19:24:15) 
+[GCC 4.9.1]
+```
+","start issue","pylint raises `AttributeError` exception on `functool` import"
+"issue_closed","362","pycqa","astroid","PCManticore","2016-09-25 16:59:20","","closed issue","pylint raises `AttributeError` exception on `functool` import"
+"issue_comment","362","pycqa","astroid","vadim-ex","2016-09-21 02:20:48","A simpler version:
+
+## Steps to reproduce:
+1. `test.py`:
+
+``` py
+#!/usr/bin/env python3
+
+a = 5
+f""<{a}>""
+```
+1. `> pylint test.py`
+
+## Current behavior:
+
+```
+> pylint test.py 
+Traceback (most recent call last):
+  File ""/usr/local/lib/python3.6/site-packages/pylint/lint.py"", line 904, in get_ast
+    return MANAGER.ast_from_file(filepath, modname, source=True)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/manager.py"", line 86, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/builder.py"", line 141, in file_build
+    module = self._data_build(data, modname, path)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/builder.py"", line 185, in _data_build
+    module = builder.visit_module(node, modname, node_file, package)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 154, in visit_module
+    newnode.body = [self.visit(child, newnode) for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 154, in <listcomp>
+    newnode.body = [self.visit(child, newnode) for child in node.body]
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 172, in visit
+    return visit_method(node, parent, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 452, in visit_expr
+    newnode.value = self.visit(node.value, newnode, assign_ctx)
+  File ""/usr/local/lib/python3.6/site-packages/astroid/rebuilder.py"", line 165, in visit
+    visit_method = getattr(self, visit_name)
+AttributeError: 'TreeRebuilder3k' object has no attribute 'visit_joinedstr'
+************* Module test
+F:  1, 0: <class 'AttributeError'>: 'TreeRebuilder3k' object has no attribute 'visit_joinedstr' (astroid-error)
+```
+
+## Expected behavior:
+
+no exception
+
+## pylint --version output
+
+``` sh
+> pylint --version
+No config file found, using default configuration
+pylint 1.6.4, 
+astroid 1.4.8
+Python 3.6.0b1 (default, Sep 19 2016, 19:24:15) 
+[GCC 4.9.1]
+```
+","",""
+"issue_comment","362","pycqa","astroid","PCManticore","2016-09-25 16:59:20","We don't support Python 3.6 yet. The support will probably land before the actual release of Python 3.6, but I cannot tell the exact date (mostly since I will be away for October).
+","",""
+"issue_comment","362","pycqa","astroid","jacebrowning","2017-01-02 22:16:40","I am still experiencing this issue with `pylint 1.6.4, astroid 1.4.9`. Can we reopen this issue?","",""
+"issue_comment","362","pycqa","astroid","PCManticore","2017-01-03 06:55:08","pylint 1.6.4 does not support 3.6. pylint 2.0, from the master branch has some limited support. There is already another issue about 3.6 compatibility, so I see no reason to reopen this one.","",""
+"issue_comment","362","pycqa","astroid","jacebrowning","2017-01-03 17:54:04","Found it: https://github.com/PyCQA/pylint/issues/1072
+
+Thanks!","",""
+"issue_comment","362","pycqa","astroid","fermulator","2017-03-28 15:02:28","Can someone please tag this to the 1.7.0 milestone? thanks","",""

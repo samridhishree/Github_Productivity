@@ -1,0 +1,86 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","312","pycqa","astroid","ceridwen","2016-01-24 18:09:22","Currently, because the files that are designed to cause parse errors/encoding errors/etc. are under astroid/tests/, trying to process astroid with, e.g., refactoring tools causes the tools to crash.  (Honestly, I'm surprised that pylint doesn't crash too---does it have a special exception somewhere?)  I propose moving them to somewhere outside the astroid package itself so this stops happening.  The tests are already loading them directly from the files.
+","start issue","Move the test data to a subdirectory of the top level to avoid crashing tools"
+"issue_closed","312","pycqa","astroid","PCManticore","2016-02-16 09:49:51","","closed issue","Move the test data to a subdirectory of the top level to avoid crashing tools"
+"issue_comment","312","pycqa","astroid","PCManticore","2016-01-24 18:14:41","As long as they are in the same place when they are installed, I have nothing against it. 
+","",""
+"issue_comment","312","pycqa","astroid","PCManticore","2016-01-25 20:50:11","Unfortunately this does not work properly, because testdata is never installed when installing locally with setup.py or even with pip I presume. This breaks the tests that are depending on it.
+","",""
+"issue_comment","312","pycqa","astroid","ceridwen","2016-01-25 21:06:56","Why then do tox on my local machine and Travis not report errors?  I'm completely mystified here: I don't understand what's broken or why the tests aren't detecting broken packaging.
+","",""
+"issue_comment","312","pycqa","astroid","PCManticore","2016-01-25 21:12:34","Probably because we're not installing the package when running the tests and it picks the astroid folder from the root of the repository.
+","",""
+"issue_comment","312","pycqa","astroid","ceridwen","2016-01-26 01:38:58","Does aa7f1ea24e9c96764ca745e643c85de0f4a071f8 work?  I don't know how to test this, `python setup.py build` doesn't include any files outside the main package no matter what MANIFEST.in says, for astroid or any of the other packages I've tested.  We need the tests in tox and on the CIs to check for these packaging issues.
+","",""
+"issue_comment","312","pycqa","astroid","PCManticore","2016-01-28 16:56:59","It doesn't work for me. I'm testing by creating a fresh virtualenv, installing astroid there, going in the tests folder and running them.
+
+A way for making sure that we're always installing astroid in the CI is to use the /src layout (http://blog.ionelmc.ro/2014/05/25/python-packaging/), which might need a bit of work to make it behave properly.
+","",""
+"issue_comment","312","pycqa","astroid","ceridwen","2016-01-28 17:32:50","I'm lost.
+1. Why is setuptools not picking up the testdata directory from MANIFEST.in?  I went straight to the documentation and included it as described there.  I also checked lazy-object-proxy and it uses a similar layout and MANIFEST.in.  The only I can think of is to try graft instead of recursive-include, see aa7f1ea.
+2. Why is tox not installing the package?  It's supposed to install the package and run the testing commands from the virtualenv.  Is this a tox issue or a misconfiguration on our part?
+","",""
+"issue_comment","312","pycqa","astroid","The-Compiler","2016-01-28 19:36:00","I _think_ tests will still run against the repo package if it's in the current working directory and importable, as that's first in `sys.path`. Try adding `changedir = {envtmpdir}` to the `tox.ini` maybe.
+","",""
+"issue_comment","312","pycqa","astroid","ceridwen","2016-01-29 20:45:10","I've confirmed that adding `changedir = {envtmpdir}` under `[testenv]` does indeed show the testdata directory as being missing.  Is this the same the error you're seeing, @PCManticore?  I still, unfortunately, don't know how to fix it.  Also, question: should astroid be installing the tests with the rest of the package?  The tests aren't necessary for the functionality, and most users won't ever run them.
+","",""
+"issue_comment","312","pycqa","astroid","PCManticore","2016-01-30 08:47:13","We should definitely continue to install them with the rest of the package, they represent a nice way to test that the distribution we're passing to users at least works by passing the tests.
+
+I don't really know how to solve this as well.. This may sound bad, but alternatively we might rollback the commit, I'm not sure that we should guarantee that refactoring tools should work out of the box over the entire code tree,
+","",""
+"issue_comment","312","pycqa","astroid","ceridwen","2016-02-05 17:36:18","I've spent the last week working on this on and off, and haven't made much progress because the documentation is actively misleading.  Apparently, of the three methods discussed in https://setuptools.pypa.io/en/latest/setuptools.html#including-data-files, each of them only affects some of the various setuptools commands (sdist, bdist, install&mdash;there are probably others I haven't bothered to check).  I had to determine this by experimentation because if any of this is explained anywhere, I can't find it.  At this point, as of c510c17f, running `setup.py install` in a virtualenv will install testdata/ into lib/pythonX.Y/site-packages/astroid-2.0.0-pyX.Y.egg/ .  For some reason, even though pip claims it runs `setup.py install` (https://pip.pypa.io/en/stable/reference/pip_install/), pip doesn't install testdata.  I have no idea why; I imagine it will take another week to figure it out.
+
+As for reverting the change, I don't agree.  First, in all the looking I've done to try to find a package with a similar layout that works that I could simply mimic, I haven't found a single one that installs the tests along with the package itself with pip or `setup.py install`.  The tools don't feel like they're designed for this, which makes me further question whether it's a good idea in the first place.  Second, I'm not willing to do by hand the amount of refactoring that's going to be necessary for some of the changes we've discussed.  If we end up moving testdata/ back into the main package, I'll continue work on astroid, finish the zipper, any other necessary changes to raw_building, and some of the other things I've mentioned, but I'll be picking solutions that minimize the manual refactoring I have to do and not doing some things, like changing the `__init__` and `postinit` methods for the node constructors.
+
+That said, I'm going to continue working on this issue, starting by figuring out why pip doesn't seem to be calling `setup.py install`.  This is consuming all my astroid-related time at the moment, which is why I haven't been doing much else.
+","",""
+"issue_comment","312","pycqa","astroid","ceridwen","2016-02-08 20:40:45","I'm trying this again now.  To make setuptools install things, I had to enclose both the original astroid/  and testdata/ in a new astroid/ directory.  The structure now looks like:
+
+```
+repository_root/
+  astroid/
+    __init__.py [empty]
+    astroid/
+      __init__.py
+    testdata/
+```
+
+When installed, it should look like:
+
+```
+virtualenv_site_packages/
+  astroid/
+    astroid/
+      __init__.py
+    testdata/
+```
+
+Running the tests now requires moving to the outer astroid/ directory in site_packages/ and running:
+
+`python -m unittest discover -t astroid/ -s astroid.tests -p 'unittest*.py'`
+","",""
+"issue_comment","312","pycqa","astroid","PCManticore","2016-02-09 14:48:19","Is bdist_wheel supported with this restructure? I get this when trying to do setup.py bdist_wheel on a clean clone:
+
+running bdist_wheel
+running build
+installing to build\bdist.win32\wheel
+running install
+running install_egg_info
+running egg_info
+creating astroid.egg-info
+writing top-level names to astroid.egg-info\top_level.txt
+writing dependency_links to astroid.egg-info\dependency_links.txt
+writing astroid.egg-info\PKG-INFO
+writing requirements to astroid.egg-info\requires.txt
+writing manifest file 'astroid.egg-info\SOURCES.txt'
+reading manifest file 'astroid.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'astroid.egg-info\SOURCES.txt'
+error: [WinError 183] Cannot create a file when that file already exists: 'build\bdist.win32\wheel\astroid-2.0.0.data\..'
+
+Also, is tox updated to work with the new layout? 
+","",""
+"issue_comment","312","pycqa","astroid","PCManticore","2016-02-09 14:53:47","This change also breaks python setup.py develop for me. I'm not sure what's happening and I don't have right now to investigate it.
+","",""
+"issue_comment","312","pycqa","astroid","PCManticore","2016-02-16 09:49:59","Fixed a couple of days ago.
+","",""

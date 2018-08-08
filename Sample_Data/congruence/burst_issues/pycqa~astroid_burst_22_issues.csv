@@ -1,0 +1,77 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,349,pycqa,astroid,The-Compiler,2016-07-23 15:56:49,,start issue,Fix double spaces in warning message
+1,issue_closed,349,pycqa,astroid,PCManticore,2016-07-23 19:33:08,,closed issue,Fix double spaces in warning message
+2,pull_request_title,349,pycqa,astroid,The-Compiler,2016-07-23 15:56:49,,7eaeb8ecd8082e02bbb13d55bd82d372f50d33ca,Fix double spaces in warning message
+3,pull_request_merged,349,pycqa,astroid,PCManticore,2016-07-23 19:33:07,Fix double spaces in warning message,1207e112bbe14f01e78204f20cbe27c499e3c383,Pull request merge from The-Compiler/astroid:spaces to PyCQA/astroid:master
+4,issue_comment,349,pycqa,astroid,coveralls,2016-07-23 15:58:05,"[![Coverage Status](https://coveralls.io/builds/7131459/badge)](https://coveralls.io/builds/7131459)
+
+Coverage increased (+0.5%) to 89.094% when pulling **7eaeb8ecd8082e02bbb13d55bd82d372f50d33ca on The-Compiler:spaces** into **9d94babb2e968c5a343218a48684a9529cbab568 on PyCQA:master**.
+",,
+5,pull_request_commit,349,pycqa,astroid,The-Compiler,2016-07-23 15:54:58,Fix double spaces in warning message,7eaeb8ecd8082e02bbb13d55bd82d372f50d33ca,
+0,issue_title,351,pycqa,astroid,rogalski,2016-07-23 22:07:41,"### Steps to reproduce
+
+```
+def test_namedtuple_instance_attrs(self):
+    result = builder.extract_node('''
+    from collections import namedtuple
+    namedtuple('a', 'def class', rename=True)(1, 2) #@
+    ''')
+    inferred = next(result.infer())
+    for name, attr in inferred.instance_attrs.items():
+        self.assertEqual(attr[0].attrname, name)
+```
+### Current behavior
+
+Test passed.
+### Expected behavior
+
+Test fails, since created tuple has renamed fields.
+
+```
+>>> from collections import namedtuple
+>>> namedtuple('a', 'def class', rename=True)(1, 2)
+a(_0=1, _1=2)
+```
+
+Astroid version: repository tip.
+",start issue,namedtuple: rename keyword argument is not handled properly
+1,issue_closed,351,pycqa,astroid,rogalski,2017-04-02 17:32:49,,closed issue,namedtuple: rename keyword argument is not handled properly
+2,issue_comment,351,pycqa,astroid,PCManticore,2016-07-26 17:45:06,"Yes, we could support this field as well. Will look into your pull request soon (probably I won't have time today)
+",,
+3,issue_comment,351,pycqa,astroid,rogalski,2017-03-27 20:22:25,#415 contain a fix.,,
+0,issue_title,350,pycqa,astroid,rogalski,2016-07-23 19:36:14,"Reported by @anntzer in https://github.com/PyCQA/pylint/issues/1033 but is an `astroid` issue.
+",start issue,Cannot infer properties of namedtuple
+1,issue_closed,350,pycqa,astroid,rogalski,2017-03-28 21:20:52,,closed issue,Cannot infer properties of namedtuple
+2,issue_comment,350,pycqa,astroid,rogalski,2017-03-28 21:20:52,"Fix: PyCQA/astroid@e6c4299
+Tests confirming a fix: e0fdd25",,
+0,issue_title,352,pycqa,astroid,rogalski,2016-07-23 22:10:35,"Fixed for #350 and #351.
+### Fixes / new features
+- renamed fields are now modeled correctly in AST
+- class properties are now modeled correctly in AST
+### TODO
+
+There are some bugs and things to clarify . Details commented in code.
+",start issue,namedtuple: handle rename=True case and properties as a part of class…
+1,issue_closed,352,pycqa,astroid,rogalski,2016-07-26 17:52:57,,closed issue,namedtuple: handle rename=True case and properties as a part of class…
+2,pull_request_title,352,pycqa,astroid,rogalski,2016-07-23 22:10:35,"Fixed for #350 and #351.
+### Fixes / new features
+- renamed fields are now modeled correctly in AST
+- class properties are now modeled correctly in AST
+### TODO
+
+There are some bugs and things to clarify . Details commented in code.
+",7dbb34cb108bfd3fd4842625f8b2d9b1ad2eade5,namedtuple: handle rename=True case and properties as a part of class…
+3,issue_comment,352,pycqa,astroid,coveralls,2016-07-23 22:21:43,"[![Coverage Status](https://coveralls.io/builds/7134401/badge)](https://coveralls.io/builds/7134401)
+
+Coverage decreased (-1.8%) to 87.305% when pulling **7dbb34cb108bfd3fd4842625f8b2d9b1ad2eade5 on rogalski:named-tuple-properties** into **1207e112bbe14f01e78204f20cbe27c499e3c383 on PyCQA:master**.
+",,
+4,issue_comment,352,pycqa,astroid,rogalski,2016-07-26 17:52:57,"I'll close it for now, it's not ready and a rush to put it out was unneeded. I'll reopen soon.
+",,
+5,issue_comment,352,pycqa,astroid,PCManticore,2016-07-26 18:21:05,"Okay!
+",,
+6,pull_request_commit_comment,352,pycqa,astroid,rogalski,2016-07-23 22:12:45,"First issue: currently instance attributes are added explicitly. All of tests refers to these `instance_attrs`, while they should be inferred via property decorators.
+",7dbb34cb108bfd3fd4842625f8b2d9b1ad2eade5,"(16, '', u'astroid/brain/brain_namedtuple_enum.py')"
+7,pull_request_commit_comment,352,pycqa,astroid,rogalski,2016-07-23 22:16:09,"this test regresses, since two attributes are inferred, including fake EmptyNode. I'm not sure yet why other tests did not regressed.
+",7dbb34cb108bfd3fd4842625f8b2d9b1ad2eade5,"(5, '', u'astroid/tests/unittest_brain.py')"
+8,pull_request_commit,352,pycqa,astroid,rogalski,2016-07-23 21:58:29,namedtuple: handle rename=True case and properties as a part of class definition,319d7c05a56a5145d675a478b04738cb1c133552,
+9,pull_request_commit,352,pycqa,astroid,rogalski,2016-07-23 22:19:48,Fix accidentally removed line while committing code,7dbb34cb108bfd3fd4842625f8b2d9b1ad2eade5,

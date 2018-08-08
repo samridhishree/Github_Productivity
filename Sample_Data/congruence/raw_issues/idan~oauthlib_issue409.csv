@@ -1,0 +1,23 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","409","idan","oauthlib","olemoign","2016-03-15 10:32:17","Hi,
+
+I am not sure that what I'm seeing is a bug or the intended behaviour. In `common.py`, `class Request`, line 380:
+`self.headers = CaseInsensitiveDict(encode(headers or {}))`
+The headers are parsed into a `CaseInsensitiveDict`, which means `self.headers['content-type']`, `self.headers['Content-Type']` and `self.headers['cONteNt-tYpE']` will all return the same value BUT the keys of the dictionary are still the ones with which the items were defined.
+
+Line 386, all the `_params` are set to None, with full lower case keys. 
+
+Then line 406 
+`self._params.update(self.headers)`
+So if some `_params` were set in the headers they should update the values here. Problem is, the headers all have first-letter capitalization. So passing a token through header will lead to have 
+
+```
+self._params
+    {""token"": None, ""Token"": token_value}
+
+request.token
+    None
+```
+
+Is this the intended behaviour ? I guess not.
+","start issue","Headers parsing during Request creation"

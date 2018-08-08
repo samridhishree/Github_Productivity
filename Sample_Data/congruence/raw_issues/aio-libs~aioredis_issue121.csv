@@ -1,0 +1,47 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","121","aio-libs","aioredis","ashchou3","2016-04-11 23:57:49","When using a multi_exec transaction in conjunction with a watched variable, the execute command will result in a crash if the watched variable has changed between the time the variable is watched and the transaction is executed.
+
+Example code:
+
+```
+try:
+  await self._redis.watch(key)
+  # Change the key's value in the redis server to trigger watch variable change (ex. put in a 5 sec sleep and manually execute a SET key value)
+  transaction = self._redis.multi_exec()
+  curr_val = self._redis.get(key)
+  new_val = curr_val + 1
+  set_fut = transaction.set(key, new_val)
+  result = await transaction.execute()
+except MultiExecError as e:
+  pass
+```
+
+Stack trace:
+
+```
+Traceback (most recent call last):
+  File ""server/env/lib/python3.5/site-packages/aioredis/commands/transaction.py"", line 264, in _do_execute
+    results = yield from exec_
+  File ""server/env/lib/python3.5/site-packages/aioredis/connection.py"", line 169, in _process_data
+    obj = cb(obj)
+  File ""server/env/lib/python3.5/site-packages/aioredis/connection.py"", line 359, in _end_transaction
+    assert len(obj) == len(recall), (
+TypeError: object of type 'NoneType' has no len()
+```
+
+When a watched variable has changed during a multi_exec, redis will return a nil reply (see http://redis.io/topics/transactions). The hiredis-py library translates the nil reply to a None object, which is not caught by `_end_transaction`.
+
+I forked the aioredis library and use this patch as a potential fix for now: 
+https://github.com/ramjet-labs/aioredis/commit/7520d363b27a98d66fbcecf17605d8573d98f140
+","start issue","multi_exec transactions crash when watched variable changes"
+"issue_closed","121","aio-libs","aioredis","ashchou3","2016-06-24 21:47:55","","closed issue","multi_exec transactions crash when watched variable changes"
+"issue_comment","121","aio-libs","aioredis","popravich","2016-04-14 12:05:38","Thanks for the report, I will take a look
+","",""
+"issue_comment","121","aio-libs","aioredis","popravich","2016-05-23 09:18:03","Hi @ashchou3,
+Sorry for a long delay, the issue is fixed in master plus test added.
+Also `WatchVariableError` exception type has been added to be able to detect
+this condition and to retry the transaction (currently this must be done in your code, I will implement retry logic inside lib a bit later).
+Please check and tell if all is ok
+","",""
+"issue_comment","121","aio-libs","aioredis","ashchou3","2016-06-24 21:47:55","Hi @popravich! I used the latest version (0.2.7) and see the correct behavior now with the watch variable change. Thank you so much! 
+","",""

@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","133","idan","oauthlib","taestone","2013-04-15 11:07:46","I try to use examples/skeleton_oauth2_web_application_server.py.
+
+there is a sample provider for webapplication.
+validator = SkeletonValidator()
+server = WebApplicationServer(validator)
+provider = OAuth2ProviderDecorator('/error', server)
+
+After implementing some functions for validation in SkeletonValidator,
+In 677 oauthlib\oauth2\draft25\grant_types.py
+there is a wrong function call. 
+
+<<Error is like this>>
+validate_redirect_uri() takes at least 4 arguments (3 given)
+Request Method: GET
+Request URL:    http://127.0.0.1:8000/x/?client_id=testid1&redirect_uri=http%3A%2F%2F127.0.0.1%3A8000
+Django Version: 1.5
+Exception Type: TypeError
+Exception Value:  
+validate_redirect_uri() takes at least 4 arguments (3 given)
+
+In 677, there seems to need one parameter ""request""
+## if not self.request_validator.validate_redirect_uri( request.client_id, request.redirect_uri):
+
+if not self.request_validator.validate_redirect_uri( request.client_id, request.redirect_uri, request):
+","start issue","wrong function call 677 line in grant_types.py"
+"issue_closed","133","idan","oauthlib","taestone","2013-04-15 11:09:35","","closed issue","wrong function call 677 line in grant_types.py"
+"issue_comment","133","idan","oauthlib","taestone","2013-04-15 11:10:24","this bug was already fixed. sorry for late.
+","",""

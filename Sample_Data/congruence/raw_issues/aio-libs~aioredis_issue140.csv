@@ -1,0 +1,85 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","140","aio-libs","aioredis","alefteris","2016-09-24 16:18:35","Set a default param value of `'default'` (same as how redis-cli works http://redis.io/commands/INFO) for the `info()` command. Also added validation for the section param of the same command.
+","start issue","Set default and validate section for info cmd"
+"issue_closed","140","aio-libs","aioredis","popravich","2016-09-27 22:00:18","","closed issue","Set default and validate section for info cmd"
+"pull_request_title","140","aio-libs","aioredis","alefteris","2016-09-24 16:18:35","Set a default param value of `'default'` (same as how redis-cli works http://redis.io/commands/INFO) for the `info()` command. Also added validation for the section param of the same command.
+","ca45f6f83c914ef5a40d8a24dd22e3c90e8ed12e","Set default and validate section for info cmd"
+"pull_request_merged","140","aio-libs","aioredis","popravich","2016-09-27 22:00:18","Set default and validate section for info cmd","1d463b573a8858a4c4bfed16157df6b01aed86df","Pull request merge from alefteris/aioredis:info-cmd-default-validation to aio-libs/aioredis:master"
+"issue_comment","140","aio-libs","aioredis","coveralls","2016-09-24 16:28:58","[![Coverage Status](https://coveralls.io/builds/8035863/badge)](https://coveralls.io/builds/8035863)
+
+Coverage increased (+0.2%) to 97.441% when pulling **05090db9f92c558e353213ddfabeb81666ff7328 on alefteris:info-cmd-default-validation** into **b69c34c5009fbd9cee2b1c9c22cd6acdcd36e667 on aio-libs:master**.
+","",""
+"issue_comment","140","aio-libs","aioredis","coveralls","2016-09-27 19:02:42","[![Coverage Status](https://coveralls.io/builds/8078163/badge)](https://coveralls.io/builds/8078163)
+
+Coverage increased (+0.2%) to 97.437% when pulling **ca45f6f83c914ef5a40d8a24dd22e3c90e8ed12e on alefteris:info-cmd-default-validation** into **b69c34c5009fbd9cee2b1c9c22cd6acdcd36e667 on aio-libs:master**.
+","",""
+"issue_comment","140","aio-libs","aioredis","popravich","2016-09-27 22:00:27","Thanks
+","",""
+"pull_request_commit_comment","140","aio-libs","aioredis","popravich","2016-09-27 07:46:40","I'm ok with default and docstring update,
+but I don't see any reasoning for `INFO_SECTIONS` and `INFO_ARGS`:
+first is used only in test and the second constraints user's input.
+The later is not realy good idea because if new sections appeared aioredis won't let users to query them.
+","ca45f6f83c914ef5a40d8a24dd22e3c90e8ed12e","(None, '', u'aioredis/commands/server.py')"
+"pull_request_commit_comment","140","aio-libs","aioredis","popravich","2016-09-27 07:48:27","Also checking `section` argument to be an instance of str is redundant -- it will be checked in `connection.execute` method.
+","ca45f6f83c914ef5a40d8a24dd22e3c90e8ed12e","(None, '', u'aioredis/commands/server.py')"
+"pull_request_commit_comment","140","aio-libs","aioredis","alefteris","2016-09-27 15:52:27","Good point about forward compatibility. I included the strict sections validation because I thought it would be more helpful to tell you exactly what was the issue when someone provides a wrong section.
+
+I don't think there is any validation that the args should be a string done at `RedisConnection.execute()` and `util.encode_command()` just checks that it's one of bytes, str, int or float. Unless I missed something.
+
+Right now, I just get some StopIteration exceptions if I provide an invalid section. Unless I'm doing something wrong.
+
+Here is the example I used:
+
+``` python
+loop = asyncio.get_event_loop()
+
+async def go():
+    redis = await aioredis.create_redis(('localhost', 32769), loop=loop)
+    val = await redis.info(5)  # or redis.info('whatever')
+    print(val)
+    redis.close()
+
+loop.run_until_complete(go())
+```
+
+And the error I get from the above:
+
+```
+Traceback (most recent call last):
+  File ""/Users/thanos/Dev/forks/aioredis/aioredis/util.py"", line 205, in wait_convert
+    return type_(result)
+  File ""/Users/thanos/Dev/forks/aioredis/aioredis/commands/server.py"", line 229, in parse_info
+    section = next(block)[2:].lower()
+StopIteration
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File ""thanos.py"", line 12, in <module>
+    loop.run_until_complete(go())
+  File ""/Users/thanos/.pyenv/versions/3.5.2/lib/python3.5/asyncio/base_events.py"", line 387, in run_until_complete
+    return future.result()
+  File ""/Users/thanos/.pyenv/versions/3.5.2/lib/python3.5/asyncio/futures.py"", line 274, in result
+    raise self._exception
+  File ""/Users/thanos/.pyenv/versions/3.5.2/lib/python3.5/asyncio/tasks.py"", line 239, in _step
+    result = coro.send(None)
+  File ""thanos.py"", line 8, in go
+    val = await redis.info('')
+RuntimeError: generator raised StopIteration
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisConnection._read_data() running at /Users/thanos/Dev/forks/aioredis/aioredis/connection.py:131> wait_for=<Future pending cb=[Task._wakeup()]> cb=[Future.set_result()]>
+```
+
+Or I could just update the PR and keep the default arg only if you think it's the best way to go.
+
+Either way, thanks for your time to review it :)
+","ca45f6f83c914ef5a40d8a24dd22e3c90e8ed12e","(None, '', u'aioredis/commands/server.py')"
+"pull_request_commit_comment","140","aio-libs","aioredis","popravich","2016-09-27 16:09:14","OMG! `RuntimeError: generator raised StopIteration` that's totally incorrect behavior.
+This is a bug in `parse_info` function and need to be fixed.
+
+Anyway, I think checking `section` argument to be not False would be sufficient:
+`if not section: raise ValueError(...)`
+and no other constraints needed
+","ca45f6f83c914ef5a40d8a24dd22e3c90e8ed12e","(None, '', u'aioredis/commands/server.py')"
+"pull_request_commit","140","aio-libs","aioredis","alefteris","2016-09-24 15:05:37","Set default and validate section for info cmd","05090db9f92c558e353213ddfabeb81666ff7328",""
+"pull_request_commit","140","aio-libs","aioredis","alefteris","2016-09-27 18:54:41","Remove unnecessary validations","ca45f6f83c914ef5a40d8a24dd22e3c90e8ed12e",""

@@ -1,0 +1,150 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","165","pycqa","astroid","pylint-bot","2015-07-25 13:01:09","Originally reported by: **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**
+
+---
+
+When trying to run the tests via tox on my machine, I get this:
+
+With 3.4:
+
+```
+FAIL: test_4 (unittest_modutils.StandardLibModuleTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/florian/proj/pylint/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_modutils.py"", line 199, in test_4
+    self.assertEqual(modutils.is_standard_module('pickle'), True)
+AssertionError: False != True
+```
+
+With 2.7:
+
+```
+FAIL: test_4 (unittest_modutils.StandardLibModuleTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/florian/proj/pylint/astroid/.tox/py27/lib/python2.7/site-packages/astroid/tests/unittest_modutils.py"", line 198, in test_4
+    self.assertEqual(modutils.is_standard_module('hashlib'), True)
+AssertionError: False != True
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/165
+","start issue","StandardLibModuleTest fails"
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-07-25 15:18:44","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+It seems `imp.find_module()` does something differently with pickle vs. hashlib when in a virtualenv:
+
+```
+(Pdb) imp.find_module('pickle', sys.path)
+(<_io.TextIOWrapper name='/usr/lib64/python3.4/pickle.py' mode='r' encoding='utf-8'>, '/usr/lib64/python3.4/pickle.py', ('.py', 'r', 1))
+(Pdb) imp.find_module('hashlib', sys.path)
+(<_io.TextIOWrapper name='/home/florian/proj/pylint/astroid/.tox/py34/lib/python3.4/hashlib.py' mode='r' encoding='utf-8'>, '/home/florian/proj/pylint/astroid/.tox/py34/lib/python3.4/hashlib.py', ('.py', 'r', 1))
+```
+
+(this is with python3, where hashlib passes but pickle fails)
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-07-31 07:36:38","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+What a mess. :( This sounds like a bug in imp. By the way, since I can't reproduce it on my machine, could you test with importlib and see what happens with it? Maybe we could support imp for Python 2 and importlib for newer Python versions.
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-07-31 12:10:50","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+Hm, at least with `importlib.util.find_spec` the same happens:
+
+```
+>>> importlib.util.find_spec('pickle').origin
+'/usr/lib64/python3.4/pickle.py'
+>>> importlib.util.find_spec('hashlib').origin
+'/home/florian/proj/pytest/.tox/py34/lib/python3.4/hashlib.py'
+```
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-07-31 12:13:21","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+Heh... it seems the system-wide `pickle` module gets indeed imported even if I'm in a virtualenv?!
+
+```
+>>> import pickle
+>>> pickle.__file__
+'/usr/lib64/python3.4/pickle.py'
+>>> import hashlib
+>>> hashlib.__file__
+'/home/florian/proj/pytest/.tox/py34/lib/python3.4/hashlib.py'
+```
+
+And indeed there's no pickle.py in the virtualenv?!
+
+```
+$ find ./.tox/py34/ -name pickle.py
+$ find ./.tox/py34/ -name hashlib.py             
+./.tox/py34/lib/python3.4/hashlib.py
+```
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-07-31 12:38:00","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+Dumping this here before I'll lose my connection because I'm going over the border :)
+
+```
+14:32 <marienz> The-Compiler: ah, I think it's actually working as intended. Notice there's a bunch of symlinks to your actual stdlib dir and a custom site.py in your virtualenv stdlib dir, and your actual stdlib dir is on sys.path?
+14:33 <marienz> The-Compiler: IIUC the virtualenv python starts with only its own libdir (with symlinks) on sys.path, and site.py adds the actual stdlib dir back. There's only enough symlinks there to allow python to bootstrap and run site.py.  
+14:34 <marienz> The-Compiler: if your virtualenv is like mine, hashlib.py is actually a symlink back to the same stdlib dir pickle is getting imported from
+14:34 <marienz> The-Compiler: I don't know why it bothers only symlinking enough to bootstrap instead of symlinking everything, but that's what I see it doing (and glancing at the code seems to confirm, look for REQUIRED_MODULES)
+```
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-08-10 19:55:15","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+So this seems somewhat unrelated to how astroid works right now. Could we close it?
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-08-10 20:07:17","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+I'll have to take a closer look at how this works - but I still think astroid should detect them as builtin modules in some way, no?
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-08-10 20:10:58","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Somehow. If we could tell that .tox/py34/lib/python3.4 is a Python specific directory. Yeah, it's probably better to leave the issue open.
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-08-10 20:24:07","_Original comment by_ **Florian Bruhin (BitBucket: [The-Compiler](http://bitbucket.org/The-Compiler), GitHub: @The-Compiler?)**:
+
+---
+
+Oh. Until now I always thought the one in the virtualenv passed and the system-wide one failed, but seems like I got that backwards.
+
+What about this?
+
+```
+>>> import distutils.sysconfig
+>>> distutils.sysconfig.get_python_lib()
+'/home/florian/proj/qutebrowser/git/.venv/lib/python3.4/site-packages'
+```
+
+Maybe the parent directory of whatever that returns should be treated as python-specific?
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-12-01 17:08:32","_Original comment by_ **Anthony Sottile (BitBucket: [asottile](http://bitbucket.org/asottile), GitHub: @asottile?)**:
+
+---
+
+This seems to be the root cause of https://bitbucket.org/logilab/pylint/issues/712/wrong-import-order-flagging-stdlib-modules
+
+https://bitbucket.org/logilab/pylint/issues/712/wrong-import-order-flagging-stdlib-modules#comment-23699363 has a reliable reproduction if you have access to docker
+","",""
+"issue_comment","165","pycqa","astroid","pylint-bot","2015-12-01 17:13:13","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I don't have access right now, but I'll try to set up a VM tomorrow. Thank you for the reproduction.
+","",""

@@ -1,0 +1,90 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,424,idan,oauthlib,olegpidsadnyi,2016-05-09 14:43:54,"Hi,
+The regex substitution on the body introduced in the latest PR breaks functionality for Flask-Oauthlib.
+There they pass a body as a dictionary for validation, so regex can't work.
+
+Should the body be cast to string before sanitization?
+",start issue,Latest change to __repr__ breaks Flask-Oauthlib?
+1,issue_closed,424,idan,oauthlib,thedrow,2016-05-18 08:20:12,,closed issue,Latest change to __repr__ breaks Flask-Oauthlib?
+2,issue_comment,424,idan,oauthlib,Alain1405,2016-05-10 10:23:41,"Here's the traceback:
+
+```
+Traceback (most recent call last):
+  File ""project/tests/test_main.py"", line 120, in test_add_device_user
+    token = self.get_access_token()
+  File ""project/tests/util.py"", line 95, in get_access_token
+    token_response = self.client.get(url_for('oauth.access_token'), data=data)
+  File ""project/venv-test/lib/python2.7/site-packages/werkzeug/test.py"", line 778, in get
+    return self.open(*args, **kw)
+  File ""project/venv-test/lib/python2.7/site-packages/flask/testing.py"", line 108, in open
+    follow_redirects=follow_redirects)
+  File ""project/venv-test/lib/python2.7/site-packages/werkzeug/test.py"", line 751, in open
+    response = self.run_wsgi_app(environ, buffered=buffered)
+  File ""project/venv-test/lib/python2.7/site-packages/werkzeug/test.py"", line 668, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+  File ""project/venv-test/lib/python2.7/site-packages/werkzeug/test.py"", line 871, in run_wsgi_app
+    app_rv = app(environ, start_response)
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1836, in __call__
+    return self.wsgi_app(environ, start_response)
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1820, in wsgi_app
+    response = self.make_response(self.handle_exception(e))
+  File ""project/venv-test/lib/python2.7/site-packages/flask_cors/extension.py"", line 110, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1403, in handle_exception
+    reraise(exc_type, exc_value, tb)
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1817, in wsgi_app
+    response = self.full_dispatch_request()
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1477, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File ""project/venv-test/lib/python2.7/site-packages/flask_cors/extension.py"", line 110, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1381, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1475, in full_dispatch_request
+    rv = self.dispatch_request()
+  File ""project/venv-test/lib/python2.7/site-packages/flask/app.py"", line 1461, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File ""project/venv-test/lib/python2.7/site-packages/flask_oauthlib/provider/oauth2.py"", line 490, in decorated
+    uri, http_method, body, headers, credentials
+  File ""project/venv-test/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/endpoints/base.py"", line 64, in wrapper
+    return f(endpoint, uri, *args, **kwargs)
+  File ""project/venv-test/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/endpoints/token.py"", line 100, in create_token_response
+    request, self.default_token_type)
+  File ""project/venv-test/lib/python2.7/site-packages/oauthlib/oauth2/rfc6749/grant_types/resource_owner_password_credentials.py"", line 107, in create_token_response
+    log.debug('Validating access token request, %r.', request)
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 1153, in debug
+    self._log(DEBUG, msg, args, **kwargs)
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 1284, in _log
+    self.handle(record)
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 1294, in handle
+    self.callHandlers(record)
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 1334, in callHandlers
+    hdlr.handle(record)
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 757, in handle
+    self.emit(record)
+  File ""project/venv-test/lib/python2.7/site-packages/nose/plugins/logcapture.py"", line 82, in emit
+    self.buffer.append(self.format(record))
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 732, in format
+    return fmt.format(record)
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 471, in format
+    record.message = record.getMessage()
+  File ""/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/logging/__init__.py"", line 335, in getMessage
+    msg = msg % self.args
+  File ""project/venv-test/lib/python2.7/site-packages/oauthlib/common.py"", line 419, in __repr__
+    body = SANITIZE_PATTERN.sub('\1<SANITIZED>', body)
+TypeError: expected string or buffer
+```
+",,
+3,issue_comment,424,idan,oauthlib,parryjacob,2016-05-16 19:53:03,"I wrote a quick fix for this in #425 
+",,
+0,issue_title,425,idan,oauthlib,parryjacob,2016-05-16 19:51:26,"This just ensures that when we go to sanitize the body for logging, it is actually a string
+",start issue,Cast body to a string for regex - fixes #424
+1,issue_closed,425,idan,oauthlib,thedrow,2016-05-18 08:20:11,,closed issue,Cast body to a string for regex - fixes #424
+2,pull_request_title,425,idan,oauthlib,parryjacob,2016-05-16 19:51:26,"This just ensures that when we go to sanitize the body for logging, it is actually a string
+",7d6294b10cbe21bd7af67ce8b698b1c4ab18238c,Cast body to a string for regex - fixes #424
+3,pull_request_merged,425,idan,oauthlib,thedrow,2016-05-18 08:20:11,Cast body to a string for regex - fixes #424,a3ef5510d4d0e7bed627a5fdc2a078ed1021a446,Pull request merge from parryjacob/oauthlib:master to idan/oauthlib:master
+4,issue_comment,425,idan,oauthlib,thedrow,2016-05-18 08:20:28,"Thanks. Will release soon. In the meanwhile you can use master.
+",,
+5,issue_comment,425,idan,oauthlib,thedrow,2016-06-01 13:05:11,"Released as 1.1.2. It will be available on PyPi soon.
+",,
+6,pull_request_commit,425,idan,oauthlib,parryjacob,2016-05-16 19:45:56,Cast body to a string to ensure that we can perform a regex substitution on it,7d6294b10cbe21bd7af67ce8b698b1c4ab18238c,

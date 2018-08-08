@@ -1,0 +1,77 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","95","aio-libs","aioredis","devel787","2015-11-04 10:45:45","> Warning
+> Pub/Sub mode currenty can not be used with Pool.
+
+http://aioredis.readthedocs.org/en/v0.2.4/start.html#pub-sub-mode
+
+Please let us know if you have plans to implement this functionality in near future.
+
+Thanks.
+","start issue","Pub/Sub mode currenty can not be used with Pool."
+"issue_closed","95","aio-libs","aioredis","popravich","2015-11-18 09:20:53","","closed issue","Pub/Sub mode currenty can not be used with Pool."
+"issue_comment","95","aio-libs","aioredis","popravich","2015-11-04 11:26:48","Hi, @devel787 
+Well, it actually can be used with pool but you must remember that connection should not be released until all pub/sub operations are done.
+
+This will work:
+
+``` python
+with (yield from redis_pool) as redis:
+    ch, = yield from redis.subscribe('channe:1')
+    while (yield from ch.wait_message()):
+        msg = yield from ch.get()
+        # ... process or start async processor or else
+```
+
+This **will not** work:
+
+``` python
+# When execution exits `with` block the connection is released and assumed to be free and available,
+# so other pool users may acquire it and fail with ""Connection in SUBSCRIBE mode"" error.
+
+with (yield from redis_pool) as redis:
+    ch, = yield from redis.subscribe('channe:1')
+    asyncio.async(reader(ch))
+
+@asyncio.coroutine
+def reader(ch):
+    while (yield from ch.wait_message()):
+        msg = yield from ch.get()
+        # ... process or start async processor or else
+```
+","",""
+"issue_comment","95","aio-libs","aioredis","devel787","2015-11-04 14:36:02","Hello, @popravich 
+I have no possibility to use context manager in my code.
+
+Is there some workaround?
+Maybe `aioredis.RedisPool.acquire()`
+http://aioredis.readthedocs.org/en/latest/api_reference.html#aioredis.RedisPool.acquire
+can be helpful?
+","",""
+"issue_comment","95","aio-libs","aioredis","popravich","2015-11-04 14:39:35","Yes, you can use `acquire` but don't forget to call `release` later:
+
+``` python
+redis = yield from pool.acquire()
+try:
+    ch, = yield from redis.subscribe('channel:1')
+    while (yield from ch.wait_message()):
+        msg =yield from ch.get()
+        # process
+finally:
+    pool.release(redis)
+```
+
+Anyway, way can't you use context managers?
+","",""
+"issue_comment","95","aio-libs","aioredis","devel787","2015-11-04 14:50:25","I have some code, but have no clear vision how to refactor it for context manager usage.
+
+Currently this code sample is deprecated, but main idea is the same
+https://github.com/devel787/dj_aio_chat_01/blob/master/aiochat/privatemessages/aiohttpapp.py
+
+P.S. I also have a discussion (RU lang) about this code sample
+https://groups.google.com/d/topic/aio-libs/_YAnlxYGQAc/discussion
+","",""
+"issue_comment","95","aio-libs","aioredis","popravich","2015-11-04 14:54:41","ok, I will take a look later today
+","",""
+"issue_comment","95","aio-libs","aioredis","popravich","2015-11-18 09:20:53","I'll add a note in docs to show how pool can posibly be used for pub/sub mode.
+This discussion will continue in google groups
+","",""

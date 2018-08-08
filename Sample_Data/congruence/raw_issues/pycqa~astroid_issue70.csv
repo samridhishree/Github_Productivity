@@ -1,0 +1,41 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","70","pycqa","astroid","pylint-bot","2014-12-27 12:27:14","Originally reported by: **Maarten ter Huurne (BitBucket: [mthuurne](http://bitbucket.org/mthuurne), GitHub: @mthuurne?)**
+
+---
+
+When I run pylint on the following code fragment:
+
+```
+#!python
+
+class ClassA:
+    attrib_a = 1
+
+class ClassB:
+    pass
+
+def someFunc(obj):
+    if isinstance(obj, ClassB):
+        obj = ClassB()
+    return isinstance(obj, ClassA) and obj.attrib_a == 0
+```
+
+it reports:
+
+```
+E: 10,39: Instance of 'ClassB' has no 'attrib_a' member (no-member)
+```
+
+I think there are two things wrong here:
+- _obj_ is only replaced by a _ClassB_ instance if the original object was already of type _ClassB_, but objects of other types could be passed, so it's not valid to conclude that _ClassB_ is the only possible type for _obj_
+- if `isinstance(obj, ClassA)` is true, it is **certain** that _obj_ is of type _ClassA_, which should override any speculative inference
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/70
+","start issue","Incorrect type inference with isinstance()"
+"issue_comment","70","pycqa","astroid","pylint-bot","2015-08-10 17:40:31","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yeah, this is really useful for the flow control inference. I'll probably start working on flow control understanding after I release 1.5.
+","",""

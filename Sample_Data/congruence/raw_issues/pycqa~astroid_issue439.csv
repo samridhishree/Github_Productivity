@@ -1,0 +1,180 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","439","pycqa","astroid","sebix","2017-05-26 18:38:41","### Steps to reproduce
+1. Extract archive
+1. Run `python -m pytest -s`
+
+### Current behavior
+`test_namespace_package_pth_support` fails:
+
+```
+[   24s] =================================== FAILURES ===================================
+[   24s] ____________ AstroidManagerTest.test_namespace_package_pth_support _____________
+[   24s] 
+[   24s] self = <astroid.tests.unittest_manager.AstroidManagerTest testMethod=test_namespace_package_pth_support>
+[   24s] 
+[   24s]     def test_namespace_package_pth_support(self):
+[   24s]         pth = 'foogle_fax-0.12.5-py2.7-nspkg.pth'
+[   24s]         site.addpackage(resources.RESOURCE_PATH, pth, [])
+[   24s]         # pylint: disable=no-member; can't infer _namespace_packages, created at runtime.
+[   24s]         pkg_resources._namespace_packages['foogle'] = []
+[   24s]     
+[   24s]         try:
+[   24s]             module = self.manager.ast_from_module_name('foogle.fax')
+[   24s]             submodule = next(module.igetattr('a'))
+[   24s]             value = next(submodule.igetattr('x'))
+[   24s]             self.assertIsInstance(value, astroid.Const)
+[   24s]             with self.assertRaises(exceptions.AstroidImportError):
+[   24s]                 self.manager.ast_from_module_name('foogle.moogle')
+[   24s]         finally:
+[   24s]             del pkg_resources._namespace_packages['foogle']
+[   24s] >           sys.modules.pop('foogle')
+[   24s] E           KeyError: 'foogle'
+[   24s] 
+[   24s] astroid/tests/unittest_manager.py:140: KeyError
+```
+See the build log: https://build.opensuse.org/package/live_build_log/home:sebix:branches:devel:languages:python/python-astroid/openSUSE_Tumbleweed/x86_64
+
+### Expected behavior
+Test passes
+
+astroid is not installed
+astroid from https://files.pythonhosted.org/packages/source/a/astroid/astroid-1.5.2.tar.gz
+Python 2.7.13 on openSUSE TW","start issue","KeyError: 'foogle' for test suite on Python 2.7.13 on openSUSE TW and Alpine Linux"
+"issue_comment","439","pycqa","astroid","sebix","2017-06-03 15:45:56","Also happens for 1.5.3","",""
+"issue_comment","439","pycqa","astroid","frispete","2017-10-09 10:41:41","There are more problems lurking in this area.
+
+After changing the offending line:
+```
+Index: b/astroid/tests/unittest_manager.py
+===================================================================
+--- a/astroid/tests/unittest_manager.py
++++ b/astroid/tests/unittest_manager.py
+@@ -137,7 +137,7 @@ class AstroidManagerTest(resources.SysPa
+                 self.manager.ast_from_module_name('foogle.moogle')
+         finally:
+             del pkg_resources._namespace_packages['foogle']
+-            sys.modules.pop('foogle')
++            sys.modules.pop('foogle', None)
+ 
+     def _test_ast_from_zip(self, archive):
+         origpath = sys.path[:]
+```
+it runs into another issue:
+```
+[   19s] =================================== FAILURES ===================================
+[   19s] ____________ AstroidManagerTest.test_namespace_package_pth_support _____________
+[   19s] 
+[   19s] self = <astroid.tests.unittest_manager.AstroidManagerTest testMethod=test_namespace_package_pth_support>
+[   19s] 
+[   19s]     def test_namespace_package_pth_support(self):
+[   19s]         pth = 'foogle_fax-0.12.5-py2.7-nspkg.pth'
+[   19s]         site.addpackage(resources.RESOURCE_PATH, pth, [])
+[   19s]         # pylint: disable=no-member; can't infer _namespace_packages, created at runtime.
+[   19s]         pkg_resources._namespace_packages['foogle'] = []
+[   19s]     
+[   19s]         try:
+[   19s] >           module = self.manager.ast_from_module_name('foogle.fax')
+[   19s] 
+[   19s] astroid/tests/unittest_manager.py:132: 
+[   19s] _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+[   19s] 
+[   19s] self = <astroid.manager.AstroidManager object at 0x7fcb46a2d210>
+[   19s] modname = 'foogle.fax', context_file = None
+[   19s] 
+[   19s]     def ast_from_module_name(self, modname, context_file=None):
+[   19s]         """"""given a module name, return the astroid object""""""
+[   19s]         if modname in self.astroid_cache:
+[   19s]             return self.astroid_cache[modname]
+[   19s]         if modname == '__main__':
+[   19s]             return self._build_stub_module(modname)
+[   19s]         old_cwd = os.getcwd()
+[   19s]         if context_file:
+[   19s]             os.chdir(os.path.dirname(context_file))
+[   19s]         try:
+[   19s]             found_spec = self.file_from_module_name(modname, context_file)
+[   19s]             # pylint: disable=no-member
+[   19s]             if found_spec.type == spec.ModuleType.PY_ZIPMODULE:
+[   19s]                 # pylint: disable=no-member
+[   19s]                 module = self.zip_import_data(found_spec.location)
+[   19s]                 if module is not None:
+[   19s]                     return module
+[   19s]     
+[   19s]             elif found_spec.type in (spec.ModuleType.C_BUILTIN,
+[   19s]                                      spec.ModuleType.C_EXTENSION):
+[   19s]                 # pylint: disable=no-member
+[   19s]                 if (found_spec.type == spec.ModuleType.C_EXTENSION
+[   19s]                         and not self._can_load_extension(modname)):
+[   19s]                     return self._build_stub_module(modname)
+[   19s]                 try:
+[   19s]                     module = modutils.load_module_from_name(modname)
+[   19s]                 except Exception as ex: # pylint: disable=broad-except
+[   19s]                     util.reraise(exceptions.AstroidImportError(
+[   19s]                         'Loading {modname} failed with:\n{error}',
+[   19s]                         modname=modname, path=found_spec.location, error=ex))
+[   19s]                 return self.ast_from_module(module, modname)
+[   19s]     
+[   19s]             elif found_spec.type == spec.ModuleType.PY_COMPILED:
+[   19s]                 raise exceptions.AstroidImportError(
+[   19s]                     ""Unable to load compiled module {modname}."",
+[   19s]                     # pylint: disable=no-member
+[   19s]                     modname=modname, path=found_spec.location)
+[   19s]     
+[   19s]             elif found_spec.type == spec.ModuleType.PY_NAMESPACE:
+[   19s]                 return self._build_namespace_module(modname,
+[   19s]                                                     # pylint: disable=no-member
+[   19s]                                                     found_spec.submodule_search_locations)
+[   19s]     
+[   19s]             # pylint: disable=no-member
+[   19s]             if found_spec.location is None:
+[   19s]                 raise exceptions.AstroidImportError(
+[   19s]                     ""Can't find a file for module {modname}."",
+[   19s]                     modname=modname)
+[   19s]     
+[   19s]             # pylint: disable=no-member
+[   19s]             return self.ast_from_file(found_spec.location, modname, fallback=False)
+[   19s]         except exceptions.AstroidBuildingError as e:
+[   19s]             for hook in self._failed_import_hooks:
+[   19s]                 try:
+[   19s]                     return hook(modname)
+[   19s]                 except exceptions.AstroidBuildingError:
+[   19s]                     pass
+[   19s] >           raise e
+[   19s] E           AstroidImportError: Failed to import module foogle.fax with error:
+[   19s] E           No module named foogle.fax.
+[   19s] 
+[   19s] astroid/manager.py:161: AstroidImportError
+[   19s] ========= 1 failed, 625 passed, 90 skipped, 7 xfailed in 4.41 seconds ==========
+```
+Hmm, strange.
+
+Why doesn't this stuck out in tox testing?
+","",""
+"issue_comment","439","pycqa","astroid","frispete","2017-10-09 10:47:51","While the above issues happen with all tested environments on OBS, astroid 1.5.3 gained another issue with just openSUSE 42.3:
+
+```
+[   81s] =================================== FAILURES ===================================
+[   81s] _____________________ NonRegressionTests.test_ssl_protocol _____________________
+[   81s] 
+[   81s] self = <astroid.tests.unittest_regrtest.NonRegressionTests testMethod=test_ssl_protocol>
+[   81s] 
+[   81s]     def test_ssl_protocol(self):
+[   81s]         node = extract_node('''
+[   81s]             import ssl
+[   81s]             ssl.PROTOCOL_TLSv1
+[   81s]             ''')
+[   81s]         inferred = next(node.infer())
+[   81s] >       self.assertIsInstance(inferred, nodes.Const)
+[   81s] E       AssertionError: Uninferable is not an instance of <class 'astroid.node_classes.Const'>
+[   81s] 
+[   81s] astroid/tests/unittest_regrtest.py:308: AssertionError
+[   81s] ========= 1 failed, 625 passed, 89 skipped, 7 xfailed in 10.97 seconds =========
+```
+You can check these builds here:
+https://build.opensuse.org/package/show/home:frispete:python/python-astroid?expand=1
+
+Patch to disable the failed tests affecting all builds is applied now, hence just the above AssertionError is being left...","",""
+"issue_comment","439","pycqa","astroid","PCManticore","2017-10-12 08:36:31","I have no idea what is happening here, nor do I have an OpenSuse machine to check this out. The `ssl` test failure is probably related to the [ssl brain plugin](https://github.com/PyCQA/astroid/blob/9d94babb2e968c5a343218a48684a9529cbab568/astroid/brain/brain_ssl.py#L10), either the `_ssl` module is not available in that build or it is different than what the brain plugin is describing. I also can't reproduce the namespace package test, since it works with `tox` and also on Travis.","",""
+"issue_comment","439","pycqa","astroid","NHellFire","2017-11-19 21:01:53","I'm also seeing this with v1.5.3 on Alpine Linux with Python 2.7.14 and 3.6.3.
+
+After fixing `KeyError: 'foogle'`, I'm then getting `No module named foogle.fax`","",""
+"issue_comment","439","pycqa","astroid","sebix","2017-12-04 20:12:10","@NHellFire Thanks for confirmation, I adapted the title accordingly.","",""

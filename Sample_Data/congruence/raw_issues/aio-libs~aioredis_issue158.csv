@@ -1,0 +1,64 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","158","aio-libs","aioredis","rutsky","2016-10-21 11:56:21","Consider following example:
+
+```
+import asyncio
+
+import aioredis
+
+loop = asyncio.get_event_loop()
+
+try:
+    redis_pool = loop.run_until_complete(
+        aioredis.create_pool(
+            (""127.0.0.1"", 12345),
+            db=0, encoding='utf-8'))
+except OSError:
+    print(""Skipping connection error"")
+```
+
+here I try to connect to nonexisting Redis server and want to silence that connection error (in order to retry later or try another Redis server, etc).
+This produces:
+
+```
+$ python aioredis_failed_to_connect_issue.py
+Skipping connection error
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisPool._do_close() done, defined at /home/bob/work/routing-server/env/lib/python3.5/site-packages/aioredis/pool.py:100> wait_for=<Future pending cb=[Task._wakeup()]>>
+```
+
+or with `PYTHONASYNCIODEBUG=1`:
+
+```
+$ PYTHONASYNCIODEBUG=1 python aioredis_failed_to_connect_issue.py
+Skipping connection error
+Task was destroyed but it is pending!
+source_traceback: Object created at (most recent call last):
+  File ""aioredis_failed_to_connect_issue.py"", line 11, in <module>
+    db=0, encoding='utf-8'))
+  File ""/usr/lib/python3.5/asyncio/base_events.py"", line 375, in run_until_complete
+    self.run_forever()
+  File ""/usr/lib/python3.5/asyncio/base_events.py"", line 345, in run_forever
+    self._run_once()
+  File ""/usr/lib/python3.5/asyncio/base_events.py"", line 1304, in _run_once
+    handle._run()
+  File ""/usr/lib/python3.5/asyncio/events.py"", line 125, in _run
+    self._callback(*self._args)
+  File ""/usr/lib/python3.5/asyncio/tasks.py"", line 239, in _step
+    result = coro.send(None)
+  File ""/usr/lib/python3.5/asyncio/coroutines.py"", line 121, in send
+    return self.gen.send(value)
+  File ""/home/bob/work/routing-server/env/lib/python3.5/site-packages/aioredis/pool.py"", line 31, in create_pool
+    ssl=ssl, loop=loop)
+  File ""/home/bob/work/routing-server/env/lib/python3.5/site-packages/aioredis/pool.py"", line 64, in __init__
+    self._close_waiter = async_task(self._do_close(), loop=loop)
+task: <Task pending coro=<RedisPool._do_close() running at /home/bob/work/routing-server/env/lib/python3.5/site-packages/aioredis/pool.py:102> wait_for=<Future pending cb=[Task._wakeup()] created at /usr/lib/python3.5/asyncio/base_events.py:252> created at /home/bob/work/routing-server/env/lib/python3.5/site-packages/aioredis/pool.py:64>
+```
+
+I believe this is because `redis_pool.close()` is never called, but I don't see any way to call it explicitly here, because exception is raised before user code obtains pool instance.
+","start issue","Failed `create_pool()` leads to `Task was destroyed but it is pending!` warning"
+"issue_closed","158","aio-libs","aioredis","popravich","2016-10-21 13:12:27","","closed issue","Failed `create_pool()` leads to `Task was destroyed but it is pending!` warning"
+"issue_comment","158","aio-libs","aioredis","popravich","2016-10-21 13:12:27","Duplicate of #136.
+This is fixed in `master`.
+I will release new version this weekend.
+","",""

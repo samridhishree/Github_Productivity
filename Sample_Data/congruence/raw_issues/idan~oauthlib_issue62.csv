@@ -1,0 +1,172 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","62","idan","oauthlib","ib-lundgren","2012-10-23 19:35:11","URL strings may be generated differently depending on the internal dict order which is fine. Our tests however do naive string comparisons which is not adequate and breaks in python 3.3. There might already be a function such as assertURLEquals but I've not looked into this. If not it is worth monkey patching this onto TestCase and using it.  It should be quite straightforward using urlsparse and just making sure all query and fragment pairs are present in both strings.
+
+Test output
+
+```
+======================================================================
+FAIL: test_request_body (tests.oauth2.draft25.test_client.WebApplicationClientTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+    File ""/home/ib/Testing/oauthlib/tests/oauth2/draft25/test_client.py"", line 181, in test_request_body
+      self.assertEqual(body, self.body_redirect)
+AssertionError: 'not=empty&grant_type=authorization_code&redirect_uri=http%3A%2F%2Fmy.page.com%2 [truncated]... != 'not=empty&grant_type=authorization_code&code=zzzzaaaa&redirect_uri=http%3A%2F%2 [truncated]...
+- not=empty&grant_type=authorization_code&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback&code=zzzzaaaa
+?                                                                                         --------------
++ not=empty&grant_type=authorization_code&code=zzzzaaaa&redirect_uri=http%3A%2F%2Fmy.page.com%2Fcallback
+?                                        ++++++++++++++
+
+
+======================================================================
+FAIL: Verify correct access token request body construction.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+    File ""/home/ib/Testing/oauthlib/tests/oauth2/draft25/test_parameters.py"", line 124, in test_prepare_token_request
+      self.assertEqual(prepare_token_request(**self.grant_body), self.auth_grant_body)
+AssertionError: 'grant_type=authorization_code&redirect_uri=https%3A%2F%2Fclient.example.com%2Fc [truncated]... != 'grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA&redirect_uri=https%3A [truncated]...
+- grant_type=authorization_code&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb&code=SplxlOBeZQQYbYS6WxSbIA
++ grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcb
+
+
+======================================================================
+FAIL: test_dict_body (tests.test_common.CommonTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+    File ""/home/ib/Testing/oauthlib/tests/test_common.py"", line 82, in test_dict_body
+      self.assertEqual(r.decoded_body, self.params_twotuple)
+AssertionError: Lists differ: [('baz', '123'), ('foo', 'bar'... != [('foo', 'bar'), ('baz', '123'...
+
+First differing element 0:
+('baz', '123')
+('foo', 'bar')
+
+- [('baz', '123'), ('foo', 'bar')]
++ [('foo', 'bar'), ('baz', '123')]
+
+======================================================================
+FAIL: test_extract_params_dict (tests.test_common.CommonTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+    File ""/home/ib/Testing/oauthlib/tests/test_common.py"", line 30, in test_extract_params_dict
+      self.assertEqual(extract_params(self.params_dict), self.params_twotuple)
+AssertionError: Lists differ: [('baz', '123'), ('foo', 'bar'... != [('foo', 'bar'), ('baz', '123'...
+
+First differing element 0:
+('baz', '123')
+('foo', 'bar')
+
+- [('baz', '123'), ('foo', 'bar')]
++ [('foo', 'bar'), ('baz', '123')]
+
+----------------------------------------------------------------------
+```
+","start issue","OAuth 2 Tests depend on dict ordering"
+"issue_closed","62","idan","oauthlib","ib-lundgren","2012-11-08 20:05:02","","closed issue","OAuth 2 Tests depend on dict ordering"
+"issue_comment","62","idan","oauthlib","warsaw","2012-10-28 16:11:34","Would it not be better to explicitly sort the keyword arguments?
+
+```
+--- a/oauthlib/oauth2/draft25/parameters.py
++++ b/oauthlib/oauth2/draft25/parameters.py
+@@ -64,7 +64,7 @@
+     if state:
+         params.append(('state', state))
+
+-    for k in kwargs:
++    for k in sorted(kwargs):
+         if kwargs[k]:
+             params.append((unicode_type(k), kwargs[k]))
+
+@@ -98,7 +98,7 @@
+     if 'scope' in kwargs:
+         kwargs['scope'] = scope_to_string(kwargs['scope'])
+
+-    for k in kwargs:
++    for k in sorted(kwargs):
+         if kwargs[k]:
+             params.append((unicode_type(k), kwargs[k]))
+
+--- a/tests/oauth2/draft25/test_client.py
++++ b/tests/oauth2/draft25/test_client.py
+@@ -294,7 +294,7 @@
+     password = ""bar""
+     body = ""not=empty""
+
+-    body_up = ""not=empty&grant_type=password&username=%s&password=%s"" % (username, password)
++    body_up = ""not=empty&grant_type=password&password=%s&username=%s"" % (password, username)
+     body_kwargs = body_up + ""&some=providers&require=extra+arguments""
+
+     token_json = ('{   ""access_token"":""2YotnFZFEjr1zCsicMWpAA"",'
+--- a/tests/oauth2/draft25/test_parameters.py
++++ b/tests/oauth2/draft25/test_parameters.py
+@@ -56,7 +56,7 @@
+         'username': 'johndoe',
+         'password': 'A3ddj3w'
+     }
+-    password_body = 'grant_type=password&username=johndoe&password=A3ddj3w'
++    password_body = 'grant_type=password&password=A3ddj3w&username=johndoe'
+
+     cred_grant = {'grant_type': 'client_credentials'}
+     cred_body = 'grant_type=client_credentials'
+```
+","",""
+"issue_comment","62","idan","oauthlib","warsaw","2012-10-29 10:07:41","Sorry, that patch isn't sufficient.  I've uploaded a patch to Ubuntu and will do a pull request.
+","",""
+"issue_comment","62","idan","oauthlib","ib-lundgren","2012-10-30 19:28:11","@warsaw - Thanks for the patch & #63! 
+
+OAuthLib aims to be very strictly spec compliant\* and while sorting the parameters seem rather innocent it's not the expected behaviour. Furthermore I much rather improve the tests and make them robust than tweak the code to fit the tests. Adding an assert_url_equals method to TestCase is rather trivial (using urlparse for the heavy lifting). 
+
+For the two tuples I think TestCase.assertItemsEqual should be sufficient. 
+-  if you find places where this could be improved upon please point it out =)
+","",""
+"issue_comment","62","idan","oauthlib","ib-lundgren","2012-11-08 20:05:02","@warsaw I was not sure if you found any time to work more on the PR or not and since I found a free spot in my calendar and sorted this out. I've added you to AUTHORS, let me know if you'd prefer not to be listed.
+
+Hopefully I covered most of it but will keep an eye out for flakyness. 
+
+I've pushed this to PYPI as 0.3.2.
+
+Heard from @christofferholmstedt that you are working a bit with making OAuth requests and thought I'd give a shoutout to the awesome requests library that has OAuthLib powered OAuth support built in =)
+
+Here's an example on doing HMAC-SHA1 signed requests but RSA and plaintext are of course also supported.
+http://docs.python-requests.org/en/latest/user/quickstart/#oauth-authentication
+","",""
+"issue_comment","62","idan","oauthlib","warsaw","2012-11-08 20:36:18","On Nov 08, 2012, at 12:05 PM, Ib Lundgren wrote:
+
+> @warsaw I was not sure if you found any time to work more on the PR or not
+> and since I found a free spot in my calendar and sorted this out. I've added
+> you to AUTHORS, let me know if you'd prefer not to be listed.
+
+Thanks so much!  I was almost literally just getting back to this after UDS-R
+and post-Copenhagen travel.  You probably beat me by just a couple of hours. :)
+
+> Hopefully I covered most of it but will keep an eye out for flakyness. 
+> 
+> I've pushed this to PYPI as 0.3.2.
+
+Fantastic, thanks.  I'll test the PyPI version.  If it looks good, I'll go
+ahead and upload to Ubuntu 13.04, otherwise will file bugs if I find any other
+problems.
+
+> Heard from @christofferholmstedt that you are working a bit with making OAuth
+> requests and thought I'd give a shoutout to the awesome requests library that
+> has OAuthLib powered OAuth support built in =)
+
+Indeed!  We've upgraded urllib3 and requests in 13.04 to the latest PyPI
+versions.  One change we're making in the packaging though, is to use
+chardet2, urllib3, and oauthlib from the Debian packages instead of the
+bundled versions in requests (I wonder why they do that :/).
+
+It all needs a bit of testing, but after I get everything uploaded properly,
+I'll start converting some of the dependent packages, and continue testing.
+
+> Here are an example on doing HMAC-SHA1 signed requests but RSA and plaintext
+> is of course also supported.
+> http://docs.python-requests.org/en/latest/user/quickstart/#oauth-authentication
+
+Thanks!
+","",""
+"issue_comment","62","idan","oauthlib","ib-lundgren","2012-11-08 21:10:07","The reason requests vendors OAuthLib is because we are still in a flux with quite frequent changes. @kennethreitz is a very responsive and friendly guy so if the vendoring is a concern just ping him.
+
+Although we are unlikely to break anything related to OAuth 1 clients most of the OAuth 2 API will likely undergo quite a bit of changes. One day (probably quite a few months from now) I envision hitting 1.0 at which point the API will be stable. 
+
+Feel free to send bugs, PRs and just about anything our way and we'll take a look at it =)
+","",""

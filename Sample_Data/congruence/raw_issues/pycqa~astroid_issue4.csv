@@ -1,0 +1,96 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","4","pycqa","astroid","pylint-bot","2013-08-14 11:16:08","Originally reported by: **Anonymous**
+
+---
+1. Create a script named ""2to3.bat"" (containing ""python ""%~dp0..\Tools\Scripts\2to3.py"" %*"") in PYTHONINSTALLDIR\Scripts, so that the setup.py provided with pylint actually works on Windows (that would be a bug too... but the Windows Python installer should take care of this in a perfect world)
+2. Unzip astroid-1.0.0.tar.gz, open a command window and change current working directory to astroid-1.0.0
+3. Type 'python setup.py build'
+4. Here is the result:
+
+D:\Downloads\astroid-1.0.0>python setup.py build
+running build
+running build_py
+creating build
+creating build\lib
+creating build\lib\astroid
+copying .\as_string.py -> build\lib\astroid
+copying .\bases.py -> build\lib\astroid
+[...]
+copying .\test\data\SSL1__init__.py -> build\lib\astroid\test\data\SSL1
+creating build\lib\astroid\test\data2
+copying .\test\data2\clientmodule_test.py -> build\lib\astroid\test\data2
+copying .\test\data2\suppliermodule_test.py -> build\lib\astroid\test\data2
+copying .\test\data2__init__.py -> build\lib\astroid\test\data2
+Skipping implicit fixer: buffer
+Skipping implicit fixer: idioms
+Skipping implicit fixer: set_literal
+Skipping implicit fixer: ws_comma
+package init file '.\test__init__.py' not found (or not a regular file)
+running 2to3 on build\lib\astroid\brain
+error: Le fichier spécifié est introuvable
+
+For what it's worth, the 3 steps above work with logilab-common-0.60.0.tar.gz but not with astroid-1.0.0.tar.gz.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/4
+","start issue","Building astroid on Windows/Python3 fails"
+"issue_closed","4","pycqa","astroid","pylint-bot","2015-12-09 05:51:31","","closed issue","Building astroid on Windows/Python3 fails"
+"issue_comment","4","pycqa","astroid","pylint-bot","2013-08-17 12:11:36","_Original comment by_ **BitBucket: [pierre_raybaut](http://bitbucket.org/pierre_raybaut)**:
+
+---
+
+With the following patch applied to setup.py, it's working:
+
+--- D:/Downloads/astroid-1.0.0-original/astroid-1.0.0/setup.py  Mon Jul 29 17:04:26 2013
++++ D:/Downloads/astroid-1.0.0/setup.py Sat Aug 17 14:05:50 2013
+@@ -140,7 +140,10 @@
+                     # process manually python file in include_dirs (test data)
+                     from subprocess import check_call
+                     print('running 2to3 on', dest) # parens are NOT optional here for py3k compat
+-                    check_call(['2to3', '-wn', dest])
+-                    script2to3 = '2to3'
+-                    if os.name == 'nt':
+-                        script2to3 += '.bat'
+- ```
+                 check_call([script2to3, '-wn', dest])
+  ```
+  
+  def install(**kwargs):
+     """"""setup entry point""""""
+","",""
+"issue_comment","4","pycqa","astroid","pylint-bot","2013-08-17 12:12:25","_Original comment by_ **BitBucket: [pierre_raybaut](http://bitbucket.org/pierre_raybaut)**:
+
+---
+
+```
+#!diff
+
+--- D:/Downloads/astroid-1.0.0-original/astroid-1.0.0/setup.py  Mon Jul 29 17:04:26 2013
++++ D:/Downloads/astroid-1.0.0/setup.py Sat Aug 17 14:05:50 2013
+@@ -140,7 +140,10 @@
+                     # process manually python file in include_dirs (test data)
+                     from subprocess import check_call
+                     print('running 2to3 on', dest) # parens are NOT optional here for py3k compat
+-                    check_call(['2to3', '-wn', dest])
++                    script2to3 = '2to3'
++                    if os.name == 'nt':
++                        script2to3 += '.bat'
++                    check_call([script2to3, '-wn', dest])
+
+ def install(**kwargs):
+     """"""setup entry point""""""
+
+```
+","",""
+"issue_comment","4","pycqa","astroid","pylint-bot","2013-09-04 15:07:09","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+see https://bitbucket.org/logilab/pylint/issue/51/building-pylint-windows-installer-for
+","",""
+"issue_comment","4","pycqa","astroid","pylint-bot","2013-10-18 15:29:16","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+an alternative fix on this pb has been integrated
+","",""

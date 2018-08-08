@@ -15,9 +15,9 @@ csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--code_metric_path', help='Directory containing graph metrics obtained by partioning the graph',\
-					default='data/co_commit_graph_stats/')
+					default='Sample_Data/congruence/graph_metrics/')
 parser.add_argument('--output_pickle_path', help='Output directory to store pickle files per project to store file-module membership',\
-					default='data/file_module_dict/')
+					default='Sample_Data/congruence/file_module_dict/')
 args, unknown = parser.parse_known_args()
 
 code_metric_path = args.code_metric_path

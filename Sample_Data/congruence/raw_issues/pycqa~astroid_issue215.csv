@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","215","pycqa","astroid","pylint-bot","2015-10-19 16:35:39","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+The constructors for Arguments nodes now look like:
+
+``` python
+    def __init__(self, vararg=None, kwarg=None, parent=None):
+        self.vararg = vararg
+        self.kwarg = kwarg
+        self.parent = parent
+        self.args = []
+        self.defaults = []
+        self.kwonlyargs = []
+        self.kw_defaults = []
+        self.annotations = []
+        self.kwonly_annotations = []
+
+    def postinit(self, args, defaults, kwonlyargs, kw_defaults,
+                 annotations, kwonly_annotations, varargannotation=None,
+                 kwargannotation=None):
+        self.args = args
+        self.defaults = defaults
+        self.kwonlyargs = kwonlyargs
+        self.kw_defaults = kw_defaults
+        self.annotations = annotations
+        self.varargannotation = varargannotation
+        self.kwargannotation = kwargannotation
+        self.kwonly_annotations = kwonly_annotations
+```
+
+Every property for every argument is held in a different field.  I want to move to a different arrangement that's similar to how inspect's Signature objects handle arguments: https://docs.python.org/3/library/inspect.html#introspecting-callables-with-the-signature-object.  Arguments will have four fields, args, vararg, kwarg, and (on Python 3) kwonlyargs, each of which will hold a sequence of Arg (I'm not sure this is the best name) nodes which will have a name field, a default field, and (on Python 3) an annotation field.  This arrangement makes it easier to look up the value of an argument's annotation or default by name, by first finding the appropriate Arg.node and then looking up the annotation or default.  Some disadvantages to this layout are that on Python 2 the Args node for varargs and kwargs is entirely superfluous, since they can't have default values and there are no annotations on Python 2, and that there will need to be a special constant object representing cases where there's no annotation or default.
+
+Some possible alternative layouts imitate inspect.Signature more closely or imitate the standard library ast module.  inspect.Signature has only one field for function parameters and has parameter objects with a kind field that distinguishes between positional-or-keyword arguments, keyword-only arguments, varargs, and kwargs.  In my experience, this ends up leading to a lot of filtering boilerplate because when processing arguments, the argument's kind almost always matters.  The standard library ast.Arguments has a layout of args, defaults (default values for positional-or-keyword arguments), vararg, kwonlyargs, kw_defaults, and kwargs.  On Python 3, the elements of the appropriate sequences are an ast.Arg node with name and annotation fields, while on Python 2 they're strings.  This arrangement has two disadvantages: writing Python 2/3-compatible code requires constant dispatching on six.PY2/PY3 because the elements of the sequences are different objects with different fields depending on the version, and looking the default value corresponding to a given name requires code like `reversed(list(zip(reversed(args), reversed(defaults)))`, something similar with zip_longest, or the equivalent using indexing to line up the correct name with the correct default.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/215
+","start issue","Add a nodes.Arg to hold argument names, annotations, defaults for nodes.Arguments"
+"issue_closed","215","pycqa","astroid","PCManticore","2016-02-13 23:25:52","","closed issue","Add a nodes.Arg to hold argument names, annotations, defaults for nodes.Arguments"
+"issue_comment","215","pycqa","astroid","pylint-bot","2015-11-03 16:07:37","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This seems like a good idea to me and it makes sense to ease a little bit the interaction with the arguments. When we first talked about this, I suggested to emulate the ast module API, but it seems weird now that I see your full proposal. The change we're talking now is going to be pretty heavy on rewrites, since you'll have to change how inference works for arguments, how CallSite works and do similar modifications in pylint, which might be simple enough after having the code though. So +1 on the first version.
+","",""
+"issue_comment","215","pycqa","astroid","PCManticore","2016-01-24 22:42:05","@ceridwen mind if I take this? 
+","",""
+"issue_comment","215","pycqa","astroid","ceridwen","2016-01-25 00:00:21","Go ahead.
+","",""

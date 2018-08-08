@@ -1,0 +1,164 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","159","aio-libs","aioredis","argaen","2016-11-03 18:21:30","Hi, I have the following code:
+
+```python
+def cached(ttl=0, key=None, key_attribute=None, cache=None, serializer=None, **kwargs):
+
+    cache = get_cache(cache=cache, serializer=serializer, **kwargs)
+
+    def cached_decorator(fn):
+        async def wrapper(*args, **kwargs):
+            args_dict = get_args_dict(fn, args, kwargs)
+            cache_key = key or args_dict.get(
+                key_attribute, (fn.__module__ or 'stub') + fn.__name__ + str(args) + str(kwargs))
+            if await cache.exists(cache_key):
+                return await cache.get(cache_key)
+            else:
+                res = await fn(*args, **kwargs)
+                await cache.set(cache_key, res, ttl=ttl)
+                return res
+        return wrapper
+    return cached_decorator
+```
+
+The problem is that if `fn` raises an exception, the following appears on the console:
+
+```
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisPool._do_close() running at /Users/manuelmiranda/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/pool.py:102> wait_for=<Future pending cb=[Task._wakeup()]>>
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisConnection._read_data() running at /Users/manuelmiranda/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/connection.py:131> wait_for=<Future pending cb=[Task._wakeup()]> cb=[Future.set_result()]>
+```
+
+The one giving those warnings is the `cache.exists` function which basically does:
+
+```python
+    async def exists(self, key):
+        """"""
+        Check key exists in the cache.
+
+        :param key: str key to check
+        :returns: True if key exists otherwise False
+        """"""
+        with await self._connect() as redis:
+            exists = await redis.exists(key)
+            return True if exists > 0 else False
+```
+
+Sorry for pasting all the code but I thought the context of executing within a decorator may be important.
+
+Do you have any idea of what is going on? Is it because I'm defining the `cache` variable outside the function that gets executed??","start issue","Wierd error on function exception"
+"issue_comment","159","aio-libs","aioredis","asvetlov","2016-11-03 23:20:55","Sorry, it's impossible to give a correct answer without digging into your code but console output means that on exception you are trying to destroy redis pool. 
+But this object should live as long as your cache system exists.
+","",""
+"issue_comment","159","aio-libs","aioredis","popravich","2016-11-04 09:08:28","Hi @argaen,
+The problem is that redis pool or connection must be closed in a proper way after
+(same as discussed here #154).
+As far as I can see much of this warning come from your examples ([travis log](https://travis-ci.org/argaen/aiocache/builds/173116978#L276)).
+To get rid of it the following must be done:
+- Redis pool must be closed properly
+  (using two calls `redis.close()` & `loop.run_until_complete(redis.wait_closed())`)
+  
+  This should lead to changes in your API:
+  1. instead of initializing pool on request (in `_connect` method) pool must be configured outside
+     `RedisBackend` and passed to it as argument;
+  2. or RedisBackend should provide some interface to initialize and close pool it owns.
+
+I would recomend implementing option **i** — this would allow to reuse single RedisPool for whole application.
+","",""
+"issue_comment","159","aio-libs","aioredis","argaen","2016-11-04 16:46:08","But why this error only appears when an exception is raised from the function the decorator is calling and not always?
+
+@popravich this is related to the comment I did in https://github.com/aio-libs/aioredis/pull/129#issuecomment-258124744. I would like to keep the logic inside the `RedisBackend` class and having to initialize the pool (or the connection) outside breaks that common interface (meaning that for RedisBackend, I need something like a `post_init` or so).
+
+Regarding the ii option this means that I should anyway try to catch the `Exception`, close the pool and then re-raise?
+","",""
+"issue_comment","159","aio-libs","aioredis","popravich","2016-11-04 16:51:52","Can you attach the traceback when this warning appears with exception in `fn`?
+","",""
+"issue_comment","159","aio-libs","aioredis","argaen","2016-11-04 17:10:28","I've written this simple example:
+
+``` python
+import asyncio
+
+from aiocache import RedisCache, cached
+
+
+@cached(cache=RedisCache)
+async def call_to_redis_exception():
+    raise ValueError()
+
+
+@cached(cache=RedisCache)
+async def call_to_redis():
+    return ""1""
+
+
+async def wrapper():
+    try:
+        print(""EXCEPTION CALL"")
+        await call_to_redis_exception()
+    except ValueError:
+        print(""Value error triggered"")
+        print(""NO EXCEPTION CALL"")
+        await call_to_redis()
+
+
+def test_redis():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(wrapper())
+
+if __name__ == ""__main__"":
+    test_redis()
+```
+
+By executing it I'm obtaining:
+
+``` bash
+18:09 $ python examples/raise_exception.py
+ujson module not found, usin json
+cPickle module not found, using pickle
+EXCEPTION CALL
+Value error triggered
+NO EXCEPTION CALL
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisPool._do_close() running at /Users/manuelmiranda/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/pool.py:102> wait_for=<Future pending cb=[Task._wakeup()]>>
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisPool._do_close() running at /Users/manuelmiranda/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/pool.py:102> wait_for=<Future pending cb=[Task._wakeup()]>>
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisConnection._read_data() running at /Users/manuelmiranda/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/connection.py:131> wait_for=<Future pending cb=[Task._wakeup()]> cb=[Future.set_result()]>
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisConnection._read_data() running at /Users/manuelmiranda/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/connection.py:131> wait_for=<Future pending cb=[Task._wakeup()]> cb=[Future.set_result()]>
+```
+
+BUT, If I comment the function triggering the exception, no messages regarding Task pending appear.
+","",""
+"issue_comment","159","aio-libs","aioredis","popravich","2016-11-04 21:13:00","ok, the problem why this warnings come from `exists` method is because it is a first method
+which instantiates redis pool which sets up two background tasks:
+connection._reader_tasks — protocol reader and parser
+and `_close_waiter` — waits for `close()` call to clean up all pending connections from pool.
+","",""
+"issue_comment","159","aio-libs","aioredis","popravich","2016-11-04 21:22:39","> BUT, If I comment the function triggering the exception, no messages regarding Task pending appear.
+
+I think this is because `except ValueError` branch never gets executed so there is no call to `call_to_redis`
+and no redis connections created
+","",""
+"issue_comment","159","aio-libs","aioredis","argaen","2016-11-05 09:55:07","> I think this is because except ValueError branch never gets executed so there is no call to call_to_redis
+> and no redis connections created
+
+Oh man, true that. Anyway, if you check the `cached` decorator, the behavior is a bit different:
+
+``` python
+     if await cache.exists(cache_key):
+         return await cache.get(cache_key)
+    else:
+         res = await fn(*args, **kwargs)
+        await cache.set(cache_key, res, ttl=ttl)
+    return res
+```
+
+If no exception is raised from `fn` I don't see any ""Task was destroyed"" messages but, if I raise and exception from that function it appears (from the call to `cache.exists`) and this is what bothers me.
+
+Do the connections from the `_pool` close asynchronously out of the context manager scope? This is the only thing I can think of that maybe would make sense. Any other ideas?
+","",""
+"issue_comment","159","aio-libs","aioredis","popravich","2016-11-07 08:40:17","This warning messages is thrown when task gets deleted, so you may not see it until task is garbage collected (possibly until loop is destroyed or program exit).
+Trust me, if your `fn` won't raise any error you'll see exactly the same warning but possibly in other place or time.
+","",""

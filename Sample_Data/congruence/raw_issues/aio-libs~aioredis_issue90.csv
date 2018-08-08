@@ -1,0 +1,51 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","90","aio-libs","aioredis","asvetlov","2015-10-28 14:21:23","Trying to connect to non-existing host I get the following traceback:
+
+```
+Traceback (most recent call last):
+  File ""/usr/local/bin/controller"", line 9, in <module>
+    load_entry_point('job-router==2.7.0', 'console_scripts', 'controller')()
+  File ""/usr/local/lib/python3.4/site-packages/job_router/run_controller.py"", line 44, in main
+    loop=loop))
+  File ""/usr/local/lib/python3.4/asyncio/base_events.py"", line 316, in run_until_complete
+    return future.result()
+  File ""/usr/local/lib/python3.4/asyncio/futures.py"", line 275, in result
+    raise self._exception
+  File ""/usr/local/lib/python3.4/asyncio/tasks.py"", line 238, in _step
+    result = next(coro)
+  File ""/usr/local/lib/python3.4/site-packages/aioredis/pool.py"", line 26, in create_pool
+    yield from pool._fill_free(override_min=False)
+  File ""/usr/local/lib/python3.4/site-packages/aioredis/pool.py"", line 154, in _fill_free
+    conn = yield from self._create_new_connection()
+  File ""/usr/local/lib/python3.4/site-packages/aioredis/commands/__init__.py"", line 139, in create_redis
+    loop=loop)
+  File ""/usr/local/lib/python3.4/site-packages/aioredis/connection.py"", line 53, in create_connection
+    host, port, loop=loop)
+  File ""/usr/local/lib/python3.4/asyncio/streams.py"", line 63, in open_connection
+    lambda: protocol, host, port, **kwds)
+  File ""/usr/local/lib/python3.4/asyncio/base_events.py"", line 581, in create_connection
+    infos = f1.result()
+  File ""/usr/local/lib/python3.4/asyncio/futures.py"", line 275, in result
+    raise self._exception
+  File ""/usr/local/lib/python3.4/concurrent/futures/thread.py"", line 54, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File ""/usr/local/lib/python3.4/socket.py"", line 533, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -2] Name or service not known
+```
+
+`socket.gaierror: [Errno -2] Name or service not known` is not very handy, adding host/port pair to error message (like https://github.com/KeepSafe/aiohttp/blob/master/aiohttp/connector.py#L295-L299) would be useful.
+","start issue","Better report about connection problems"
+"issue_closed","90","aio-libs","aioredis","popravich","2015-11-16 09:37:33","","closed issue","Better report about connection problems"
+"issue_comment","90","aio-libs","aioredis","popravich","2015-10-28 15:06:05","> socket.gaierror: [Errno -2] Name or service not known is not very handy,
+
+But it is still straight forward meaning there's a problem with target host.
+
+Anyway, I will take a look at it.
+","",""
+"issue_comment","90","aio-libs","aioredis","asvetlov","2015-10-28 16:27:33","DevOps guy has the report like above when tries to deploy code and has no clue what's wrong.
+Showing failed address may point him on, say, bad config record and so on.
+","",""
+"issue_comment","90","aio-libs","aioredis","popravich","2015-11-16 09:46:53","I've added debug log so it should be verbose enough to see what's the host/port / unix path is.
+I didn't want to catch a single `OSError` cause there also may be some other errors (like `AssertionError` from `create_connection`) and catching wildcard errors just to log address seems to be a bad style for me.
+","",""

@@ -1,0 +1,42 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,112,aio-libs,aioredis,the-panda,2016-03-09 13:39:32,"To run the tests in a cluster environment I want to make sure that all used keys map to the same key slot. I think there are two solutions based on hash tags:
+- Use 'key' whenever possible and 'non-existing-{key}', '{key}-1' '{key}-2' etc. when more keys are needed. Send a FLUSHALL command before each test to make sure that tests don't interfere (FLUSHALL  is already used by some tests).
+- Use a separate key for each test, e.g. '{key}:set:expire'. Send FLUSHALL once at the start of the test suite.
+
+What are your thoughts?
+",start issue,Cluster compatible tests
+1,issue_closed,112,aio-libs,aioredis,the-panda,2016-04-05 16:00:14,,closed issue,Cluster compatible tests
+2,issue_comment,112,aio-libs,aioredis,popravich,2016-03-09 14:42:01,"Hi, both solutions are fine, but I personally would prefer second one, ie:
+using keys prefixed with specific hash tags and sending FLUSHALL only when needed.
+",,
+3,issue_comment,112,aio-libs,aioredis,the-panda,2016-03-14 13:29:38,"I have now modified most of your tests so that they run successfully on a cluster. I changed keys to something like {key:delete}:1 whenever multiple keys are used on the same node. The remaining tests are skipped because the tested functionality is not meaningful on a cluster or has not yet been implemented by the cluster code.
+
+You can find my pull request to trezorg's fork here: https://github.com/trezorg/aioredis/pull/1
+
+To reduce the risk of merge conflicts while the cluster code is still in development I could create a pull request to your repository which would only include my changes to the *_commands_test.py files (and a bit in _testutils.py), but no actual cluster code. Do you think this is a good idea?
+
+Besides, I still think that it would be better to flush the database before each test. It would make the tests independent and would allow to remove many delete-commands at the beginning of various tests.
+",,
+0,issue_title,118,aio-libs,aioredis,the-panda,2016-04-05 10:52:59,"Otherwise, if an 'await connection.wait_closed()' is cancelled, the _close_waiter will be cancelled, too. This raises an error, because when _read_task is done, it tries to set the result of the already cancelled _close_waiter.
+",start issue,Bugfix: Shield close_waiter from cancellation of wait_closed.
+1,issue_closed,118,aio-libs,aioredis,popravich,2016-04-05 14:51:41,,closed issue,Bugfix: Shield close_waiter from cancellation of wait_closed.
+2,pull_request_title,118,aio-libs,aioredis,the-panda,2016-04-05 10:52:59,"Otherwise, if an 'await connection.wait_closed()' is cancelled, the _close_waiter will be cancelled, too. This raises an error, because when _read_task is done, it tries to set the result of the already cancelled _close_waiter.
+",ce550a4a22f644768dbc4559764a637daab12bfc,Bugfix: Shield close_waiter from cancellation of wait_closed.
+3,pull_request_merged,118,aio-libs,aioredis,popravich,2016-04-05 14:51:41,Bugfix: Shield close_waiter from cancellation of wait_closed.,3d97b83019b122288d7d2f561993ca6f907c6a47,Pull request merge from ymap/aioredis:shieldfix to aio-libs/aioredis:master
+4,issue_comment,118,aio-libs,aioredis,coveralls,2016-04-05 11:04:02,"[![Coverage Status](https://coveralls.io/builds/5666790/badge)](https://coveralls.io/builds/5666790)
+
+Coverage increased (+0.06%) to 92.456% when pulling **58e616d318cc1f6c5afdf2daeac55d0ee6a4a535 on ymap:shieldfix** into **6eecc0334490bfd835b65954c39dea30b903268e on aio-libs:master**.
+",,
+5,issue_comment,118,aio-libs,aioredis,popravich,2016-04-05 12:54:40,"Please add tests
+",,
+6,issue_comment,118,aio-libs,aioredis,the-panda,2016-04-05 14:00:59,"I added a basic test for wait_closed and one that fails without the fix above.
+",,
+7,issue_comment,118,aio-libs,aioredis,coveralls,2016-04-05 14:14:01,"[![Coverage Status](https://coveralls.io/builds/5668676/badge)](https://coveralls.io/builds/5668676)
+
+Coverage increased (+0.06%) to 92.456% when pulling **5d07b32409bd1a12f9a39c198d7305ad679def32 on ymap:shieldfix** into **6eecc0334490bfd835b65954c39dea30b903268e on aio-libs:master**.
+",,
+8,issue_comment,118,aio-libs,aioredis,popravich,2016-04-05 14:51:44,"Thanks
+",,
+9,pull_request_commit,118,aio-libs,aioredis,the-panda,2016-04-05 10:45:19,Bugfix: Shield close_waiter from cancellation of wait_closed.,58e616d318cc1f6c5afdf2daeac55d0ee6a4a535,
+10,pull_request_commit,118,aio-libs,aioredis,the-panda,2016-04-05 13:54:02,Added tests for wait_closed fix.,5d07b32409bd1a12f9a39c198d7305ad679def32,
+11,pull_request_commit,118,aio-libs,aioredis,the-panda,2016-04-05 14:33:59,Fixed line length.,ce550a4a22f644768dbc4559764a637daab12bfc,

@@ -1,0 +1,514 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","163","pycqa","astroid","pylint-bot","2015-07-18 17:27:58","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+After experimenting more with the process of refactoring Macropy to use astroid, I've concluded that the solution I came up with of having two methods is creating a lot of boilerplate in tree creation and maintaining the synchronization manually is bug-prone.  After researching possible alternatives, I'd like to argue for using a [zipper](https://en.wikipedia.org/wiki/Zipper_%28data_structure%29) to wrap the AST.  There's a simple Python implementation at https://github.com/trivio/zipper.  A zipper keeps track of parent nodes without needing a doubly-linked tree, which will make the constructors simpler and remove most of the boilerplate in tree creation, and allows the AST to be immutable.  The current mutability of the AST makes tracing the state of notes unnecessarily difficult, as I learned while writing the initial patch for node constructors, especially given how complex the state of any given astroid node is.  An immutable AST is compatible with lazy properties that are calculated when they're first called but afterwards remain unchanged.  It should be possible to keep the external API the same using properties.  Along the way, it will probably be necessary to refactor some things that are currently mutating the AST (transforms, inference) to be functions/visitors acting on the AST, but you've already indicated you want to do that in https://bitbucket.org/logilab/astroid/issues/116/add-a-separate-step-for-transforms and https://bitbucket.org/logilab/astroid/issues/147/lots-of-circular-dependencies-in-the.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/163
+","start issue","Use a zipper to manage parent nodes and updates"
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-07-31 07:45:40","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+In general, I like the idea, but I want to see some sort of proof of concept of how this will look, as well as what needs to be changed in the inference and the transforms. Also, I'm not sure if this changes anything, but the transforms can mutate a node, not necessarily return a new one. Probably we should use something else than that zipper library, it doesn't seem maintained and the implementation seems messy.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-08-13 14:57:15","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I'll write a proof of concept.  A zipper can work on mutable data, it just doesn't offer any advantages.  In the long run, the purpose of changing the representation would be to limit the amount of mutation to make it easier to reason about state, which at the moment is very complicated and hard to understand (or at least, that's my feeling having tried to understand the code to write my patches).  I agree that we shouldn't use that zipper library because it's unmaintained.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-08-13 17:42:57","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Cool, I'm looking forward to it.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-08-25 17:53:18","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I'm going to start on this now, but I wamted to ask first if I should submit the debugging improvement patches to make debugging this patch less challenging than my last one. 
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-08-25 17:58:51","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yeah, you could send them first.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-05 14:08:38","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+Zipper prototype.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-05 14:27:58","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I added a prototype, which is more a skeleton of what a working implementation would look like than a specific proposal per se.  I only implemented basic movement and editing primitives.  To preserve the API, I think the real implementation should be a proxy for the node it contains and `parent` should be aliased to `up()` using a property.  This would mean that there are certain node methods that at the moment will fail when called on raw nodes not enclosed in a zipper.  I don't see this as a problem since all the public APIs ought to return ASTs properly enclosed in zippers, but tell me if you think differently.   The node classes themselves will need two new methods, `children` and `make_node` (those names aren't set in stone), and after it's done I can remove `parent` from `__init__` and combine all the `postinit` arguments into init.  We should still talk about exactly what movement and editing primitives should be available and data structure issues.  I discuss the data structures a bit more in my comments in the prototype.  For movement and editing primitives, the Clojure implementation and the other Python implementation I mentioned above have some ideas, but I honestly don't expect to get this right on the first draft.  After I finish this, I'm going to adapt Macropy to use astroid, which ought to give me more insight into what editing/movement primitives will be needed in a real application, and then submit another pull request.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-27 20:27:47","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The long-range project I've been working on is to make astroid more useful for non-pylint projects (in particular Macropy) and closer to a drop-in replacement for the standard lib ast module.  One of the major problems I found when I was first looking at trying to use astroid for Macropy is that the logic for handling the ASTs was scattered all over astroid and poorly encapsulated, so working with astroid ASTs required detailed knowledge of the undocumented-internals and manual calls to various astroid methods to get a proper astroid AST.  So far, I've been focusing on solving this for node _creation_: when I gave the nodes constructors, I moved some of the logic out of rebuilder.py and into the `__init__` and postinit methods, which are also vaguely more documented now so one could at least theoretically create an AST by looking at the `__init__` and postinit arguments without needing to read through large chunks of the astroid code.  Moving navigation to the zipper, making the tree singly-linked, and condensing node creation down to `__init__` will again improve this.
+
+Unfortunately, I'm increasingly seeing that alone won't solve the problems.  The biggest are in the variable name/scope handling, so I'll use that as an example, but there are some other similar cases.  There are still several explicit calls of set_local() in rebuilder.py, and some of them are in TreeRebuilder._save_assignment().  To properly construct an astroid AST at the AST level effectively requires reading the code to find these calls and mimicking them, somehow using the private API to handle it for you, or both.  When altering an astroid AST, like I would often need to in Macropy, would require using set_local() by hand, because there doesn't seem to be any comprehensive code for maintaining variable name/scope synchronization when changing the AST.
+
+My diagnosis is that all these problems (including the related problems in #169) come from storing AST-level properties on the nodes.  This makes the ASTs badly nonlocal because a change in one part of the AST can require changes on arbitrary nodes in any other part of the AST.  Frankly, I think the right way to fix this is the obvious approach: stop storing AST-level properties on the nodes!  AST-level properties should be calculated by functions (speaking in a generalized sense to include visitors, classes with `__call__`, etc.) acting on ASTs.  If performance is an issue, we need a way to identify an AST and memoize the result of the function call with respect to that AST so that repeated calls on the same AST access a cached result, rather than trying to store cached results on the nodes themselves.  Compare, for instance, how Macropy uses a visitor to calculate scoping: https://github.com/ceridwen/macropy/blob/astroid/macropy/core/analysis.py#L43 .  This is a simpler, better-encapsulated solution than what astroid has now.
+
+I want to do this right, so I want to refactor the AST-level properties (pretty much everything that lives in _other_other_fields and some other things besides) into functions/visitors and handle the caching some other way.  On the performance issue: do we have any existing benchmarks for astroid's or pylint's performance I can use to assess the impact of changes I make?  Do we have any idea where the bottlenecks in the code are to know what parts of the code need optimization?  I will note that just by eyeballing the code, I see astroid does a lot of things that will make it unnecessarily slow on CPython.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-27 20:49:19","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+First of all, thank you for the work you're doing with astroid. I'm in total agreement with you regarding all these issues you mentioned, from this point of view, astroid shows not only its age, but a lack of a comprehensive design, which causes problems such as #147 and #108. So if you want to tackle the change of moving away from AST level properties into function computations through visitors or other methods, then I'm happy with that. Regarding the performance, no, there's nothing yet for  measuring astroid's performance, but I might do it if it helps you with your work. I presume for now that the bottleneck is actually the inference and not the tree rebuilding. What things will make it unnecessarily slow on CPython?
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-28 02:03:57","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I would also be surprised if the AST operations are the bottleneck.  If you could write some kind of profiling, that would be a huge help.   I think for the moment I'm going to not worry about performance too much, pending data showing it's a real problem compared to the inference or pylint operations.
+
+My guess, without data to go on, is that a lot of time is being spent in small functions with multiple levels of indirection and on temporary copies.  Unfortunately in CPython, avoiding code duplication and performance are in opposition, because all abstractions in CPython have a cost.  The copying should have an impact even on PyPy.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-29 20:50:08","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Increasing the priority, since I want to have this before releasing 1.5, so that the API isn't changed for two versions in a row. I'll try to have a performance monitoring tool available for you this week.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-30 15:18:21","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I'm in the middle of implementing the zipper and want to consult on one of the larger design decisions.  In the prototype, I talked about the two simple cases of nodes, nodes whose children are all direct attributes (accessed by node.foo) and nodes with only one sequence of children.  In general nodes can contain multiple sequences of children, though, and so the zipper has to accommodate that.  There are, AFAICT, two approaches to the problem: allow the zipper to focus on sequences of children as well as nodes themselves, or have zipper only focus on nodes.  The latter requires providing an API on the nodes that returns a nested sequence of children, where each element corresponds to an attribute on the node, which element may itself be another node or a sequence of nodes.  There will need to be more kinds of traversal functions in this case, and some of them will look like child_sequence and locate_child.  The former will requires either doing type dispatch in the zipper itself, having code that branches on whether the zipper is focusing on a node or a sequence of nodes, or writing a new sequence type with an API that matches that of nodes.  This will probably also require additional traversal functions for traversals that are sure to only return nodes.
+
+Because the existing API contains a mixture of both approaches to traversal (parent will always return a node, child_or_sequence will may return a sequence), there's not really a clear precedent.  Do you have any thoughts on which approach would be better?
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-30 20:16:57","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This is interesting, since algorithms and data structures aren't my strongest point, hope I'm not wandering too much with these ideas.
+
+I think the solution is a hybrid approach and I'll try in the following to emphasize why is that.
+Let's take for example the AST of this code:
+
+```
+#!python
+
+def test():
+   a = 1
+   b = 2
+   if a == b:
+      print('here')
+   else:
+      print('there')
+   return 'other block'
+```
+
+which has this repr_tree:
+
+```
+#!python
+
+FunctionDef(
+   name='test',
+   doc=None,
+   decorators=None,
+   args=Arguments(),
+   body=[
+      Assign(
+         targets=[AssignName(name='a')],
+         value=Const(value=1)),
+      Assign(
+         targets=[AssignName(name='b')],
+         value=Const(value=2)),
+      If(
+         test=Compare(
+            left=Name(name='a'),
+            ops=[['==', Name(name='b')]]),
+         body=[Expr(value=Call(
+                  func=Name(name='print'),
+                  args=[Const(value='here')],
+                  keywords=None))],
+         orelse=[Expr(value=Call(
+                  func=Name(name='print'),
+                  args=[Const(value='there')],
+                  keywords=None))]),
+      Return(value=Const(value='other block'))],
+   returns=None)
+```
+
+If the zipper's focus would be the If node, then we can do the following
+- retrieve the left part of the tree from zipper's current point of view. I think this is the first two assignments, to a and b, which is obviously a collection of nodes.
+- retrieve the right part of the tree from.
+- retrieve the children, which is also a collection of nodes.
+- the only one that is different is the behaviour for up() / parent, because there can be only one parent for a node. For this, it might not make sense to return a collection, but internally you could do that to ease your implementation.
+
+The problem with this example is the If itself, which as you said, is a composite node, with both children as attributes and sequences of children. The zipper should deal with nodes only, since it makes most sense of all if you view the sequence of children as a subtree of the node in question, rather than a Python collection, as in this example. The Else and Body nodes can be seen as fake nodes, since they only purpose is to show that there's a subtree living there.
+
+![trees.png](https://bitbucket.org/repo/Krpj45/images/4164830908-trees.png)
+
+Regarding what it should return, why the list has to be nested, why not simply flattening everything together? Unless we're expecting to build the tree bottom-up I don't see an use case right now.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-09-30 22:59:00","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+> If the zipper's focus would be the If node, then we can do the following
+> -     retrieve the left part of the tree from zipper's current point of view. I think this is the first two assignments, to a and b, which is obviously a collection of nodes.
+> -     retrieve the right part of the tree from.
+> -     retrieve the children, which is also a collection of nodes.
+> -     the only one that is different is the behaviour for up() / parent, because there can be only one parent for a node. For this, it might not make sense to return a collection, but internally you could do that to ease your implementation.
+
+For the most part you're right, but not all of this can be done easily at the same time.  If the zipper can only focus on nodes, then it can't return sequences in any case.  Moving left from the If will return the second Assign, then the first Assign.  Moving right will return the Return node, then nothing.  Going down will return the Compare node.  Moving up will return the FunctionDef.
+
+If the zipper can focus on sequences, it could return a sequence of the two assignments, and going down then right will return the sequence contained in If.body.  However, it will also mean that going up will return the sequence in FunctionDef.body.
+
+Note that it's possible to write all kinds of traversal functions so to some extent this a question of what functions will be simplest and perform best.
+
+> Regarding what it should return, why the list has to be nested, why not simply flattening everything together? Unless we're expecting to build the tree bottom-up I don't see an use case right now.
+
+The zipper needs to be able to reconstruct the children of a node properly when moving up.  If you flatten everything together, the zipper doesn't know which children belong to which sequences in the parent node and so can't call the constructor properly.
+
+I hope I'm being clear, there are a lot of details here.  If the zipper can only focus on nodes, what should happen to child_or_sequence?
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-10-01 11:37:29","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+One thing doesn't seem right: ""However, it will also mean that going up will return the sequence in FunctionDef.body."" Going up means retrieving the direct parent, similar to what we're currently having. Why does it have to return the entire sequence of functiondef's body, since  functiondef is the only parent? That's the case for If, but I would expect to be the same for Compare for instance, up() should retrieve only the direct ancestor.
+","",""
+"issue_comment","163","pycqa","astroid","pylint-bot","2015-10-01 14:52:26","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The zipper needs to be consistent to work correctly, or at least, if there's a way to avoid that, it's quite complicated, and I don't know how I'd make it work immediately.  If it can focus on sequences and nodes, then sometimes moving will return a sequence, not a node.  If it can focus on only nodes, moving will always return a node.  That said, it's still possible to write traversal functions that only return nodes (or sequences, for that matter) using isinstance.
+
+``` python
+# Zipper focuses on nodes and sequences
+    @property
+    def parent(self):
+        up = self.up()
+        if isinstance(up, bases.NodeNG):
+            return up
+        else:
+            return up.up()
+
+# Zipper focuses on only nodes
+    @property    
+    def parent(self):
+         return self.up()    
+```
+
+The trickiest part, I think, is if the zipper focuses only on nodes, what about the traversal functions that can currently return nodes and sequences, like child_or_sequence?  The only way I see to do that is to explicitly wrap each of the nodes in in the sequence in a zipper, which will involve a performance hit.
+
+I should emphasize again that as far as I can tell at this point, it should be possible to maintain consistency with the external API no matter which choice we make here.  This should be an implementation detail, which will affect the complexity of the code, where that complexity lives (which operations are simple and which are more complicated), and performance.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-01-24 23:54:19","How should the zipper handle node fields that are None?  Currently, None is used as a placeholder for empty fields: for example, the second WithItem in 'with foo as a, bar: pass' contains a None value for optional_vars because it's not used in that construct.  (I think I've hunted down all the cases where a node could have an unset field and made sure they're None instead, but I won't swear to it.)  At the moment, the zipper is only designed to operate on nodes (subclasses of NodeNG) and sequences (I think all of these are lists, but they could be other sequences if we wanted), so when for instance you call `.down().right()` on that WithItem, you'll get crashes because the zipper relies on its underlying object to have certain methods.  The zipper also currently returns None instead of a Zipper object when called with an invalid operation, e.g. `.down().left()` on that WithItem.
+
+I think probably the cleanest solution, which might also solve some other problems, is to use a subclass of NodeNG as a placeholder instead of None.  Python doesn't have algebraic data types or anything equivalent to an option type, so it will just be simpler to use a new node type and duck-typing instead of trying to do type dispatch.  This would also make the case of an invalid operation distinct from the case where a node's field doesn't exist.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-01-24 23:59:56","The zipper as of now is relying on giving nodes a generic `__iter__` that iterates over their node children, which means eliminating the `__iter__` in LocalsDictNodeNG that iterates over local variables as if the node were a mapping.  I reran the tests and nothing seemed to fail when I simply removed that method.  Does anything actually use it?  In any event, I would prefer to work on converting everything to calling `for local_name in get_locals(node)` rather than partially implementing the Mapping interface on some nodes.
+","",""
+"issue_comment","163","pycqa","astroid","PCManticore","2016-01-25 11:27:45","Adding a node which represents the lack of something sounds good to me.
+
+Yeah, we could drop the `__iter__` API from LocalsDictNodeNG.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-03-01 22:04:26","I pulled the Parameter patch into the zipper branch and have been converting everything to use nodes.Empty instead of None.  I've hit a snag in refactoring inference.py:
+
+``` python
+def _slice_value(index, context=None):
+    """"""Get the value of the given slice index.""""""
+    if isinstance(index, treeabc.Const):
+        if isinstance(index.value, (int, type(None))):
+            return index.value
+    # This should be nodes.Empty.
+    elif index is None:
+        return None
+    else:
+        # Try to infer what the index actually is.
+        # Since we can't return all the possible values,
+        # we'll stop at the first possible value.
+        try:
+            inferred = next(index.infer(context=context))
+        except exceptions.InferenceError:
+            pass
+        else:
+            if isinstance(inferred, treeabc.Const):
+                if isinstance(inferred.value, (int, type(None))):
+                    return inferred.value
+
+    # Use a sentinel, because None can be a valid
+    # value that this function can return,
+    # as it is the case for unspecified bounds.
+    return _SLICE_SENTINEL
+```
+
+Empty entries in nodes.Slice will now be nodes.Empty rather None, so I think this code needs to be reworked to branch on nodes.Empty instead of None.  However, from other comments in that file, directly trying to import nodes.py will cause a circular import.  In other cases, nodes is passed as an argument to the inference functions, but I'm not sure how to change _slice_value() to set that up.  What's the correct way to do that, or should I just use a lazy import to work around the problem?
+
+The zipper now passes its basic tests.
+","",""
+"issue_comment","163","pycqa","astroid","PCManticore","2016-03-01 22:17:29","Use treeabc.Empty instead?
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-03-10 19:34:33","1. There are many places in the code where ASTs are created that are not the child of anything else, in testutils.py, parts of the inference, and others.  My plan for handling this to create a zipper that has the parent connection, without changing the children of the parent node.  There will be a method for this, but what should it be called?
+2.  The editing API is fairly minimal at the moment.  It's possible to do everything that needs to be done, but it's maybe more laborious than necessary.  What functions should the editing API have?  Because the zipper abstracts over the differences between nodes and sequences, there are some obvious editing functions for one type (for instance, the mutable sequence API&mdash;I don't know if we want to name the methods the same things because zippers are immutable and return a new zippered node, not a mutated object&mdash;provides models for useful kinds of editing to do to sequences) that don't apply to the other type.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-03-11 16:28:10","On another topic: we need to decide which methods to keep and which to deprecate among the ones that the zipper inherited from the nodes, and what their names should be.  locate_child() and child_sequence() we're getting rid of for sure.  last_child(), next_sibling(), and previous_sibling() I don't see any need for, unless we want to rename right() and left(), but I don't think we do.  I would like to rename nodes_of_class() something, if we want to keep it.  (The implementation is short now that I have a preorder_descendants iterator, but it's used a lot.)  get_children() and parent are used everywhere, so I'm not inclined to get rid of them.  I think parent should be ultimately changed to be a method (called as .parent() rather than .parent) and possibly renamed to make it clearer what it does and how it's different from up() (it returns the parent or the grandparent of an AST object, whichever is a node).  get_children() unfortunately has a conflict with the new iterator children()&mdash;I didn't know what else to call the latter.  get_children() iterates over only nodes, thus includes grandchildren, children() iterates over both nodes and sequences.  children() is needed for other parts of the zipper, so it has to exist, but these methods should not have such similar names, and get_children() should probably be named something more descriptive to indicate it only iterates over nodes.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-03-13 01:40:27","Unfortunately, I've hit a serious problem that I don't see immediately how to fix without a major refactoring.  When you call a method on a proxy object that the proxy doesn't have, the self argument for that method is bound to the object being proxied, not the proxy.  While some of these methods can be moved without requiring changes everywhere else, the inference methods that are monkey-patched onto classes have the same problem.  The obvious solution is change these methods into functions, but this will require a significant amount of work and will make it hard to avoid breaking APIs.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-03-29 22:28:57","I've figured out a workaround, but it has some serious problems so I'd advocate against it as a solution.  The basic idea looks like this:
+
+``` python
+from functools import partial
+from types import MethodType
+
+class Zipper(wrapt.ObjectProxy):
+ ...
+ def __getattr__(self, attr):
+   value = getattr(self.__wrapped__, attr, None)
+   if isinstance(value, MethodType):
+     return partial(getattr(self.__wrapped__.__class__, attr), self)
+```
+
+When looking up a bound method on the proxied object, find the function corresponding to that bound method and return, instead of the bound method itself, a partial function object with the first argument bound to the _proxy_ rather than the proxied object.  The first major disadvantage is that the code to get this right will be very complicated and bug-prone, because it has to deal with the difference between unbound methods on Python 2 versus functions on Python 3 and lots of corner cases like special method lookup, instances having methods assigned to their attributes that aren't their methods, and the like.   The other major disadvantage is that it will be slow, both because on CPython it replaces the C proxy code with Python code and thus loses the speed advantage from wrapt's implementation, and because it does some significant extra work to return the partial function object.
+","",""
+"issue_comment","163","pycqa","astroid","PCManticore","2016-03-29 23:19:52","@ceridwen I'm trying to understand only the problem with the proxied methods, since I didn't have that much time to look into the zipper changes: what do you mean by the inference functions being monkey-patching unto the classes, aren't they now dispatch functions which are called in Node.infer? Or do you mean the methods which are added by the transforming process?
+","",""
+"issue_comment","163","pycqa","astroid","PCManticore","2016-03-29 23:22:02","By the way, can you create a pull request between zipper and 2.0 branch? It's easier for me to look there and leave some code-related comments than commenting on this issue, which I'll try to use instead for design feedback rather than code nitpicks. 
+","",""
+"issue_comment","163","pycqa","astroid","PCManticore","2016-03-29 23:51:13","Some feedback so far for some of the questions you posed:
+1. Pick anything and we'll go with it (the method for nodes without a parent)
+2. Not sure right now without some examples, but there is one place where we need to replace the current focus (I guess) with a newly created node. For instance, in some transforms, we might create a new node out of an existing node, as an alternative to patching the locals and whatnot. That new node needs to replace the old one, so that every child of the old node should now point to the new one instead. Can we do that currently with the zipper (the place should be somewhere in transforms.py)?
+3. We could get rid of next_sibling / previous_sibling if left / right do the job already. Your call. nodes_of_class can be removed since we have find_descendants_of_type (probably it can be renamed automatically by an IDE or so). Regarding parent, it's quite used and I don't think there's a lot of value added by making it a method. Also, proper documentation regarding the difference between .parent and .up() should be enough rather than changing the name of the former. I have to mention that for me at least, up() and down() feel more low level than .parent and I'd bet that most of the users won't touch the zipper methods that much, since they are mostly targeted for people writing their own AST manipulation. 
+","",""
+"issue_comment","163","pycqa","astroid","PCManticore","2016-03-30 00:05:54","I have some tests regarding comprehension / default value scoping that are now failing. Probably something changed when you changed to treeabc.Empty instead of None in the nodes? Can you take a look? There's also another test failing (unittest_inference.InferenceTest.test_ancestors_inference2) but I guess this is something from the zipper itself.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-03-31 16:48:55","I wish issue comments had better threading.  Hopefully you can figure out what I'm replying to.
+
+The test failures are lingering failures from the 2.0 branch that we need to discuss still (there are open issues for all of them), shallow failures where an assertIs() is used so a zipper containing the correct node tests as false, or problems related to proxied method calls returning nodes rather than zippers I mentioned above.  I tested the Empty nodes patch and fixed all the bugs (here's the Travis log: https://travis-ci.org/PyCQA/astroid/builds/113156845) before I committed it.  If you notice a test failure for that commit that isn't listed under one of the existing bugs, tell me.
+
+After looking at it again, I think you've taken out all the monkey-patching, which is good.  Unfortunately, this doesn't solve the issue with methods.  The basic problem is this: let's suppose I call foo.infer() on a Zipper proxying for a node.  The self argument for that infer() call will be the _node_, not the zipper.  To show this, I added `print(self)` to NodeNG.infer() in base.py:
+
+``` python
+a = astroid.parse('import numpy')
+>>> a
+<Zipper at 0x7f9955ce2318 for Module at 0x7f9953d7b2b0>
+>>> next(a.infer())
+Module(name='',
+       doc=None,
+       package=False,
+       pure_python=True,
+       source_code=b'import numpy',
+       source_file='<?>',
+       body=[<Import l.1 at 0x7f9952244e10>])
+<Module l.0 at 0x7f9953d7b2b0>
+```
+
+Notice how the infer() call prints the Module node, not the Zipper, and the next() call returns a Module, not a Zipper either.  There are some other issues I haven't tracked down yet, but this is the big one from a design perspective.  I could move infer() itself to the zipper, but I'm not sure how many entry points there are where there's a method on a node that returns a node.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-04-05 20:29:01","After thinking about it, the nodes can't be zippers themselves, the zipper has to contain the nodes.
+
+The following is an overview of node methods that potentially have bad interactions with the zipper in that they return nodes or sequences of nodes.  I'm not sure I got all of them, but this is most of them.
+
+There are some methods that currently live on NodeNG or mixins in base.py that could be moved easily to the zipper because they make sense for all the nodes.   This doesn't include the navigation methods like root() I've already included with the zipper.
+- infer()
+- frame()
+- scope()
+- statement()
+
+For infer(), we've already switched from using bound methods to type dispatch with the singledispatch decorator.  For the mixin methods, I'd probably just use a simple `isinstance` conditional to do the type dispatch since most of them only have two implementations.  I think this will improve the legibility of the code, as rather than having to use grep to look up what nodes have overridden frame() or scope(), it will be clear in the function which nodes are scopes or frames.  
+
+_infer() appears to no longer be used, it should be removed.  parent_of() would currently break but could be rewritten to iterate over descendants, since it returns a boolean, or it could be moved to the zipper.
+
+There are some simple non-general methods that could be moved without much trouble, but it's not clear to me what should happen when they're called on a zipper containing an inappropriate node
+- assign_type()
+- itered()
+
+These methods are not general to all nodes and and involve complicated navigation:
+- _get_filtered_stmts()
+- _filter_stmts()
+- lookup()
+- ilookup()
+
+There's also set_local(), which is currently available on all nodes&mdash;I don't understand why.  It's also not clear to me why LookupMixIn is in tree/base.py rather than interpreter/lookup.py.
+
+All the methods on LocalsDictNode (interpreter/lookup.py) require navigation.  Currently, get_locals() when called on a zipper will work correctly, but calling the methods or the property .locals will return bare nodes rather than zippers.  Immutable nodes will require eliminating the mutating parts of this API, chiefly set_local, which is already nonfunctional in 2.0.  Removing the rest of the dict-like interface (.keys(), .items(), and .values()) is fairly easy, requiring changes in only two places in astroid that I know of.  I can't speak to pylint yet.  A partial implementation of the mapping interface tied to looking up local variables in ASTs isn't a good idea anyway, so I think those can go.  The use of `__getitem__` and `__contains__` is a lot more ubiquitous, so I don't know what to do about it, though with automated refactoring it probably wouldn't be too hard to replace all of those with get_locals() calls.
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-04-07 03:38:15","The following are my notes on the methods in node_classes.py.  They're a bit sketchy but they outline the methods that can currently cause problems.  Some of them are solved fairly simply, while others are much harder.
+
+Functions that will have to be changed:
+
+_container_getitem()
+_find_arg()
+
+Methods that could be static:
+
+Global._infer_name()
+Import._infer_name()
+Nonlocal._infer_name()
+TryExcept._infer_name()
+
+Call various functions so they're already mostly refactored:
+
+AssignedStmtsMixin.assigned_stmts()
+BaseAssignName.infer_lhs()
+AssignAttr.infer_lhs()
+AugAssign._infer_augassign
+BinOp._infer_binop
+List.getitem()
+Subscript.infer_lhs()
+Tuple.getitem()
+UnaryOp._infer_unaryop()
+
+Internal APIs that rely on navigation:
+
+Arguments._infer_name
+
+External APIs that seem to only require traversing down and/or don't
+return nodes:
+
+Arguments.is_argument() (depends on find_argname() atm)
+Arguments.find_argname() (depends on _find_arg())
+ExceptHandler.catch()
+Raise.raises_not_implemented() (Should return True or False)
+
+External APIs that require navigation and/or return nodes:
+
+Call.starargs
+Call.kwargs
+Const.getitem()
+Const.itered()
+Dict.items()
+Dict.itered()
+Dict.getitem()
+Slice._wrap_attribute()
+Slice.igetattr()
+Slice.getattr()
+
+Weird overridden methods:
+
+Arguments.get_children()
+Compare.get_children()
+Compare.last_child()
+Dict.get_children()
+Dict.last_child()
+
+Methods that overlap with methods from base.py:
+
+Comprehension.assign_type()
+Comprehension._get_filtered_stmts()
+","",""
+"issue_comment","163","pycqa","astroid","ceridwen","2016-04-07 03:40:16","These are my notes on scoped_nodes.py.  They follow the same general structure as my notes on node_classes.py, but there are many more methods that can cause problems here, unfortunately.  The lion's share of them are on ClassDef.
+
+Why is CallSite in scoped_nodes.py?  Shouldn't it be somewhere in the
+interpreter package?
+
+Methods that can be moved to the zipper:
+
+ComprehensionScope.frame()
+
+Methods that call various functions so they're already mostly refactored:
+
+Module.globals
+Module.scope_lookup()
+ComprehensionScope.scope_lookup()
+LambdaFunctionMixin.scope_lookup() (Indirectly)
+ClassDef.locals
+ClassDef.scope_lookup() (Indirectly)
+ClassDef.implicit_metaclass()
+
+Internal APIs that rely on navigation or inference:
+
+ClassDef.newstyle (depends on next method)
+ClassDef._newstyle_impl()
+ClassDef._infer_type_call()
+ClassDef._metaclass_lookup_attribute()
+ClassDef._get_attribute_from_metaclass()
+ClassDef._find_metaclass()
+ClassDef._islots()
+ClassDef._slots()
+ClassDef._inferred_bases()
+
+External APIs that seem to only require traversing down and/or don't
+return nodes:
+
+Function.is_generator()
+
+External APIs that require navigation, depend on inference, and/or return nodes:
+
+QualifiedNameMixin.qname()
+Module.getattr()
+Module.igetattr()
+Module.wildcard_import_names()
+LambdaFunctionMixin.argnames()
+Lambda.infer_call_result()
+Function.extra_decorators()
+Function.getattr()
+Function.igetattr()
+Function.is_method()
+Function.decoratornames()
+Function.is_abstract()
+Function.infer_call_result()
+ClassDef.is_subtype_of() (Depends on qname)
+ClassDef.infer_call_result()
+ClassDef.basenames
+ClassDef.ancestors()
+ClassDef.local_attr_ancestors()
+ClassDef.instance_attr_ancestors()
+ClassDef.has_base()
+ClassDef.local_attr()
+ClassDef.instance_attr()
+ClassDef.instantiate_class()
+ClassDef.getattr()
+ClassDef.igetattr()
+ClassDef.has_dynamic_getattr()
+ClassDef.methods()
+ClassDef.mymethods()
+ClassDef.declared_metaclass()
+ClassDef.has_metaclass_hack() (indirectly via declared_metaclass())
+ClassDef.slots()
+ClassDef.mro()
+","",""
+"issue_comment","163","pycqa","astroid","PCManticore","2016-04-13 19:29:50","I finally got a resolution that I think is going to move this forward in a way. It's going to be lengthy.
+
+To summarize, the problem right now is the fact that some methods of the nodes (most of them actually) are returning nodes instead of zipper nodes. This might be alleviated by using functions instead of the methods. While this might work, it has serious implications over the current API and its backward compatibility, but on the other hand, it's 2.0, so we could theoretically drop support for this API in favour of a new API.
+
+Against the previous argument though, we could bring up the pervasiveness of the zipper through the implementation of astroid. What I mean by this is the fact that the zipper will drastically change the API of astroid, since most of the methods won't exist anymore as is. The other thing is that some of them will be cluttered onto the zipper itself, such as .infer(), .scope() and whatnot, resulting in a high coupling class, with concepts that shouldn't necessarily be there in the first place, if we will still keep these features as methods.
+
+What was missing so far, though, was the actual purpose of astroid with regard to trees. As mentioned a lot of times, we want to switch to a more powerful mechanism of understanding Python code, through abstract interpretation, which will require going beyond trees. In a way, they are currently limiting us, for instance in inference functions, if at some point we need to return an inference result that is a new node, we have to create that node in the first place, which doesn't necessarily have any actual representation in the source code, while the trees should be used just for that, for representing the source code world. The zipper would have to pervade the inference as well in a way, even though not explicitly, but implicitly through the fact that it leaks into other layers such as inference, interpretation or something else.
+
+Now, what I really want for astroid to have at some point, would be something like this (in general):
+
+```
+tree = astroid.parse(source_code)
+cfg = astroid.build_cfg(tree)
+typed_cfg = astroid.type(cfg)
+interpreted = astroid.interpret(typed_cfg)
+```
+
+where the last step would yield the inferred types and constraints of the tree itself, which would be used not just for certain kinds of linting, but for type checking as well. We can't support PEP 484 in the current form, that's the reality right now.
+Knowing this plan, it's obvious at this point that the zipper itself would affect only the first step, the astroid.parse part. After that, the resulting objects and structures won't necessarily have anything to do with the trees, but with more higher kind objects that can be interpreted, typed or analyzed. The following steps in the analysis are creating immutable objects by default, there won't be any transformation step involved at this point (except some inference tips for the interpretation phase, which have to be transformed to return types instead of node objects, as we're doing right now).
+
+Now, the thing is we have a lot ahead of us in order to approach this in a sane way. Sure, moving to having internal type objects instead of AST nodes is no trivial task, it's going to take months for sure, since we don't work full time on this, which definitely means that what we'll do, will delay 2.0 a bit further. But I think this is for the better future of the project, since right now it won't stand a nice against frameworks with more manpower than we can currently have (I'm looking at mypy, which has some incredible folks working on it and it's pretty amazing). 
+
+To cut this short, since it's getting quite long, the plan is like this:
+- let the zipper be involved only in the astroid.parse phase
+- move from having internal AST to internal types
+- most of the AST methods are not useful for trees, but for the inference part, such as inference, gettattr. Syntactic constructs can still be used in the trees, such as scopes, but that's mostly it, the rest of the inference capabilities shouldn't belong in the tree. This means that we could move most of them, but we need to approach this on a case by case basis and with proper care.
+
+What these previous points means is that we should start sketching the new interpretation phase, moving bits by bits, until it's feasible for the zipper to come into the parse phase. We could bring it right now, sure, but it will result in an unstable 2.0, while I think it's better to integrate it when the architecture is ready. 
+
+Let me know what do you think by this. It's definitely hard to grok the fact that in order to use the zipper, we have to change a ton of internals, which means delaying for a bit the release of 2.0. The actual plan (april-may-june) doesn't seem that approachable right now and you're working on having astroid better for macropy and other purposes since last year, which is definitely quite a long stretch of your expectations. But, in my opinion, the resulting working will matter a lot, the parsing part of astroid could potentially be used by other projects, since it won't have the idiosincrasies that we need for the inference and whatnot.
+
+(Also, this plan won't affect pylint that much, users could still run checks over the trees, for inference, they'll have to change from node.infer() to infer(node), which will work in the same way for a bit).
+
+The alternative is to just use some hacks for the time being, for passing the Zipper instead of the node class in the proxy objects, but that would be just a hack that needs to go away at some point. Since the amount of methods is also pretty lengthy, moving them wholesale in the zipper won't help either.
+","",""

@@ -1,0 +1,14 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","290","idan","oauthlib","whit537","2014-10-30 13:20:13","Over at https://github.com/gratipay/gratipay.com/issues/2870 we're finding that [`parse_authorization_code_response`](https://github.com/idan/oauthlib/blob/04631866c058defb480462db1ec13cb7f88780a9/oauthlib/oauth2/rfc6749/parameters.py#L179-L229) sometimes receives an error response that it's [not prepared to handle](https://github.com/idan/oauthlib/blob/04631866c058defb480462db1ec13cb7f88780a9/oauthlib/oauth2/rfc6749/parameters.py#L221-L223). Here's a couple examples of the querystrings we're seeing from different providers:
+
+```
+Google:   error=access_denied&state=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Facebook: error=access_denied&error_code=200&error_description=Permissions+error&error_reason=user_denied&state=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Should a check for `error` be added, with a call to [`raise_from_error`](https://github.com/idan/oauthlib/blob/04631866c058defb480462db1ec13cb7f88780a9/oauthlib/oauth2/rfc6749/errors.py#L249-L259) (but cf. #2869)?
+","start issue","`parse_authorization_code_response` has no error checking"
+"issue_comment","290","idan","oauthlib","whit537","2014-10-30 13:22:42","It seems that error checking should also be added to [`parse_implicit_response`](https://github.com/idan/oauthlib/blob/04631866c058defb480462db1ec13cb7f88780a9/oauthlib/oauth2/rfc6749/parameters.py#L276-L277) and possibly [`parse_token_body`](https://github.com/idan/oauthlib/blob/04631866c058defb480462db1ec13cb7f88780a9/oauthlib/oauth2/rfc6749/parameters.py#L353-L364).
+","",""
+"issue_comment","290","idan","oauthlib","ib-lundgren","2014-11-06 19:43:20","@whit537 thanks for the report and detailed suggestion! Would you like to take a look at this yourself? If not Ill see if I can sort it out next week when the new batch of jet lag settles :)
+","",""

@@ -1,0 +1,144 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,474,pycqa,astroid,brycepg,2017-12-28 00:04:05,"This prevents the locals `__qualname__` and `__module__` in the class definition from raising a false-positive no-member by implicitly creating them.
+
+There is a problem that pylint thinks that locals reference variables upward in the mro without a namespace (class name), which is not the case, but I this fix is more of an improvement than before.
+
+fixes PyCQA/pylint#1753",start issue,Assign __module__ and __qualname__ to class locals implicitly
+1,issue_closed,474,pycqa,astroid,PCManticore,2018-01-03 10:45:36,,closed issue,Assign __module__ and __qualname__ to class locals implicitly
+2,pull_request_title,474,pycqa,astroid,brycepg,2017-12-28 00:04:05,"This prevents the locals `__qualname__` and `__module__` in the class definition from raising a false-positive no-member by implicitly creating them.
+
+There is a problem that pylint thinks that locals reference variables upward in the mro without a namespace (class name), which is not the case, but I this fix is more of an improvement than before.
+
+fixes PyCQA/pylint#1753",0cba62405b9c3ce1c83a8452493ac3892eb02853,Assign __module__ and __qualname__ to class locals implicitly
+3,pull_request_merged,474,pycqa,astroid,PCManticore,2018-01-03 10:45:35,Assign __module__ and __qualname__ to class locals implicitly,e260d5ce84c3dea5c0e94e9e3139b0b768d44e22,Pull request merge from brycepg/astroid:issue-1753-qualname to PyCQA/astroid:master
+4,issue_comment,474,pycqa,astroid,brycepg,2017-12-28 04:15:18,The only failure right now is pylint failing #475 ,,
+5,issue_comment,474,pycqa,astroid,PCManticore,2018-01-03 10:45:42,Thank you @brycepg !,,
+6,pull_request_commit_comment,474,pycqa,astroid,PCManticore,2017-12-28 11:58:37,"Can we have this a static, with the exception of the `if` statement? e.g no method for it.",0cba62405b9c3ce1c83a8452493ac3892eb02853,"(None, '', u'astroid/scoped_nodes.py')"
+7,pull_request_commit_comment,474,pycqa,astroid,PCManticore,2017-12-28 11:59:36,"Ah, I see, nevermind!",0cba62405b9c3ce1c83a8452493ac3892eb02853,"(None, '', u'astroid/scoped_nodes.py')"
+8,pull_request_commit,474,pycqa,astroid,brycepg,2017-12-27 19:21:54,"Assign __module__ and __qualname__ to class locals implicitly
+
+This prevents __qualname__ and __module__, when called as locals in the class definition,
+from raising a false-positive no-member in pylint",5262b6f454916e6a5634b44a3b1e640e2b971b66,
+9,pull_request_commit,474,pycqa,astroid,PCManticore,2018-01-03 10:44:47,Fix lint errors,0cba62405b9c3ce1c83a8452493ac3892eb02853,
+0,issue_title,473,pycqa,astroid,KyrychukD,2017-12-20 11:18:44,"Traceback indicates that this is probably an issue with astroid. Please let me know if I should address this issue to pylint bug tracker instead.
+
+### Steps to reproduce
+1. `pylint example.py`
+
+### `pip freeze`
+
+```
+astroid==1.6.0
+isort==4.2.15
+lazy-object-proxy==1.3.1
+mccabe==0.6.1
+pylint==1.8.1
+six==1.11.0
+wrapt==1.10.11
+```
+
+
+### `example.py`
+
+```python
+class Class:
+    @classmethod
+    def class_method(cls):
+        _ = cls.__init__.__annotations__
+```
+
+### Current behavior
+Pylint fails with the following error:
+
+```
+Traceback (most recent call last):
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/__init__.py"", line 16, in run_pylint
+    Run(sys.argv[1:])
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/lint.py"", line 1347, in __init__
+    linter.check(args)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/lint.py"", line 768, in check
+    self._do_check(files_or_modules)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/lint.py"", line 901, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/lint.py"", line 980, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/utils.py"", line 1014, in walk
+    self.walk(child)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/utils.py"", line 1014, in walk
+    self.walk(child)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/utils.py"", line 1014, in walk
+    self.walk(child)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/utils.py"", line 1011, in walk
+    cb(astroid)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/pylint/checkers/typecheck.py"", line 714, in visit_attribute
+    if not [n for n in owner.getattr(node.attrname)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/astroid/bases.py"", line 298, in getattr
+    return self._proxied.getattr(name, context)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/astroid/scoped_nodes.py"", line 1438, in getattr
+    return [self.special_attributes.lookup(name)]
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/astroid/interpreter/objectmodel.py"", line 110, in lookup
+    return getattr(self, ""py"" + name)
+  File ""/home/dmytro/.virtualenvs/tmp-e8ba418cce8a54b3/lib/python3.6/site-packages/astroid/interpreter/objectmodel.py"", line 237, in py__annotations__
+    six.moves.zip(args.args, args.annotations),
+TypeError: zip argument #1 must support iteration
+```
+
+### Expected behavior
+Pylint is not failing.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+1.6.0
+
+
+### Notes
+
+The error is reproducible on the current master version of astroid.
+
+The error is not reproducible when accessing `__annotations__` outside of `@classmethod`. The error is not reproducible when accessing `__annotations__` of non-magic method (`_ = cls.some_method.__annotations__` even within `@classmethod` would not crash pylint).",start issue,TypeError when accessing magic method's annotations form @classmethod
+1,issue_closed,473,pycqa,astroid,PCManticore,2017-12-27 13:55:46,,closed issue,TypeError when accessing magic method's annotations form @classmethod
+0,issue_title,475,pycqa,astroid,brycepg,2017-12-28 00:29:01,"### Steps to reproduce
+1.  Use CI
+
+### Current behavior
+
+Because the current version of astroid is 2.0 on master, the pylint fails due to a pkg_info requirement of astroid<2.0
+
+### Traceback
+
+```
+Traceback (most recent call last):
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 666, in _build_master
+    ws.require(__requires__)
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 984, in require
+    needed = self.resolve(parse_requirements(requirements))
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 875, in resolve
+    raise VersionConflict(dist, req).with_context(dependent_req)
+pkg_resources.ContextualVersionConflict: (astroid 2.0.0 (/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages), Requirement.parse('astroid<2.0'), {'pylint'})
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/bin/pylint"", line 6, in <module>
+    from pkg_resources import load_entry_point
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 3147, in <module>
+    @_call_aside
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 3131, in _call_aside
+    f(*args, **kwargs)
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 3160, in _initialize_master_working_set
+    working_set = WorkingSet._build_master()
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 668, in _build_master
+    return cls._build_from_requirements(__requires__)
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 681, in _build_from_requirements
+    dists = ws.resolve(reqs, Environment())
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 870, in resolve
+    raise DistributionNotFound(req, requirers)
+pkg_resources.DistributionNotFound: The 'astroid<2.0' distribution was not found and is required by pylint
+ERROR: InvocationError: '/home/travis/build/PyCQA/astroid/.tox/pylint/bin/pylint -rn --rcfile=/home/travis/build/PyCQA/astroid/pylintrc /home/travis/build/PyCQA/astroid/astroid'
+```
+",start issue,Pylint is failing on Travis CI
+1,issue_closed,475,pycqa,astroid,brycepg,2018-01-02 02:33:31,,closed issue,Pylint is failing on Travis CI
+2,issue_comment,475,pycqa,astroid,PCManticore,2017-12-28 09:45:14,"I'm aware of this. I just didn't have time to tackle it. The problem is of a cyclic dependency:
+- pylint 2.0 depends on an un-released 2.0 version. In the past, we solved this by adding a `dependency_links` with the link to an astroid 2.0 archive in pylint's `__pkginfo__`
+- astroid depends on latest pylint for linting. We could try to limit this one to a released version, since it is fine like that. 
+If you have some spare cycles, the second approach should be a simple PR.",,
+3,issue_comment,475,pycqa,astroid,brycepg,2017-12-30 20:30:08,"Alright, did that. Thanks for pointing me in the right direction",,

@@ -1,0 +1,306 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","84","pycqa","astroid","pylint-bot","2015-03-20 16:30:38","Originally reported by: **Ned Batchelder (BitBucket: [ned](http://bitbucket.org/ned), GitHub: @ned?)**
+
+---
+
+When running on the edx-platform repo (https://github.com/edx/edx-platform), 1.3.4 successfully reports 5782 errors, but 1.3.5 crashes with a TypeError.  I've attached the output.  These are each concatenations of three different pylint runs.
+
+I am running with:
+logilab-astng==0.24.3
+logilab-common==0.63.0
+pylint==1.4.1
+
+pylout_134.txt is with astroid 1.3.4 installed.  pylout_135.txt is with 1.3.5.
+
+BTW: 1.3.6 also crashes.
+
+We also have a few pylint plugins of our own, from https://github.com/edx/edx-lint
+
+Pylint ends with this exception:
+
+```
+    sys.exit(run_pylint())
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/lint.py"", line 1266, in __init__
+    linter.check(args)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/lint.py"", line 674, in check
+    self._do_check(files_or_modules)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/lint.py"", line 805, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/lint.py"", line 881, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/utils.py"", line 869, in walk
+    self.walk(child)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/utils.py"", line 869, in walk
+    self.walk(child)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/utils.py"", line 869, in walk
+    self.walk(child)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/utils.py"", line 866, in walk
+    cb(astroid)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/checkers/typecheck.py"", line 293, in visit_assign
+    function_node = safe_infer(node.value.func)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/pylint/checkers/utils.py"", line 96, in safe_infer
+    next(inferit)
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/astroid/bases.py"", line 327, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/astroid/bases.py"", line 351, in wrapper
+    for node in func(*args, **kwargs):
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/astroid/inference.py"", line 247, in infer_getattr
+    for obj in owner.igetattr(self.attrname, context):
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1211, in igetattr
+    for infered in _infer_stmts(self.getattr(name, context), context,
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1196, in getattr
+    for classnode in self.ancestors(recurs=True, context=context):
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1103, in ancestors
+    context=context):
+  File ""/edx/app/edxapp/venvs/edxapp/local/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1089, in ancestors
+    for baseobj in stmt.infer(context):
+TypeError: '_Yes' object is not iterable
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/84
+","start issue","1.3.5 crashes with TypeError: '_Yes' object is not iterable"
+"issue_closed","84","pycqa","astroid","pylint-bot","2015-12-09 05:53:13","","closed issue","1.3.5 crashes with TypeError: '_Yes' object is not iterable"
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-22 11:59:50","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Thank you for the issue, I'll look into it.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-23 18:41:10","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Could you tell me on which file it crashed and how did you ran pylint? I'm trying to reproduce, but there are so many directories in edx-platform that I don't know where to start.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-25 21:21:28","_Original comment by_ **Jeremy Braun (BitBucket: [jtbraun](http://bitbucket.org/jtbraun), GitHub: @jtbraun?)**:
+
+---
+
+With a recent version of cartopy, this error (which may have many causes) is triggered by the following code:
+
+```
+#!python
+
+import cartopy.crs as ccrs
+proj = ccrs.PlateCarree()
+proj._threshold = 0.01
+
+```
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-25 21:22:11","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Thanks, will look into it. Probably will fix the edx problem as well.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-25 21:39:26","_Original comment by_ **Jeremy Braun (BitBucket: [jtbraun](http://bitbucket.org/jtbraun), GitHub: @jtbraun?)**:
+
+---
+
+It's the special-case of ""with_metaclass"" in infer_call_result.  For some reason the b.infer(context) call on the Name(CRS) argument that comes from Projection (see below) returns the YES object, which gets assigned as c.bases, eventually triggering the error.
+
+Looking deeper, crs.py import CRS from cartopy._crs, a shared object library (crs.so).
+When this hits scoped_nodes.py, Module(cartopy._crs).getattr, looking for the CRS member, that fails, and returns a NotFoundError() exception.
+
+That in turn hits inference.py, infer_from (which attempted to lookup the CRS member).  That catches NotFoundError, and raises InferenceError().
+That is caught in bases.py, _infer_stmts(), which was attempting to lookup 'CRS' in the From(cartopy._crs) object. This runs ""yield YES"", which eventually gets back into the set of base classes for the with_metaclass special case, and later the failure.
+
+I have no idea what was actually intended here, though. Good luck, and thank you!
+
+```
+#!python
+
+from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_RELEASE
+
+class Projection(six.with_metaclass(ABCMeta, CRS)):
+class _RectangularProjection(Projection):
+class _CylindricalProjection(_RectangularProjection):
+class PlateCarree(_CylindricalProjection):
+
+```
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-25 23:20:38","_Original comment by_ **Ned Batchelder (BitBucket: [ned](http://bitbucket.org/ned), GitHub: @ned?)**:
+
+---
+
+@PCManticore I've tried to make a reproducible case for you, but have not been able to.  Installing all of Open edX's prerequisites is difficult.... :(
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-26 17:32:46","_Original comment by_ **Michael Barrientos (BitBucket: [mbarrien](http://bitbucket.org/mbarrien), GitHub: @mbarrien?)**:
+
+---
+
+Don't have a test case yet, but also seeing this same crash when using the freezegun library to mock out datetime calls.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-26 19:29:33","_Original comment by_ **Michael Barrientos (BitBucket: [mbarrien](http://bitbucket.org/mbarrien), GitHub: @mbarrien?)**:
+
+---
+
+Here's a test case. Will need to pip install freezegun.
+
+```
+import datetime
+import unittest
+
+from freezegun import freeze_time
+
+class TestClass(unittest.TestCase):
+    @freeze_time('2015-03-26T12:24:00+0700')
+    def test_something(self):
+        datetime.datetime.now()
+```
+
+And the traceback:
+
+```
+
+Traceback (most recent call last):
+  File ""/Users/mike/work/venv/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/__init__.py"", line 23, in run_pylint
+    Run(sys.argv[1:])
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/lint.py"", line 1332, in __init__
+    linter.check(args)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/lint.py"", line 747, in check
+    self._do_check(files_or_modules)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/lint.py"", line 869, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/lint.py"", line 946, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/utils.py"", line 874, in walk
+    self.walk(child)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/utils.py"", line 874, in walk
+    self.walk(child)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/utils.py"", line 871, in walk
+    cb(astroid)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/checkers/base.py"", line 1142, in visit_function
+    confidence=confidence)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/checkers/base.py"", line 1170, in _check_docstring
+    func = safe_infer(node.body[0].value.func)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/pylint/checkers/utils.py"", line 96, in safe_infer
+    next(inferit)
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/astroid/bases.py"", line 327, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/astroid/bases.py"", line 351, in wrapper
+    for node in func(*args, **kwargs):
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/astroid/inference.py"", line 247, in infer_getattr
+    for obj in owner.igetattr(self.attrname, context):
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1211, in igetattr
+    for infered in _infer_stmts(self.getattr(name, context), context,
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1196, in getattr
+    for classnode in self.ancestors(recurs=True, context=context):
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1103, in ancestors
+    context=context):
+  File ""/Users/mike/work/venv/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1089, in ancestors
+    for baseobj in stmt.infer(context):
+TypeError: '_Yes' object is not iterable
+```
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-27 11:52:58","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Filter out YES nodes when creating a temporary class for the with_metaclass hack.
+
+Having an YES node in a class bases will lead to a crash with a TypeError
+when trying to obtain the ancestors of the given class, because .ancestors()
+will try to iterate each inferred node from the bases, thus will try to
+iterate over an YES node. This should fix issue #84.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-27 11:53:20","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This wasn't meant to be closed. Sorry about that.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-27 11:54:07","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Could you all do a test with the latest astroid's tip? The freezegun problem was solved, but I don't have an environment for edx, nor for cartopy.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-27 14:53:34","_Original comment by_ **Ned Batchelder (BitBucket: [ned](http://bitbucket.org/ned), GitHub: @ned?)**:
+
+---
+
+I confirmed that astroid's tip does not crash on the edX code.  I'm looking now to see how the violations differ, because the count changed between 1.3.4 and tip.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-27 15:17:41","_Original comment by_ **Ned Batchelder (BitBucket: [ned](http://bitbucket.org/ned), GitHub: @ned?)**:
+
+---
+
+The violations count went down because astroid 1.3.4 complained about nose.tools' assert_equals() method missing parameters.  astroid tip correctly does not complain about that.  The fix looks good, thanks!
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-27 16:07:10","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Nice, thanks! I'll close the issue after I have confirmation from Jeremy that this works for him as well.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-03-27 16:07:24","_Original comment by_ **Jeremy Braun (BitBucket: [jtbraun](http://bitbucket.org/jtbraun), GitHub: @jtbraun?)**:
+
+---
+
+Works for the cartopy repro as well.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-06-05 13:45:09","_Original comment by_ **Kristaps Rāts (BitBucket: [kristaps](http://bitbucket.org/kristaps), GitHub: @kristaps?)**:
+
+---
+
+Any estimate when this will be on PyPI?
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-06-12 13:19:42","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I could probably make a bug fix release for astroid in this weekend. astroid 1.4 and pylint 1.5 are scheduled somewhere in the middle of July.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-07-27 17:31:08","_Original comment by_ **Daniel Myers (BitBucket: [moird](http://bitbucket.org/moird), GitHub: @moird?)**:
+
+---
+
+Also wondering when this will be on PyPi?
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-07-28 07:37:17","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+I'll be creating astroid 1.3.8 today with this change, sorry for taking so long.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-07-28 19:07:11","_Original comment by_ **Daniel Myers (BitBucket: [moird](http://bitbucket.org/moird), GitHub: @moird?)**:
+
+---
+
+It looks like the changeset for this issue: 40e3176b4747 was not included in 1.3.7.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-07-28 20:33:38","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yep, I forgot about this issue when I released 1.3.7. I just got back home from EuroPython, so hopefully tomorrow morning I'll push 1.3.8 to PyPi. I'm really sorry for the delay.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-08-02 19:38:55","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Filter out YES nodes when creating a temporary class for the with_metaclass hack.
+
+Having an YES node in a class bases will lead to a crash with a TypeError
+when trying to obtain the ancestors of the given class, because .ancestors()
+will try to iterate each inferred node from the bases, thus will try to
+iterate over an YES node. This should fix issue #84.
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-08-02 20:49:01","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Yep, as usual, being late.. I just released astroid 1.3.8 with the fix for this issue. Please test it and report any bugs that you find. ;-) 
+","",""
+"issue_comment","84","pycqa","astroid","pylint-bot","2015-08-14 11:05:18","_Original comment by_ **Kristaps Rāts (BitBucket: [kristaps](http://bitbucket.org/kristaps), GitHub: @kristaps?)**:
+
+---
+
+Fix works for me, thank you.
+","",""

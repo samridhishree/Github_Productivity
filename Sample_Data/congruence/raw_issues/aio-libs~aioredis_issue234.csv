@@ -1,0 +1,27 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","234","aio-libs","aioredis","yifeikong","2017-05-25 15:14:46","I'm using aioredis and redispy in the same project, it has been very uncomfortable to switch between different kinds of apis. Why not aioredis just implement the one redispy is using and make it async? Is there a technical limitation or it's just the favor of the author? How can I help with it?
+
+Thanks for your attention.","start issue","Using the same interface with redispy"
+"issue_comment","234","aio-libs","aioredis","popravich","2017-05-26 08:06:19","Hi, most command signatures are similar to redis-py ones. Or are you talking about `with await pool as conn: ...` stuff?","",""
+"issue_comment","234","aio-libs","aioredis","yifeikong","2017-05-26 10:04:56","For example:
+In redis-py, I would use `redis.StrictRedis(host='localhost', port=6379)`.
+In aioredis, I would use `aioredis.create_connection(('localhost', 6379))`.
+
+I mean, why making the subtle difference?
+
+I hope to see a drop in replacement of redis-py that all you have to do is prefix all methods with an `await`","",""
+"issue_comment","234","aio-libs","aioredis","popravich","2017-05-26 13:10:59","Well, I started this project as an alternative to `asyncio_redis`, at that moment it had some limitations that were hard to go around. I wrote it from scratch and was not looking at neither redis-py, nor asyncio_redis interface. From redis-py point of view some aioredis design decisions may look weird or like limitations,
+in contrast, some redis-py design decisions look like limitations from aioredis point of view.
+
+Here is some explanation.
+> In redis-py, I would use `redis.StrictRedis(host='localhost', port=6379)`.
+> In aioredis, I would use `aioredis.create_connection(('localhost', 6379))`.
+
+redis-py establish connection in a lazy manner, in aioredis there is a *design decision* to establish
+connection and then return client instance. The reason for this is to fail early if client can not connect;
+imagine situation when everything works in dev environment but in production redis server is unreachable
+with some reason — with lazy connect your app can fail in some unexpected places.
+
+There is another decision regarding response decoding — per-command decoding in aioredis vs per-connection in redis-py.
+
+Finally, I didn't think of it as a redis-py drop-in replacement and so wasn't comparing the differences.","",""

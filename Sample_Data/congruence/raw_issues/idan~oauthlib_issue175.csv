@@ -1,0 +1,50 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","175","idan","oauthlib","synasius","2013-06-06 09:12:55","In RequestValidator `save_authorization_code` method I can't rely on request.user cause it is not possible to retrieve its value in previous methods.
+
+So in my RequestValidator implementation I have to do the following:
+
+``` python
+class MyValidator(RequestValidator)
+    def __init__(self, user):
+        self.user = user
+
+    ... 
+
+    def save_authorization_code(self, client_id, code, request, *args, **kwargs):
+        expires = timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS)
+        g = Grant(
+            application=request.client, 
+            user=self.user, 
+            code=code['code'], 
+            expires=expires, 
+            redirect_uri=request.redirect_uri, 
+            scope=' '.join(request.scopes))
+        g.save()
+```
+
+This is bad cause it ties MyValidator instances to a single user, so I have to create a new object every request
+
+I think we need possibility to inject the current user instance from outside where needed., for instance in AuthorizationEndpoint, as explained in a TODO.
+
+``` python
+def create_authorization_response(self, uri, http_method='GET', body=None,
+            headers=None, scopes=None, credentials=None, user=Nonw):
+        """"""Extract response_type and route to the designated handler.""""""
+        request = Request(uri, http_method=http_method, body=body, headers=headers)
+        request.scopes = scopes
+        request.user = user
+```
+","start issue","User missing on RequestValidator"
+"issue_closed","175","idan","oauthlib","synasius","2013-06-06 12:48:31","","closed issue","User missing on RequestValidator"
+"issue_comment","175","idan","oauthlib","ib-lundgren","2013-06-06 09:59:14","If you pass in credentials={'user': your_user} it will be available as request.user. 
+
+It nullifies request.user first in case it was passed in the authorization form, which is something that should be documented, hence TODO. I might change this to only nullify user if not present in credentials and give a warning if its present in both request and credentials.
+
+I prefer using a credentials dict over an explicit user parameter since providers might wish to use any number of different extra credentials here.
+","",""
+"issue_comment","175","idan","oauthlib","synasius","2013-06-06 10:53:21","Nice, that's what I was looking for
+
+> I prefer using a credentials dict over an explicit user parameter since providers might wish to use any number of > different extra credentials here.
+
+Right, I agree
+","",""

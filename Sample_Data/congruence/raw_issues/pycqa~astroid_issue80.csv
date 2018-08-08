@@ -1,0 +1,87 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","80","pycqa","astroid","pylint-bot","2015-02-19 08:02:06","Originally reported by: **Michal Čihař (BitBucket: [nijel](http://bitbucket.org/nijel), GitHub: @nijel?)**
+
+---
+
+After upgrading to pylint 1.4.1, astroid 1.3.4 I get following error:
+
+```
+#!pytb
+
+  File ""/usr/lib/python2.7/site-packages/django_jenkins/tasks/run_pylint.py"", line 38, in run
+    lint.Run(args, reporter=ParseableTextReporter(output=output), exit=False)
+  File ""/usr/lib/python2.7/site-packages/pylint/lint.py"", line 1266, in __init__
+    linter.check(args)
+  File ""/usr/lib/python2.7/site-packages/pylint/lint.py"", line 674, in check
+    self._do_check(files_or_modules)
+  File ""/usr/lib/python2.7/site-packages/pylint/lint.py"", line 805, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/lib/python2.7/site-packages/pylint/lint.py"", line 881, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/lib/python2.7/site-packages/pylint/utils.py"", line 869, in walk
+    self.walk(child)
+  File ""/usr/lib/python2.7/site-packages/pylint/utils.py"", line 869, in walk
+    self.walk(child)
+  File ""/usr/lib/python2.7/site-packages/pylint/utils.py"", line 869, in walk
+    self.walk(child)
+  File ""/usr/lib/python2.7/site-packages/pylint/utils.py"", line 866, in walk
+    cb(astroid)
+  File ""/usr/lib/python2.7/site-packages/pylint/checkers/base.py"", line 392, in visit_callfunc
+    abstract_methods = _has_abstract_methods(infered)
+  File ""/usr/lib/python2.7/site-packages/pylint/checkers/base.py"", line 191, in _has_abstract_methods
+    return len(unimplemented_abstract_methods(node)) &gt; 0
+  File ""/usr/lib/python2.7/site-packages/pylint/checkers/utils.py"", line 532, in unimplemented_abstract_methods
+    mro = reversed(node.mro())
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1456, in mro
+    unmerged_mro = [[self]] + [base.mro() for base in bases] + [bases]
+[skipped 950 same tracebacks]
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1455, in mro
+    bases = list(self._inferred_bases(context=context))
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1433, in _inferred_bases
+    baseobj = next(stmt.infer(context=context))
+  File ""/usr/lib/python2.7/site-packages/astroid/bases.py"", line 110, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python2.7/site-packages/astroid/bases.py"", line 341, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/usr/lib/python2.7/site-packages/astroid/bases.py"", line 365, in wrapper
+    for node in func(*args, **kwargs):
+  File ""/usr/lib/python2.7/site-packages/astroid/inference.py"", line 239, in infer_getattr
+    for owner in self.expr.infer(context):
+  File ""/usr/lib/python2.7/site-packages/astroid/bases.py"", line 110, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python2.7/site-packages/astroid/bases.py"", line 341, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""/usr/lib/python2.7/site-packages/astroid/inference.py"", line 167, in infer_name
+    frame, stmts = self.lookup(self.name)
+  File ""/usr/lib/python2.7/site-packages/astroid/node_classes.py"", line 124, in lookup
+    return self.scope().scope_lookup(self, name)
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 1046, in scope_lookup
+    return frame._scope_lookup(node, name, offset)
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 186, in _scope_lookup
+    return pscope.scope_lookup(node, name)
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 345, in scope_lookup
+    return self._scope_lookup(node, name, offset)
+  File ""/usr/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 175, in _scope_lookup
+    stmts = node._filter_stmts(self.locals[name], self, offset)
+  File ""/usr/lib/python2.7/site-packages/astroid/node_classes.py"", line 206, in _filter_stmts
+    pindex = _stmt_parents.index(stmt.parent)
+  File ""/usr/lib/python2.7/site-packages/astroid/bases.py"", line 427, in __repr__
+    self._repr_name(),
+  File ""/usr/lib/python2.7/site-packages/astroid/bases.py"", line 420, in _repr_name
+    return getattr(self, 'name', getattr(self, 'attrname', ''))
+RuntimeError: maximum recursion depth exceeded in cmp
+
+```
+
+This might be same as #54, though the traceback looks different, so I've rather reported it as a separate issue.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/80
+","start issue","Maximum recursion depth exceeded through mro"
+"issue_closed","80","pycqa","astroid","pylint-bot","2015-12-09 05:53:02","","closed issue","Maximum recursion depth exceeded through mro"
+"issue_comment","80","pycqa","astroid","pylint-bot","2015-02-19 08:27:18","_Original comment by_ **Michal Čihař (BitBucket: [nijel](http://bitbucket.org/nijel), GitHub: @nijel?)**:
+
+---
+
+Actually this was bug in plugin, sorry for confusion. See https://github.com/landscapeio/pylint-django/issues/37
+","",""

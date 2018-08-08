@@ -1,0 +1,127 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,75,aio-libs,aioredis,krkd,2015-07-28 14:16:57,,start issue,Fixed typo in the documentation
+1,issue_closed,75,aio-libs,aioredis,asvetlov,2015-07-28 14:52:58,,closed issue,Fixed typo in the documentation
+2,pull_request_title,75,aio-libs,aioredis,krkd,2015-07-28 14:16:57,,492bb8be6e3ae22c39ff0d21b63c139bb737c770,Fixed typo in the documentation
+3,pull_request_merged,75,aio-libs,aioredis,asvetlov,2015-07-28 14:52:58,Fixed typo in the documentation,bd81d68163de957956fad164918251354f66bac0,Pull request merge from krkd/aioredis:master to aio-libs/aioredis:master
+4,issue_comment,75,aio-libs,aioredis,asvetlov,2015-07-28 14:53:02,"Thanks!
+",,
+5,pull_request_commit,75,aio-libs,aioredis,krkd,2015-07-28 14:09:30,Fixed typo in the documentation,492bb8be6e3ae22c39ff0d21b63c139bb737c770,
+0,issue_title,73,aio-libs,aioredis,kernel0,2015-07-28 07:05:04,"Compare with result tuple. fix about #70 
+",start issue,util functions fix (fixes : #70)
+1,issue_closed,73,aio-libs,aioredis,kernel0,2015-07-28 07:25:11,,closed issue,util functions fix (fixes : #70)
+2,pull_request_title,73,aio-libs,aioredis,kernel0,2015-07-28 07:05:04,"Compare with result tuple. fix about #70 
+",6413fb447b98d94598dbc86898f650209bbcab75,util functions fix (fixes : #70)
+3,pull_request_commit,73,aio-libs,aioredis,kernel0,2015-07-28 07:02:14,util functions fix (fixes : #70),6413fb447b98d94598dbc86898f650209bbcab75,
+0,issue_title,70,aio-libs,aioredis,zamoa,2015-07-23 09:48:02,"_testutil.py
+
+```
+class RedisEncodingTest(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.redis = self.loop.run_until_complete(self.create_redis(
+            ('localhost', self.redis_port), loop=self.loop, encoding='utf-8'))
+
+    def tearDown(self):
+        del self.redis
+        super().tearDown()
+```
+
+string_commands_test.py
+
+```
+class StringCommandsEncodingTest(RedisEncodingTest):
+    @run_until_complete
+    def test_set(self):
+        ok = yield from self.redis.set('my-key', 'value')
+        self.assertTrue(ok)
+
+        with self.assertRaises(TypeError):
+            yield from self.redis.set(None, 'value')
+```
+
+util.py
+
+```
+@asyncio.coroutine
+def wait_ok(fut):
+    res = yield from fut
+    if res == b'QUEUED':
+        return res
+    return res == b'OK'
+```
+
+In wait_ok, fut's result is 'OK', not b'OK'.
+so res == b'OK' is always False
+maybe res == b'QUEUED' is always False
+",start issue,wait_ok always failed when connection's encoding is used
+1,issue_closed,70,aio-libs,aioredis,popravich,2015-07-28 09:11:19,,closed issue,wait_ok always failed when connection's encoding is used
+2,issue_comment,70,aio-libs,aioredis,kernel0,2015-07-28 02:30:08,"wait_convert, wait_make_dict do the same
+",,
+3,issue_comment,70,aio-libs,aioredis,popravich,2015-07-28 09:11:19,"The fix is in master.
+Will release with cluster commands update
+",,
+0,issue_title,71,aio-libs,aioredis,kernel0,2015-07-28 02:12:31,"Assume that there are task1, task2, task3 (Let's call that T1, T2, T3. and they use RedisPool) and self.minsize=1, self.maxsize=2 of Pool. (self.freesize = 1, self.size = 1)
+
+While T1 acquired connection, T2 requests a connection to pool. (self.freesize = 0, self.size = 1)
+
+``` python
+    # Pool.acquire() -> Pool._fill_free()
+    @asyncio.coroutine
+    def _fill_free(self):
+        while self.freesize < self.minsize and self.size < self.maxsize:
+            conn = yield from self._create_new_connection()     <------------ (1) T2
+            yield from self._pool.put(conn)
+
+
+```
+
+While pending T2 at (1), T3 requests a connection to pool and suspends at (1) and T1 release a connection. (self.freesize = 1, self.size = 1)
+And then, T2 resume, acquire and release a connection (self.freesize = 2, self.size = 2)
+
+``` python
+    # Pool.acquire() -> Pool._fill_free()
+    @asyncio.coroutine
+    def _fill_free(self):
+        while self.freesize < self.minsize and self.size < self.maxsize:
+            conn = yield from self._create_new_connection()     <------------ (1) T3
+            yield from self._pool.put(conn)                     
+```
+
+If T3 resumes, T3 tries to put a new connection to pool. However, T3 hangs until some task acquire connection, because it exceeds Maxsize of Pool.
+",start issue,"If several tasks call Pool.acquire simultaneously, task hang occurs randomly."
+1,issue_closed,71,aio-libs,aioredis,popravich,2015-08-04 07:07:17,,closed issue,"If several tasks call Pool.acquire simultaneously, task hang occurs randomly."
+2,issue_comment,71,aio-libs,aioredis,popravich,2015-08-04 07:07:17,"fixed
+",,
+3,issue_comment,71,aio-libs,aioredis,kernel0,2015-08-05 06:30:12,"awesome!
+",,
+0,issue_title,74,aio-libs,aioredis,kernel0,2015-07-28 07:51:38,"fix about #70 
+",start issue,util functions fix (fixes : #70)
+1,issue_closed,74,aio-libs,aioredis,popravich,2015-07-28 09:10:12,,closed issue,util functions fix (fixes : #70)
+2,pull_request_title,74,aio-libs,aioredis,kernel0,2015-07-28 07:51:38,"fix about #70 
+",15754f7fb619f74aa558d38a908d5a8fea41f4a4,util functions fix (fixes : #70)
+3,pull_request_merged,74,aio-libs,aioredis,popravich,2015-07-28 09:10:12,util functions fix (fixes : #70),54b4bb7e28c688eaa2ab59f82b2e845d503dc08e,Pull request merge from kernel0/aioredis:util_fix to aio-libs/aioredis:master
+4,issue_comment,74,aio-libs,aioredis,popravich,2015-07-28 09:10:10,"Thanks
+",,
+5,pull_request_commit,74,aio-libs,aioredis,kernel0,2015-07-28 07:02:14,util functions fix (fixes : #70),6413fb447b98d94598dbc86898f650209bbcab75,
+6,pull_request_commit,74,aio-libs,aioredis,kernel0,2015-07-28 07:48:27,pep8 fix,15754f7fb619f74aa558d38a908d5a8fea41f4a4,
+0,issue_title,72,aio-libs,aioredis,kernel0,2015-07-28 02:20:07,"fix about #71 
+",start issue,pool _fill_free fix (fixes #71)
+1,issue_closed,72,aio-libs,aioredis,kernel0,2015-07-29 06:40:31,,closed issue,pool _fill_free fix (fixes #71)
+2,pull_request_title,72,aio-libs,aioredis,kernel0,2015-07-28 02:20:07,"fix about #71 
+",d4bce0fb458ce589aa99ab2b21540fb96d0fb11e,pool _fill_free fix (fixes #71)
+3,issue_comment,72,aio-libs,aioredis,popravich,2015-07-29 06:22:28,"Hi, @kernel0,
+Thanks for PR.
+I know about this problem for a while but had no time to fix it properly.
+Regarding the fix, it should be a bit more complex:
+you solved the problem of stucking `_pool.put` call but not the problem of creating and closing multiple connections to Redis.
+The better way to fix it is to use some locking mechanism to prevent `_pool` queue overflow.
+",,
+4,issue_comment,72,aio-libs,aioredis,kernel0,2015-07-29 06:40:25,"Thanks for your review!! I'll think about the better way.
+For now, I'll close this PR. 
+",,
+5,issue_comment,72,aio-libs,aioredis,asvetlov,2015-07-29 10:15:58,"@kernel0 please take a look on `aiopg` pool for inspiration: https://github.com/aio-libs/aiopg/blob/master/aiopg/pool.py
+",,
+6,issue_comment,72,aio-libs,aioredis,kernel0,2015-07-31 08:12:52,"@asvetlov thank you!
+",,
+7,pull_request_commit,72,aio-libs,aioredis,kernel0,2015-07-28 02:18:13,pool _fill_free fix (fixes #71),883cd6e7c36bd3a083180f646388d1b123586855,
+8,pull_request_commit,72,aio-libs,aioredis,kernel0,2015-07-29 04:02:25,add unit test for explaining the fix,d4bce0fb458ce589aa99ab2b21540fb96d0fb11e,

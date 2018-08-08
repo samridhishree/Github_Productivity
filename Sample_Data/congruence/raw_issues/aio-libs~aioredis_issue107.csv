@@ -1,0 +1,73 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","107","aio-libs","aioredis","jettify","2016-02-09 23:19:08","Few months ago @bdrosen96 created sentinel support for aioredis. I have added minor code tweaks and just created this PR. This code we use successfully in production. 
+
+There are fail over tests cases, I need your advise on how automate them in context of travisci.
+","start issue","Sentinel support"
+"issue_closed","107","aio-libs","aioredis","popravich","2017-01-13 14:49:32","","closed issue","Sentinel support"
+"pull_request_title","107","aio-libs","aioredis","jettify","2016-02-09 23:19:08","Few months ago @bdrosen96 created sentinel support for aioredis. I have added minor code tweaks and just created this PR. This code we use successfully in production. 
+
+There are fail over tests cases, I need your advise on how automate them in context of travisci.
+","d460ea8bd567b660a2984c6d1a2a1c2c6a7f4312","Sentinel support"
+"issue_comment","107","aio-libs","aioredis","jettify","2016-02-10 10:11:43","One possible way to make automatic failover tests is to leverage docker features on travis ci and then use something like docker-py to kill container from test.
+","",""
+"issue_comment","107","aio-libs","aioredis","popravich","2016-02-10 10:36:38","Thanks for PR, guys)
+","",""
+"issue_comment","107","aio-libs","aioredis","popravich","2016-02-10 11:11:52","As for tests and travis I think we can start redis sentinel in .travis-ci.yml
+","",""
+"issue_comment","107","aio-libs","aioredis","popravich","2016-03-01 13:11:48","So, I created same branch (sentinel2) in aioredis repo and fixed tests to run on travis
+","",""
+"issue_comment","107","aio-libs","aioredis","Axik","2016-08-03 00:57:21","Any chances to get this in master?
+","",""
+"issue_comment","107","aio-libs","aioredis","popravich","2016-08-03 07:43:45","I think I'll be able to merge new pool with sentinel in a two or three weeks
+","",""
+"issue_comment","107","aio-libs","aioredis","Abdeljelil","2016-11-01 16:00:28","Hi, 
+I tried a simple example to test sentinel with asyncio and I have this error when I try to call discover_master method. Is it a bug ?
+
+File ""/lib/python3.5/site-packages/aioredis/sentinel.py"", line 251, in discover_master
+    masters = yield from sentinel.sentinel_masters()
+AttributeError: 'Redis' object has no attribute 'sentinel_masters'
+
+This is my example:
+
+``` python
+@asyncio.coroutine
+def get_master_redis(loop, replication):
+
+    redis_sentinel = yield from aioredis.create_sentinel(
+        nodes, loop=loop
+        )
+
+    master = yield from redis_sentinel.discover_master(replication)
+
+    return master
+```
+","",""
+"issue_comment","107","aio-libs","aioredis","bdrosen96","2016-11-01 16:34:21","Redis object should include SentinelCommandsMixin mixin and that mixin does have def named sentinel_masters that takes only self.
+","",""
+"issue_comment","107","aio-libs","aioredis","popravich","2017-01-13 14:49:32","I'm closing it in favor of #181 ","",""
+"pull_request_commit_comment","107","aio-libs","aioredis","popravich","2016-02-10 10:47:44","I don't think that `SentinelCommandsMixin` should be, well, mixed with other commands as Redis Sentinel is not a Redis. It support only few redis commands.
+So I think it would be better to make separate `RedisSentinel` class and combine needed mixins
+","d460ea8bd567b660a2984c6d1a2a1c2c6a7f4312","(14, '', u'aioredis/commands/__init__.py')"
+"pull_request_commit_comment","107","aio-libs","aioredis","popravich","2016-02-10 11:06:48","We can get rid of this by passing `encoding` parameter to `execute` method and fixing `util.decode` function to recursively decode lists
+","d460ea8bd567b660a2984c6d1a2a1c2c6a7f4312","(6, '', u'aioredis/commands/sentinel.py')"
+"pull_request_commit","107","aio-libs","aioredis","bdrosen96","2015-08-24 18:46:45","Some redis sentinel WIP","a1243e33894e9f17344d21040bc19f08810a7c90",""
+"pull_request_commit","107","aio-libs","aioredis","bdrosen96","2015-08-24 19:53:09","Cleaned up somewhat and did some simple testing","4b55fca708dd7467833f01a7f7570584c2554508",""
+"pull_request_commit","107","aio-libs","aioredis","bdrosen96","2015-08-25 12:01:38","Some cleanup, basic operations working","285f795b1ca75bb121a5bf00197570435061c05d",""
+"pull_request_commit","107","aio-libs","aioredis","bdrosen96","2015-08-25 18:08:58","Tests mostly working (one test case has intermittent failure","e146d7469a8664caaf098feb2675c930629e9435",""
+"pull_request_commit","107","aio-libs","aioredis","bdrosen96","2015-08-25 18:48:24","Fix bug with failover for slave","ddbd6049542770e8b32615d04ff780184b4bcf8b",""
+"pull_request_commit","107","aio-libs","aioredis","bdrosen96","2015-08-26 15:02:36","pub sub working","a994313a3f801b6a4368fe48de10b65b71ae8df9",""
+"pull_request_commit","107","aio-libs","aioredis","jettify","2015-09-13 19:17:05","minor clean up","ed5709860e3c750e2fdea98834d5bb0e8f9bb7cd",""
+"pull_request_commit","107","aio-libs","aioredis","jettify","2016-02-09 21:49:52","fix flake8 error","7e20ba59d93fa044e7a5137bf654f544600c8d01",""
+"pull_request_commit","107","aio-libs","aioredis","jettify","2016-02-09 22:28:39","get rid of pytest","4420711c77f579b6c9ba7a56f3cc457fd3602f02",""
+"pull_request_commit","107","aio-libs","aioredis","jettify","2016-02-09 22:41:30","more clean asserts on exception","1a2c67521a8f4033ae262467f32517ab6eb5b094",""
+"pull_request_commit","107","aio-libs","aioredis","jettify","2016-02-09 22:59:36","clean up doc strings","9d08a9221a205603888b0b9a13ae28870618449c",""
+"pull_request_commit","107","aio-libs","aioredis","jettify","2016-02-10 07:15:39","add missed coroutine decorator","27426b196d5c72c8ed2660db72197accdb2caaf7",""
+"pull_request_commit","107","aio-libs","aioredis","jettify","2016-02-10 22:19:49","start sentinel in test","d460ea8bd567b660a2984c6d1a2a1c2c6a7f4312",""
+"pull_request_commit_comment","107","aio-libs","aioredis","bdrosen96","2016-02-10 00:33:53","Shouldn't this be a coroutine?
+","ed5709860e3c750e2fdea98834d5bb0e8f9bb7cd","(32, 68, u'aioredis/sentinel.py')"
+"pull_request_commit_comment","107","aio-libs","aioredis","bdrosen96","2016-02-10 00:34:17","And these two as well?
+","ed5709860e3c750e2fdea98834d5bb0e8f9bb7cd","(54, 95, u'aioredis/sentinel.py')"
+"pull_request_commit_comment","107","aio-libs","aioredis","jettify","2016-02-10 07:16:06","good catch!
+","ed5709860e3c750e2fdea98834d5bb0e8f9bb7cd","(32, 68, u'aioredis/sentinel.py')"
+"pull_request_commit_comment","107","aio-libs","aioredis","jettify","2016-02-10 07:18:41","I think no, those two method just invoked and return coroutines objects.
+","ed5709860e3c750e2fdea98834d5bb0e8f9bb7cd","(54, 95, u'aioredis/sentinel.py')"

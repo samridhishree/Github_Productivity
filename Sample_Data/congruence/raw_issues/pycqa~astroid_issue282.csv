@@ -1,0 +1,35 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","282","pycqa","astroid","ceridwen","2015-12-11 04:05:48","I'd like to explore adding property-based tests with fuzzing tools like http://jwilk.net/software/python-afl, https://hypothesis.readthedocs.org/en/latest/, and https://bitbucket.org/ebo/pyfuzz.  Here are some possible tests:
+- Feed random Python code to the rebuilder to find crash bugs.
+- Test to_string() and the rebuilder by running AST->code->AST transformations with the invariant that the AST must be the same in both cases.
+- Find any more cases where there are non-AST objects in the ASTs with induction.
+- Establish that the inference is idempotent.
+- Check the inference doesn't crash.
+- Verify that traversing trees is reliable, e.g. that going up (calling parent) and then down returns the same node.
+
+I don't know how well this will work because language fuzzing is hard in general, but I think it's worth trying.  For astroid in particular, generating random ASTs, which is easier than trying to generate Python code though far from easy, might work.  We may want to consider, in addition to trying to generate random data, running some of these same properties on a large corpus of Python source code files.  One obvious candidate is the standard library, but there's a lot of Python code out there we could potentially use.  David MacIver used a corpus-based approach to test https://github.com/google/yapf/ with some efficacy: http://www.drmaciver.com/2015/03/27-bugs-in-24-hours/.
+
+In general, I'd like to try push astroid testing toward defining what the code should do and then looking for falsifying examples in some automated fashion.  I think we could also simplify some of the existing tests using this approach.
+","start issue","Add property-based tests and fuzzing"
+"issue_comment","282","pycqa","astroid","PCManticore","2015-12-11 10:45:07","Sounds good to me. I'm inclined to prefer a corpora of files, rather than generating random data, which might not be proper Python code. What I was using for pylint, for instance, was a big chunk of packages from PyPi, with a couple of millions of LOC, which was pretty representative for finding crashing bugs before submitting in production. We could go on the same route, the problem is though where we'll store such data. This brings also the point of having the fuzzy testing integrated into the test suite itself or in another exhaustive one, since I don't like to wait more than 10 minutes for the tests to finish.
+
+What do you mean by the inference shouldn't crash?
+","",""
+"issue_comment","282","pycqa","astroid","ceridwen","2015-12-11 22:57:53","pyfuzz is supposed to generate actual Python code, not random data.  Likewise, if I were to write a random AST generator using Hypothesis, it should only generate legal ASTs.  (If it did otherwise, that would be a bug!)   Writing a good fuzzer for Python would be extremely hard and would not, I think, be worth the time for astroid per se.  It would be a project with great benefit to the Python community as a whole, but the existing JavaScript fuzzers seem to have been mostly the projects of well-funded teams at corporations and have not been open-sourced.
+
+I see fuzzing and corpus-based testing as complementary.  Elementary fuzzing, of the sort I'm talking about, will work better for new features that we need to support like for instance the dict unpacking in Python 3.5, which will probably be rare at best in any existing corpus of code because they're so new.  Corpus-based testing will be much better at finding ...interesting examples of Python code for, say, finding corner-case bugs in the inference code.  Note that fuzzing and corpus-based testing could share the same property definitions.
+
+Do you have a pointer to what you've been using for pylint?  I am _strongly_ in favor of implementing something like that for astroid, and the sooner the better.  
+
+I agree that having the tests take too long would be a problem.  I think splitting the test suite up into ""basic functionality tests to make sure nothing obvious broke"" and ""exhaustive tests"" would be a good idea.  We could make sure Travis CI runs the exhaustive tests.  On the general topic of speeding up the tests, though, it would help to make it easier to run individual tests in the test suite so that when developing on a particular part of the code we wouldn't need to run all the tests every time, even the ones that aren't relevant to that component.  Breaking off the parts of brain that for third-party packages into a separate package would help improve both the speed of the tests and decrease the set of dependencies for testing astroid proper.   We might also discuss whether trying to improve astroid's performance is worthwhile, because if the tests are slow, that might mean the project in general is running too slow.
+
+By ""making sure the inference doesn't crash,"" I mean bugs like inference functions that hit the recursion limit and #277.  In general, I want to check that inference doesn't raise any unexpected exceptions.
+","",""
+"issue_comment","282","pycqa","astroid","kxepal","2015-12-11 23:28:15","@ceridwen 
+
+> Likewise, if I were to write a random AST generator using Hypothesis, it should only generate legal ASTs. (If it did otherwise, that would be a bug!)
+
+I think there is need a little bit different strategy. First, generate valid legal Python AST that passes all the checks. Then mutate it according the known scheme and check if these mutation get noticed by expected rules. Since you know how you mutate the code, you know which rule to check - it would be easy to fuzz it.
+
+For this task I think better to combine same Hypothesis with some mutation testing framework - these ones are designed to break the code and see how it goes.
+","",""

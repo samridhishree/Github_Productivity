@@ -1,0 +1,32 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","447","idan","oauthlib","seyriz","2016-11-15 07:38:10","Error Info : TypeError
+I using Flask-Oauthlib.Oauth2Provider for Oauth2 server.
+the request.scope in ` oauthlib.oauth2.rfc6749
+.AuthorizationEndpoint.validate_authorization_request()`  IS ALWAYS None.
+that  `if ""openid"" in request.scopes:` line in ` oauthlib.oauth2.rfc6749.grant_types.openid_connect.AuthCodeGrantDispatcher._handler_for_request()` raise TypeError: argument of type 'NoneType' is not iterable. 
+to avoid this error, 
+ fix `oauthlib.oauth2.rfc6749.grant_types.openid_connect.AuthCodeGrantDispatcher._handler_for_request() `
+``` python
+    def _handler_for_request(self, request):
+        handler = self.default_auth_grant
+
+        if and ""openid"" in request.scopes:
+            handler = self.oidc_auth_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+```
+
+to
+``` python
+    def _handler_for_request(self, request):
+        handler = self.default_auth_grant
+
+        if request.scopes is not None and ""openid"" in request.scopes:
+            handler = self.oidc_auth_grant
+
+        log.debug('Selecting handler for request %r.', handler)
+        return handler
+```","start issue","request.scopes is always None."
+"issue_closed","447","idan","oauthlib","thedrow","2016-11-24 15:48:26","","closed issue","request.scopes is always None."
+"issue_comment","447","idan","oauthlib","thedrow","2016-11-24 15:48:25","Try the new version.","",""

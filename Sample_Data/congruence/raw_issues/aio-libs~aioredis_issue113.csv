@@ -1,0 +1,111 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","113","aio-libs","aioredis","th3hamm0r","2016-03-10 09:23:35","I've implemented a websocket server that uses one pubsub connection which is then used by every individual connection handler to subscribe to a pubsub-channel only for this connection.
+
+During load tests with multiple connections sometimes it happens, that the `subscribe()` method returns an existing channel of a previous subscribe-call.
+If I print the read-only channels dict, the requested channel is there, but the returned channel is not the expected one.
+
+Here is a basic example with some logging, just to show you what happens.
+First imagine a server implementation like this:
+
+```
+#...
+redis_pubsub = asyncio.get_event_loop().run_until_complete(aioredis.create_redis(('localhost', 6379), encoding='utf-8'))
+#...
+
+@asyncio.coroutine
+def handler(websocket, connection_id):
+    connection_channel_key = 'connection:{}:sub'.format(connection_id)
+    channel, = yield from redis_pubsub.subscribe(connection_channel_key)
+
+    logger.debug('subscribing to: ""%s"", got: ""%s"", all channels: ""%s""' % (connection_id, channel, redis_pubsub.channels))
+
+    # ... loop with websocket and pubsub processing
+    # on close:
+    yield from redis_pubsub.unsubscribe(connection_channel_key)
+```
+
+During load testing this happens:
+
+```
+... connection ""1"" and ""2"" subscribed
+
+subscribing to: ""connection:3:sub"", got: ""<Channel name:b'connection:3:sub', is_pattern:False, qsize:0>"",
+all channels: ""{
+b'connection:3:sub': <Channel name:b'connection:3:sub', is_pattern:False, qsize:0>, 
+b'connection:2:sub': <Channel name:b'connection:2:sub', is_pattern:False, qsize:0>, 
+b'connection:1:sub': <Channel name:b'connection:1:sub', is_pattern:False, qsize:0>
+}""
+
+... connection ""1"" and ""2"" unsubscribed...
+
+subscribing to: ""connection:4:sub"", got: ""<Channel name:b'connection:3:sub', is_pattern:False, qsize:0>"",
+all channels: ""{
+b'connection:3:sub': <Channel name:b'connection:3:sub', is_pattern:False, qsize:0>, 
+b'connection:4:sub': <Channel name:b'connection:4:sub', is_pattern:False, qsize:0>
+}""
+```
+
+The channel for connection 3 is returned again, but the newly subscribed channel for connection 4 is already present in the channels dict.
+
+On the first look it seems obvious, that the library does not support concurrent subscribe calls. So only sequential (yielded) calls to subscribe seem to work. Is this right?
+
+But even if it is not supported, it looks like there is also a bug in there. Why does a subsequent call to subscribe can return an already used channel? I would not think of a bug if both subscribe-calls had returned just the other channel.
+","start issue","Problems with concurrent subscriptions (pubsub)"
+"issue_closed","113","aio-libs","aioredis","popravich","2016-03-10 21:34:31","","closed issue","Problems with concurrent subscriptions (pubsub)"
+"issue_comment","113","aio-libs","aioredis","th3hamm0r","2016-03-10 09:50:15","Now I've used one asyncio `Lock` for both the `subscribe` and the `unsubscribe` call, so only one connection can actually use one of those methods until the result is returned.
+The problem still occurs.
+
+Here is a real log output of three subsequent `subscribe` calls I grabbed during a test (the above log was just an example):
+
+```
+DEBUG:connection-handler-9cd788e5-3fac-43a2-9518-7320027ecb77:subscribed redis channel - 
+key: ""connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription"", 
+channel: <Channel name:b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription', is_pattern:False, qsize:0>, 
+all channels: {
+    b'connection:b8e3bb75-dfd1-413e-ad29-e3999d9e903b:subscription': <Channel name:b'connection:b8e3bb75-dfd1-413e-ad29-e3999d9e903b:subscription', is_pattern:False, qsize:0>, 
+    b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription': <Channel name:b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription', is_pattern:False, qsize:0>, 
+    b'connection:6c191563-606b-49d0-aea5-a618fe4c226f:subscription': <Channel name:b'connection:6c191563-606b-49d0-aea5-a618fe4c226f:subscription', is_pattern:False, qsize:0>
+}
+
+DEBUG:connection-handler-b8e3bb75-dfd1-413e-ad29-e3999d9e903b:unsubscribing redis channel: ""<Channel name:b'connection:b8e3bb75-dfd1-413e-ad29-e3999d9e903b:subscription', is_pattern:False, qsize:0>""
+
+DEBUG:connection-handler-d10c4feb-057e-4876-9ebd-55370779fb3d:subscribed redis channel - 
+key: ""connection:d10c4feb-057e-4876-9ebd-55370779fb3d:subscription"", 
+channel: <Channel name:b'connection:d10c4feb-057e-4876-9ebd-55370779fb3d:subscription', is_pattern:False, qsize:0>, 
+all channels: {
+    b'connection:d10c4feb-057e-4876-9ebd-55370779fb3d:subscription': <Channel name:b'connection:d10c4feb-057e-4876-9ebd-55370779fb3d:subscription', is_pattern:False, qsize:0>, 
+    b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription': <Channel name:b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription', is_pattern:False, qsize:0>, 
+    b'connection:6c191563-606b-49d0-aea5-a618fe4c226f:subscription': <Channel name:b'connection:6c191563-606b-49d0-aea5-a618fe4c226f:subscription', is_pattern:False, qsize:0>
+}
+
+DEBUG:connection-handler-6c191563-606b-49d0-aea5-a618fe4c226f:unsubscribing redis channel: ""<Channel name:b'connection:6c191563-606b-49d0-aea5-a618fe4c226f:subscription', is_pattern:False, qsize:0>""
+
+DEBUG:connection-handler-309c77b4-a7ac-4354-a1b4-b4c80daa230b:subscribed redis channel - 
+key: ""connection:309c77b4-a7ac-4354-a1b4-b4c80daa230b:subscription"", 
+channel: <Channel name:b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription', is_pattern:False, qsize:0>, 
+all channels: {
+    b'connection:d10c4feb-057e-4876-9ebd-55370779fb3d:subscription': <Channel name:b'connection:d10c4feb-057e-4876-9ebd-55370779fb3d:subscription', is_pattern:False, qsize:0>, 
+    b'connection:309c77b4-a7ac-4354-a1b4-b4c80daa230b:subscription': <Channel name:b'connection:309c77b4-a7ac-4354-a1b4-b4c80daa230b:subscription', is_pattern:False, qsize:0>, 
+    b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription': <Channel name:b'connection:9cd788e5-3fac-43a2-9518-7320027ecb77:subscription', is_pattern:False, qsize:0>
+}
+```
+
+As you can see, the third call gets the channel of the first call.
+
+**edit:** Sorry, I forgot to add the log entries for the two unsubscribe calls.
+","",""
+"issue_comment","113","aio-libs","aioredis","popravich","2016-03-10 10:34:20","Yeah, thanks for report.
+I was suspecting that something like this might happen)
+I will try to fix it this weekend
+","",""
+"issue_comment","113","aio-libs","aioredis","th3hamm0r","2016-03-10 10:50:57","Wow thanks, that sounds awesome! Don't hesitate to bump me, if there is something to test for example.
+Btw I used the latest 0.2.5 version.
+
+A quick-fix that accesses the channels dict in case of a mismatch seems to work atm. So it looks like the subscription to the new channel actually succeeds (and resolves the future), but returns the wrong channel to the caller.
+","",""
+"issue_comment","113","aio-libs","aioredis","th3hamm0r","2016-03-10 11:34:42","Ok, one last note: I stumbled over the case, that `subscribe()` returned the wrong channel, and the requested channel was not in the read-only channels dict. So I've to revert my assumption from the last comment.
+","",""
+"issue_comment","113","aio-libs","aioredis","popravich","2016-03-10 21:35:34","@th3hamm0r , try version from master, it should be fixed now.
+","",""
+"issue_comment","113","aio-libs","aioredis","th3hamm0r","2016-03-11 09:15:37","Nice, looks like you fixed it. I've removed the temporary locks from my code and tested it. Thanks a lot @popravich !
+","",""

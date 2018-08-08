@@ -1,0 +1,52 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","272","pycqa","astroid","pylint-bot","2015-11-30 01:24:15","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Here's an example where the parent of an attribute in a chained attribute is wrong, pointing to a following attribute instead.
+
+```
+#!python
+
+from astroid import parse
+module = parse('''
+class Tags:
+     def extend(self): return 42
+class Removed:
+     def __init__(self):
+          self.tags = Tags()
+
+removed = Removed()
+removed.tags.extend()
+''')
+expr = module.body[-1]
+callfunc = expr.value
+print(""callfunc"", callfunc)
+print(""parent of callfunc"", callfunc.parent)
+print(""func of callfunc"", callfunc.func)
+print(""parent of func of callfunc"", callfunc.func.parent)
+print(""expr of callfunc.func"", callfunc.func.expr)
+print(""parent of expr of callfunc.func"", callfunc.func.expr.parent)  # This should be the Name, instead it is extend
+
+from ast import parse
+module = parse('''
+class Tags:
+     def extend(self): return 42
+class Removed:
+     def __init__(self):
+          self.tags = Tags()
+
+removed = Removed()
+removed.tags.extend()
+''')
+expr = module.body[-1]
+callfunc = expr.value
+print(""callfunc"", callfunc)
+print(""func of callfunc"", callfunc.func.attr)
+print(""expr of callfunc"", callfunc.func.value.attr)
+print(""expr of expr of callfunc"", callfunc.func.value.value)
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/272
+","start issue","One of the parents in chained attributes is sometimes wrong"

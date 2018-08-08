@@ -1,0 +1,79 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","243","pycqa","astroid","pylint-bot","2015-11-04 14:39:02","Originally reported by: **Adam Groszer (BitBucket: [agroszer](http://bitbucket.org/agroszer), GitHub: @agroszer?)**
+
+---
+
+z3c packages use a variation of
+
+```
+#!python
+
+try:
+    # Declare this a namespace package if pkg_resources is available.
+    import pkg_resources
+    pkg_resources.declare_namespace('z3c')
+except ImportError:
+    pass
+
+```
+
+zope packages use
+
+```
+#!python
+
+# this is a namespace package
+try:
+    import pkg_resources
+    pkg_resources.declare_namespace(__name__)
+except ImportError:
+    import pkgutil
+    __path__ = pkgutil.extend_path(__path__, __name__)
+```
+
+astroid has a workaround that checks for `pkgutil.extend_path` but not for `pkg_resources.declare_namespace` (in modutils.py def _module_file).
+That's why z3c packages are import-error despite being on PYTHONPATH
+
+Any chance to get `pkg_resources.declare_namespace` checking?
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/243
+","start issue","modutils _module_file ignores pkg_resources.declare_namespace"
+"issue_comment","243","pycqa","astroid","pylint-bot","2015-11-04 13:43:42","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+We do have a fix for declare_namespace (https://bitbucket.org/logilab/astroid/src/220d7a368bcf4fb12deffa07acd309135aa724bd/astroid/modutils.py?at=default&fileviewer=file-view-default#modutils.py-686), but we need to figure out why it's not caught.
+","",""
+"issue_comment","243","pycqa","astroid","pylint-bot","2015-11-04 13:44:23","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Ah, it's declare_namespace(`__name__`).
+","",""
+"issue_comment","243","pycqa","astroid","pylint-bot","2015-11-04 13:48:05","_Original comment by_ **Adam Groszer (BitBucket: [agroszer](http://bitbucket.org/agroszer), GitHub: @agroszer?)**:
+
+---
+
+yah vs. declare_namespace('z3c')
+","",""
+"issue_comment","243","pycqa","astroid","pylint-bot","2015-11-09 16:31:42","_Original comment by_ **Borys Pierov (BitBucket: [Ashald](http://bitbucket.org/Ashald), GitHub: @Ashald?)**:
+
+---
+
+So when we can expect this (the fix mentioned above) to be released? I have `astroid==1.3.8` and it doesn't have the code.
+","",""
+"issue_comment","243","pycqa","astroid","pylint-bot","2015-11-09 16:50:31","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This particular issue has no fix, I didn't have time to work on it. The one where support for declare_name(`__name__`) was added will be released shortly with pylint 1.5.0 / astroid 1.4.0. When exactly, I don't know. I'm going to start cherry-picking changes from default to 1.4.0 this week, but I have no idea when it will be finished.
+","",""
+"issue_comment","243","pycqa","astroid","pylint-bot","2015-11-09 16:52:23","_Original comment by_ **Borys Pierov (BitBucket: [Ashald](http://bitbucket.org/Ashald), GitHub: @Ashald?)**:
+
+---
+
+Great, so I will be waiting for `pylint 1.5.0` / `astroid 1.4.0` release - thanks!
+
+P.S.: I was talking about fix for `declare_namespace(__name__)`
+","",""

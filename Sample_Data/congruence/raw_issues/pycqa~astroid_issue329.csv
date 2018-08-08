@@ -1,0 +1,38 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","329","pycqa","astroid","PCManticore","2016-04-15 15:07:38","We're discussing the new direction of astroid, which would focus more on abstract interpretation over types, rather than over nodes. Here's the current work-in-progress draft: https://public.etherpad-mozilla.org/p/astroid
+
+While discussing this, we reached a conclusion that currently astroid gets bigger and bigger, making it hard for other projects to use only its tree capabilities. As such, we're trying to create a new library out of the tree aspects of astroid, that should have the following properties:
+- the trees should be consistent on Python 2 and 3
+- it should work on Jython, PyPy, IronPython
+- the underlying parser should be easily changed. Currently we're relying on ast, which has some inherent problems with the line numbers and other oddities. Considering the fact that we don't easily have access to the comments, suggests that replacing it with a CST library would be better for our future (for the record, we can retrieve the comments using a tokenizer, but this approach feels clumsy, having the comments in the tree itself will help). So this new library should offer some hooks for replacing the parser with anything else, probably with custom rebuilders that outputs the internal trees that we need.
+  - it should have support for transforms.
+  - the trees should be immutable
+  - it should have some features that we currently have. Getting the scope of a variable for instance could be very helpful for other purposes, not just for static analysis.
+
+The idea is that this new library won't be that different, only smaller in size and decoupled from the interpretation side, the inference will still live in astroid. We might release this earlier than 2.0, which would offer a tremendous feedback over its functionality.
+Also, it is not aimed to compete with frameworks such as redbaron or other AST libraries, its purpose is not that.
+
+I'll try to come up with a sketch of what features we want and how it should look.
+","start issue","Extract a new library out of astroid that should handle only the trees"
+"issue_comment","329","pycqa","astroid","sthenault","2016-04-15 15:59:36","Sounds fine to me. One question though: what's the point of being able to
+change the parser? That doesn't sound like a priority at a first glance.
+Cheers
+","",""
+"issue_comment","329","pycqa","astroid","ceridwen","2016-04-15 16:07:02","To support uses like #317 and to parse the pylint comments directly, rather than having to retokenize the source and extract the comments as is done currently.
+","",""
+"issue_comment","329","pycqa","astroid","sthenault","2016-04-17 15:16:31","That implies changing the parser, not supporting  multiple ones ;)
+","",""
+"issue_comment","329","pycqa","astroid","PCManticore","2016-04-18 08:00:26","Initially I didn't want to spend too much time on trying to support a new parser, which is the reason of wanting an approach where I could just glue another parser without writing too much code. Also in combination with the fact that other potential parsers might be slower or might have other bugs, apart of those that we have today due to using ast module.
+
+But if I can find a parser that seems stable and has decent performance (the parsing is not the major performance critical code after all, but the inference), we might switch wholesale to it, dropping the idea of using a hookable rebuilder. Right now I know of https://github.com/PyCQA/redbaron. There's also typed_ast from Dropbox https://github.com/dropbox/typed_ast, but it doesn't seem to have a release just yet and it would still have the same issues as we have today with the line numbering, albeit it can have comments. There's also jedi's parser, https://github.com/davidhalter/jedi/tree/master/jedi/parser, but that's tied up to jedi and I don't want to have a dependency on it just for the sake of their parser (also it doesn't seem to be up to date with the current changes in Python's grammar, since it has no await / async def syntax). Another alternative, which I don't like, would be to write our own using lib2to3. I remember that Torsten once mentioned the fact that they have an internal parser built on top of lib2to3 at Google, but it wasn't contributed back. That's about it, I'll look for other alternatives and we might have a decision after seeing their strong and weak points.
+","",""
+"issue_comment","329","pycqa","astroid","ceridwen","2016-04-18 14:03:55","I'm working on a library for building parsers that I may write up a Python parser for at some point, but I have no idea how long that will take, primarily because it depends on how much time I spend on other projects, including astroid.
+
+The problem with switching wholesale to a parser that generates a concrete syntax tree rather than an abstract syntax tree is that other projects that I would like to use astroid for, like MacroPy, only need an abstract syntax tree, not a concrete one.  The static analysis parts of astroid also don't need a concrete syntax tree.  Refactoring libraries like redbaron and jedi need a concrete syntax tree, but would also benefit from better static analysis.  Pylint only needs a concrete syntax tree for pylint comments.  One reason I think allowing multiple parsers might be a good idea is that it would make the library more flexible for meeting these different use-cases.
+","",""
+"issue_comment","329","pycqa","astroid","PCManticore","2016-04-18 14:37:12","Switching to a CST could open a potential feature that we're wanting since ages, automatic refactoring of Pylint errors, at least for those that could be solved in an automatic manner. Currently we can't do that.
+
+Regarding the CST / AST dichotomy, the thing is that astroid (or this library, we don't have a name yet)  would still output mostly an AST, with minor tokens that could represent whitespaces. I don't understand why it would be problematic for MacroPy, since those nodes don't have to be used, eventually the CST could be converted to an AST through another transformation step.
+","",""
+"issue_comment","329","pycqa","astroid","sthenault","2016-08-19 12:08:40","Notice there is a new parser in the arena which sounds interesting : https://pypi.python.org/pypi/gast
+","",""

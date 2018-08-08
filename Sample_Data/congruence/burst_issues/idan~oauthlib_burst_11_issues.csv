@@ -1,0 +1,441 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,61,idan,oauthlib,mvantellingen,2012-10-03 13:39:15,"This makes the unittests pass
+",start issue,Oauth2 draft25 server
+1,issue_closed,61,idan,oauthlib,ib-lundgren,2013-02-03 16:57:21,,closed issue,Oauth2 draft25 server
+2,pull_request_title,61,idan,oauthlib,mvantellingen,2012-10-03 13:39:15,"This makes the unittests pass
+",d2f10d8fca5ccf1cc76f0c9619880818ff08db25,Oauth2 draft25 server
+3,issue_comment,61,idan,oauthlib,ib-lundgren,2012-10-03 14:22:07,"Thanks for pushing towards OAuth 2 Server support! 
+
+We now have 3 versions spread out with @sontek starting on some (#58), my local one which is close to complete authorization grant code and implicit grant code support and this one. This is my fault since after doing the initial work way back this summer I wanted to reorganize it a bit and broke all the tests, which is the state it has remained in since, and because of this I never pushed it.
+
+I will try and get around to cleaning it up and merging it in here this week and if I can't find time for that I'll just push the slightly messy code I have now and whoever feel like it can tear it apart in search for useful bits.
+",,
+4,issue_comment,61,idan,oauthlib,mvantellingen,2012-10-03 14:34:49,"Good to hear. It would be great if you could push your code, we can clean it up afterwards. I currently have a few days to work on getting a good oauth2 provider. 
+",,
+5,issue_comment,61,idan,oauthlib,ib-lundgren,2012-10-03 14:38:20,"Sure I'll push it tonight when I get back with some notes about my general
+idea for what I've been meaning to do but never found time to.
+
+On Wed, Oct 3, 2012 at 4:34 PM, Michael notifications@github.com wrote:
+
+> Good to hear. It would be great if you could push your code, we can clean
+> it up afterwards. I currently have a few days to work on getting a good
+> oauth2 provider.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/61#issuecomment-9108273.
+",,
+6,issue_comment,61,idan,oauthlib,ib-lundgren,2013-02-03 16:57:21,"Thanks again for this PR. I'm closing as I've manually merged pieces of this code during the unification of all three oauth 2 branches =)
+",,
+7,pull_request_commit,61,idan,oauthlib,mvantellingen,2012-10-03 09:49:42,Fix errors in the oauth2 server tests,bd21c06ff8e605d7867ed2c23fdb6474d0847a6c,
+8,pull_request_commit,61,idan,oauthlib,mvantellingen,2012-10-03 10:10:28,Implement Server.redirect_uri for oauth2.,1bc2614f61c9e4962fcfe4b397a2b7aa4702c4fd,
+9,pull_request_commit,61,idan,oauthlib,mvantellingen,2012-10-03 10:19:15,Some minor refactoring of the last commit,f51b3115f4c07b76be44d517ae141da0e2c14ec4,
+10,pull_request_commit,61,idan,oauthlib,mvantellingen,2012-10-03 10:50:03,Move oauth2 AuthorizationServer to its own module,d2f10d8fca5ccf1cc76f0c9619880818ff08db25,
+0,issue_title,68,idan,oauthlib,warsaw,2012-11-12 22:11:10,"Porting a library from oauth to oauthlib, is fairly straightforward.  One thing I ran into was the test for unicode_type in oauth1/rfc5849/utils.py escape() function.
+
+This happens because the old api passes the token (a.k.a. resource_owner) key/secret and consumer (a.k.a. client) token/key as Python 2 8-bit strings.  When Client.sign() is subsequently called, these values are passed to escape() which throws the ValueError.
+
+The workaround in my own code is to .decode('utf-8') them when they are isinstance(value, bytes), but it seems crufty to require this in clients which will support both python 2 and python 3 (e.g. using un-prefixed string literals in test cases).
+
+Why couldn't unescape() do the decoding for you?
+",start issue,raising ValueError in escape() seems unfortunate
+1,issue_closed,68,idan,oauthlib,ib-lundgren,2013-02-03 17:04:59,,closed issue,raising ValueError in escape() seems unfortunate
+2,issue_comment,68,idan,oauthlib,ib-lundgren,2012-11-12 22:56:50,"It is a bit awkward at the moment I agree. Details on why we don't simply decode can be found in #53. One way to address this could be adding a keyword flag to _Client.sign_ in the lines of _attempt_unicode_conversion_ that would either naively try to _decode('utf-8')_ or with the help of chardet guess the encoding.
+
+Unfortunately, I've remained ignorant of most encoding issues so can't provide much insight into the best way to solve this, @idan - what do you think?
+",,
+3,issue_comment,68,idan,oauthlib,warsaw,2012-11-13 00:12:59,"On Nov 12, 2012, at 02:56 PM, Ib Lundgren wrote:
+
+> It is a bit awkward at the moment I agree. Details on why we don't simply
+> decode can be found in #53. One way to address this could be adding a keyword
+> flag to _Client.sign_ in the lines of _attempt_unicode_conversion_ that would
+> either naively try to _decode('utf-8')_ or with the help of chardet guess the
+> encoding.
+> 
+> Unfortunately, I've remained ignorant of most encoding issues so can't
+> provide much insight into the best way to solve this, @idan - what do you
+> think?
+
+Thanks for the reference to issue #53.  I only briefly skimmed RFC 5849, but I
+saw no indication as to the required character set for the keys/secrets.
+That's a bit surprising, but maybe I missed it.  If not, well, I guess being
+strict about the inputs makes the most sense, despite it being inconvenient.
+
+Of course, if the keys/secrets are not unicodes or utf-8 encoded bytes
+already, you could just let the .decode('utf-8') failure percolate up to the
+caller.  That way, the most obvious choice would be covered, and any corner
+cases would raise errors by Python itself.  I personally think it's crazy to
+use anything other than utf-8 here, but maybe there's a good use case I'm
+missing (frankly, it seems like all keys/secrets are ascii anyway, but that's
+probably being too strict).
+",,
+4,issue_comment,68,idan,oauthlib,warsaw,2012-11-19 21:01:10,"I just noticed that if you use a string for Client(..., signature_method='PLAINTEXT'), you'll get this error too.  That at least could probably be fixed without controversy.
+",,
+5,issue_comment,68,idan,oauthlib,ib-lundgren,2012-11-19 22:28:28,"I've added some very basic conversion support (in Client init & sign) that will crash horribly if you don't supply the correct encoding. It is off by default and almost entirely untested. Fancy trying it out and see if it meets your needs somewhat? If not please let me know where it's lacking. 
+
+I tried chardet out quickly but it seem to struggle with short strings so not that keen on adding another dependency if it can be avoided.
+",,
+6,issue_comment,68,idan,oauthlib,warsaw,2012-11-21 18:46:08,"One small typo discovered by pyflakes:
+
+s/resource_owner/resource_owner_key/
+
+Of course, it's possible the various components aren't of the same encoding, but then I think that would be just as insane as using something other than utf-8 ;).  FWIW, below is a merge proposal which shows how I did this in in a package I just converted from oauth to oauthlib.
+
+I had another thought.  Given that unicodes are required, perhaps it would be better to validate the parameters as early as possible, such that the ValueError was raised in the Client.**init**() instead of later during signing.  IOW, if you're going to throw the exception, throw it as early as possible, as close to the source of error as possible.
+
+https://code.launchpad.net/~barry/piston-mini-client/lp1077083/+merge/135449
+
+I also think you could collapse convert_to_unicode and encoding into a single encoding parameter.  If it were None, no conversion would be done.  (But I understand this is mostly for experimental purposes.)
+",,
+7,issue_comment,68,idan,oauthlib,ib-lundgren,2012-11-21 19:43:24,"Only one typo, not bad considering. Good idea to collapse the params, will do that. And yea if they have mutliple encodings for various params the responsibility to convert sure falls on them from my pov. I agree with the exception being thrown early but when that check was written there was no such thing as Client and since then it's just not happened. Will take a look at maybe integrating that into where i now attempt conversion.
+
+Will have a look at your merge proposal, should be a good source of examples for the docs when they feel like being written =)
+",,
+0,issue_title,102,idan,oauthlib,ondrowan,2013-02-06 10:57:01,,start issue,Fixed typos in docstring of OAuth server
+1,issue_closed,102,idan,oauthlib,ib-lundgren,2013-02-06 19:18:38,,closed issue,Fixed typos in docstring of OAuth server
+2,pull_request_title,102,idan,oauthlib,ondrowan,2013-02-06 10:57:01,,ed49cc13299995203a4083efa970ef5165eee7eb,Fixed typos in docstring of OAuth server
+3,pull_request_merged,102,idan,oauthlib,ib-lundgren,2013-02-06 19:18:38,Fixed typos in docstring of OAuth server,025b7792bdd15a273a2374dc59a5a11d68df34cb,Pull request merge from ondrowan/oauthlib:typos_in_docs to idan/oauthlib:master
+4,issue_comment,102,idan,oauthlib,ib-lundgren,2013-02-06 19:18:34,":beer: !
+",,
+5,pull_request_commit,102,idan,oauthlib,ondrowan,2013-02-06 10:44:14,Fixed typos in docstring of OAuth server.,ed49cc13299995203a4083efa970ef5165eee7eb,
+0,issue_title,98,idan,oauthlib,ondrowan,2013-02-01 10:41:29,,start issue,Added missing pycrypto library to requirements.txt
+1,issue_closed,98,idan,oauthlib,ib-lundgren,2013-02-03 17:48:42,,closed issue,Added missing pycrypto library to requirements.txt
+2,pull_request_title,98,idan,oauthlib,ondrowan,2013-02-01 10:41:29,,3c5c90d5a1773fd3ebe6520d18284d7635227f1d,Added missing pycrypto library to requirements.txt
+3,pull_request_merged,98,idan,oauthlib,ib-lundgren,2013-02-03 17:48:42,Added missing pycrypto library to requirements.txt,1ff0508aa685e060a9f22c7d3a22ab7dc30dd625,Pull request merge from ondrowan/oauthlib:missing_crypto to idan/oauthlib:master
+4,issue_comment,98,idan,oauthlib,ib-lundgren,2013-02-03 16:52:47,"This requirements file was added when Idan experimented with pycco but have not seen much love since. I believe users of oauthlib are better of installing with pip install oauthlib as there are no dependencies for normal use. The few people using RSA as a signature method can use pip install oauthlib[rsa].
+
+That said, a dev specific requirements.txt could be useful. Please also add nose and mock (#99) then I'll merge =)
+",,
+5,issue_comment,98,idan,oauthlib,ondrowan,2013-02-03 17:46:29,"Done. I haven't realised in haste there's setup.py with ""real"" dependencies.
+",,
+6,issue_comment,98,idan,oauthlib,ib-lundgren,2013-02-03 17:48:39,"Cheers =)
+",,
+7,pull_request_commit,98,idan,oauthlib,ondrowan,2013-02-01 10:37:57,Added missing crypto library to requirements.txt,276672252b2e287f09b023728e10e98ad4cd39a2,
+8,pull_request_commit,98,idan,oauthlib,ondrowan,2013-02-03 17:41:37,Added mock and nose to requirements.txt,3c5c90d5a1773fd3ebe6520d18284d7635227f1d,
+0,issue_title,100,idan,oauthlib,ondrowan,2013-02-04 15:37:45,,start issue,Fixed build status image/link in readme
+1,issue_closed,100,idan,oauthlib,ib-lundgren,2013-02-04 22:59:30,,closed issue,Fixed build status image/link in readme
+2,pull_request_title,100,idan,oauthlib,ondrowan,2013-02-04 15:37:45,,f4acfe6bf8cfbcec736176dae7cd180b8b52c97f,Fixed build status image/link in readme
+3,pull_request_merged,100,idan,oauthlib,ib-lundgren,2013-02-04 22:59:30,Fixed build status image/link in readme,fe43846aad43571e8c0a56fe9a9a863dfd4db62c,Pull request merge from ondrowan/oauthlib:patch-1 to idan/oauthlib:master
+4,issue_comment,100,idan,oauthlib,ib-lundgren,2013-02-04 22:59:26,"Looks good to me. Cheers!
+",,
+5,issue_comment,100,idan,oauthlib,ondrowan,2013-02-14 23:15:14,"I think something happened and this got overridden. It links to image again.
+",,
+6,pull_request_commit,100,idan,oauthlib,ondrowan,2013-02-04 15:37:24,Fixed build status image/link in readme,f4acfe6bf8cfbcec736176dae7cd180b8b52c97f,
+0,issue_title,103,idan,oauthlib,andreif,2013-02-06 11:40:27,,start issue,Fixed typos in grant_types. Initialized attributes to avoid validation errors.
+1,issue_closed,103,idan,oauthlib,ib-lundgren,2013-02-06 19:20:11,,closed issue,Fixed typos in grant_types. Initialized attributes to avoid validation errors.
+2,pull_request_title,103,idan,oauthlib,andreif,2013-02-06 11:40:27,,a4b6dfc1693879bfcc8f8d841327a89ad499197a,Fixed typos in grant_types. Initialized attributes to avoid validation errors.
+3,pull_request_merged,103,idan,oauthlib,ib-lundgren,2013-02-06 19:20:11,Fixed typos in grant_types. Initialized attributes to avoid validation errors.,502a1fb09dd3093619e46869914395f3f57dd9f4,Pull request merge from andreif/oauthlib:master to idan/oauthlib:master
+4,issue_comment,103,idan,oauthlib,ib-lundgren,2013-02-06 19:20:06,"Awesome =)
+",,
+5,pull_request_commit,103,idan,oauthlib,andreif,2013-02-06 11:39:05,Fixed typos in grant_types. Initialized attributes to avoid validation errors.,c287c87a102b95d4636b5ea3ebac2d1332513dfd,
+6,pull_request_commit,103,idan,oauthlib,andreif,2013-02-06 12:42:28,Added missing argument for auth endpoint. Fixed typo in docstring.,d46e37f1de5b716a2f12c23635cd60b383ac20ac,
+7,pull_request_commit,103,idan,oauthlib,andreif,2013-02-06 13:17:43,Fixed typo and argument order in docs.,c0f1a9ec3df123eea7c24159f02c205bf0a3f3ea,
+8,pull_request_commit,103,idan,oauthlib,andreif,2013-02-06 18:07:51,Fixed attribute initialization added by prev commit.,a4b6dfc1693879bfcc8f8d841327a89ad499197a,
+0,issue_title,99,idan,oauthlib,ondrowan,2013-02-01 11:07:05,"- added missing mock for people that don't want to run tox for every
+  change
+- added nose
+",start issue,Added requirements_dev.txt
+1,issue_closed,99,idan,oauthlib,ib-lundgren,2013-02-03 16:53:00,,closed issue,Added requirements_dev.txt
+2,pull_request_title,99,idan,oauthlib,ondrowan,2013-02-01 11:07:05,"- added missing mock for people that don't want to run tox for every
+  change
+- added nose
+",1bd68e40f18d666bb90babf34a1cf6d500aeb3ab,Added requirements_dev.txt
+3,issue_comment,99,idan,oauthlib,ib-lundgren,2013-02-03 16:52:59,"I agree with the additions of nose and mock but don't think an extra requirements file provide much value. Please see #98.
+",,
+4,pull_request_commit,99,idan,oauthlib,ondrowan,2013-02-01 11:03:20,"Added requirements_dev.txt
+
+* added missing mock for people that don't want to run tox for every
+change
+* added nose",1bd68e40f18d666bb90babf34a1cf6d500aeb3ab,
+0,issue_title,53,idan,oauthlib,ayanamist,2012-08-27 00:26:25,"I first post the issue against requests, but @kennethreitz said it's the problem of the oauthlib, so i post again here
+
+Since i pass the dict object with str and int object, an exception will be raised.
+
+> Exception on /post [POST]
+> Traceback (most recent call last):
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1687, in wsgi_app
+>     response = self.full_dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1360, in full_dispatch_request
+>     rv = self.handle_user_exception(e)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1358, in full_dispatch_request
+>     rv = self.dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1344, in dispatch_request
+>     return self.view_functions[rule.endpoint](**req.view_args)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/utils/decorators.py"", line 10, in decorated_view
+>     return func(_args, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/views/status.py"", line 19, in status_post
+>     result = flask.g.api.reTweet(id=retweet_id, include_entities=1)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 138, in <lambda>
+>     return lambda *_kwargs: self._constructFunc(key, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 155, in _constructFunc
+>     content = self._request(url, method=fn['method'], params=kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 175, in _request
+>     response = func(url, data=params, files=files)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 295, in post
+>     return self.request('post', url, data=data, **kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 252, in request
+>     r.send(prefetch=prefetch)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/models.py"", line 532, in send
+>     r = self.auth(self)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/auth.py"", line 103, in __call__
+>     unicode(r.full_url), unicode(r.method), r.data, r.headers)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 211, in sign
+>     request.oauth_params.append((u'oauth_signature', self.get_oauth_signature(request)))
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 71, in get_oauth_signature
+>     normalized_params = signature.normalize_parameters(collected_params)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/signature.py"", line 373, in normalize_parameters
+>     key_values = [(utils.escape(k), utils.escape(v)) for k, v in params]
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/utils.py"", line 52, in escape
+>     raise ValueError('Only unicode objects are escapable.')
+> ValueError: Only unicode objects are escapable.
+
+The related code is here: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=c67d65b90bdf78d07d4fe92cc1e8f9827cb5eaf8#22
+
+So i must unicode the parameters first: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=7eb65d488db14fb1ced0c848c0334f894191ab7b#20
+
+It's caused by https://github.com/idan/oauthlib/blob/1edaaf2f5e92744e4fd06c908e507a47279b3db9/oauthlib/oauth1/rfc5849/utils.py#L52 which will check the type of the parameters.
+
+But i think it's not necessary, because what common.quote do is that it encode the unicode string to utf8, call urllib.quote and decode it. I think even this unicode intermediate object is unnecessary, because the only calling is from https://github.com/idan/oauthlib/blob/989606369bd8716c97aad7c94543344f4072e7d5/oauthlib/oauth1/rfc5849/signature.py#L373 which convert the object to unicode string again in the next statement.
+
+And i think common.quote is unncessary, because the only calling is from oauth1/rfc5849/utils.py , the rest in this package is directly calling urllib.quote.
+
+So i think, we should just encoding it if it's a unicode object or do nothing else.
+",start issue,We should try to convert the variable first but not to raise an unnecessary exception.
+1,issue_closed,53,idan,oauthlib,ib-lundgren,2013-02-03 17:03:25,,closed issue,We should try to convert the variable first but not to raise an unnecessary exception.
+2,pull_request_title,53,idan,oauthlib,ayanamist,2012-08-27 00:26:25,"I first post the issue against requests, but @kennethreitz said it's the problem of the oauthlib, so i post again here
+
+Since i pass the dict object with str and int object, an exception will be raised.
+
+> Exception on /post [POST]
+> Traceback (most recent call last):
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1687, in wsgi_app
+>     response = self.full_dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1360, in full_dispatch_request
+>     rv = self.handle_user_exception(e)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1358, in full_dispatch_request
+>     rv = self.dispatch_request()
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/Flask-0.9-py2.7.zip/flask/app.py"", line 1344, in dispatch_request
+>     return self.view_functions[rule.endpoint](**req.view_args)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/utils/decorators.py"", line 10, in decorated_view
+>     return func(_args, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/application/views/status.py"", line 19, in status_post
+>     result = flask.g.api.reTweet(id=retweet_id, include_entities=1)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 138, in <lambda>
+>     return lambda *_kwargs: self._constructFunc(key, *_kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 155, in _constructFunc
+>     content = self._request(url, method=fn['method'], params=kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/twython-2.3.3.zip/twython/twython.py"", line 175, in _request
+>     response = func(url, data=params, files=files)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 295, in post
+>     return self.request('post', url, data=data, **kwargs)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/sessions.py"", line 252, in request
+>     r.send(prefetch=prefetch)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/models.py"", line 532, in send
+>     r = self.auth(self)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/auth.py"", line 103, in __call__
+>     unicode(r.full_url), unicode(r.method), r.data, r.headers)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 211, in sign
+>     request.oauth_params.append((u'oauth_signature', self.get_oauth_signature(request)))
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/**init**.py"", line 71, in get_oauth_signature
+>     normalized_params = signature.normalize_parameters(collected_params)
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/signature.py"", line 373, in normalize_parameters
+>     key_values = [(utils.escape(k), utils.escape(v)) for k, v in params]
+>   File ""/base/data/home/apps/s~dabr-gae/1.361315839962791826/lib/requests-0.13.9.zip/requests/packages/oauthlib/oauth1/rfc5849/utils.py"", line 52, in escape
+>     raise ValueError('Only unicode objects are escapable.')
+> ValueError: Only unicode objects are escapable.
+
+The related code is here: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=c67d65b90bdf78d07d4fe92cc1e8f9827cb5eaf8#22
+
+So i must unicode the parameters first: https://code.google.com/p/gabr/source/browse/application/views/status.py?r=7eb65d488db14fb1ced0c848c0334f894191ab7b#20
+
+It's caused by https://github.com/idan/oauthlib/blob/1edaaf2f5e92744e4fd06c908e507a47279b3db9/oauthlib/oauth1/rfc5849/utils.py#L52 which will check the type of the parameters.
+
+But i think it's not necessary, because what common.quote do is that it encode the unicode string to utf8, call urllib.quote and decode it. I think even this unicode intermediate object is unnecessary, because the only calling is from https://github.com/idan/oauthlib/blob/989606369bd8716c97aad7c94543344f4072e7d5/oauthlib/oauth1/rfc5849/signature.py#L373 which convert the object to unicode string again in the next statement.
+
+And i think common.quote is unncessary, because the only calling is from oauth1/rfc5849/utils.py , the rest in this package is directly calling urllib.quote.
+
+So i think, we should just encoding it if it's a unicode object or do nothing else.
+",61a416bc05d99a0a243461838619925bf88e11d2,We should try to convert the variable first but not to raise an unnecessary exception.
+3,issue_comment,53,idan,oauthlib,travisbot,2012-08-27 00:27:07,"This pull request [fails](http://travis-ci.org/idan/oauthlib/builds/2245773) (merged b0eb331c into dcbc028f).
+",,
+4,issue_comment,53,idan,oauthlib,travisbot,2012-08-27 00:42:00,"This pull request [passes](http://travis-ci.org/idan/oauthlib/builds/2245867) (merged d36595f8 into dcbc028f).
+",,
+5,issue_comment,53,idan,oauthlib,travisbot,2012-08-27 01:09:33,"This pull request [passes](http://travis-ci.org/idan/oauthlib/builds/2246027) (merged a3c7c4c4 into dcbc028f).
+",,
+6,issue_comment,53,idan,oauthlib,idan,2012-08-27 07:04:57,"Hey, thanks for the PR.
+
+I remember chewing on this a while back. Basically, we have two choices:
+- Guess the encoding of any strings passed to oauthlib
+- Require that all strings passed to oauthlib be unicode
+
+> In the face of ambiguity, refuse the temptation to guess.
+> [PEP 20](http://www.python.org/dev/peps/pep-0020/)
+
+I agree that it's inconvenient to have to supply all your data, even dict members, as unicode strings—however the alternative is some poor developer tearing their hair out because they're passing in strings with an encoding other than UTF-8.
+
+Down the road maybe we should be using chardet for this.
+
+It's worth noting that `urllib.quote()/unquote()` doesn't properly handle unicode data, nor is it completely safe to simply encode to UTF-8:
+1. http://bugs.python.org/issue1712522
+2. http://mail.python.org/pipermail/python-dev/2006-July/067335.html
+
+So even code like this can apparently have edge cases:
+
+``` python
+urllib.quote(foo.encode('UTF-8'))
+```
+
+I haven't looked at the code you're touching in months, and I remember that it was a source of pain when we originally wrote it—so you'll have to be a bit patient while I load it back into my brain and figure out what to do with this patch. Thanks!
+",,
+7,issue_comment,53,idan,oauthlib,idan,2012-08-27 07:06:53,"Meta: this PR references kennethreitz/requests#816
+",,
+8,issue_comment,53,idan,oauthlib,travisbot,2012-08-27 10:58:13,"This pull request [fails](http://travis-ci.org/idan/oauthlib/builds/2248928) (merged 6bfd90fe into dcbc028f).
+",,
+9,issue_comment,53,idan,oauthlib,ayanamist,2012-08-27 11:00:28,"@idan I understand what you worried. I modify the code so that it will try to convert and check the type first, raise an exception if failed.
+Also i add another commit replace some direct callings of logging to logger object.
+I don't modify the unit test code and oauth2 because i don't catch your design purpose. So travisbot failed.
+",,
+10,issue_comment,53,idan,oauthlib,ayanamist,2012-08-28 07:30:29,"@idan So what about this PR?
+",,
+11,issue_comment,53,idan,oauthlib,travisbot,2012-08-28 07:30:36,"This pull request [fails](http://travis-ci.org/idan/oauthlib/builds/2258741) (merged 61a416bc into dcbc028f).
+",,
+12,issue_comment,53,idan,oauthlib,idan,2012-08-28 08:07:04,"Haven't had time to review it yet—only so much time I can spend on github during work…
+",,
+13,issue_comment,53,idan,oauthlib,kennethreitz,2012-08-28 16:22:02,"@ayanamist please stop being so pushy. I appreciate your enthusiasm, but we're all very busy. :)
+",,
+14,issue_comment,53,idan,oauthlib,ayanamist,2012-08-29 01:35:32,"Sorry, i'm hurrying to finish something.
+
+## 
+
+Ich liebe Ayanami Rei für immer
+",,
+15,issue_comment,53,idan,oauthlib,ib-lundgren,2012-09-06 20:01:01,"Will try and find time to look into this in more detail this weekend but after a first glance I'm wondering if it would not be a better idea to tackle the unicode conversion/checking in client.sign, ie the entry point, and keep the oauthlib internals all unicode.
+",,
+16,issue_comment,53,idan,oauthlib,ib-lundgren,2013-02-03 17:03:24,"Default unicode (utf-8) conversion is included in oauthlib 0.3.5 for Clients. I believe its better to have conversion at the API rather than deep inside the library. It makes it easier to debug issues and allows for conversion from non utf-8 encodings. However, I'll keep the escape unicode check around until all data entry points have been accounted for.
+",,
+17,pull_request_commit,53,idan,oauthlib,ayanamist,2012-08-27 10:55:00,Check the type before quote and unquote.,6bfd90fe8a590f1ba7082e86bcdd8d6ef1a856c1,
+18,pull_request_commit,53,idan,oauthlib,ayanamist,2012-08-27 10:56:42,Use logger instead of direct call of logging.,963c789628983bb9d465b9fbb23266245ed80d0e,
+19,pull_request_commit,53,idan,oauthlib,ayanamist,2012-08-28 07:29:44,Unicode the object first.,61a416bc05d99a0a243461838619925bf88e11d2,
+0,issue_title,105,idan,oauthlib,andreif,2013-02-06 23:12:01,,start issue,Use absolute import in Django extension fixing self-import.
+1,issue_closed,105,idan,oauthlib,ib-lundgren,2013-02-07 22:28:47,,closed issue,Use absolute import in Django extension fixing self-import.
+2,pull_request_title,105,idan,oauthlib,andreif,2013-02-06 23:12:01,,92fbec1c1fee53bfd409e95c6294acb2a0938445,Use absolute import in Django extension fixing self-import.
+3,pull_request_merged,105,idan,oauthlib,ib-lundgren,2013-02-07 22:28:47,Use absolute import in Django extension fixing self-import.,02afb124113212a60458acf9b0c03e69383f7227,Pull request merge from andreif/oauthlib:master to idan/oauthlib:master
+4,issue_comment,105,idan,oauthlib,ib-lundgren,2013-02-07 22:28:42,"Thanks for cleaning up my mess =)
+",,
+5,pull_request_commit,105,idan,oauthlib,andreif,2013-02-06 23:09:40,Use absolute import in Django extension fixing self-import.,7409cd817a5011b3acd348f2be16130d2e59e380,
+6,pull_request_commit,105,idan,oauthlib,andreif,2013-02-07 09:06:26,Fixed typos in the docs.,dbd9a96b5d58f41420fd6921e0556ed146c8b690,
+7,pull_request_commit,105,idan,oauthlib,andreif,2013-02-07 09:11:59,Added extra blank line conforming to the standard.,92fbec1c1fee53bfd409e95c6294acb2a0938445,
+0,issue_title,84,idan,oauthlib,arleincho,2012-12-12 15:47:03,". Changed testcase directory name ""unittest by unittestcase"" for conflict with the unittest package.
+. In tests are added one for TokenEndpointTest
+. It removes the reference to ""self"" in method of TokenEndpoint create_token_response to recover query_params
+. It changes the TokenEndpoint validation for ""grant_type"" as it was inverted the comparison between ""body_params and query_params""
+. TokenEndpoint The body_params in {} is allowed if there is no value nungun
+",start issue,fixed TokenEndpoint errors 
+1,issue_closed,84,idan,oauthlib,ib-lundgren,2013-02-03 16:59:24,,closed issue,fixed TokenEndpoint errors 
+2,pull_request_title,84,idan,oauthlib,arleincho,2012-12-12 15:47:03,". Changed testcase directory name ""unittest by unittestcase"" for conflict with the unittest package.
+. In tests are added one for TokenEndpointTest
+. It removes the reference to ""self"" in method of TokenEndpoint create_token_response to recover query_params
+. It changes the TokenEndpoint validation for ""grant_type"" as it was inverted the comparison between ""body_params and query_params""
+. TokenEndpoint The body_params in {} is allowed if there is no value nungun
+",20f352274aba56533bb4475b84b6aceb953d75d5,fixed TokenEndpoint errors 
+3,issue_comment,84,idan,oauthlib,ib-lundgren,2012-12-16 21:36:43,"Hey and thanks for the PR!
+
+I've just pushed some changes to provider that I had written a while back but until now lacked a few updates to be pushed. I think they might address some of the points you mentioned but I'll have a detailed look this week, hopefully we have not duplicated effort =)
+
+I'm thrilled that you are digging into the provider bit and would love to cooperate on it, I'll try and enumerate the next steps that I think needs to be done at some point this week. I'll ping you when I do...
+
+Regarding the conflict with the unittest package that is by design as it is a convenient way to address inconsistencies across versions of Python. 
+",,
+4,issue_comment,84,idan,oauthlib,ib-lundgren,2013-02-03 16:59:23,"Thanks again for the PR, it pushed OAuth 2 provider one step closer to reality. I've manually fixed a few of the problems outlined here. 
+",,
+5,pull_request_commit,84,idan,oauthlib,arleincho,2012-12-12 15:40:49,". Se cambio el nombre del directorio de testcase ""unittest por unittestcase"" por conflicto con el paquete unittest.",e2f95e1172b017d833c485d44b9665d4ba4ce62b,
+6,pull_request_commit,84,idan,oauthlib,arleincho,2012-12-12 15:41:59,". Se cambio el nombre del directorio de testcase ""unittest por unittestcase"" por conflicto con el paquete unittest.
+. En las pruebas se adiciona una para TokenEndpointTest
+. Se quita la referencia de ""self""  en el metodo create_token_response de TokenEndpoint para recuperar el query_params
+. Se cambia la validacion el TokenEndpoint para obtener ""grant_type"" ya que estaba invertida la comparacion entre ""body_params y query_params""
+.El body_params en TokenEndpoint se deja  en {} si no se tiene nungun valor",0debea7f027fc193bd754a904d0f00308550893d,
+7,pull_request_commit,84,idan,oauthlib,arleincho,2012-12-12 15:47:42,". Se cambio el nombre del directorio de testcase ""unittest por unittestcase"" por conflicto con el paquete unittest.
+. En las pruebas se adiciona una para TokenEndpointTest
+. Se quita la referencia de ""self""  en el metodo create_token_response de TokenEndpoint para recuperar el query_params
+. Se cambia la validacion el TokenEndpoint para obtener ""grant_type"" ya que estaba invertida la comparacion entre ""body_params y query_params""
+.El body_params en TokenEndpoint se deja  en {} si no se tiene nungun valor",20f352274aba56533bb4475b84b6aceb953d75d5,
+0,issue_title,101,idan,oauthlib,matthewlmcclure,2013-02-04 22:44:10,"This looks like a regression between 0.3.4 and 0.3.5 to me. I'm guessing it was caused by  the automatic urlencoding introduced between those tags. (cf. #96)
+
+Here's a test program:
+
+```
+from __future__ import unicode_literals
+import logging
+from pprint import pprint
+
+import requests
+from requests_oauthlib import OAuth1
+
+
+logging.basicConfig(level=logging.DEBUG)
+
+client_key = 'aclientkey'
+client_secret = 'aclientsecret'
+token_credentials = {
+    'oauth_token': ['atokentoken'],
+    'oauth_token_secret': ['atokensecret']
+}
+resource_url = 'http://example.com/'
+method = 'POST'
+
+oauth = OAuth1(client_key, client_secret,
+               unicode(token_credentials['oauth_token'][0]),
+               unicode(token_credentials['oauth_token_secret'][0]),
+               signature_type='QUERY')
+req = requests.Request(method=method, url=resource_url,
+                       headers={ 'Content-Type': 'text/plain' },
+                       data='some body data that is not application/x-www-form-urlencoded',
+                       auth=oauth).prepare()
+
+pprint(req.__dict__)
+```
+
+And here's the output in 0.3.5 vs 0.3.4. Note the inclusion of the body in the base signing string in 0.3.5 and that the Content-Type somehow gets set to application/x-www-formurlencoded despite my having set it to text/plain.
+
+```
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.5)]$ pip freeze | grep 'requests\|oauthlib'
+-e git+https://github.com/matthewlmcclure/oauthlib.git@48ce49a74cb0adbe69d4737ef62ec46931e3e49a#egg=oauthlib-matthewlmcclure/improve-logging-0.3.5
+-e git+https://github.com/matthewlmcclure/requests.git@628e393b9a251c3d2b9910c697b9e4ac4f3d8d6a#egg=requests-issues/1096
+-e git+https://github.com/matthewlmcclure/requests-oauthlib.git@66021a8b323881519761d4fbab9491f0f0f9a12e#egg=requests_oauthlib-kennethreitz/requests/issues/1096[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.5)]$ python /tmp/oauthlib-0.3.5-regression.py DEBUG:oauthlib.oauth1.rfc5849:Collected params: [(u'oauth_nonce', u'125539647820718445311360017645'), (u'oauth_timestamp', u'1360017645'), (u'oauth_version', u'1.0'), (u'oauth_signature_method', u'HMAC-SHA1'), (u'oauth_consumer_key', u'aclientkey'), (u'oauth_token', u'atokentoken'), (u'some body data that is not application/x-www-form-urlencoded', u'')]
+DEBUG:oauthlib.oauth1.rfc5849:Normalized params: oauth_consumer_key=aclientkey&oauth_nonce=125539647820718445311360017645&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1360017645&oauth_token=atokentoken&oauth_version=1.0&some%20body%20data%20that%20is%20not%20application%2Fx-www-form-urlencoded=
+DEBUG:oauthlib.oauth1.rfc5849:Normalized URI: http://example.com/
+DEBUG:oauthlib.oauth1.rfc5849:Base signing string: POST&http%3A%2F%2Fexample.com%2F&oauth_consumer_key%3Daclientkey%26oauth_nonce%3D125539647820718445311360017645%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1360017645%26oauth_token%3Datokentoken%26oauth_version%3D1.0%26some%2520body%2520data%2520that%2520is%2520not%2520application%252Fx-www-form-urlencoded%3D
+DEBUG:oauthlib.oauth1.rfc5849:Signature: mKAPXv9RBJ3KojG8DJ/pcn90d2E=
+{'body': u'some body data that is not application/x-www-form-urlencoded',
+ 'headers': {u'Content-Length': u'60',
+             u'Content-Type': u'application/x-www-form-urlencoded'},
+ 'hooks': {'response': []},
+ 'method': u'POST',
+ 'url': u'http://example.com/?oauth_nonce=125539647820718445311360017645&oauth_timestamp=1360017645&oauth_version=1.0&oauth_signature_method=HMAC-SHA1&oauth_consumer_key=aclientkey&oauth_token=atokentoken&oauth_signature=mKAPXv9RBJ3KojG8DJ%2Fpcn90d2E%3D'}
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.5)]$ git checkout improve-logging-0.3.4 
+Switched to branch 'improve-logging-0.3.4'
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.4)]$ python /tmp/oauthlib-0.3.5-regression.py 
+DEBUG:oauthlib.oauth1.rfc5849:Collected params: [(u'oauth_nonce', u'79041121459018830601360017665'), (u'oauth_timestamp', u'1360017665'), (u'oauth_version', u'1.0'), (u'oauth_signature_method', u'HMAC-SHA1'), (u'oauth_consumer_key', u'aclientkey'), (u'oauth_token', u'atokentoken')]
+DEBUG:oauthlib.oauth1.rfc5849:Normalized params: oauth_consumer_key=aclientkey&oauth_nonce=79041121459018830601360017665&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1360017665&oauth_token=atokentoken&oauth_version=1.0
+DEBUG:oauthlib.oauth1.rfc5849:Normalized URI: http://example.com/
+DEBUG:oauthlib.oauth1.rfc5849:Base signing string: POST&http%3A%2F%2Fexample.com%2F&oauth_consumer_key%3Daclientkey%26oauth_nonce%3D79041121459018830601360017665%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1360017665%26oauth_token%3Datokentoken%26oauth_version%3D1.0
+DEBUG:oauthlib.oauth1.rfc5849:Signature: gX+h3Kgsp14kl93Q1/GlYbVsDU0=
+{'body': u'some body data that is not application/x-www-form-urlencoded',
+ 'headers': {'Content-Length': u'60', u'Content-Type': u'text/plain'},
+ 'hooks': {'response': []},
+ 'method': u'POST',
+ 'url': u'http://example.com/?oauth_nonce=79041121459018830601360017665&oauth_timestamp=1360017665&oauth_version=1.0&oauth_signature_method=HMAC-SHA1&oauth_consumer_key=aclientkey&oauth_token=atokentoken&oauth_signature=gX%2Bh3Kgsp14kl93Q1%2FGlYbVsDU0%3D'}
+[mlm@vagrant-centos-5-8 oauthlib (improve-logging-0.3.4)]$ 
+```
+",start issue,0.3.5 mistakenly includes non-application/x-www-form-urlencoded body in oauth params
+1,issue_closed,101,idan,oauthlib,ib-lundgren,2013-02-04 23:20:30,,closed issue,0.3.5 mistakenly includes non-application/x-www-form-urlencoded body in oauth params
+2,issue_comment,101,idan,oauthlib,ib-lundgren,2013-02-04 22:55:13,"My apologies, this is indeed the case of default urlencoding doing a non-favour by converting when it shouldn't. Also interesting that Client.sign did not pick up on the already set content type, will need to revisit that check. Unfortunately its midnight here but I will have a look at this tomorrow.
+
+I'll try and simply improve the Client.sign header checking, failing that ill either revert back or add something like a urlencode=True kwarg to extract_params and urldecode, possibly to Client.sign as well.
+",,
+3,issue_comment,101,idan,oauthlib,ib-lundgren,2013-02-04 23:20:22,"Just rolled back the change. 0.3.6 should equal 0.3.4 in urlencoding with the added bonus of default unicode conversion.
+",,
+0,issue_title,104,idan,oauthlib,andreif,2013-02-06 12:02:22,"It is probably quite late, but this may become cumbersome in some cases since the attributes have common names. Please consider adding prefix, e.g. `request.oauth_client` or using a namespace object `request.oauth.client` to avoid collisions.
+",start issue,OAuth attributes of the request object should have a prefix to avoid collision with other libraries
+1,issue_closed,104,idan,oauthlib,andreif,2013-02-06 12:36:00,,closed issue,OAuth attributes of the request object should have a prefix to avoid collision with other libraries
+2,issue_comment,104,idan,oauthlib,andreif,2013-02-06 12:36:00,"Ah, you are creating own Request object...
+",,

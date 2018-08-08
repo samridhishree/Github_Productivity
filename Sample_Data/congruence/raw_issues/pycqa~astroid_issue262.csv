@@ -1,0 +1,24 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","262","pycqa","astroid","pylint-bot","2015-11-22 19:56:43","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+test_numpy_crash fails (at least on Python 3) because, while trying to process an instance of ufunc, it looks up ufunc's type which has a declared module of numpy.  It thus imports numpy's `__init__.py`, which contains `from .core import *`, and then tries to look up ufunc in that module.  Eventually, it encounters a C extension, tries to analyze it using ast_from_object, and finds ufunc, only ufunc, being a type implemented in C, declares that its module is numpy, which sets off the infinite recursion because ast_from_object creates an ImportFrom node for it.
+
+There are a number of possible fixes, I'm not immediately sure which would be best.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/262
+","start issue","[2.0 bugs] A lookup in numpy infinitely recurses due to an interaction between a C extension and Python module"
+"issue_comment","262","pycqa","astroid","pylint-bot","2015-11-23 08:41:26","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+What fixes do you have in mind?
+","",""
+"issue_comment","262","pycqa","astroid","pylint-bot","2015-11-24 21:09:58","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I don't have any good ones, I'm afraid.  One solution is to simply abandon all attempts to determine which module an object came from and, when building a mock AST for a live object, treat all objects as if they came from the same module.  This definitely has its advantages, as handling imports is a major source of complexity in the ast_from_object code and the reason it needs to import manager and has to do shenanigans with lazy objects.  However, this loses a lot of information and makes ast_from_object much less useful for analyzing dependencies involving C extensions.  Another solution is to try to explicitly detect cycles like this, which will be complicated and hard to get right because the cycles involved can be arbitrarily complicated, and leaves open the question of, assuming it's found a cycle, how does it decide where to put the object?
+","",""

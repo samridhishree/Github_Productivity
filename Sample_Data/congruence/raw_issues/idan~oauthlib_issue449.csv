@@ -1,0 +1,70 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","449","idan","oauthlib","bjmc","2016-11-21 14:59:24","This changeset is an attempt to improve and standardize the validator registration hooks introduced with the OpenIDConnect changes.
+
+- Moves custom validator registration up onto the `GrantTypeBase` class and removes those methods from the subclass grants.
+- DRYs up the OpenIDConnect grant type classes to be more of thin proxies onto the standard OAuth2 grant classes.
+- Adds the ability to register validators that run either before or after the standard validation methods.
+- Adds custom validator invocations to `ClientCredentialsGrant`, `RefreshTokenGrant` and `ResourceOwnerPasswordCredentialsGrant`.
+- Adds tests for custom validators.","start issue","Improve validator registration"
+"issue_closed","449","idan","oauthlib","thedrow","2016-12-23 07:07:50","","closed issue","Improve validator registration"
+"pull_request_title","449","idan","oauthlib","bjmc","2016-11-21 14:59:24","This changeset is an attempt to improve and standardize the validator registration hooks introduced with the OpenIDConnect changes.
+
+- Moves custom validator registration up onto the `GrantTypeBase` class and removes those methods from the subclass grants.
+- DRYs up the OpenIDConnect grant type classes to be more of thin proxies onto the standard OAuth2 grant classes.
+- Adds the ability to register validators that run either before or after the standard validation methods.
+- Adds custom validator invocations to `ClientCredentialsGrant`, `RefreshTokenGrant` and `ResourceOwnerPasswordCredentialsGrant`.
+- Adds tests for custom validators.","cf414259b2b03664cf51e12532035e2a4ef130f3","Improve validator registration"
+"pull_request_merged","449","idan","oauthlib","thedrow","2016-12-23 07:07:50","Improve validator registration","d2c7be6c38c9cc2dd3f5ba0dffaf38be42fcb418","Pull request merge from bjmc/oauthlib:improve_validator_registration to idan/oauthlib:master"
+"issue_comment","449","idan","oauthlib","thedrow","2016-11-24 15:59:04","This looks great. Can you add some documentation?
+If you can't just let me know and I'll pick it up as soon as I'll be able to.","",""
+"issue_comment","449","idan","oauthlib","thedrow","2016-12-06 12:13:42","@bjmc Ping?","",""
+"issue_comment","449","idan","oauthlib","bjmc","2016-12-06 12:26:03","Yeah, I can add some documentation. Do you just want docstrings? Or as part of a separate document?","",""
+"issue_comment","449","idan","oauthlib","thedrow","2016-12-06 13:32:43","Docstrings inline and usage documentation under `/docs` is possible. Thanks.
+If you are not already on the AUTHORS file feel free to add yourself.","",""
+"issue_comment","449","idan","oauthlib","bjmc","2016-12-19 16:05:02","@thedrow I hope that looks okay for the docs, I'm not an expert at the sphinx syntax.","",""
+"issue_comment","449","idan","oauthlib","bjmc","2016-12-22 16:42:34","@thedrow Do you like that better? I moved all the custom validators into a container class, and you can now pass keyword args to the grant type constructor to initialize a `GrantType` with custom validations, instead of appending them after the fact.","",""
+"issue_comment","449","idan","oauthlib","thedrow","2016-12-23 07:07:45","LGTM! Thanks.","",""
+"pull_request_commit_comment","449","idan","oauthlib","thedrow","2016-12-20 08:33:36","Why do we need a boolean flag instead of two methods? This is likely a code smell.
+http://softwareengineering.stackexchange.com/questions/147977/is-it-wrong-to-use-a-boolean-parameter-to-determine-behavior","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/base.py')"
+"pull_request_commit_comment","449","idan","oauthlib","thedrow","2016-12-20 08:34:52","Can we provide a way to initialize a grant type with validators?","cf414259b2b03664cf51e12532035e2a4ef130f3","(79, '', u'oauthlib/oauth2/rfc6749/grant_types/base.py')"
+"pull_request_commit_comment","449","idan","oauthlib","thedrow","2016-12-20 09:11:56","Extract to a helper method since this code is repeated on line 372 with different validators.","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/implicit.py')"
+"pull_request_commit_comment","449","idan","oauthlib","bjmc","2016-12-20 09:57:26","I really went back and forth on this. I agree the boolean is a little bit clunky.
+
+Other options:
+
+**Use two separate methods (four when you count auth validators and token validators).**
+
+The reasons I didn't do this were:
+
+1) Using the boolean let me preserve backwards compatibility for anyone who is already using `register_*_validator()` in its existing incarnation.
+
+2) Many users just want some custom validations in the mix, and don't care about whether they run before or after the existing ones. Having a boolean with a default spares those users from having to think about it.
+
+3) I couldn't think of method names that were informative without being so verbose it seemed unwieldy, e.g. `register_auth_validator_run_before_standard()` (before standard what?)
+
+**Just completely get rid of these registration methods and let callers append or insert to the list of validators directly.**
+
+I actually kind of like this option, because it feels more Pythonic doing away with setter methods, but I didn't do it because it seemed out of step with the rest of the code base, and obviously it somewhat locks you into an implementation for the future.","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/base.py')"
+"pull_request_commit_comment","449","idan","oauthlib","bjmc","2016-12-20 09:59:19","Well, you could pass `_auth_validators_run_before_standard_ones` as a keyword argument to the constructor, and that would do it. But that feels a bit hacky.","cf414259b2b03664cf51e12532035e2a4ef130f3","(79, '', u'oauthlib/oauth2/rfc6749/grant_types/base.py')"
+"pull_request_commit_comment","449","idan","oauthlib","kevin-brown","2016-12-20 14:43:24","This method returns `request_info`, but this return value is not used in any of the places where it is called.","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/implicit.py')"
+"pull_request_commit_comment","449","idan","oauthlib","bjmc","2016-12-20 14:49:08","Yeah. I figure somebody else in the future might want this to return` request_info`. Maybe in tests?
+
+If you want this to be a more 'pure' function, it could construct a new dict and return that instead of mutating the existing one.
+
+Then the calling method could do `request_info = self._run_custom_validations(...)`
+
+Maybe that's better? ","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/implicit.py')"
+"pull_request_commit_comment","449","idan","oauthlib","thedrow","2016-12-21 11:01:06","I agree it's better.","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/implicit.py')"
+"pull_request_commit_comment","449","idan","oauthlib","thedrow","2016-12-21 11:03:01","Another option would be to wrap the validators list with an API that allows you to switch the internal implementation later on.
+What do you think?","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/base.py')"
+"pull_request_commit_comment","449","idan","oauthlib","bjmc","2016-12-21 11:26:57","That's true. I would maybe make the case that the API we expose should be the standard Python [`MutableSequence`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableSequence) and we can start by just using a stock list. If in the future, anyone wants to change the implementation but preserve the API, they can use a `MutableSequence` subclass.","cf414259b2b03664cf51e12532035e2a4ef130f3","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/base.py')"
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-11-18 15:39:04","Move custom validator registration onto GrantTypeBase","a43ed5d5b0a2ae1be67935a701b48ba83b4d9893",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-11-21 14:19:30","OIDC grants are proxies","28cf20b3ad64b568bff8507ea68a231651bd132e",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-11-21 14:47:59","Adds tests for custom grant validators","41f853f9d56bfb403b40f00054a56242e1be52ed",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-12-19 15:53:55","Adds Brendan McCollam to AUTHORS","ff0e40884f07fde16b542b883a3c5703092d6b86",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-12-19 16:03:22","Docs for custom validator registration","b63590317fc353da5e39ec9eef9a1494eddb925e",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-12-20 11:15:44","Helper for implicit grant custom validators","a33c82e7be21429b5c376f2912a6a553cf87018b",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-12-20 14:55:04","Per code review, _run_custom_validators() doesn't mutate request_info","c6d84da649789151a274e091df3f23e99e92dd0c",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-12-22 13:27:55","Refactor custom validators registration","d0a59bd8a4fbb44f2ad0218becfbccf49d91cb4d",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-12-22 15:00:15","Update custom validator tests","790310a6e1e7e1ce434ef478507d9a1c9464e298",""
+"pull_request_commit","449","idan","oauthlib","bjmc","2016-12-22 16:39:50","Updated docs for custom validators","cf414259b2b03664cf51e12532035e2a4ef130f3",""

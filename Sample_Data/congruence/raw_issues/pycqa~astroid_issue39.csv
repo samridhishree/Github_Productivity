@@ -1,0 +1,71 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","39","pycqa","astroid","pylint-bot","2014-07-25 11:00:18","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Currently pylinting sqlalchemy code gives some false positives for E1120 (no-value-for-parameter)
+
+I've attached sample code which exhibits this problem.
+
+```
+#!bash
+
+$ pylint --version
+pylint 1.1.0, 
+astroid 1.0.1, common 0.61.0
+Python 2.7.3 (default, Aug  9 2012, 17:23:57) 
+[GCC 4.7.1 20120720 (Red Hat 4.7.1-5)]
+
+$ python -c ""import sqlalchemy; print sqlalchemy.__version__""
+0.9.4
+
+$ pylint --reports=no sqlalchemy_testcase.py
+************* Module sqlalchemy_testcase
+E: 20, 4: No value passed for parameter 'dml' in function call (no-value-for-parameter)
+```
+
+The insert function is decorated, and the decorator fills in the 'dml' parameter. The callee providing it is an error.
+
+I could potentially look at this myself but won't have the time to do so immediately.
+
+Reported by Robbie Coomber on pylint-brain.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/39
+","start issue","Support for sqlalchemy"
+"issue_closed","39","pycqa","astroid","PCManticore","2016-02-18 21:52:45","","closed issue","Support for sqlalchemy"
+"issue_comment","39","pycqa","astroid","pylint-bot","2015-02-26 17:04:30","_Original comment by_ **Sylvain R (BitBucket: [sylvainr_](http://bitbucket.org/sylvainr_))**:
+
+---
+
+Hi there,
+
+Any updates on that issue?
+
+We use sqlalchemy extensively so that false positive shows up a lot.
+
+Because we use it so much, we can not just do an inline disable, nor do we want to disable the ''no-value-for-parameter"" globally. 
+
+So our current solution for the time being is to wrap pylint into a simple script that just filter out the ""No value passed for parameter 'dml' in function call"" lines, which kind of sucks and make our ""pylinter"" more complicated to use.
+
+Using that wrapper is not ideal and it would be awesome if:
+1) pylint/astroid would properly handle the sqlalchemy.Table.insert() calls, or
+2) provide an easy way to just ignore those specific errors.
+
+I know 1 may not be easy so maybe 2 is a more realistic solution? I am not aware of anyway to specifically ignore this error. I tried ignored-modules=sqlalchemy or ignored-classes=sqlalchemy.sql.schema.Table but it does not mute that error.
+
+I think in general having more granularity around ignores at the pylintrc level is a good thing when encountering those issues.
+
+Any suggestions?
+
+PS: Thanks a lot for that awesome tool!
+","",""
+"issue_comment","39","pycqa","astroid","pylint-bot","2015-02-26 18:23:14","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This will most likely be fixed when this PR will be integrated: https://bitbucket.org/logilab/pylint/pull-request/222/added-support-for-arity-decrementing/diff. It adds support for understanding arity decrementing decorators and this issue falls in the same situation.
+","",""
+"issue_comment","39","pycqa","astroid","PCManticore","2016-02-18 21:52:45","Closing this. I don't think this issue should be here, but rather in Pylint.
+","",""
+"issue_comment","39","pycqa","astroid","raylu","2017-07-27 03:02:02","Is there an issue in pylint that tracks this? I found https://github.com/PyCQA/pylint/issues/194 which appears to be closed because it should be handled in pylint-brain, now astroid.","",""

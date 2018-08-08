@@ -1,0 +1,28 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","168","pycqa","astroid","pylint-bot","2015-08-02 10:23:39","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Here's a bug that describes a problem in astroid. If we're running pylint on it, then we'll get an error that 'str' has no member 'lala', while in fact it should have said about an integer
+not have that member. What's happening is that astroid detects there's some monkey patching involved at some point and uses that newly patched method, disregarding any flow of the program.
+
+```
+#!python
+
+class A:
+    def action_type(self):
+         return 42
+
+
+def test():
+   a = A()
+   a.action_type = lambda self: 's'
+   return a.action_type()
+
+a = A()
+print(a.action_type().lala)
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/168
+","start issue","Monkeypatch detection improperly follows method which weren't called"

@@ -1,0 +1,165 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","237","idan","oauthlib","jturmel","2014-03-18 03:11:05","- Add a method to generate crypto tokens for use as Bearer tokens
+- Add a method to verify an incoming crypto token and unpack the header and
+  claims
+- Uses the PyJWT library
+
+This is not JWT token support, merely a way to generate Bearer tokens that
+won't have to be stored in a database but can self-validate and store
+additional information that you see fit.
+","start issue","Add crypto token capability"
+"issue_closed","237","idan","oauthlib","ib-lundgren","2014-04-12 10:10:38","","closed issue","Add crypto token capability"
+"pull_request_title","237","idan","oauthlib","jturmel","2014-03-18 03:11:05","- Add a method to generate crypto tokens for use as Bearer tokens
+- Add a method to verify an incoming crypto token and unpack the header and
+  claims
+- Uses the PyJWT library
+
+This is not JWT token support, merely a way to generate Bearer tokens that
+won't have to be stored in a database but can self-validate and store
+additional information that you see fit.
+","00790328f3c6e28f49d193411d344703ad376ce7","Add crypto token capability"
+"pull_request_merged","237","idan","oauthlib","ib-lundgren","2014-04-12 10:10:38","Add crypto token capability","c2d8be52bdfb34b63f2154a1ccd1d23911a533a4","Pull request merge from jturmel/oauthlib:add_crypto_token_generator to idan/oauthlib:master"
+"issue_comment","237","idan","oauthlib","ib-lundgren","2014-03-20 18:48:56","Cool! Will dig into this PR this weekend if time allows :) I'm not familiar with PyJWT but will check it out.
+
+One thing that pops out after just skimming quickly is that we would want to move the imports of third party libraries (pyjwt, pycrypto) into the methods that use them as opposed to top level. This ensures that people who don't which to use these features don't need to install the libraries (and we can put them in optional targets in setup.py).
+","",""
+"issue_comment","237","idan","oauthlib","jturmel","2014-03-20 18:50:58","That sounds good, I'll try and get that change on this PR before the weekend and adjust the setup.py.
+","",""
+"issue_comment","237","idan","oauthlib","jturmel","2014-03-23 04:13:06","Okay, moved the imports inside the correct scopes and changed setup.py -- let me know what you think.
+","",""
+"issue_comment","237","idan","oauthlib","ib-lundgren","2014-03-23 23:15:40","Great work @jturmel :) Very nice to see such thorough tests.
+
+I've not followed the JWT development and it came as a bit of a surprise that the tokens are not encrypted, only signed. When we document the use of these tokens we should make that very clear. As I mentioned in the comments changing crypto -> jwt might be a good first step and the second can be in documentation.
+
+nitpick: add pyjwt to tox.ini
+","",""
+"issue_comment","237","idan","oauthlib","jturmel","2014-03-24 14:15:37","I'll get all these changes in over the next day or so. Thanks for the feedback!
+","",""
+"issue_comment","237","idan","oauthlib","jturmel","2014-04-08 11:37:32","Did you need anything else?
+","",""
+"issue_comment","237","idan","oauthlib","ib-lundgren","2014-04-12 10:10:34","Nope it looks good\* :) Just had to find a spot in my schedule and sadly that is harder than it should. 
+
+Thanks for adding the refresh token generator parameter, much better API. Let me know with a comment or PR if you would like to be added to AUTHORS btw.
+
+*) I will update setup.py to change the naming crypto to signed.
+","",""
+"issue_comment","237","idan","oauthlib","jturmel","2014-04-13 01:45:28","Great! Okay got a PR for the AUTHORS change here: https://github.com/idan/oauthlib/pull/243
+
+Thanks!
+","",""
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-23 23:09:53","Thinkg generate_jwt_token is better since crypto implies (at least to me) that its encrypted. I know this might not be the case for everyone but better safe than sorry.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/common.py')"
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-23 23:10:25","Nice touch wrapping in the key like this. crypto - jwt name change here too please.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/oauth2/rfc6749/tokens.py')"
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-23 23:11:20","Why the special treatment of refresh token? I can imagine people wanting to use jwt refresh tokens too. Maybe I'm missing something?
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/oauth2/rfc6749/tokens.py')"
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-23 23:12:44","Could tidy most of this away I think if you use a pre configured server with a custom token generator.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'tests/oauth2/rfc6749/test_server.py')"
+"pull_request_commit_comment","237","idan","oauthlib","jturmel","2014-03-24 02:46:58","I initially was thinking something similar in regards to name, but not necessarily for that reason. The main reason I think it'd be good not to is when support for OAuth2 JWT authorization (ie JWT authorization grant type) is added it could be confusing since this wouldn't have anything to do with it since this is just a different way of generating a Bearer token. Also, RSA signing is still cryptography, I'm not a cryptography pro by any means, but signing with the private key then verifying with public key is very much in line with this I would think... furthermore how the token is encoded/decoded is an implementation detail, we could in theory come up with our own implementation (lay aside JWT) and it'd still function as is intended which is to avoid datastore lookups on every authorized call to an OAuth protected API.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/common.py')"
+"pull_request_commit_comment","237","idan","oauthlib","jturmel","2014-03-24 02:47:06","See above response.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/oauth2/rfc6749/tokens.py')"
+"pull_request_commit_comment","237","idan","oauthlib","jturmel","2014-03-24 02:51:14","We could, but it would unnecessarily bloat the refresh_token size and since the refresh_token should always be stored and indexed in a datastore for lookup and revoke purposes I'm not sure I see a real benefit. I could be missing something though.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/oauth2/rfc6749/tokens.py')"
+"pull_request_commit_comment","237","idan","oauthlib","jturmel","2014-03-24 02:54:06","I'm not sure I follow this request, I duplicated the TokenEndpointTest as a starting point and then tweaked the asserts to what they'd be seeing using this token generator...
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'tests/oauth2/rfc6749/test_server.py')"
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-24 10:02:17","Maybe generate_signed_token?
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/common.py')"
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-24 10:06:46","Trying to think of a balance between confusing behaviour, premature optimization, and introducing unasked features... maybe have this tunable in this decorator?
+
+```
+def crypto/signed_token_generator(private_pem, sign_refresh_tokens=False)
+```
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/oauth2/rfc6749/tokens.py')"
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-24 10:22:50","As it is now is fine. I just meant that the supported_types setup is not strictly needed and you could get away with
+
+```
+ token = tokens.BearerToken(self.mock_validator,
+            token_generator=tokens.crypto_token_generator(self.private_pem),
+            expires_in=self.expires_in, user_id=123)
+ self.endpoint = Server(self.mock_validator, default_token_type=token)
+```
+
+And even that feels a bit awkward. Is there a reason we need the bearer token to accept the claims dict? Maybe this could also be included in the decorator? Resulting in something like
+
+```
+sign_token = signed_token_generator(""pem"", claims={""foo"": ""bar""})
+self.endpoint = Server(self.mock_validator, token_generator=sign_token)
+```
+
+What do you think?
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'tests/oauth2/rfc6749/test_server.py')"
+"pull_request_commit_comment","237","idan","oauthlib","jturmel","2014-03-24 14:00:53","I think that makes sense.
+
+Also just more of a background on why signing is preferred for these tokens, is that you can read the contents of the token without needing to decrypt (verify) first that way if they're using the user_id/client_id or whatever else they may have shoved into the claims to use a client or user specific key internally to verify.
+
+I'll get this renamed, I like that suggestion.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/common.py')"
+"pull_request_commit_comment","237","idan","oauthlib","jturmel","2014-03-24 14:03:49","Sure. I wouldn't have even considered making the code this way if access and refresh didn't call the same method internally in the endpoint classes, but reworking that seems like a completely different PR. :) I'll go ahead and do it this way for now, I think the better way in the future of the project would be the ability to specify the generator for both tokens.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'oauthlib/oauth2/rfc6749/tokens.py')"
+"pull_request_commit_comment","237","idan","oauthlib","jturmel","2014-03-24 14:15:05","I see what you mean on the test.
+
+I like moving them so that it's easier to use the all-in-one, I'll get this change made.
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'tests/oauth2/rfc6749/test_server.py')"
+"pull_request_commit_comment","237","idan","oauthlib","ib-lundgren","2014-03-25 10:38:01","Excellent :)
+
+I agree on separate methods for the token generation. The way it is now
+kind of snuck in and stayed.
+On 24 Mar 2014 14:15, ""Josh Turmel"" notifications@github.com wrote:
+
+> In tests/oauth2/rfc6749/test_server.py:
+> 
+> > @@ -158,6 +161,136 @@ def test_invalid_type(self):
+> >          self.assertEqual(json.loads(body), token)
+> > 
+> > +class CryptoTokenEndpointTest(TestCase):
+> > +
+> > -    def setUp(self):
+> > -        self.expires_in = 1800
+> >   +
+> > -        def set_user(request):
+> > -            request.user = mock.MagicMock()
+> > -            request.client = mock.MagicMock()
+> > -            request.client.client_id = 'mocked_client_id'
+> > -            return True
+> >   +
+> > -        self.mock_validator = mock.MagicMock()
+> > -        self.mock_validator.authenticate_client.side_effect = set_user
+> > -        self.addCleanup(setattr, self, 'mock_validator', mock.MagicMock())
+> > -        auth_code = AuthorizationCodeGrant(
+> 
+> I see what you mean on the test.
+> 
+> I like moving them so that it's easier to use the all-in-one, I'll get
+> this change made.
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/237/files#r10885582
+> .
+","00790328f3c6e28f49d193411d344703ad376ce7","(None, '', u'tests/oauth2/rfc6749/test_server.py')"
+"pull_request_commit","237","idan","oauthlib","jturmel","2014-03-17 20:53:27","Add crypto token capability
+
+* Add a method to generate crypto tokens for use as Bearer tokens
+* Add a method to verify an incoming crypto token and unpack the header and
+  claims
+* Uses the PyJWT library
+
+This is not JWT token support, merely a way to generate Bearer tokens that
+won't have to be stored in a database but can self-validate and store
+additional information that you see fit.","e41bee876c32d11070cb6f4686e41fd78b2c5168",""
+"pull_request_commit","237","idan","oauthlib","jturmel","2014-03-18 03:52:54","Use the to_unicode helper","864e6f66cebccbc93d5edeca2d5e1128f1b60181",""
+"pull_request_commit","237","idan","oauthlib","jturmel","2014-03-18 17:33:44","Change how arbitrary claims are set on crypto token","e3482d8b3db132bed364e5d25db3553c04ef6522",""
+"pull_request_commit","237","idan","oauthlib","jturmel","2014-03-19 19:32:14","Require pycrypto and pyjwt","ab4fe12f1707fc070b0fffec17a4fc8005ef990a",""
+"pull_request_commit","237","idan","oauthlib","jturmel","2014-03-23 04:05:53","Move setup.py requirements
+
+* Moved requires for cryptotoken changes so that you don't have to install
+  the dependencies if you aren't going to use cryptotokens","14f687b7355df142ea76145dea53bcbe7d012fdc",""
+"pull_request_commit","237","idan","oauthlib","jturmel","2014-03-30 04:33:26","Changes per PR comments
+
+* Rename methods from crypto to signed
+* Since generating a signed token to be used as a refresh token could be a bit
+  overkill in terms of length/storage, allow setting of refresh token generator
+  separately, or it defaults to whatever the other token generator was set to
+* Simplify tests per PR comments","5d0fc1182f6d9826764cc43ade99bc5e5a81c711",""
+"pull_request_commit","237","idan","oauthlib","jturmel","2014-03-30 21:49:38","Add pyjwt to tox.ini","00790328f3c6e28f49d193411d344703ad376ce7",""

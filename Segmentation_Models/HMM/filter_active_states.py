@@ -9,8 +9,8 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--prediction_dir', help='Directory with predicted states in project timeline', default='results/predictions/')
-parser.add_argument('--filtered_dir', help='Output directory with filtered states', default='results/filtered_states/')
+parser.add_argument('--prediction_dir', help='Directory with predicted states in project timeline', default='Sample_Data/HMM/results/predictions/')
+parser.add_argument('--filtered_dir', help='Output directory with filtered states', default='Sample_Data/HMM/results/filtered_states/')
 args, unknown = parser.parse_known_args()
 
 prediction_dir = args.prediction_dir

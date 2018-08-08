@@ -1,7 +1,5 @@
 '''
-Creates a dictionary of the list files committed by the people of the project.
-Also contains the number of times a person made committed a particular file.
-Output - {username:[file1:count1, file2:count2, ...] ....}
+Creates a dictionary of files committed by the people of the project
 '''
 import os
 import sys
@@ -9,18 +7,21 @@ import csv
 import pandas as pd
 import cPickle as pickle
 from collections import defaultdict
+import ast
+import time
+import unicodedata
 import argparse
 
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--commit_dep_path', help='Directory containing processed commits per project (output of - preprocess_commits_for_graph)',\
-					default='data/commits_processed_for_graph/')
+parser.add_argument('--commit_dir', help='Directory containing commits per project',\
+					default='Sample_Data/congruence/raw_commits/')
 parser.add_argument('--output_pickle_path', help='Output directory to store pickle files per project to store user-file membership', \
-					default='data/people_file_dict/')
+					default='Sample_Data/congruence/user_file_dict/')
 args, unknown = parser.parse_known_args()
 
-commit_dep_path = args.commit_dep_path
+commit_dir = args.commit_dir
 output_pickle_path = args.output_pickle_path
 
 try:
@@ -31,26 +32,40 @@ except:
 def dd():
 	return defaultdict(int)
 
+def ConvertToFilesList(list_str):
+	#print list_str
+	files = ast.literal_eval(list_str)
+	files = files[0]
+	files = unicodedata.normalize('NFKD', files).encode('ascii', 'ignore')
+	if "[" not in files:
+		return []
+	files = ast.literal_eval(files)
+	return files
 
-for fileName in os.listdir(commit_dep_path):
+
+for fileName in os.listdir(commit_dir):
 	if fileName.endswith('.csv'):
-		project_name = fileName.split('_commitDep.csv')[0]
+		project_name = fileName.split('_commits.csv')[0]
+		project_name = project_name.replace('repo_','',1)
 		print "processing for project: ", project_name
 		
 		#Create a dictionary of files that each user touched
-		f = open(os.path.join(commit_dep_path, fileName), 'rb')
-		reader = csv.reader(f)
-		next(reader, None)
-
+		data = pd.read_csv(os.path.join(commit_dir, fileName))
 		user_file_dict = defaultdict(dd)
-		for row in reader:
-			user_name = row[3].strip().lower()
-			for i in range(7, len(row)):
-				if(len(row[i].strip()) > 0):
-					user_file_dict[user_name][row[i].strip()] += 1
-			
+		for idx,row in data.iterrows():
+			raw_files = row['paths']
+			if pd.isnull(row['paths']):
+				continue
+			files = ConvertToFilesList(raw_files)
+			user_name = str(row['actor']).strip().lower()
+			for file in files:
+				file = file.strip().lower()
+				if(len(file) > 0):
+					user_file_dict[user_name][file] += 1
+
 		user_file_pick = os.path.join(output_pickle_path, (project_name + '_user_file.pickle'))
 		with open(user_file_pick, 'wb') as u_pickle:
 			pickle.dump(user_file_dict, u_pickle)
+
 
 

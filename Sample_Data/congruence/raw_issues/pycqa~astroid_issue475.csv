@@ -1,0 +1,45 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","475","pycqa","astroid","brycepg","2017-12-28 00:29:01","### Steps to reproduce
+1.  Use CI
+
+### Current behavior
+
+Because the current version of astroid is 2.0 on master, the pylint fails due to a pkg_info requirement of astroid<2.0
+
+### Traceback
+
+```
+Traceback (most recent call last):
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 666, in _build_master
+    ws.require(__requires__)
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 984, in require
+    needed = self.resolve(parse_requirements(requirements))
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 875, in resolve
+    raise VersionConflict(dist, req).with_context(dependent_req)
+pkg_resources.ContextualVersionConflict: (astroid 2.0.0 (/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages), Requirement.parse('astroid<2.0'), {'pylint'})
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/bin/pylint"", line 6, in <module>
+    from pkg_resources import load_entry_point
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 3147, in <module>
+    @_call_aside
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 3131, in _call_aside
+    f(*args, **kwargs)
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 3160, in _initialize_master_working_set
+    working_set = WorkingSet._build_master()
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 668, in _build_master
+    return cls._build_from_requirements(__requires__)
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 681, in _build_from_requirements
+    dists = ws.resolve(reqs, Environment())
+  File ""/home/travis/build/PyCQA/astroid/.tox/pylint/lib/python3.5/site-packages/pkg_resources/__init__.py"", line 870, in resolve
+    raise DistributionNotFound(req, requirers)
+pkg_resources.DistributionNotFound: The 'astroid<2.0' distribution was not found and is required by pylint
+ERROR: InvocationError: '/home/travis/build/PyCQA/astroid/.tox/pylint/bin/pylint -rn --rcfile=/home/travis/build/PyCQA/astroid/pylintrc /home/travis/build/PyCQA/astroid/astroid'
+```
+","start issue","Pylint is failing on Travis CI"
+"issue_closed","475","pycqa","astroid","brycepg","2018-01-02 02:33:31","","closed issue","Pylint is failing on Travis CI"
+"issue_comment","475","pycqa","astroid","PCManticore","2017-12-28 09:45:14","I'm aware of this. I just didn't have time to tackle it. The problem is of a cyclic dependency:
+- pylint 2.0 depends on an un-released 2.0 version. In the past, we solved this by adding a `dependency_links` with the link to an astroid 2.0 archive in pylint's `__pkginfo__`
+- astroid depends on latest pylint for linting. We could try to limit this one to a released version, since it is fine like that. 
+If you have some spare cycles, the second approach should be a simple PR.","",""
+"issue_comment","475","pycqa","astroid","brycepg","2017-12-30 20:30:08","Alright, did that. Thanks for pointing me in the right direction","",""

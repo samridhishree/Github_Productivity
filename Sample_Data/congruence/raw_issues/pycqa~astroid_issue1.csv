@@ -1,0 +1,168 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","1","pycqa","astroid","pylint-bot","2013-06-22 11:55:26","Originally reported by: **BitBucket: [idella5](http://bitbucket.org/idella5)**
+
+---
+
+firstly under py3.2; Python 3.2.4
+
+pytest
+
+yields
+
+``` python
+........E............
+======================================================================
+ERROR: test_generator_attributes (unittest_lookup.LookupTC)
+----------------------------------------------------------------------
+Traceback (most recent call last)
+  File ""/mnt/gen2/TmpDir/portage/dev-python/astng-0.24.3/work/logilab-astng-0.24.3-python3_2/test/lib/logilab_astng-0.24.3-py3.2.egg/logilab/astng/test/unittest_lookup.py"", line 228, in test_generator_attributes
+    self.assertIsInstance(gener.getattr('next')[0], Function)
+  File ""/usr/lib64/python3.2/site-packages/logilab/astng/bases.py"", line 160, in getattr
+    return self._proxied.getattr(name, context)
+  File ""/usr/lib64/python3.2/site-packages/logilab/astng/scoped_nodes.py"", line 886, in getattr
+    raise NotFoundError(name)
+logilab.astng.exceptions.NotFoundError: next
+
+                              no stdout                               
+                              no stderr                               
+______________________________________________
+--------------------------------------------------------------------------
+..S.F..
+======================================================================
+FAIL: test_numpy_crash (unittest_regrtest.NonRegressionTC)
+test don't crash on numpy
+----------------------------------------------------------------------
+Traceback (most recent call last)
+  File ""/mnt/gen2/TmpDir/portage/dev-python/astng-0.24.3/work/logilab-astng-0.24.3-python3_2/test/lib/logilab_astng-0.24.3-py3.2.egg/logilab/astng/test/unittest_regrtest.py"", line 136, in test_numpy_crash
+    self.assertIsInstance(infered[0], Instance)
+  File ""/usr/lib64/python3.2/site-packages/logilab/common/testlib.py"", line 1102, in assertIsInstance
+    self.assertTrue(isinstance(obj, klass), msg)
+  File ""/usr/lib64/python3.2/unittest/case.py"", line 506, in assertTrue
+    raise self.failureException(msg)
+AssertionError: False is not true : YES is not an instance of <class 'logilab.astng.bases.Instance'> but of <class 'logilab.astng.bases._Yes'>
+
+                              no stdout                               
+                              no stderr                               
+```
+
+Secondly pypy.  The patch I made below resets the tests to yield a pass for pypy running them. Note ""# no way for this one (is 4 actually)"" in the test file implies you know of this oddity yet there it still sits.  For py2.7 3.2 it passes but under pypy it yeilds these different data.
+
+``` bash
+diff -ur logilab-astng-0.24.3.orig/test/unittest_builder.py logilab-astng-0.24.3/test/unittest_builder.py
+--- test/unittest_builder.py    2013-04-17 17:38:31.000000000 +0800
++++ test/unittest_builder.py    2013-06-19 02:13:51.425269363 +0800
+@@ -62,8 +62,12 @@
+         self.assertEqual(name.tolineno, 4)
+         strarg = callfunc.args[0]
+         self.assertIsInstance(strarg, nodes.Const)
+-        self.assertEqual(strarg.fromlineno, 5) # no way for this one (is 4 actually)
+-        self.assertEqual(strarg.tolineno, 5)
++        if hasattr(sys, 'pypy_version_info'):
++            self.assertEqual(strarg.fromlineno, 4) # no way for this one (is 4 actually)
++            self.assertEqual(strarg.tolineno, 4)
++        else:
++            self.assertEqual(strarg.fromlineno, 5) # no way for this one (is 4 actually)
++            self.assertEqual(strarg.tolineno, 5)
+         namearg = callfunc.args[1]
+         self.assertIsInstance(namearg, nodes.Name)
+         self.assertEqual(namearg.fromlineno, 5)
+diff -ur logilab-astng-0.24.3.orig/test/unittest_inference.py logilab-astng-0.24.3/test/unittest_inference.py
+--- test/unittest_inference.py  2013-04-17 17:38:31.000000000 +0800
++++ test/unittest_inference.py  2013-06-19 02:52:41.618270007 +0800
+@@ -710,8 +710,12 @@
+         node = get_name_node(astng, 'open', -1)
+         infered = list(node.infer())
+         self.assertEqual(len(infered), 1)
+-        self.assertIsInstance(infered[0], nodes.Function)
+-        self.assertEqual(infered[0].name, 'open')
++        if hasattr(sys, 'pypy_version_info'):
++            self.assertIsInstance(infered[0], nodes.Class)
++            self.assertEqual(infered[0].name, 'file')
++        else:
++            self.assertIsInstance(infered[0], nodes.Function)
++            self.assertEqual(infered[0].name, 'open')
+
+     def test_callfunc_context_func(self):
+         code = '''
+```
+
+The remaining test left to just fail is
+
+``` python
+.....S.......E..........................................
+======================================================================
+ERROR: test_socket_build (unittest_builder.BuilderTC)
+----------------------------------------------------------------------
+Traceback (most recent call last)
+  File ""/usr/lib64/pypy2.0/site-packages/logilab/common/testlib.py"", line 661, in _proceed
+    testfunc(*args, **kwargs)
+  File ""/mnt/gen2/TmpDir/portage/dev-python/astng-0.24.3/work/logilab-astng-0.24.3-pypy2_0/test/lib/logilab_astng-0.24.3-py2.7.egg/logilab/astng/test/unittest_builder.py"", line 442, in test_socket_build
+    self.assertIn('connect', fclass)
+  File ""/usr/lib64/pypy2.0/lib-python/2.7/unittest/case.py"", line 798, in assertIn
+    if member not in container:
+TypeError: '_Yes' object is not iterable
+
+                              no stdout                               
+                              no stderr                               
+```
+
+It appears to me that pypy reading the ??same directory structure comes up with _Yes object, a valid astng object I gather but the wrong damned one.
+There's a build log for you.
+
+Over to you
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/1
+","start issue","test suite fails in -0.24.3 under py3.2, pypy"
+"issue_closed","1","pycqa","astroid","pylint-bot","2015-12-09 05:51:25","","closed issue","test suite fails in -0.24.3 under py3.2, pypy"
+"issue_comment","1","pycqa","astroid","pylint-bot","2013-06-22 09:59:21","_Original comment by_ **BitBucket: [idella5](http://bitbucket.org/idella5)**:
+
+---
+
+oh py3.3 doesn't even get started.
+
+``` python
+Installed /mnt/gen2/TmpDir/portage/dev-python/astng-0.24.3/work/logilab-astng-0.24.3-python3_3/test/lib/logilab_astng-0.24.3-py3.3.egg
+Processing dependencies for logilab-astng==0.24.3
+Finished processing dependencies for logilab-astng==0.24.3
+Traceback (most recent call last):
+  File ""/usr/bin/pytest-python3.3"", line 6, in <module>
+
+    from logilab.common.pytest import run
+  File ""/usr/lib64/python3.3/site-packages/logilab/common/pytest.py"", line 124, in <module>
+    from logilab.common import testlib, STD_BLACKLIST
+  File ""/usr/lib64/python3.3/site-packages/logilab/common/testlib.py"", line 496, in <module>
+    class TestCase(unittest.TestCase):
+  File ""/usr/lib64/python3.3/site-packages/logilab/common/testlib.py"", line 1189, in TestCase
+    assertItemsEqual = unittest.TestCase.assertSameElements
+AttributeError: type object 'TestCase' has no attribute 'assertSameElements'
+ * ERROR: dev-python/astng-0.24.3 failed (test phase):
+ *   Tests fail with python3.3
+```
+","",""
+"issue_comment","1","pycqa","astroid","pylint-bot","2013-10-18 15:24:56","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+I integrated your pypy fix and tested using 3.3. The only remaining error is the one concerning numpy.
+
+As I've not time for this one yet, I'll consider this issue resolved and numpy/py3 problems should go to another isse.
+","",""
+"issue_comment","1","pycqa","astroid","pylint-bot","2013-10-18 15:27:21","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+Same thing for socket vs pypy
+","",""
+"issue_comment","1","pycqa","astroid","pylint-bot","2013-10-18 15:28:48","_Original comment by_ **Sylvain Thénault (BitBucket: [sthenault](http://bitbucket.org/sthenault), GitHub: @sthenault?)**:
+
+---
+
+failures for numpy/py3 and socket/pypy are not fixed and deserve separated issues.
+","",""
+"issue_comment","1","pycqa","astroid","pylint-bot","2013-10-19 00:41:14","_Original comment by_ **BitBucket: [idella5](http://bitbucket.org/idella5)**:
+
+---
+
+hmm thanks Sylvian
+","",""

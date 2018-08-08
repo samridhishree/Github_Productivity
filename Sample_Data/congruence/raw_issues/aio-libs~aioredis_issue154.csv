@@ -1,0 +1,174 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","154","aio-libs","aioredis","argaen","2016-09-30 14:36:45","Hi, I'm receiving multiple messages stating the following:
+
+``` python
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisPool._do_close() running at /Users/manuelmiranda/.virtualenvs/redis-cache/lib/python3.5/site-packages/aioredis/pool.py:102> wait_for=<Future pending cb=[Task._wakeup()]>>
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisConnection._read_data() running at /Users/manuelmiranda/.virtualenvs/redis-cache/lib/python3.5/site-packages/aioredis/connection.py:131> wait_for=<Future pending cb=[Task._wakeup()]> cb=[Future.set_result()]>
+Task was destroyed but it is pending!
+```
+
+The code I'm using:
+
+``` python
+    async def _connect(self):
+        if self._pool is None:
+            self._pool = await aioredis.create_pool(
+                (self.endpoint, self.port))
+
+        return await self._pool
+
+    async def get(self, key):
+        with await self._connect() as client:
+                await client.get(key)
+```
+
+Am I missing something? Isn't the context_manager supposed to close the pool when exits?
+
+Thanks!
+","start issue","Task was destroyed but is is pending"
+"issue_closed","154","aio-libs","aioredis","argaen","2016-10-05 13:20:05","","closed issue","Task was destroyed but is is pending"
+"issue_comment","154","aio-libs","aioredis","popravich","2016-09-30 15:53:28","Hi,
+Try the following
+
+``` python
+async def _connect(self):
+    if self._pool is None:
+        self._pool = await aioredis.create_pool(
+            (self.endpoint, self.port))
+    return self._pool  # here no await needed
+
+async def get(self, key):
+    async with await self._connect() as client:  # use 'async with'
+        await client.get(key)
+```
+","",""
+"issue_comment","154","aio-libs","aioredis","argaen","2016-09-30 16:26:41","Thanks for the quick response! With the changes it gives the following error:
+
+``` python
+>       async with await self._connect() as client:
+E       AttributeError: __aexit__
+```
+","",""
+"issue_comment","154","aio-libs","aioredis","popravich","2016-09-30 20:18:53","try without `async with`, just `with`
+","",""
+"issue_comment","154","aio-libs","aioredis","argaen","2016-10-01 14:03:59","Not working:
+
+``` python
+aiocache/redis.py:50: in set
+    with await self._connect() as redis:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <aioredis.pool.RedisPool object at 0x7f4a452acf60>
+
+    def __enter__(self):
+        raise RuntimeError(
+>           ""'yield from' should be used as a context manager expression"")
+E       RuntimeError: 'yield from' should be used as a context manager expression
+
+../../.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/pool.py:256: RuntimeError
+```
+
+The only way I've been able to make it work is with the first version I posted in the first message
+","",""
+"issue_comment","154","aio-libs","aioredis","popravich","2016-10-03 07:17:35","``` python
+async def _connect(self):
+    if self._pool is None:
+        self._pool = await aioredis.create_pool(
+            (self.endpoint, self.port))
+    return self._pool  # here no await needed
+
+async def get(self, key):
+    async with (await self._connect()).get() as client:  # use 'async with'
+        await client.get(key)
+```
+
+this works for me
+","",""
+"issue_comment","154","aio-libs","aioredis","argaen","2016-10-03 21:25:04","Yeah, and it does for me too. Also the first code I posted does. I opened this because for every operation this message seems to appear so it seems something is not being completed or closed correctly. With the code you posted it also happens (I adapted it to run it from a main):
+
+``` python
+import aioredis
+import asyncio
+
+async def _connect():
+    _pool = await aioredis.create_pool(
+        (""127.0.0.1"", 6379))
+    return _pool
+
+async def get(key):
+    async with (await _connect()).get() as client:  # use 'async with'
+        await client.get(key)
+
+
+if __name__ == ""__main__"":
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(get(""key""))
+```
+
+This shows the following in the output:
+
+``` python
+23:24 $ python main.py 
+None
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisPool._do_close() done, defined at /home/blck/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/pool.py:100> wait_for=<Future pending cb=[Task._wakeup()]>>
+Task was destroyed but it is pending!
+task: <Task pending coro=<RedisConnection._read_data() running at /home/blck/.virtualenvs/aiocache/lib/python3.5/site-packages/aioredis/connection.py:131> wait_for=<Future pending cb=[Task._wakeup()]> cb=[Future.set_result()]>
+```
+","",""
+"issue_comment","154","aio-libs","aioredis","popravich","2016-10-04 07:45:15","This is expected behavior as `pool.close() / await pool.wait_closed()` never gets called.
+Connections starts ""background"" task to read data from socket and it runs forever,
+`pool.close()` / `await pool.wait_closed()` stops that task and wait it all finishes correctly.
+","",""
+"issue_comment","154","aio-libs","aioredis","argaen","2016-10-04 22:08:14","Ummm interesting. And shouldn't the pool be closed with the `exit` of the context manager? I'm trying to solve this because it's printing this for each test and would like to keep it clean. I've tried to close the pool in the closing of the pytest fixture but not working either. Can you have a look at https://github.com/argaen/aiocache/blob/master/tests/test_redis.py#L39 and let me know if I'm doing something wrong??
+
+The code implementing the connect call is at https://github.com/argaen/aiocache/blob/master/aiocache/backends/redis.py#L94
+
+Thanks a lot for your time :)
+","",""
+"issue_comment","154","aio-libs","aioredis","popravich","2016-10-05 09:43:15","No problem)
+
+> And shouldn't the pool be closed with the exit of the context manager?
+
+No this will result in new establishing new connection to redis for every `get/multi_get/set/etc`.
+So this would be very inefficient and add latency.
+Closing pool should be done at the end of program.
+
+`test_redis.py`: should not `redis_cache` fixture be a `yield_fixture`? maybe that is a problem...
+You can check aioredis test fixtures.
+
+To make redis closable backend should be instantiated and used explicitly so that one could call
+`backend.close()` or `backend._pool.close()`:
+
+``` python
+def main(loop):
+    redis_backend = config_default_backend(...)
+    try:
+        loop.run_until_complete(run_main_program())
+    finally:
+        redis_backend._pool.close()
+        loop.run_until_complete(redis_backend._pool.wait_closed())
+```
+","",""
+"issue_comment","154","aio-libs","aioredis","argaen","2016-10-05 13:19:46","> test_redis.py: should not redis_cache fixture be a yield_fixture? maybe that is a problem...
+> You can check aioredis test fixtures.
+
+Nope, in pytest 3.0 if a fixture has a `yield` it implicitly becomes an ""old"" yield_fixture. It works out of the box now.
+
+D'oh! I thought `close()` and `wait_closed()` were just the sync and async ways to close the redis connection respectively, my bad. After transforming the fixture to:
+
+``` python
+@pytest.fixture
+def redis_cache(event_loop, mocker):
+    cache = RedisCache(namespace=""test"", loop=event_loop)
+    yield cache
+    event_loop.run_until_complete(cache.delete(KEY))
+    event_loop.run_until_complete(cache.delete(""random""))
+    cache._pool.close()
+    event_loop.run_until_complete(cache._pool.wait_closed())
+```
+
+works perfectly. Thanks a lot for the help!
+","",""

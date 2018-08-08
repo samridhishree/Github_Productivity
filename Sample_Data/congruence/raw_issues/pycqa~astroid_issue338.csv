@@ -1,0 +1,76 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","338","pycqa","astroid","moylop260","2016-05-31 23:23:45","if I use the commit `Canonicalize file paths in modpath_from_file, this should help when receiving symlinks and whatnot.` https://github.com/PyCQA/astroid/commit/cda9dc4ad0e2cc075553d133dd0fdab468d614d7
+
+Now, I get the following error in our travis builds:
+
+``` bash
+/usr/local/lib/python2.7/site-packages, 
+/usr/local/lib/python2.7/dist-packages, 
+/usr/lib/python2.7/dist-packages, 
+/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/astroid/brain
+Traceback (most recent call last):
+  File ""/home/travis/maintainer-quality-tools/travis/test_pylint"", line 144, in <module>
+    ] + modules_cmd + extra_params_cmd, standalone_mode=False)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/click/core.py"", line 716, in __call__
+    return self.main(*args, **kwargs)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/click/core.py"", line 696, in main
+    rv = self.invoke(ctx)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/click/core.py"", line 889, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/click/core.py"", line 534, in invoke
+    return callback(*args, **kwargs)
+  File ""/home/travis/maintainer-quality-tools/travis/run_pylint.py"", line 104, in main
+    extra_params=extra_params)
+  File ""/home/travis/maintainer-quality-tools/travis/run_pylint.py"", line 75, in run_pylint
+    pylint_res = pylint.lint.Run(cmd, exit=False)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/pylint/lint.py"", line 1241, in __init__
+    linter.load_default_plugins()
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/pylint/lint.py"", line 481, in load_default_plugins
+    self._load_reporter()
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/pylint/lint.py"", line 501, in _load_reporter
+    modutils.get_module_part(qname))
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/astroid/modutils.py"", line 445, in get_module_part
+    context_file=context_file)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/astroid/modutils.py"", line 346, in file_from_modpath
+    return file_info_from_modpath(modpath, path, context_file).location
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/astroid/modutils.py"", line 391, in file_info_from_modpath
+    return _spec_from_modpath(modpath, path, context)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/astroid/modutils.py"", line 611, in _spec_from_modpath
+    spec = _find_spec(modpath, path)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/astroid/modutils.py"", line 810, in _find_spec
+    submodule_path or path)
+  File ""/home/travis/virtualenv/python2.7_with_system_site_packages/local/lib/python2.7/site-packages/astroid/modutils.py"", line 777, in _find_spec_with_path
+    raise ImportError('No module named %s' % '.'.join(module_parts))
+ImportError: No module named text
++=======================================
+|  Tests summary:
+|---------------------------------------
+| test_flake8                 Success
+| test_pylint                 FAIL
++=======================================
+```
+
+pylint-odoo travis build example: https://travis-ci.org/Vauxoo/pylint-odoo/jobs/134317892#L1901
+","start issue","ImportError: No module named text"
+"issue_closed","338","pycqa","astroid","moylop260","2016-06-01 16:37:25","","closed issue","ImportError: No module named text"
+"issue_comment","338","pycqa","astroid","moylop260","2016-05-31 23:24:39","Do make it sense this issue @PCManticore?
+","",""
+"issue_comment","338","pycqa","astroid","PCManticore","2016-06-01 00:17:21","Looking into it, I'm not sure what is happening.
+","",""
+"issue_comment","338","pycqa","astroid","PCManticore","2016-06-01 16:21:49","Can you please check with the latest commit? I can currently reproduce it and the commit seems to fix it, but unfortunately setting an automated test is kinda cumbersome, so I left out that part for now. Let me know if it works, so I could close the issue.
+","",""
+"issue_comment","338","pycqa","astroid","moylop260","2016-06-01 16:27:33","thank you testing WIP...
+","",""
+"issue_comment","338","pycqa","astroid","moylop260","2016-06-01 16:37:25","Steps:
+- I build yesterday a docker container with the following [Dockerfile](https://gist.github.com/moylop260/5a47afc0ec209e66c41b1ca93af854e2)
+- Ran the `entrypoint.sh` and I saw the error
+- Update the last version of astroid today
+- The issue is fixed
+
+Image of example before and after update astroid:
+![screen shot 2016-06-01 at 11 34 52 am](https://cloud.githubusercontent.com/assets/6644187/15717499/e87001e0-27ec-11e6-981c-1cecb4111022.png)
+
+Thank you @PCManticore 👍 
+","",""
+"issue_comment","338","pycqa","astroid","PCManticore","2016-06-01 16:39:42","Cool, thanks!
+","",""

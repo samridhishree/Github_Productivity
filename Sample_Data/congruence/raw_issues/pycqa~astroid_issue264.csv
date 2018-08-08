@@ -1,0 +1,22 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","264","pycqa","astroid","pylint-bot","2015-11-23 15:06:43","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, astroid will crash with a RuntimeError. The problem occurs because k is not inferred as the argument, but as the iterating element from the comprehension, which makes dict(**k) to be reevaluated at each inference step. This might be solved when we'll rewrite the lookup mechanism, since right now it's scattered all over the place.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+
+def test(k):
+   (k for k in __(dict(**k)))
+''')
+print(next(n.infer()))
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/264
+","start issue","Name lookup can lead to maximum recursion errors in certain situations"

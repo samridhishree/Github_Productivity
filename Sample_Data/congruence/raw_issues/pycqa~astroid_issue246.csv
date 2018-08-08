@@ -1,0 +1,93 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","246","pycqa","astroid","pylint-bot","2015-11-05 05:00:18","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+I'm getting the following two errors.
+
+``` python
+======================================================================
+ERROR: test_str_methods (unittest_inference.InferenceTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_inference.py"", line 1804, in test_str_methods
+    self.assertInferConst(ast[0], u'')
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_inference.py"", line 86, in assertInferConst
+    inferred = next(node.infer())
+  File ""~/code/astroid/astroid/decorators.py"", line 127, in raise_if_nothing_inferred
+    for node in func(*args, **kwargs):
+  File ""~/code/astroid/astroid/decorators.py"", line 96, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""~/code/astroid/astroid/inference.py"", line 110, in infer_call
+    for callee in self.func.infer(context):
+  File ""~/code/astroid/astroid/context.py"", line 51, in cache_generator
+    for result in generator:
+  File ""~/code/astroid/astroid/decorators.py"", line 96, in wrapped
+    for res in _func(node, context, **kwargs):
+  File ""~/code/astroid/astroid/decorators.py"", line 134, in raise_if_nothing_inferred
+    raise exceptions.InferenceError(**fields)
+astroid.exceptions.InferenceError: Inference failed for <Attribute.decode l.2 at 0x7fd814496630>.
+
+======================================================================
+ERROR: test_unicode_methods (unittest_inference.InferenceTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_inference.py"", line 1835, in test_unicode_methods
+    self.assertInferConst(ast[0], '')
+  File ""~/code/astroid/.tox/py34/lib/python3.4/site-packages/astroid/tests/unittest_inference.py"", line 86, in assertInferConst
+    inferred = next(node.infer())
+  File ""~/code/astroid/astroid/decorators.py"", line 134, in raise_if_nothing_inferred
+    raise exceptions.InferenceError(**fields)
+astroid.exceptions.InferenceError: Inference failed for <Call l.2 at 0x7fd81449b828>.
+```
+
+The first error I'm reasonably sure is related to this:
+
+``` python
+Python 3.4.3 (default, Mar 26 2015, 22:03:40) 
+[GCC 4.9.2] on linux
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> ' '.decode()
+Traceback (most recent call last):
+  File ""<stdin>"", line 1, in <module>
+AttributeError: 'str' object has no attribute 'decode'
+```
+
+I don't understand how this error didn't happen before, given the Python 2/3 differences.  I assume that not testing all the string methods is deliberate, but I should also mention there are some string methods that are only on Python3, like isidentifier().
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/246
+","start issue","brain_builtin_inference does not account for the version differences in string methods or from __future__ import unicode_literals"
+"issue_comment","246","pycqa","astroid","pylint-bot","2015-11-10 23:46:59","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+The immediate cause of this bug is that brain_builtin_inference was trying to alter the locals dictionary of str, bytes, and unicode ClassDef nodes.  I changed this so that it instead replaces FunctionDef nodes in the body of those ClassDef nodes with others, which does fix the immediate problem.  Unfortunately, there are still issues here.
+1. The version differences are still not being handled correctly---there are calls that will fail on Python 3 or Python 2 that astroid won't recognize.
+2. Astroid will also incorrectly infer that some arguments can be passed by keyword when they can't be.
+3. Because this hard-codes `type(b'') is type('')` , when `from __future__ import unicode_literals` is in effect I'm concerned that things will break.
+4. Because my new functions in raw_building don't create duplicate copies for the same object, one of str, bytes, and unicode on the various versions will be a Name node, not a ClassDef.  I'm not sure that the builtin lookups are correctly handling the indirection.  On Python 2, because `bytes is str` and ast_from_object encounters bytes first, it builds a ClassDef node for bytes and a Name node for str.  I worked around the problems introduced with the following ugly hack:
+
+``` python
+if sys.version_info > (3, 0):
+    extend_builtins({'bytes': functools.partial(_extend_str, rvalue=""b''""),
+                     'str': functools.partial(_extend_str, rvalue=""''"")})
+else:
+    extend_builtins({'bytes': functools.partial(_extend_str, rvalue=""''""),
+                     'unicode': functools.partial(_extend_str, rvalue=""u''"")})
+```
+
+This isn't a good solution though.
+","",""
+"issue_comment","246","pycqa","astroid","pylint-bot","2015-11-12 23:07:56","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+For .2, that's true, there's currently no mechanism for handling this. Maybe something can be added along with the issue that's proposing a new API for the Arguments node, which could be enforced by Pylint with a specific rule.
+","",""
+"issue_comment","246","pycqa","astroid","pylint-bot","2015-11-19 04:09:00","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+This is improved in 8aca20dd1814, which handles alternate names in the builtins module.  It roughly fixes 4 in the list above but doesn't tackle the other issues.
+","",""

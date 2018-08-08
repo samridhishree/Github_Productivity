@@ -1,0 +1,52 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","242","aio-libs","aioredis","DeoLeung","2017-06-08 06:21:30","I have some code doing:
+```python
+# in tornado handler
+...
+res = await gen.multi({'1': self.send_task()})
+...
+
+async def send_task(self):
+    async with self.redis.get() as conn:
+      channel, = await conn.subscribe(uuid.uuid1().hex)
+      # celery code
+      task.apply_async(args=args, kwargs=kwargs, task_id=channel.name)
+      await channel.wait_message()
+      response = pickle.loads(await channel.get())
+      await conn.unsubscribe(channel.name)
+```
+
+within my pytest, I randomly get the following errors(but the tests passed), any hints on where to look for the cause?:
+```sh
+Traceback (most recent call last):
+  File ""<string>"", line 6, in _wrap_awaitable
+  File ""/xxx/handlers/radar.py"", line 102, in get
+  File ""/xxx/handlers/__init__.py"", line 455, in send_task
+  File ""/usr/local/Cellar/python3/3.6.1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/asyncio/coroutines.py"", line 210, in coro
+  File ""/virtualenv//lib/python3.6/site-packages/aioredis/pool.py"", line 333, in __aexit__
+  File ""/virtualenv//lib/python3.6/site-packages/aioredis/pool.py"", line 218, in release
+  File ""/usr/local/Cellar/python3/3.6.1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/asyncio/tasks.py"", line 506, in ensure_future
+AttributeError: 'NoneType' object has no attribute 'isfuture'
+
+Exception ignored in: <generator object _wrap_awaitable at 0x10ede50a0>
+Traceback (most recent call last):
+  File ""<string>"", line 6, in _wrap_awaitable
+  File ""/xxx/handlers/radar.py"", line 102, in get
+  File ""/xxx/handlers/__init__.py"", line 455, in send_task
+  File ""/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/python3.5/asyncio/coroutines.py"", line 206, in coro
+  File ""/virtualenv//lib/python3.5/site-packages/aioredis/pool.py"", line 333, in __aexit__
+  File ""/virtualenv//lib/python3.5/site-packages/aioredis/pool.py"", line 218, in release
+  File ""/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/python3.5/asyncio/tasks.py"", line 540, in ensure_future
+AttributeError: 'NoneType' object has no attribute 'Future'
+
+Exception ignored in: <generator object _wrap_awaitable at 0x117138f68>
+Traceback (most recent call last):
+  File ""<string>"", line 6, in _wrap_awaitable
+  File ""/xxx/handlers/radar.py"", line 102, in get
+  File ""/xxx/handlers/__init__.py"", line 455, in send_task
+  File ""/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/python3.5/asyncio/coroutines.py"", line 207, in coro
+TypeError: 'NoneType' object is not callable
+```","start issue","random errors"
+"issue_comment","242","aio-libs","aioredis","popravich","2017-06-08 08:22:35","There might be some problem with your asyncio module (does something monkey-patch it? or is there `asyncio` module in your project/code?).
+First two exceptions are both not finding `asyncio.futures` module https://github.com/python/cpython/blob/v3.6.1/Lib/asyncio/tasks.py#L506.
+","",""

@@ -1,0 +1,48 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,200,pycqa,astroid,pylint-bot,2015-09-29 22:27:36,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+Given the following code, astroid crashes with a KeyError. This is happening because Instance.getitem always wraps its arguments in a Const object, while sometimes it gets passed a slice object. It should use objects.Slice instead and probably it shouldn't do the wrapping itself, but the caller should be responsible for this.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+class A:
+   def __getitem__(self, k):       
+       return k
+
+A()[:42] #@
+
+''')
+print(next(n.infer()))
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/200
+",start issue,KeyError when trying to infer what an instance's __getitem__ returns when called with a slice
+1,issue_closed,200,pycqa,astroid,pylint-bot,2015-12-09 05:55:00,,closed issue,KeyError when trying to infer what an instance's __getitem__ returns when called with a slice
+2,issue_comment,200,pycqa,astroid,pylint-bot,2015-10-03 14:44:56,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Don't wrap instance's arguments into a Const, instead let the original index object to be used.
+
+This prevents a crash when the original index object is a slice object,
+which was wrapped inadvertendly in a Const node, leading to a crash
+later on if the said object was inferred. Closes issue #200.
+",,
+0,issue_title,197,pycqa,astroid,pylint-bot,2015-09-29 17:23:25,"Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+We could use a convenience method for retrieving all the bindings of a nonlocal node. This will be used by the nonlocal-without-binding checker in pylint, but might be useful for other uses as well.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/197
+",start issue,[easy] Add Nonlocal.bindings()
+1,issue_closed,197,pycqa,astroid,PCManticore,2016-02-20 22:49:45,,closed issue,[easy] Add Nonlocal.bindings()
+2,issue_comment,197,pycqa,astroid,PCManticore,2016-02-20 22:49:45,"Closing this. I don't have another use case for now, apart of the code that's in the pylint checker and we'll probably not going to need such a method soon.
+",,

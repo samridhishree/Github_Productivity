@@ -1,0 +1,63 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","410","pycqa","astroid","cpennington","2017-03-08 15:27:14","Since https://github.com/PyCQA/astroid/commit/3e27213914271309a4716662b09fda91fca9efa1,
+`is_subtype` and `is_supertype` raise exceptions when they can't find a relationship between types. This is caught by the callers of `_infer_binary_operation`. However, the error is only thrown after the generator return by `_infer_binary_operation` is started.
+
+Prior to this patch, the generator is only started inside the `else` clause of:
+
+```
+try:
+    results = _infer_binary_operation(lhs, rhs, self, context, _get_binop_flow)
+except exceptions._NonDeducibleTypeHierarchy:
+    yield util.Uninferable
+else:
+    for result in results:
+        yield result
+```
+
+To address this, the `quickstart` decorator pulls the first value from the generator when it's called, and then buffers that first result until it is needed by the later iteration.","start issue","Quickstart _infer_binary_operation to raise errors that occur during startup"
+"issue_closed","410","pycqa","astroid","PCManticore","2017-03-12 11:57:56","","closed issue","Quickstart _infer_binary_operation to raise errors that occur during startup"
+"pull_request_title","410","pycqa","astroid","cpennington","2017-03-08 15:27:14","Since https://github.com/PyCQA/astroid/commit/3e27213914271309a4716662b09fda91fca9efa1,
+`is_subtype` and `is_supertype` raise exceptions when they can't find a relationship between types. This is caught by the callers of `_infer_binary_operation`. However, the error is only thrown after the generator return by `_infer_binary_operation` is started.
+
+Prior to this patch, the generator is only started inside the `else` clause of:
+
+```
+try:
+    results = _infer_binary_operation(lhs, rhs, self, context, _get_binop_flow)
+except exceptions._NonDeducibleTypeHierarchy:
+    yield util.Uninferable
+else:
+    for result in results:
+        yield result
+```
+
+To address this, the `quickstart` decorator pulls the first value from the generator when it's called, and then buffers that first result until it is needed by the later iteration.","3179195b225baed9c27e774124ba3a5ba9269959","Quickstart _infer_binary_operation to raise errors that occur during startup"
+"issue_comment","410","pycqa","astroid","cpennington","2017-03-08 19:31:49","@degustaf: Yup, I added a test case that demonstrates the issue.","",""
+"issue_comment","410","pycqa","astroid","ceridwen","2017-03-08 20:51:21","""However, the error is only throw after the generator return by _infer_binary_operation is iterated over, which means the current except:/else: structure doesn't work.""  I'm having trouble understanding what you mean here.  Could you revise that sentence?","",""
+"issue_comment","410","pycqa","astroid","cpennington","2017-03-08 21:13:26","@ceridwen: I've update the commit message and the PR body. Please let me know if you want any additional clarification.","",""
+"issue_comment","410","pycqa","astroid","ceridwen","2017-03-11 14:07:19","@cpennington, thanks for rewriting the description, that's much clearer.  @PCManticore, I haven't run the tests yet but that code looks like it ought to fix the bug.  If that's sufficient, I suggest we do that, though we should also add @cpennington's test.","",""
+"issue_comment","410","pycqa","astroid","PCManticore","2017-03-11 14:15:34","@ceridwen Yep, if the code works, we should include @cpennington test.","",""
+"issue_comment","410","pycqa","astroid","PCManticore","2017-03-12 11:57:56","Merged manually, with the iteration of results inside the try branch. Thank you @cpennington !","",""
+"pull_request_commit","410","pycqa","astroid","cpennington","2017-03-08 19:30:55","Add a test of binary operations on types with unknown bases","dfc8141c0ec3df56180c84b3633e966c61b2f585",""
+"pull_request_commit","410","pycqa","astroid","cpennington","2017-03-08 15:21:25","Quickstart _infer_binary_operation to raise errors that occur during startup.
+
+Since https://github.com/PyCQA/astroid/commit/3e27213914271309a4716662b09fda91fca9efa1,
+is_subtype and is_supertype raise exceptions when they can't find a
+relationship between types. This is caught by the callers of
+_infer_binary_operation. However, the error is only thrown after the
+generator return by _infer_binary_operation is started.
+
+Prior to this patch, the generator is only started inside the else
+clause of:
+
+try:
+    results = _infer_binary_operation(lhs, rhs, self, context, _get_binop_flow)
+except exceptions._NonDeducibleTypeHierarchy:
+    yield util.Uninferable
+else:
+    for result in results:
+        yield result
+
+To address this, the quickstart decorator pulls the first value from the
+generator when it's called, and then buffers that first result until it is
+needed by the later iteration.","3179195b225baed9c27e774124ba3a5ba9269959",""

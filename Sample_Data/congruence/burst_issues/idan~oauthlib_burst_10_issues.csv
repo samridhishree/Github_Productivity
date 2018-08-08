@@ -1,0 +1,86 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,93,idan,oauthlib,russss,2013-01-15 09:33:58,"The docs say to provide dummy_request_token and dummy_access_token accessors, but instead the code uses dummy_resource_owner. This PR changes it to use the dummy request/access tokens.
+",start issue,OAuth 1 implementation uses a nonexistent dummy_resource_owner
+1,issue_closed,93,idan,oauthlib,ib-lundgren,2013-01-15 20:45:19,,closed issue,OAuth 1 implementation uses a nonexistent dummy_resource_owner
+2,pull_request_title,93,idan,oauthlib,russss,2013-01-15 09:33:58,"The docs say to provide dummy_request_token and dummy_access_token accessors, but instead the code uses dummy_resource_owner. This PR changes it to use the dummy request/access tokens.
+",e6aabab064fd2240bfc844be14d1af8c422c19a8,OAuth 1 implementation uses a nonexistent dummy_resource_owner
+3,pull_request_merged,93,idan,oauthlib,ib-lundgren,2013-01-15 20:45:19,OAuth 1 implementation uses a nonexistent dummy_resource_owner,d08b2a908a1cc822b9b75ef8db79a4d2d5f7ccf7,Pull request merge from russss/oauthlib:master to idan/oauthlib:master
+4,issue_comment,93,idan,oauthlib,ib-lundgren,2013-01-15 20:45:15,"Nice work! The dummy_resource_owner is an artifact from incomplete refactoring, I'm hoping a test fix-it (#95) can help prevent such mistakes in the future.
+",,
+5,pull_request_commit,93,idan,oauthlib,russss,2013-01-15 09:31:53,Use the correct dummy tokens,c50ca676ef4d486bbb638106c4435333fabe34c6,
+6,pull_request_commit,93,idan,oauthlib,russss,2013-01-15 17:42:50,Fix dummy token tests,e6aabab064fd2240bfc844be14d1af8c422c19a8,
+0,issue_title,92,idan,oauthlib,metatoaster,2013-01-11 14:51:54,"The oauth_callback parameter is never required except for requests for Temporary Credentials as outlined in Section 2.1 of the RFC.  While in the commit submitted the parameter switches off, it may be a wiser idea to leave the check as True so that backward compatibility with existing workarounds are not broken.
+
+That said, implementations using this library should have tests of their own to check against overall correctness. Oh yes, they are supplied here, too.
+",start issue,Test for callback verification for OAuth1 provider.
+1,issue_closed,92,idan,oauthlib,ib-lundgren,2013-01-15 20:48:54,,closed issue,Test for callback verification for OAuth1 provider.
+2,pull_request_title,92,idan,oauthlib,metatoaster,2013-01-11 14:51:54,"The oauth_callback parameter is never required except for requests for Temporary Credentials as outlined in Section 2.1 of the RFC.  While in the commit submitted the parameter switches off, it may be a wiser idea to leave the check as True so that backward compatibility with existing workarounds are not broken.
+
+That said, implementations using this library should have tests of their own to check against overall correctness. Oh yes, they are supplied here, too.
+",4d64a2c6ea6ae80e43130186a4266f90175b4590,Test for callback verification for OAuth1 provider.
+3,pull_request_merged,92,idan,oauthlib,ib-lundgren,2013-01-15 20:48:54,Test for callback verification for OAuth1 provider.,f90746adfd3fe59c6d393f7f8606386cf15fefb7,Pull request merge from metatoaster/oauthlib:oauth1_callback_verify to idan/oauthlib:master
+4,issue_comment,92,idan,oauthlib,ib-lundgren,2013-01-15 20:48:50,"Great work! Love when PRs come with tests. I think verify_request needs to be broken up to match the three different use cases it currently serves, i.e. requests for request tokens, access tokens and protected resources. I've begun musing about this in #95 and hope to get to it soon. 
+",,
+5,pull_request_commit,92,idan,oauthlib,metatoaster,2013-01-11 14:43:01,"Test for callback verification
+
+  - Not all requests will need the oauth_callback attribute.
+  - For requests that need it (i.e. requests for Temporary Credentials)
+    they must be checked.",6817f4fb527bd423b16ce16d91ad4af30538f6b5,
+6,pull_request_commit,92,idan,oauthlib,metatoaster,2013-01-11 15:11:27,Fix a mess to formatting made in parent.,4d64a2c6ea6ae80e43130186a4266f90175b4590,
+0,issue_title,90,idan,oauthlib,tino,2013-01-05 13:50:02,"...r class
+
+As it is also a required validator.
+
+Don't know if a test is needed, and if yes, how to make a useful test for this?
+",start issue,Add missing ``validate_bearer_token`` to ``RequestValidator`` placeholde...
+1,issue_closed,90,idan,oauthlib,ib-lundgren,2013-01-15 20:53:56,,closed issue,Add missing ``validate_bearer_token`` to ``RequestValidator`` placeholde...
+2,pull_request_title,90,idan,oauthlib,tino,2013-01-05 13:50:02,"...r class
+
+As it is also a required validator.
+
+Don't know if a test is needed, and if yes, how to make a useful test for this?
+",26e50668348fa19d6d8a7aa9cc57d4fee66d630b,Add missing ``validate_bearer_token`` to ``RequestValidator`` placeholde...
+3,pull_request_merged,90,idan,oauthlib,ib-lundgren,2013-01-15 20:53:56,Add missing ``validate_bearer_token`` to ``RequestValidator`` placeholde...,98f28dbb5bdfef92b0b9ca59e183e017ddb2648d,Pull request merge from tino/oauthlib:missing-validate_bearer_token to idan/oauthlib:master
+4,issue_comment,90,idan,oauthlib,ib-lundgren,2013-01-15 20:53:52,"Thanks! It's alright without a test for now.
+",,
+5,pull_request_commit,90,idan,oauthlib,tino,2013-01-05 13:48:01,Add missing ``validate_bearer_token`` to ``RequestValidator`` placeholder class,26e50668348fa19d6d8a7aa9cc57d4fee66d630b,
+0,issue_title,94,idan,oauthlib,russss,2013-01-15 09:47:04,"In the OAuth1 provider, where dummy tokens are fetched they're just assigned to a local variable, which is henceforth unused. e.g.: 
+
+```
+client_key = self.dummy_client_key
+```
+
+Should we not be assigning these to the request object?
+
+```
+request.client_key = self.dummy_client_key
+```
+",start issue,OAuth1 doesn't seem to do anything with dummy tokens
+1,issue_closed,94,idan,oauthlib,ib-lundgren,2013-02-07 22:29:19,,closed issue,OAuth1 doesn't seem to do anything with dummy tokens
+2,issue_comment,94,idan,oauthlib,ib-lundgren,2013-01-15 20:40:40,"Nicely spotted. It is indeed wrong that it is unused and yes it should be attached to the request. However to prevent leakage of sensitive credentials the secret keys should not be. I'd mention the need for improved testing in #95.
+
+Feel free to send a PR if you have time, if not I'll get to it some time this week =)
+",,
+0,issue_title,95,idan,oauthlib,ib-lundgren,2013-01-15 20:38:08,"There are two main issues with OAuth 1 provider as it stands today
+- there is some testing but much can be improved
+- verify_request is overly complex and should be split up
+
+I'd like to see the second one addressed by instead using
+- verify_request_token_request
+- verify_access_token_request
+- verify_resource_request (not yet stubbed)
+  and have whatever functionality they share in verify_request refactored into private methods. 
+
+Additionally I'd like to move to inheritance by composition and move request validation (basically all abstract methods) to a request validator object. Similar to what I've begun doing with the w.i.p. oauth 2 server. 
+
+Currently the testing ultimately boils down to checking for ValueErrors or false which makes it easy to introduce subtle errors such as #94. I propose that in addition to this (with a request validator as mentioned above) use mock objects to assert that the False/ValueError is caused the way the test intended it to, i.e. missing parameter or invalid credentials etc.
+
+I'm planning on implementing this when I find a free afternoon which may or may not be soon. If you are interested in giving it a go, please drop me a line =)
+",start issue,OAuth 1 Server / Provider plans
+1,issue_closed,95,idan,oauthlib,ib-lundgren,2013-06-20 10:09:14,,closed issue,OAuth 1 Server / Provider plans
+2,issue_comment,95,idan,oauthlib,ib-lundgren,2013-01-15 20:50:01,"A change like I'm planning will break backwards compatibility which should not come as a surprise for people knowing semantic versioning. However to not aggravate too many off I'll try and phase it out over the span of 0.4 and remove the old style in 0.5. 
+",,
+3,issue_comment,95,idan,oauthlib,ib-lundgren,2013-06-09 19:30:29,"Just an update. I am working on this and am in the process of creating a structure similar to that of the OAuth 2 provider. Stay tuned!
+",,
+4,issue_comment,95,idan,oauthlib,ib-lundgren,2013-06-18 20:35:02,"Most of the refactoring is done now. Will keep updating the branch with more tests and doc fixes then merge/push v0.5.0
+",,

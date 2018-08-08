@@ -1,0 +1,40 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","296","aio-libs","aioredis","zbuc","2017-09-28 18:46:14","On the landing page for this repository, there's an example of using a pool within aioredis:
+
+```
+import asyncio
+import aioredis
+
+loop = asyncio.get_event_loop()
+
+async def go():
+    pool = await aioredis.create_pool(
+        ('localhost', 6379),
+        minsize=5, maxsize=10,
+        loop=loop)
+    await pool.execute('set', 'my-key', 'value')
+    print(await pool.execute('get', 'my-key'))
+    # graceful shutdown
+    pool.close()
+    await pool.wait_closed()
+
+loop.run_until_complete(go())
+```
+
+However, when I try running this example, I receive the following error:
+
+```
+$ python redistest.py
+Traceback (most recent call last):
+  File ""redistest.py"", line 17, in <module>
+    loop.run_until_complete(go())
+  File ""/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/lib/python3.6/asyncio/base_events.py"", line 467, in run_until_complete
+    return future.result()
+  File ""redistest.py"", line 11, in go
+    await pool.execute('set', 'my-key', 'value')
+AttributeError: 'RedisPool' object has no attribute 'execute'
+```
+
+This is with `aioredis==1.0.0b2` from PyPI.","start issue","Pool API doesn't seem to match example"
+"issue_closed","296","aio-libs","aioredis","zbuc","2017-09-28 21:16:29","","closed issue","Pool API doesn't seem to match example"
+"issue_comment","296","aio-libs","aioredis","zbuc","2017-09-28 21:16:29","Disregard, somehow I had 0.3.3 installed side-by-side with 1.0.0b2","",""

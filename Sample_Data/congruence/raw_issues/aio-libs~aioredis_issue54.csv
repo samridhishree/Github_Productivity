@@ -1,0 +1,55 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","54","aio-libs","aioredis","tailhook","2014-11-19 13:55:34","Traceback is following on each request to redis:
+
+```
+    if (yield from self.redis.exists(self._result_key())):
+  File ""/lib/python3.4/site-packages/aioredis/util.py"", line 50, in wait_convert
+    result = yield from fut
+  File ""/lib/python3.4/site-packages/aioredis/commands/__init__.py"", line 35, in execute
+    return (yield from conn.execute(*args, **kwargs))
+  File ""/nix/store/ymsrnz9fkcj4lcmyln5by9mab5r0h3zl-python3-3.4.2/lib/python3.4/asyncio/futures.py"", line 388, in __iter__
+    yield self  # This tells Task to wait for completion.
+  File ""/nix/store/ymsrnz9fkcj4lcmyln5by9mab5r0h3zl-python3-3.4.2/lib/python3.4/asyncio/tasks.py"", line 285, in _wakeup
+    value = future.result()
+  File ""/nix/store/ymsrnz9fkcj4lcmyln5by9mab5r0h3zl-python3-3.4.2/lib/python3.4/asyncio/futures.py"", line 269, in result
+    raise CancelledError
+concurrent.futures._base.CancelledError
+```
+
+Version: v0.1.4-18-ga5b75d4
+Redis instance is created using `create_reconnecting_redis`
+
+`strace` shows that reports are sent, and replied well. And no reconnections are going in-between.
+","start issue","Redis connection hangs in unusuable state"
+"issue_closed","54","aio-libs","aioredis","popravich","2015-08-17 07:06:23","","closed issue","Redis connection hangs in unusuable state"
+"issue_comment","54","aio-libs","aioredis","popravich","2014-11-19 14:17:19","ok, I will take a look.
+","",""
+"issue_comment","54","aio-libs","aioredis","tailhook","2014-12-12 16:06:34","In fact cancelling task is done with some external stuff. It might be that aioredis doesn't handle external cancellation well, or may be there is no aioredis but at all. I'll try to find out in next few days.
+","",""
+"issue_comment","54","aio-libs","aioredis","popravich","2014-12-12 17:07:19","maybe try `PYTHONASYNCIODEBUG=1`. maybe it'll show better tracebacks...
+","",""
+"issue_comment","54","aio-libs","aioredis","tailhook","2014-12-12 17:39:31","I have not tried, by I doubt PYTHONASYNCIODEBUG helps. I need to admin the following things:
+1. Application still works, and other requests, which does not need redis work (fast)
+2. When I touch URL with redis involved, `strace` shows that request is sent immediately, and response is `read`. (but it seems future is not resolved)
+3. So CancelledError is not a reason, but a symptom of not resolving future
+4. Wrapping `_read_task` into  `try..except..log` shows nothing, and any `except` clauses in `_read_task` do not get triggered too
+5. Redis connection alive and works as described in (2), and apparently because of (5) disconnect should not happen for issue to appear.  
+
+Overall I think it's a problem of getting `_waiters` list out of sync with requests.
+
+How to achieve the situation, I don't know yet. I do send many redis requests (about 200) in sequence, but I doubt this this sequence reaches timeout by itself. Requests in this bulk are simple `exists` / `get` but I'm not sure other requests are not sent in the middle, because I use same connection in multiple tasks. There might also be multi-execs in the middle (but they are atomic, right?)
+
+Reproduces on v0.1.5 too.  
+","",""
+"issue_comment","54","aio-libs","aioredis","tailhook","2014-12-15 17:06:06","So I finally got a test which reproduces the issue. It's in #56. I'm not sure why I've missed traceback when put many log statements in the code...
+
+Also I'm not sure how to reproduce the issue using ""normal"" methods instead of falling back to `_conn.execute`, but I believe it's possible (either by multi-exec, or by using some method which doesn't have wait_convert, or by using reconnecting_redis...)
+
+At the end of the day, `set_result` must be wrapped to capture error, and `read_data` must be wrapped to produce log message when it exits.
+","",""
+"issue_comment","54","aio-libs","aioredis","popravich","2014-12-17 09:05:37","Can you try updated master?
+","",""
+"issue_comment","54","aio-libs","aioredis","tailhook","2014-12-17 13:54:46","AFAICS, it should work. Will try later, because testing it potentially drops whole system down.
+
+Still, why no logging of fatal failures of reader coroutine?
+","",""

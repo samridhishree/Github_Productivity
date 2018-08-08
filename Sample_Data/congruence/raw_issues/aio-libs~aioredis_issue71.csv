@@ -1,0 +1,35 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","71","aio-libs","aioredis","kernel0","2015-07-28 02:12:31","Assume that there are task1, task2, task3 (Let's call that T1, T2, T3. and they use RedisPool) and self.minsize=1, self.maxsize=2 of Pool. (self.freesize = 1, self.size = 1)
+
+While T1 acquired connection, T2 requests a connection to pool. (self.freesize = 0, self.size = 1)
+
+``` python
+    # Pool.acquire() -> Pool._fill_free()
+    @asyncio.coroutine
+    def _fill_free(self):
+        while self.freesize < self.minsize and self.size < self.maxsize:
+            conn = yield from self._create_new_connection()     <------------ (1) T2
+            yield from self._pool.put(conn)
+
+
+```
+
+While pending T2 at (1), T3 requests a connection to pool and suspends at (1) and T1 release a connection. (self.freesize = 1, self.size = 1)
+And then, T2 resume, acquire and release a connection (self.freesize = 2, self.size = 2)
+
+``` python
+    # Pool.acquire() -> Pool._fill_free()
+    @asyncio.coroutine
+    def _fill_free(self):
+        while self.freesize < self.minsize and self.size < self.maxsize:
+            conn = yield from self._create_new_connection()     <------------ (1) T3
+            yield from self._pool.put(conn)                     
+```
+
+If T3 resumes, T3 tries to put a new connection to pool. However, T3 hangs until some task acquire connection, because it exceeds Maxsize of Pool.
+","start issue","If several tasks call Pool.acquire simultaneously, task hang occurs randomly."
+"issue_closed","71","aio-libs","aioredis","popravich","2015-08-04 07:07:17","","closed issue","If several tasks call Pool.acquire simultaneously, task hang occurs randomly."
+"issue_comment","71","aio-libs","aioredis","popravich","2015-08-04 07:07:17","fixed
+","",""
+"issue_comment","71","aio-libs","aioredis","kernel0","2015-08-05 06:30:12","awesome!
+","",""

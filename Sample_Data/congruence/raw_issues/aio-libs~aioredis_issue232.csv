@@ -1,0 +1,29 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","232","aio-libs","aioredis","gjcarneiro","2017-05-17 14:09:18","```
+/code # python -b -Xfaulthandler -m bastats
+/usr/local/lib/python3.6/importlib/_bootstrap_external.py:487: BytesWarning: Comparison between bytes and string
+  code = marshal.loads(data)
+DEBUG:aioredis:Creating tcp connection to ('api-ctrl-redis', 6379)
+/usr/local/lib/python3.6/asyncio/streams.py:75: BytesWarning: Comparison between bytes and int
+  lambda: protocol, host, port, **kwds)
+/usr/local/lib/python3.6/site-packages/aioredis/connection.py:229: BytesWarning: Comparison between bytes and string
+  is_pubsub = command in _PUBSUB_COMMANDS
+/usr/local/lib/python3.6/site-packages/aioredis/util.py:62: BytesWarning: Comparison between bytes and string
+  if res in (b'QUEUED', 'QUEUED'):
+/usr/local/lib/python3.6/site-packages/aioredis/connection.py:236: BytesWarning: Comparison between bytes and string
+  if command in ('SELECT', b'SELECT'):
+/usr/local/lib/python3.6/site-packages/aioredis/connection.py:238: BytesWarning: Comparison between bytes and string
+  elif command in ('MULTI', b'MULTI'):
+/usr/local/lib/python3.6/site-packages/aioredis/connection.py:240: BytesWarning: Comparison between bytes and string
+  elif command in ('EXEC', b'EXEC'):
+/usr/local/lib/python3.6/site-packages/aioredis/connection.py:242: BytesWarning: Comparison between bytes and string
+  elif command in ('DISCARD', b'DISCARD'):
+```
+
+With `-bb` the warnings turn into exceptions and I can't even run my code :(","start issue","BytesWarning: Comparison between bytes and string"
+"issue_comment","232","aio-libs","aioredis","popravich","2017-05-18 07:16:35","So? Why would you need to run your code with `-b` or `-bb`?
+I'm sorry, I just don't follow your concern. This is intended behavior — `command` is expected to be either
+`str` or `bytes` instance and I don't want to do repeat same checkes/encoding.","",""
+"issue_comment","232","aio-libs","aioredis","gjcarneiro","2017-05-18 09:48:49","Say I want to check my own code for errors about mixing bytes and str.  I turn on `-b`.  Now I am  spammed  by warnings from aioredis.  If I run with `-bb` to make sure no unicode bugs creep up in production, I get crashes from aioredis.
+
+It's kind of a ""code smell"" that `command` can be either str or bytes, imho.  You should just pick one and stick with it.","",""

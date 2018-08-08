@@ -1,0 +1,260 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,316,pycqa,astroid,dbaum,2016-02-10 17:57:56,"I know this isn't common because sys.path usually contains paths to the standard libraries, etc.  But we are using a meta importer for standard libraries so it is possible that sys.path is [].  This leads to exceptions in a couple places because of statements like:
+
+_path = (path is None and sys.path or path)
+
+The intention is that if path is None we use sys.path, otherwise we use path.  But if sys.path is [] and path is None, then _path will be None.  Then:
+
+for __path in __path:
+
+will throw an exception since you cannot iterate None.
+
+This appears to occur in both astroid/modutils.py and logilab/common/modutils.py.  This can be fixed by changing the _path assignment to:
+
+_path = sys.path if path is None else path
+
+However, I'm not sure if handling sys.path==[] is even a reasonable requirement.  If you think it is reasonable, then I'll fix astroid and start a pull request.  How should I update logilab/common?  I didn't see a project for it in PyCQA and I'm not quite sure where it comes from.
+
+On the other hand, nobody really cares about sys.path == [], then I can change the way we launch pylint so that sys.path is always non-empty (perhaps just appending a non-existent path).
+",start issue,pylint throws exception if sys.path is empty
+1,issue_closed,316,pycqa,astroid,PCManticore,2016-02-11 10:08:21,,closed issue,pylint throws exception if sys.path is empty
+2,issue_comment,316,pycqa,astroid,ceridwen,2016-02-10 18:06:01,"logilab.common was removed as a dependency for astroid, or should have been, as of the last release.  Where are you still seeing it? 
+
+On February 10, 2016 12:57:57 PM EST, dbaum notifications@github.com wrote:
+
+> I know this isn't common because sys.path usually contains paths to the
+> standard libraries, etc.  But we are using a meta importer for standard
+> libraries so it is possible that sys.path is [].  This leads to
+> exceptions in a couple places because of statements like:
+> 
+> _path = (path is None and sys.path or path)
+> 
+> The intention is that if path is None we use sys.path, otherwise we use
+> path.  But if sys.path is [] and path is None, then _path will be None.
+> Then:
+> 
+> for __path in __path:
+> 
+> will throw an exception since you cannot iterate None.
+> 
+> This appears to occur in both astroid/modutils.py and
+> logilab/common/modutils.py.  This can be fixed by changing the _path
+> assignment to:
+> 
+> _path = sys.path if path is None else path
+> 
+> However, I'm not sure if handling sys.path==[] is even a reasonable
+> requirement.  If you think it is reasonable, then I'll fix astroid and
+> start a pull request.  How should I update logilab/common?  I didn't
+> see a project for it in PyCQA and I'm not quite sure where it comes
+> from.
+> 
+> On the other hand, nobody really cares about sys.path == [], then I can
+> change the way we launch pylint so that sys.path is always non-empty
+> (perhaps just appending a non-existent path).
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/PyCQA/astroid/issues/316
+
+## 
+
+Sent from my Android device with K-9 Mail. Please excuse my brevity.
+",,
+3,issue_comment,316,pycqa,astroid,PCManticore,2016-02-10 18:07:19,"Hmm, interesting. A potential fix would be to let pylint and astroid to use a specific list of paths that can be used instead of sys.path. Alternatively, you could use --init-hook for pylint in order to append something to the path before running the actual analysis. If you need custom support in modutils.py though, I'm not against it, just send a PR (I'll have more time soon for reviewing, so don't worry about my late non-responsiveness)
+",,
+4,issue_comment,316,pycqa,astroid,dbaum,2016-02-10 18:15:54,"We're a bit behind on pylint, which is why I was still seeing logilab.  Usually my debugging consists of hacking on our internal version until I isolate the problem, then looking at current pylint/astroid code to see if the problem is still present in code.  When possible I also try to reproduce with a clean and recent pylint.  However, in this case there really isn't a good way for me to fake out what the rest of our infrastructure is doing, so I could only demonstrate the problem with our old release.  Anyway, it sounds like logilab isn't a problem.
+
+We already do a lot of sys.path manipulation prior to invoking pylint, so it's easy for me to append something without any additional hooks.  I'm fine with calling this a non-problem and closing the bug.  I just figured it was worth documenting this in an issue just in case someone else runs into the same problem.  But if you feel astroid should handle sys.path==[] gracefully, then I can create a pull request (though testing might be a lot of trouble).
+",,
+5,issue_comment,316,pycqa,astroid,PCManticore,2016-02-10 23:57:54,"If --init-hook fixes your problem, then I think we could close this issue. The behavior can be documented if you're up to that.
+",,
+6,issue_comment,316,pycqa,astroid,dbaum,2016-02-11 02:54:04,"Yep, go ahead and close the issue.  What did you have in mind for documentation.  The issue itself might be fine - if someone searches for sys.path they'll find it.  Or we can add some comments in code, though I'm not quite sure where would be best.
+",,
+7,issue_comment,316,pycqa,astroid,PCManticore,2016-02-11 10:08:21,"Let's leave it like this then, if someone else encounters the same problem, it can just find this issue.
+",,
+0,issue_title,314,pycqa,astroid,PCManticore,2016-02-04 17:21:34,"The old way consisted in having the parameter names, their defaults and their annotations separated in different components of the Arguments node. We introduced a new Param node, which holds
+the name of a parameter, its default value and its annotation. If any of the last two values are missing, then that slot will be filled with a new node kind, Empty, which is used for specifying the
+lack of something (None could have been used instead, but that means having non-AST nodes in the Arguments node). We're also having support for positional only arguments, for the moment only in raw_building, but we can add later on for extension modules and other builtins.  I decided to add a flag to the Param nodes which describes it as being positional only or not, because introducing another object to the Arguments node would mean to iterate over both lists (.args and .positional_only_args) when wanting to process all the parameters of a function, so this seems way easier to me to manage.
+
+Close #215
+
+@ceridwen Please do a review when you'll get some time.
+",start issue,Changed the way how parameters are being built
+1,issue_closed,314,pycqa,astroid,PCManticore,2016-02-13 23:25:35,,closed issue,Changed the way how parameters are being built
+2,pull_request_title,314,pycqa,astroid,PCManticore,2016-02-04 17:21:34,"The old way consisted in having the parameter names, their defaults and their annotations separated in different components of the Arguments node. We introduced a new Param node, which holds
+the name of a parameter, its default value and its annotation. If any of the last two values are missing, then that slot will be filled with a new node kind, Empty, which is used for specifying the
+lack of something (None could have been used instead, but that means having non-AST nodes in the Arguments node). We're also having support for positional only arguments, for the moment only in raw_building, but we can add later on for extension modules and other builtins.  I decided to add a flag to the Param nodes which describes it as being positional only or not, because introducing another object to the Arguments node would mean to iterate over both lists (.args and .positional_only_args) when wanting to process all the parameters of a function, so this seems way easier to me to manage.
+
+Close #215
+
+@ceridwen Please do a review when you'll get some time.
+",6d2529632bae545ff7564501cac14316d5ea9204,Changed the way how parameters are being built
+3,pull_request_merged,314,pycqa,astroid,PCManticore,2016-02-13 23:25:35,Changed the way how parameters are being built,1d86b6bf87e3551b6f731664b97f356d0c15fbac,Pull request merge from PyCQA/astroid:arguments-215 to PyCQA/astroid:2.0
+4,issue_comment,314,pycqa,astroid,ceridwen,2016-02-11 17:22:30,"I would use ""Parameter"" as the name for the new node rather than ""Param.""  I don't like shortening names into non-words unless it's necessary, and I don't think it is here.  For instance, inspect/funcsigs calls their parameter object ""Parameter.""
+
+For the implementation of Empty, I was planning to have `__bool__` return False, like None is treated as False.  This will save a lot of refactoring work changing boolean checks to type checks and preserve backwards compatibility for the plugins.  Empty should be a singleton object: there's no reason to consume additional memory or time by creating a new object every time we need an Empty node, since all of them are identical anyways.  I'd call the underlying type `_Empty` or  `_EmptyType` or `EmptyType` (by analogy with NoneType) and then instantiate the object once in node_classes.py.
+",,
+5,issue_comment,314,pycqa,astroid,PCManticore,2016-02-11 17:26:17,"Thanks, these make sense! I'll update the PR.
+",,
+6,issue_comment,314,pycqa,astroid,ceridwen,2016-02-11 19:45:56,"I think that our handling of positional-only and keyword-only arguments ought to be consistent: there should be another field in Arguments nodes to hold positional-only arguments like `kwonlyargs`, or keyword-only arguments should be flagged in the Parameter nodes like the positional-only arguments are.  Doing one with a flag in Parameters and the other with a field in Arguments is going to lead to confusion later, even though Python handles these parameters differently (positional-only parameters are only possible in C, keyword-only arguments are available in pure Python).
+",,
+7,issue_comment,314,pycqa,astroid,PCManticore,2016-02-13 14:28:27,"Thanks for the review. Here's the updated version. I dropped the positional_only attribute from the Parameter node and went with separate lists of arguments, but I also included a new attribute in the Arguments node, positional_and_keyword, which holds both positional only and positional_or_keyword arguments. That's because when processing the arguments we're interested in both, while trying to separate their processing from kwonlyargs, so whenever .args.args was used, it got replaced with positional_and_keyword list. Decided not to subclass ParameterVisitor from ast.NodeVisitor, it's not a big deal for now and we're planning to change it anyway.
+",,
+8,issue_comment,314,pycqa,astroid,ceridwen,2016-02-13 18:15:42,"I added a few final comments, otherwise looks good to me.
+",,
+9,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-11 17:28:58,"Since we're now going to have two objects named Parameter (the astroid node and the inspect/funcsigs.Parameter), I'd rewrite this to say something like, ""Generates an iterator of Parameter nodes from an iterator of inspect/funcsigs.Parameter objects.""
+",6d2529632bae545ff7564501cac14316d5ea9204,"(None, '', u'astroid/raw_building.py')"
+10,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-11 17:29:30,"This docstring should also be expanded similarly.
+",6d2529632bae545ff7564501cac14316d5ea9204,"(None, '', u'astroid/raw_building.py')"
+11,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-11 19:26:52,"This will hopefully be irrelevant soon, but I don't understand this comment, so you should probably expand it.
+",6d2529632bae545ff7564501cac14316d5ea9204,"(None, '', u'astroid/raw_building.py')"
+12,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-11 19:57:43,"This is a quibble but this could probably be a subclass of `ast.NodeVisitor`.  In the future, I'd like to reorganize the rebuilder to make it so that the main visitor contains only methods corresponding to the standard library AST's nodes, and move all other nodes to independent functions or something else here.  We might also consider if using the `ast.NodeVisitor` is appropriate for the main visitor: it might offer better forward compatibility when the CPython developers change something in the standard library AST.  On the other hand, it wouldn't work with turning the visitor methods into generators, which I proposed to prevent it from overflowing the call stack and which might also speed it up.  If we're going to end up moving to another parser like 2to3 or Dropbox's altered version of the CPython parser, all this is moot, though.
+",6d2529632bae545ff7564501cac14316d5ea9204,"(12, '', u'astroid/tree/rebuilder.py')"
+13,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-13 18:09:51,"This comment could be expanded to clarify what this code is doing.  (I'm not clear on its purpose.)
+",6d2529632bae545ff7564501cac14316d5ea9204,"(14, '', u'astroid/test_utils.py')"
+14,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-13 18:11:09,"Why is this test only run on 3.4?  Shouldn't it at least run on 3.5 as well?
+",6d2529632bae545ff7564501cac14316d5ea9204,"(60, '', u'astroid/tests/unittest_python3.py')"
+15,pull_request_commit_comment,314,pycqa,astroid,PCManticore,2016-02-13 18:12:23,"That's the minimum.
+",6d2529632bae545ff7564501cac14316d5ea9204,"(60, '', u'astroid/tests/unittest_python3.py')"
+16,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-13 18:13:36,"This should be a read-only property to avoid the possibility of these attributes getting unsynchronized from one another.  If we ever make the nodes immutable, that would also fix the problem.
+",6d2529632bae545ff7564501cac14316d5ea9204,"(105, '', u'astroid/tree/node_classes.py')"
+17,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-13 18:15:12,"Ah, my mistake.  That works then.
+",6d2529632bae545ff7564501cac14316d5ea9204,"(60, '', u'astroid/tests/unittest_python3.py')"
+18,pull_request_commit_comment,314,pycqa,astroid,PCManticore,2016-02-13 18:18:06,"I'm not keen on making this a property for now. It's used in a lot of places in astroid and I don't want to append these lists all the time I'm using positional_and_keyword. The exposed problem (arguments getting unsynchronized) shouldn't happen, since the nodes should be immutable, at least recommending to do so (if someone wants to add a new argument, it should create a new Arguments node instead).
+",6d2529632bae545ff7564501cac14316d5ea9204,"(105, '', u'astroid/tree/node_classes.py')"
+19,pull_request_commit_comment,314,pycqa,astroid,ceridwen,2016-02-13 20:06:20,"I'm fully onboard with making nodes immutable, I just wasn't sure if that was your plan.  If we do make nodes immutable, though, I'd like to add programmatic safety to ensure they're immutable, replacing mutable structures like lists with tuples, for instance, and documentation.  None of this is urgent, so leaving this as-is is fine as long as we're planning to push for immutability in 2.0.
+
+On February 13, 2016 1:18:07 PM EST, Claudiu Popa notifications@github.com wrote:
+
+> > ## \-        self.kwonly_annotations = []
+> > -    def postinit(self, args, defaults, kwonlyargs, kw_defaults,
+> > -                 annotations, kwonly_annotations,
+> >   varargannotation=None,
+> > -                 kwargannotation=None):
+> > -        self.args = args
+> > -        self.defaults = defaults
+> > -        self.kwonlyargs = kwonlyargs
+> > -        self.kw_defaults = kw_defaults
+> > -        self.annotations = annotations
+> > -        self.varargannotation = varargannotation
+> > -        self.kwargannotation = kwargannotation
+> > -        self.kwonly_annotations = kwonly_annotations
+> > -        self.keyword_only = keyword_only
+> > -        self.positional_only = positional_only
+> > -        self.positional_and_keyword = self.args +
+> >   self.positional_only
+> 
+> I'm not keen on making this a property for now. It's used in a lot of
+> places in astroid and I don't want to append these lists all the time
+> I'm using positional_and_keyword. The exposed problem (arguments
+> getting unsynchronized) shouldn't happen, since the nodes should be
+> immutable, at least recommending to do so (if someone wants to add a
+> new argument, it should create a new Arguments node instead).
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/PyCQA/astroid/pull/314/files#r52831455
+
+## 
+
+Sent from my Android device with K-9 Mail. Please excuse my brevity.
+",6d2529632bae545ff7564501cac14316d5ea9204,"(105, '', u'astroid/tree/node_classes.py')"
+20,pull_request_commit_comment,314,pycqa,astroid,PCManticore,2016-02-13 23:25:28,"That's the plan. :-)
+",6d2529632bae545ff7564501cac14316d5ea9204,"(105, '', u'astroid/tree/node_classes.py')"
+21,pull_request_commit,314,pycqa,astroid,PCManticore,2016-02-01 11:53:36,"Changed the way how parameters are being built
+
+The old way consisted in having the parameter names, their
+defaults and their annotations separated in different components
+of the Arguments node. We introduced a new Param node, which holds
+the name of a parameter, its default value and its annotation.
+If any of the last two values are missing, then that slot will be
+filled with a new node kind, Empty, which is used for specifying the
+lack of something (None could have been used instead, but that means having
+non-AST nodes in the Arguments node).
+We're also having support for positional only arguments, for the moment
+only in raw_building.
+
+Close #215",6d2529632bae545ff7564501cac14316d5ea9204,
+0,issue_title,318,pycqa,astroid,PCManticore,2016-02-13 16:58:52,"This PR reverts the previous changes made to the testdata, bringing it again under astroid.tests.testdata. We're also conflating testdata.python2 and testdata.python3 into one folder, where small modifications were brought to the data files in order to work for both Python 2 and 3. The files with syntax errors though are generated dynamically.
+
+@ceridwen let me know if this looks okay to you.
+",start issue,Merge testdata's files into one bundle and revert previous changes to testdata
+1,issue_closed,318,pycqa,astroid,PCManticore,2016-02-13 18:33:04,,closed issue,Merge testdata's files into one bundle and revert previous changes to testdata
+2,pull_request_title,318,pycqa,astroid,PCManticore,2016-02-13 16:58:52,"This PR reverts the previous changes made to the testdata, bringing it again under astroid.tests.testdata. We're also conflating testdata.python2 and testdata.python3 into one folder, where small modifications were brought to the data files in order to work for both Python 2 and 3. The files with syntax errors though are generated dynamically.
+
+@ceridwen let me know if this looks okay to you.
+",ffa1ba873ca879ae2d259903b8add63f6e6eb2ac,Merge testdata's files into one bundle and revert previous changes to testdata
+3,pull_request_merged,318,pycqa,astroid,PCManticore,2016-02-13 18:33:04,Merge testdata's files into one bundle and revert previous changes to testdata,3899422852e840236c349463c0fe0e6f65c56e8d,Pull request merge from PyCQA/astroid:recover to PyCQA/astroid:2.0
+4,issue_comment,318,pycqa,astroid,ceridwen,2016-02-13 18:27:40,"This looks good to me.  I tested it against rope, one of my own scripts, and snakefood, and none of them crash, so I think you resolved the problems.  I'd like to clean up the tox.ini with respect to coverage and MANIFEST.in, based on some things I learned from that horrible experience with Python's packaging tools, but I can do that after the merge.
+",,
+5,issue_comment,318,pycqa,astroid,PCManticore,2016-02-13 18:33:32,"Done! 
+",,
+6,pull_request_commit,318,pycqa,astroid,PCManticore,2016-02-11 14:17:07,"Revert ""Try to fix the testdata issue""
+
+This reverts commit 682b87f5b9832bb55d35d1c3a589ba8695495481.",6f1fcd8763ba1ad4c96318676348ba6512165644,
+7,pull_request_commit,318,pycqa,astroid,PCManticore,2016-02-11 14:18:00,"Revert ""Try graft instead of recursive-include""
+
+This reverts commit 18fa724c04c2393b134d57d4fe4cebe38472bad8.",5259a4db2822a1926b66e7b15f059a874bee324d,
+8,pull_request_commit,318,pycqa,astroid,PCManticore,2016-02-11 14:25:36,"Revert ""Try to solve the packaging issues again""
+
+This reverts commit d37b81de4f1e64abc2f222c487785d816ab469ea.",8aae5f078b5c837ba6829e8042453c12dfe2421f,
+9,pull_request_commit,318,pycqa,astroid,PCManticore,2016-02-11 14:35:43,"Revert ""setup.py install now installs testdata/, but pip doesn't""
+
+This reverts commit c510c17f63c2df01b8c9d5e2fd97ac963f737c7f.",5c6b19de694621b1c58852b9614615ae2401a671,
+10,pull_request_commit,318,pycqa,astroid,PCManticore,2016-02-11 14:42:33,"Revert ""Modify tox.ini to properly exclude files not part of astroid""
+
+This reverts commit 4596201f9146e64c18cfcb0f841618328e953910.",41a24c207483ca77053f2adc7ecb4a950cf913a6,
+11,pull_request_commit,318,pycqa,astroid,PCManticore,2016-02-11 14:44:39,Revert change to tests command.,a4a12428946b533dfebd5ecc38bcbef39288b499,
+12,pull_request_commit,318,pycqa,astroid,PCManticore,2016-02-13 15:01:03,Move testdata back into tests.,ffa1ba873ca879ae2d259903b8add63f6e6eb2ac,
+0,issue_title,215,pycqa,astroid,pylint-bot,2015-10-19 16:35:39,"Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+The constructors for Arguments nodes now look like:
+
+``` python
+    def __init__(self, vararg=None, kwarg=None, parent=None):
+        self.vararg = vararg
+        self.kwarg = kwarg
+        self.parent = parent
+        self.args = []
+        self.defaults = []
+        self.kwonlyargs = []
+        self.kw_defaults = []
+        self.annotations = []
+        self.kwonly_annotations = []
+
+    def postinit(self, args, defaults, kwonlyargs, kw_defaults,
+                 annotations, kwonly_annotations, varargannotation=None,
+                 kwargannotation=None):
+        self.args = args
+        self.defaults = defaults
+        self.kwonlyargs = kwonlyargs
+        self.kw_defaults = kw_defaults
+        self.annotations = annotations
+        self.varargannotation = varargannotation
+        self.kwargannotation = kwargannotation
+        self.kwonly_annotations = kwonly_annotations
+```
+
+Every property for every argument is held in a different field.  I want to move to a different arrangement that's similar to how inspect's Signature objects handle arguments: https://docs.python.org/3/library/inspect.html#introspecting-callables-with-the-signature-object.  Arguments will have four fields, args, vararg, kwarg, and (on Python 3) kwonlyargs, each of which will hold a sequence of Arg (I'm not sure this is the best name) nodes which will have a name field, a default field, and (on Python 3) an annotation field.  This arrangement makes it easier to look up the value of an argument's annotation or default by name, by first finding the appropriate Arg.node and then looking up the annotation or default.  Some disadvantages to this layout are that on Python 2 the Args node for varargs and kwargs is entirely superfluous, since they can't have default values and there are no annotations on Python 2, and that there will need to be a special constant object representing cases where there's no annotation or default.
+
+Some possible alternative layouts imitate inspect.Signature more closely or imitate the standard library ast module.  inspect.Signature has only one field for function parameters and has parameter objects with a kind field that distinguishes between positional-or-keyword arguments, keyword-only arguments, varargs, and kwargs.  In my experience, this ends up leading to a lot of filtering boilerplate because when processing arguments, the argument's kind almost always matters.  The standard library ast.Arguments has a layout of args, defaults (default values for positional-or-keyword arguments), vararg, kwonlyargs, kw_defaults, and kwargs.  On Python 3, the elements of the appropriate sequences are an ast.Arg node with name and annotation fields, while on Python 2 they're strings.  This arrangement has two disadvantages: writing Python 2/3-compatible code requires constant dispatching on six.PY2/PY3 because the elements of the sequences are different objects with different fields depending on the version, and looking the default value corresponding to a given name requires code like `reversed(list(zip(reversed(args), reversed(defaults)))`, something similar with zip_longest, or the equivalent using indexing to line up the correct name with the correct default.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/215
+",start issue,"Add a nodes.Arg to hold argument names, annotations, defaults for nodes.Arguments"
+1,issue_closed,215,pycqa,astroid,PCManticore,2016-02-13 23:25:52,,closed issue,"Add a nodes.Arg to hold argument names, annotations, defaults for nodes.Arguments"
+2,issue_comment,215,pycqa,astroid,pylint-bot,2015-11-03 16:07:37,"_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+This seems like a good idea to me and it makes sense to ease a little bit the interaction with the arguments. When we first talked about this, I suggested to emulate the ast module API, but it seems weird now that I see your full proposal. The change we're talking now is going to be pretty heavy on rewrites, since you'll have to change how inference works for arguments, how CallSite works and do similar modifications in pylint, which might be simple enough after having the code though. So +1 on the first version.
+",,
+3,issue_comment,215,pycqa,astroid,PCManticore,2016-01-24 22:42:05,"@ceridwen mind if I take this? 
+",,
+4,issue_comment,215,pycqa,astroid,ceridwen,2016-01-25 00:00:21,"Go ahead.
+",,

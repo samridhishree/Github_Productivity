@@ -1,0 +1,67 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","266","pycqa","astroid","pylint-bot","2015-11-24 21:56:33","Originally reported by: **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**
+
+---
+
+Some of the nodes currently contain fields that are doubly-nested sequences, usually tuples inside lists.  For instance, look at Dict nodes:
+
+``` python
+>>> s = '{1: a, b: 2, 3: c}'
+>>> d1 = astroid.parse(s).body[0].value
+>>> print(d1)
+Dict.dict(items=[ ( <Const.int l.1 at 0x7f25c8ecd198>,
+              <Name.a l.1 at 0x7f25c8ecd160>),
+            ( <Name.b l.1 at 0x7f25c8ecd208>,
+              <Const.int l.1 at 0x7f25c8ecd1d0>),
+            ( <Const.int l.1 at 0x7f25c8ecd278>,
+              <Name.c l.1 at 0x7f25c8ecd240>)])
+```
+
+These doubly-nested sequences increase the complexity of handling for node fields because everywhere general node-processing code is required, there need to be two nested type checks and a factored-out function to handle the otherwise-identical code for the first and second levels of sequences.  This is especially painful when generators are involved because on Python < 3.2, without `yield from`, there's no good way to factor code out of generators.
+
+I would propose that node fields should be defined to be either individual nodes or sequences of nodes, nothing else.  This will make the zipper code simpler and faster and help other places similar code is required, like #259.  Nodes that currently contain nested sequences should either have the nested sequences split into multiple fields, like the stdlib AST module does for Dict,
+
+``` python
+>>> d0 = ast.parse(s).body[0].value
+>>> print(ast.dump(d0))
+Dict(keys=[Num(n=1), Name(id='b', ctx=Load()), Num(n=3)], values=[Name(id='a', ctx=Load()), Num(n=2), Name(id='c', ctx=Load())])
+```
+
+or have new subnodes defined that contain the individual nodes.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/266
+","start issue","Eliminate nested sequences in node fields"
+"issue_closed","266","pycqa","astroid","ceridwen","2016-01-10 15:46:06","","closed issue","Eliminate nested sequences in node fields"
+"issue_comment","266","pycqa","astroid","pylint-bot","2015-11-24 23:57:29","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Changing the Dict interface to be similar with Python's builtin ast module sounds like a good enhancement to me, there's no arguing against that.
+
+What do you mean by `nodes or sequences of nodes, nothing else`? Two different nodes can have either nodes or sequences of nodes, depending on their type. Hope that I'm not understanding something else here.
+","",""
+"issue_comment","266","pycqa","astroid","pylint-bot","2015-11-25 00:05:38","_Original comment by_ **BitBucket: [ceridwenv](http://bitbucket.org/ceridwenv), GitHub: @ceridwen**:
+
+---
+
+I mean specifically that for all the fields of a node that contain other nodes (everything currently labeled by _astroid_fields), they should contain either a direct reference to a node or a sequence of nodes, not any other possible Python object, not non-node objects other than sequences, not nested sequences, not dicts, etc.
+","",""
+"issue_comment","266","pycqa","astroid","pylint-bot","2015-11-25 00:09:12","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Sounds fair to me. 
+","",""
+"issue_comment","266","pycqa","astroid","PCManticore","2016-01-04 12:57:20","What should we do in case of the With node? It seems that ast.With is initialized with .items, a list of pairs of context managers and their corresponding name bindings. While we should strive for a high compatibility with the builtin ast module, we could diverge from it in certain cases (for instance the case with DictUnpack). I'm wondering if this is one of these cases.
+","",""
+"issue_comment","266","pycqa","astroid","PCManticore","2016-01-04 13:13:36","The Dict signature was changed in d39369f422ca344782aa2356a91e25f9db4e8192 by the way.
+","",""
+"issue_comment","266","pycqa","astroid","ceridwen","2016-01-05 21:56:49","I think that With is one of those cases: any nodes containing nested sequences of sequences of nodes are going to require special handling in node traversal code, and there's no reason not to just simplify everything.  Breaking compatibility is the right move.
+","",""
+"issue_comment","266","pycqa","astroid","PCManticore","2016-01-05 23:28:28","Okay, I'll change for With as well.
+","",""
+"issue_comment","266","pycqa","astroid","ceridwen","2016-01-06 16:19:19","Compare is the other node that has this problem that has shown up in my testing.
+","",""
+"issue_comment","266","pycqa","astroid","ceridwen","2016-01-10 15:46:06","With and Compare nodes now no longer have nested sequences as of 67844bb and 85160d7.
+","",""

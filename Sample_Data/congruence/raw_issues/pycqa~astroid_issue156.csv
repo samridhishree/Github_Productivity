@@ -1,0 +1,35 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","156","pycqa","astroid","pylint-bot","2015-07-09 09:11:30","Originally reported by: **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**
+
+---
+
+The following code shows that if a member is not found in the current class, it will
+be looked into the parent, even though the `__init__` was changed and the parent's **init** wasn't called.
+
+```
+#!python
+
+from astroid.test_utils import extract_node
+n = extract_node('''
+class A(object):
+   def __init__(self):
+      self.value = 42
+   def __add__(self, other):
+      return other.value + self.value / 2
+class B(A):
+   def __init__(self):
+      self.value1 = 24
+   def __radd__(self, other):
+      return NotImplemented
+A() + B()
+B().value
+''')
+print(repr(n))
+inferred = next(n.infer())
+print(next(inferred.igetattr('value')).value)
+
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/156
+","start issue","Don't look in the parents of a class if the init constructor is redefined and super is not called"

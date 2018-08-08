@@ -1,0 +1,144 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","375","pycqa","astroid","rowillia","2016-12-01 18:32:38","#Below is a contrived example that repros the problem:
+
+It appears `astroid` is considering the incorrect `lru_cache` symbol. 
+
+### Steps to reproduce
+```python
+from functools import lru_cache
+
+class Foo():
+    @lru_cache()
+    def lru_cache(self, value):
+        print('Computing {}'.format(value))
+        return value
+
+foo = Foo()
+print(foo.lru_cache(33))
+print(foo.lru_cache(33))
+```
+
+### Current behavior
+Stack trace 
+
+```
+Traceback (most recent call last):
+  File ""/Users/rwilliams/src/oss/pylint/venv/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==2.0.0', 'console_scripts', 'pylint')()
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/utils.py"", line 997, in walk
+    self.walk(child)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/utils.py"", line 994, in walk
+    cb(astroid)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/pylint-2.0.0-py2.7.egg/pylint/checkers/base.py"", line 388, in visit_functiondef
+    self._check_redefinition(node.is_method() and 'method' or 'function', node)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 876, in is_method
+    return self.type != 'function' and isinstance(self.parent.frame(), ClassDef)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/decorators.py"", line 65, in __get__
+    val = self.wrapped(inst)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 807, in type
+    _type = _infer_decorator_callchain(current)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 611, in _infer_decorator_callchain
+    result = next(node.infer_call_result(node.parent))
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 963, in infer_call_result
+    for inferred in returnnode.value.infer(context):
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/decorators.py"", line 82, in wrapped
+    generator = _func(node, context, **kwargs)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/inference.py"", line 723, in infer_assign
+    stmts = list(self.assigned_stmts(context=context))
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/protocols.py"", line 292, in _arguments_infer_argname
+    functype = self.parent.type
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/decorators.py"", line 65, in __get__
+    val = self.wrapped(inst)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 807, in type
+    _type = _infer_decorator_callchain(current)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 611, in _infer_decorator_callchain
+    result = next(node.infer_call_result(node.parent))
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 963, in infer_call_result
+    for inferred in returnnode.value.infer(context):
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/decorators.py"", line 82, in wrapped
+    generator = _func(node, context, **kwargs)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/inference.py"", line 723, in infer_assign
+    stmts = list(self.assigned_stmts(context=context))
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/protocols.py"", line 292, in _arguments_infer_argname
+    functype = self.parent.type
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/decorators.py"", line 65, in __get__
+    val = self.wrapped(inst)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 807, in type
+    _type = _infer_decorator_callchain(current)
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 611, in _infer_decorator_callchain
+    result = next(node.infer_call_result(node.parent))
+  File ""/Users/rwilliams/src/oss/pylint/venv/lib/python2.7/site-packages/astroid-1.5.0-py2.7.egg/astroid/scoped_nodes.py"", line 963, in infer_call_result
+.
+.
+.
+RuntimeError: maximum recursion depth exceeded
+```
+
+### Expected behavior
+No stack traces 😄 
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+```
+$ python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""
+1.5.0
+```
+","start issue","Astroid gets stuck in an infinite loop if a function shares a name with a decorator"
+"issue_comment","375","pycqa","astroid","rowillia","2016-12-02 21:16:26","```python
+from __future__ import print_function
+
+
+def preload(func):
+    def wrapper():
+        print('calling func')
+        func()
+        print('called func')
+    return wrapper
+
+
+class Foo(object):
+    def __init__(self):
+        self.x = 42
+
+    @preload
+    def preload(self):
+        return self.x
+```
+
+Also causes a crash, but
+
+```python
+class Foo(object):
+    def __init__(self):
+        self.x = 42
+
+    @property
+    def property(self):
+        return self.x
+```
+
+Does not.
+    ","",""
+"issue_comment","375","pycqa","astroid","fivepapertigers","2016-12-28 14:12:20","+1 on this issue. @rowillia thank you for diagnosing, was driving me crazy.","",""
+"issue_comment","375","pycqa","astroid","ceridwen","2017-01-30 21:21:57","I haven't looked closely, but my guess is that the inference isn't distinguishing between the AST nodes for each function correctly because they share the same name, so when it tries to resolve the `@lru_cache()` call, it ends up finding the inner function and setting up the infinite loop.","",""

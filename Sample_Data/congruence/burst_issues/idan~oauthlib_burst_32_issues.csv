@@ -1,0 +1,246 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,276,idan,oauthlib,singingwolfboy,2014-10-05 13:25:55,"Followup to #265. Note that this does break backwards compatibility, so we should think carefully about making this change -- and if we decide to move forward with it, we should increment at least the minor version, and possibly the major version (1.0!).
+",start issue,"Dispatch a blinker signal on scope change, instead of raising a warning"
+1,issue_closed,276,idan,oauthlib,ib-lundgren,2014-10-23 18:43:57,,closed issue,"Dispatch a blinker signal on scope change, instead of raising a warning"
+2,pull_request_title,276,idan,oauthlib,singingwolfboy,2014-10-05 13:25:55,"Followup to #265. Note that this does break backwards compatibility, so we should think carefully about making this change -- and if we decide to move forward with it, we should increment at least the minor version, and possibly the major version (1.0!).
+",809553ccb71f5c046454e5ce2ac90ab0757729f0,"Dispatch a blinker signal on scope change, instead of raising a warning"
+3,pull_request_merged,276,idan,oauthlib,ib-lundgren,2014-10-23 18:43:57,"Dispatch a blinker signal on scope change, instead of raising a warning",2db139c0fb8c02435aee3942b3556251b6ddfb49,Pull request merge from singingwolfboy/oauthlib:scope-change-signal to idan/oauthlib:master
+4,issue_comment,276,idan,oauthlib,singingwolfboy,2014-10-13 13:00:54,"@ib-lundgren, @whit537, any feedback on this?
+",,
+5,issue_comment,276,idan,oauthlib,whit537,2014-10-13 18:35:45,"Interesting. Haven't seen the `blinker` library before, good find. I suppose it's a question for @ib-lundgren @idan whether to depend on `blinker` like this. As a user of requests, I'd be fine with this solution since it doesn't _require_ me to have `blinker` installed, but gives me an optional way to handle this case (scope change) if I want to.
+",,
+6,issue_comment,276,idan,oauthlib,ib-lundgren,2014-10-16 08:54:15,"Thanks for the large amount of work David! :cake:
+
+I think blinker can be pretty neat for monitoring / debugging / testing and
+don't mind it too much since we can default to not installing it (falling
+back on the no-op) and users who want it can install extra packages.
+
+I'm not sure I see how it would fit into a normal client work flow without
+being awkward. I think making the token a dict subclass with a
+scope_changed boolean property might be neater.
+
+```
+client = BackendApplicationClient(...)
+token = client.fetch_token(...)
+if token.scope_changed:
+     # uh oh we need to disable some features
+     for scope in token.scopes:
+           enable_feature_for_scope(scope)
+     for scope in token.unauthorized_scopes:
+           disable_feature_for_scope(scope)
+```
+
+The benefit of callbacks would be not having to check for scoped_changed
+but not sure how big a win that is. Maybe I'm missing something...
+
+On Monday, October 13, 2014, Chad Whitacre notifications@github.com wrote:
+
+> Interesting. Haven't seen the blinker library before, good find. I
+> suppose it's a question for @ib-lundgren https://github.com/ib-lundgren
+> @idan https://github.com/idan whether to depend on blinker like this.
+> As a user of requests, I'd be fine with this solution since it doesn't
+> _require_ me to have blinker installed, but gives me an optional way to
+> handle this case (scope change) if I want to.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/idan/oauthlib/pull/276#issuecomment-58935240.
+",,
+7,issue_comment,276,idan,oauthlib,ib-lundgren,2014-10-23 18:46:01,"Still have the warning enabled by default. Can be disabled with OAUTHLIB_RELAX_TOKEN_SCOPE. signals will be sent in either case.
+
+We can think about changing this default going into 1.0.
+",,
+8,pull_request_commit_comment,276,idan,oauthlib,singingwolfboy,2014-10-05 13:40:48,"Is it even necessary to include a `message` parameter here?
+",809553ccb71f5c046454e5ce2ac90ab0757729f0,"(22, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+9,pull_request_commit,276,idan,oauthlib,singingwolfboy,2014-10-05 13:21:55,"Dispatch a blinker signal on scope change, instead of raising a warning
+
+See https://github.com/idan/oauthlib/pull/265 for rationale.
+In brief: raising any exception blows the stack, which is
+inappropriate for a non-error state.",809553ccb71f5c046454e5ce2ac90ab0757729f0,
+0,issue_title,279,idan,oauthlib,RodneyRichardson,2014-10-07 16:22:54,"Invalid token_type_hints should be ignored during revocation. This looks to have been
+broken in 6ffcc4f2ae6b66e42c1f58b6de634fe969b473a0
+",start issue,Allow invalid token_type_hint.
+1,issue_closed,279,idan,oauthlib,ib-lundgren,2014-10-23 18:43:57,,closed issue,Allow invalid token_type_hint.
+2,pull_request_title,279,idan,oauthlib,RodneyRichardson,2014-10-07 16:22:54,"Invalid token_type_hints should be ignored during revocation. This looks to have been
+broken in 6ffcc4f2ae6b66e42c1f58b6de634fe969b473a0
+",c742c150b208e75ded8f59cfb525fe4228b07520,Allow invalid token_type_hint.
+3,pull_request_merged,279,idan,oauthlib,ib-lundgren,2014-10-23 18:43:57,Allow invalid token_type_hint.,34881211631003ee7f2b953280837757ce5f20bd,Pull request merge from RodneyRichardson/oauthlib:allow-invalid-token-type-hint to idan/oauthlib:master
+4,issue_comment,279,idan,oauthlib,ib-lundgren,2014-10-16 08:53:00,"I'm a bit torn regarding when to use the unsupported token type error.
+
+Previously (as with your PR) it only triggers when the supplied token type
+is valid but not supported. Now its if its invalid or unsupported which I
+feel make more sense and aligns closer to the description
+
+unsupported_token_type:  The authorization server does not support
+           the revocation of the presented token type.  That is, the
+           client tried to revoke an access token on a server not
+           supporting this feature.
+
+I'd be happy to hear your thoughts :)
+
+On Tuesday, October 7, 2014, Rodney Richardson notifications@github.com
+wrote:
+
+> Invalid token_type_hints should be ignored during revocation. This looks
+> to have been
+> broken in 6ffcc4f
+> 
+> ## https://github.com/idan/oauthlib/commit/6ffcc4f2ae6b66e42c1f58b6de634fe969b473a0
+> 
+> You can merge this Pull Request by running
+> 
+>   git pull https://github.com/RodneyRichardson/oauthlib allow-invalid-token-type-hint
+> 
+> Or view, comment on, or merge it at:
+> 
+>   https://github.com/idan/oauthlib/pull/279
+> Commit Summary
+> - Allow invalid token_type_hint.
+> 
+> File Changes
+> - _M_ oauthlib/oauth2/rfc6749/endpoints/revocation.py
+>   https://github.com/idan/oauthlib/pull/279/files#diff-0 (1)
+> - _M_ tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py
+>   https://github.com/idan/oauthlib/pull/279/files#diff-1 (13)
+> 
+> Patch Links:
+> - https://github.com/idan/oauthlib/pull/279.patch
+> - https://github.com/idan/oauthlib/pull/279.diff
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/idan/oauthlib/pull/279.
+",,
+5,pull_request_commit,279,idan,oauthlib,RodneyRichardson,2014-10-07 16:22:05,"Allow invalid token_type_hint.
+
+Invalid token_type_hints should be ignored. This looks to have been
+broken in 6ffcc4f2ae6b66e42c1f58b6de634fe969b473a0",c742c150b208e75ded8f59cfb525fe4228b07520,
+0,issue_title,270,idan,oauthlib,singingwolfboy,2014-09-18 15:36:31,"Similar to #269, but drops the envvar
+",start issue,Use warnings.warn() to warn for scope change
+1,issue_closed,270,idan,oauthlib,ib-lundgren,2014-10-23 18:45:11,,closed issue,Use warnings.warn() to warn for scope change
+2,pull_request_title,270,idan,oauthlib,singingwolfboy,2014-09-18 15:36:31,"Similar to #269, but drops the envvar
+",155cbdef3226462a6bc434e180e736b6918b947e,Use warnings.warn() to warn for scope change
+3,pull_request_commit,270,idan,oauthlib,singingwolfboy,2014-09-18 14:57:46,"Use warnings.warn() to warn for scope change
+
+This does not raise an exception and disrupt the call stack",155cbdef3226462a6bc434e180e736b6918b947e,
+0,issue_title,269,idan,oauthlib,singingwolfboy,2014-09-18 14:58:45,"See https://github.com/idan/oauthlib/pull/265 for explanation/discussion
+",start issue,Ignore scope change on setting envvar
+1,issue_closed,269,idan,oauthlib,ib-lundgren,2014-10-23 18:45:00,,closed issue,Ignore scope change on setting envvar
+2,pull_request_title,269,idan,oauthlib,singingwolfboy,2014-09-18 14:58:45,"See https://github.com/idan/oauthlib/pull/265 for explanation/discussion
+",3c8261bec13e15b3845f7dd1e87e46b329329d6f,Ignore scope change on setting envvar
+3,issue_comment,269,idan,oauthlib,whit537,2014-09-18 15:00:41,"lgtm
+",,
+4,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 15:00:46,"I'm not sure where is the best place to document this environment variable and what it does. @whit537, any thoughts?
+",,
+5,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 15:05:35,"Actually, further testing seems to indicate that using `warnings.warn()` doesn't actually raise an exception, which allows me to get the return value:
+
+``` python
+% python
+Python 2.7.6 (default, Nov 19 2013, 10:11:04) 
+[GCC 4.2.1 Compatible Apple LLVM 5.0 (clang-500.2.79)] on darwin
+Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.
+>>> import warnings
+>>> def f():
+...   warnings.warn(""ohnoz"")
+...   return 4
+... 
+>>> result = f()
+__main__:2: UserWarning: ohnoz
+>>> result
+4
+```
+
+Maybe I should just switch the `raise Warning` to `warnings.warn()` and be done with it?
+",,
+6,issue_comment,269,idan,oauthlib,whit537,2014-09-18 17:08:19,"> Maybe I should just switch the `raise Warning` to `warnings.warn()` and be done with it?
+
+Could do, though as you mentioned earlier that would break backward-compatibility.
+
+I don't think a `warnings.warn()` is sufficient. The purpose here is to signal to the application that scope has changed, so the application can respond accordingly (by reasking for the denied permission, or downgrading the experience, or ...). The more I think about it, the more it seems like making this a per-call configuration is better than an envvar. I can easily imagine an application that wants to ignore scope changes in some contexts but not in others. The onus is then on #268 as to why an envvar is appropriate there instead of yet another parameter.
+",,
+7,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 18:35:47,"@whit537 True. Raising an exception may be going too far, but printing a warning to `stderr` may not be going far enough. I'm skeptical that this needs to be a per-call configuration: if the application wants to ignore scope changes in some contexts but not others, the application can easily enable this exception (or whatever solution we end up with), and just take action when necessary:
+
+``` python
+try:
+    parse_token_response(token_response)
+except Warning as w:
+    if need_to_handle(w):
+        ask_user_to_reauthenticate()
+    else:
+        pass
+```
+",,
+8,issue_comment,269,idan,oauthlib,singingwolfboy,2014-09-18 18:41:51,"If oauthlib supported signals, I feel like that might strike the right balance between alert/notification vs destroying the stack. [Flask supports signals](http://flask.pocoo.org/docs/0.10/signals/), so perhaps we could do something similar? (I realize that Flask and oauthlib operate at two _very_ different conceptual levels, I'm just suggesting that we can take inspiration from Flask's API. Which I think is all-around awesome.)
+",,
+9,issue_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 13:23:07,"Signals sound interesting. Will take a look :)
+",,
+10,issue_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 13:30:31,"As @whit537 mentions users can simply catch the exception and deal with it as they please. We could make this even easier for them by subclassing the warning, maybe ScopeChangedWarning?
+",,
+11,issue_comment,269,idan,oauthlib,whit537,2014-09-22 14:12:15,"> [U]sers can simply catch the exception and deal with it as they please.
+
+Copying @singingwolfboy's response from https://github.com/idan/oauthlib/pull/265#issuecomment-56045238: 
+
+> [N]ot for my use case, because I need the output from the function that I'm calling, and raising an exception prevents me from getting the return value.
+",,
+12,issue_comment,269,idan,oauthlib,whit537,2014-09-22 14:16:07,"> I'm not sure where is the best place to document this environment variable and what it does. @whit537, any thoughts?
+
+Over at https://github.com/idan/oauthlib/pull/268#issuecomment-56370244 I decided to go with http://oauthlib.readthedocs.org/en/latest/oauth2/tokens/tokens.html.
+",,
+13,issue_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 15:03:37,"Thanks @whit537 
+
+So if I understand this right the problem is that since raising a Warning interrupts the flow the token is never returned. On top of my head there are a few approaches here
+1. Not raising but merely logging/warning. This is awkward to ""catch"".
+2. Transporting the token on the warning itself. This assumes no other modification/checking is done and complicates the logical flow.
+3. Returning the warning/differing scope/etc a long with the token. Breaks current API.
+4. Adding more parameters to the token like (oauthlib_)scope_changed (boolean) and (oauthlib_)old_scope. No change in flow and user would check the token items rather than catching a warning.
+5. Similar to 4 but rather create a Token class (extending dict) which could have properties such as scope_changed.
+6. Introduce a signalling system. Think this is a bit overkill here but maybe worth it in the long run, will have to look into signals and how they might fit a bit more.
+
+I'm currently leaning towards 5. Thoughts?
+",,
+14,pull_request_commit_comment,269,idan,oauthlib,ib-lundgren,2014-09-22 13:28:19,"Better indent the entire scope check or else I might sleepily forget about it and add unrelated code to the end of the file :)
+",3c8261bec13e15b3845f7dd1e87e46b329329d6f,"(16, '', u'oauthlib/oauth2/rfc6749/parameters.py')"
+15,pull_request_commit,269,idan,oauthlib,singingwolfboy,2014-09-18 14:57:46,Set OAUTHLIB_IGNORE_SCOPE_CHANGE envvar to disable raising a warning for scope change,3c8261bec13e15b3845f7dd1e87e46b329329d6f,
+0,issue_title,254,idan,oauthlib,lepture,2014-06-16 09:02:42,"I just found that Flask-OAuthlib is incompatible with 0.6.2 and 0.6.3. That's really weird. In my understanding, the last number means bug fix, it shouldn't break anything.
+
+If it breaks anything, you should increase other version numbers instead of the bug fix number.
+",start issue,Version of OAuthlib
+1,issue_closed,254,idan,oauthlib,ib-lundgren,2014-10-23 18:33:16,,closed issue,Version of OAuthlib
+2,issue_comment,254,idan,oauthlib,widnyana,2014-06-18 09:42:33,"yeah, found exact same problem today.
+
+```
+If it breaks anything, you should increase other version numbers instead of the bug fix number. 
+```
+
+ +1
+",,
+3,issue_comment,254,idan,oauthlib,ib-lundgren,2014-06-25 17:18:57,"@lepture @widnyana Terribly sorry for breaking your code :(
+
+I agree, the ""mid"" version number should have been bumped. I feel that definitely is not enough however and I need to get some better release practices going. 
+
+As a start I'll modify the Makefile to allow easy testing of a few key libraries like flask-oauthlib. Before release I'll make sure tests pass for all these libraries with the new version of oauthlib. If I break stuff I'll let you know with an issue or PR.
+
+In addition, from now, before each release I'll create a ""release"" issue here where I mention/ping everyone who is interested and postpone release until I get enough thumbs up.
+",,
+4,issue_comment,254,idan,oauthlib,whit537,2014-10-17 14:10:29,"What's the remaining action item on this ticket? The [`Makefile`](https://github.com/idan/oauthlib/blob/456d85faf277b130a8710a5744e04b13caa72747/Makefile) looks like it's been modified as discussed, and you've modified your release process to include getting feedback from downstream library maintainers. I suggest closing this ticket.
+",,
+5,issue_comment,254,idan,oauthlib,ib-lundgren,2014-10-23 18:30:43,"After the Makefile changes I ran make test and everything worked, which is
+suspicious and I simply assumed it was not working properly. I never closed
+the ticket because I wanted to confirm it working properly and didn't get
+around to doing so until now.
+
+On Friday, October 17, 2014, Chad Whitacre <notifications@github.com
+<javascript:_e(%7B%7D,'cvml','notifications@github.com');>> wrote:
+
+> What's the remaining action item on this ticket? The Makefile
+> https://github.com/idan/oauthlib/blob/456d85faf277b130a8710a5744e04b13caa72747/Makefile
+> looks like it's been modified as discussed, and you've modified your
+> release process to include getting feedback from downstream library
+> maintainers. I suggest closing this ticket.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/idan/oauthlib/issues/254#issuecomment-59518040.
+",,
+6,issue_comment,254,idan,oauthlib,lepture,2014-10-24 06:13:26,"@ib-lundgren coz I locked the version to a specified version of OAuthLib.
+",,

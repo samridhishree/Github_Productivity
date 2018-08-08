@@ -1,0 +1,205 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","484","idan","oauthlib","wiliamsouza","2017-09-06 17:59:29","This pull request removes the need of using `grant_type=openid` in token endpoint and when defining a application credential the `authorization_grant_type` can be same already used (`authorization-code`) both for OpenID Connect and OAuth2.
+
+OpenID Connect and OAuth2 specification links:
+
+* http://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
+* http://openid.net/specs/openid-connect-core-1_0.html#HybridTokenEndpoint
+* https://tools.ietf.org/html/rfc6749#section-4.1.3
+
+To achieve this a new method `get_authorization_code_scopes` have to be added to `RequestValidator` along side news dispatches for implicit and token grant.
+
+Example old way to send a token request:
+
+```
+curl -X POST \
+    -H ""Cache-Control: no-cache"" \
+    -H ""Content-Type: application/x-www-form-urlencoded"" \
+    ""http://127.0.0.1:8000/o/token/"" \
+    -d ""client_id=qLSq5KfSvYRho..."" \
+    -d ""client_secret=bhOWtOxm1..."" \
+    -d ""code=B8J3PQBpDeHFohgrVnvs26KrTAMNhI"" \
+    -d ""redirect_uri=http://localhost/callback"" \
+    -d ""grant_type=openid""
+```
+
+Example  fixed way to send a token request:
+
+```
+curl -X POST \
+    -H ""Cache-Control: no-cache"" \
+    -H ""Content-Type: application/x-www-form-urlencoded"" \
+    ""http://127.0.0.1:8000/o/token/"" \
+    -d ""client_id=qLSq5KfSvYRho..."" \
+    -d ""client_secret=bhOWtOxm1..."" \
+    -d ""code=B8J3PQBpDeHFohgrVnvs26KrTAMNhI"" \
+    -d ""redirect_uri=http://localhost/callback"" \
+    -d ""grant_type=authorization_code""
+``` 
+
+I successfully tested using django-oauth-toolkit the following flows: 
+
+* Implicit Flow
+  * Returning only access_token
+  * Returning only id_token
+  *  Return access_token and id_token
+* Authorization Flow
+  * Returning only access_token
+  * Returning id_token
+* Hybrid flow
+  * Returning code and id_token
+  * Returning code and access_token
+  * Returning code, id_token and access_token
+* Client credentials
+* Resource owner password based
+
+Adding support to OpenID Connect is a working in progress based on this pull request.","start issue","OpenID connect improvements "
+"issue_closed","484","idan","oauthlib","thedrow","2017-10-01 06:07:12","","closed issue","OpenID connect improvements "
+"pull_request_title","484","idan","oauthlib","wiliamsouza","2017-09-06 17:59:29","This pull request removes the need of using `grant_type=openid` in token endpoint and when defining a application credential the `authorization_grant_type` can be same already used (`authorization-code`) both for OpenID Connect and OAuth2.
+
+OpenID Connect and OAuth2 specification links:
+
+* http://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
+* http://openid.net/specs/openid-connect-core-1_0.html#HybridTokenEndpoint
+* https://tools.ietf.org/html/rfc6749#section-4.1.3
+
+To achieve this a new method `get_authorization_code_scopes` have to be added to `RequestValidator` along side news dispatches for implicit and token grant.
+
+Example old way to send a token request:
+
+```
+curl -X POST \
+    -H ""Cache-Control: no-cache"" \
+    -H ""Content-Type: application/x-www-form-urlencoded"" \
+    ""http://127.0.0.1:8000/o/token/"" \
+    -d ""client_id=qLSq5KfSvYRho..."" \
+    -d ""client_secret=bhOWtOxm1..."" \
+    -d ""code=B8J3PQBpDeHFohgrVnvs26KrTAMNhI"" \
+    -d ""redirect_uri=http://localhost/callback"" \
+    -d ""grant_type=openid""
+```
+
+Example  fixed way to send a token request:
+
+```
+curl -X POST \
+    -H ""Cache-Control: no-cache"" \
+    -H ""Content-Type: application/x-www-form-urlencoded"" \
+    ""http://127.0.0.1:8000/o/token/"" \
+    -d ""client_id=qLSq5KfSvYRho..."" \
+    -d ""client_secret=bhOWtOxm1..."" \
+    -d ""code=B8J3PQBpDeHFohgrVnvs26KrTAMNhI"" \
+    -d ""redirect_uri=http://localhost/callback"" \
+    -d ""grant_type=authorization_code""
+``` 
+
+I successfully tested using django-oauth-toolkit the following flows: 
+
+* Implicit Flow
+  * Returning only access_token
+  * Returning only id_token
+  *  Return access_token and id_token
+* Authorization Flow
+  * Returning only access_token
+  * Returning id_token
+* Hybrid flow
+  * Returning code and id_token
+  * Returning code and access_token
+  * Returning code, id_token and access_token
+* Client credentials
+* Resource owner password based
+
+Adding support to OpenID Connect is a working in progress based on this pull request.","5c4b2a35de001c572c4017abb89dc19dd4a653c7","OpenID connect improvements "
+"pull_request_merged","484","idan","oauthlib","thedrow","2017-10-01 06:07:12","OpenID connect improvements ","e575cca3e5d18b1e7051c64f435f2cdea71a29ab","Pull request merge from wiliamsouza/oauthlib:openid-connect to idan/oauthlib:master"
+"issue_comment","484","idan","oauthlib","skion","2017-09-12 22:37:32","Nice, I also ran into some missing bits in this area but worked around them in a different way. I'll need to dig up what I did exactly, but do believe we need something that looks like this PR.","",""
+"issue_comment","484","idan","oauthlib","thedrow","2017-09-17 12:31:55","@wiliamsouza Can you please rebase and fix the conflicts?","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-09-17 20:22:33","@thedrow Done!","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-09-19 22:59:50","@thedrow @skion suggestions done. Thanks for review.","",""
+"issue_comment","484","idan","oauthlib","thedrow","2017-09-21 07:40:01","Is this ready for merge? ","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-09-21 13:31:15","@skion can answer the question!","",""
+"issue_comment","484","idan","oauthlib","skion","2017-09-28 19:48:49","LGTM!","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-09-28 20:01:45","@thedrow ready for merge!","",""
+"issue_comment","484","idan","oauthlib","thedrow","2017-10-01 06:07:51","Thanks. Is this a breaking change? Just so I'll know how to tag the release. ","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-10-01 22:11:58","@thedrow Yes not backward compatible.","",""
+"issue_comment","484","idan","oauthlib","skion","2017-10-18 20:59:54","Turns out this [leads to problems](https://github.com/idan/oauthlib/pull/463#issuecomment-337722389) with existing code that doesn't have `request_validator.get_authorization_code_scopes` defined, as this PR expects it to exist and return something sensible.
+
+To fix we could catch the `NotImplementedError` in the dispatcher, or alternatively just return an empty list from the base request validator. But neither is particularly aesthetically pleasing.
+
+","",""
+"issue_comment","484","idan","oauthlib","thedrow","2017-10-19 10:07:51","Oh this should have been released as 3.x :(","",""
+"issue_comment","484","idan","oauthlib","lepture","2017-10-19 15:09:03","@thedrow we need to add a `breaking changes` tag.","",""
+"issue_comment","484","idan","oauthlib","duaneking","2017-10-19 16:56:29","Can we please back this out? It's doing more harm than good right now.
+
+I love the idea of OpenIDConnect support, but I also think it should be optional and not shoved into the library without consideration of servers/providers/clients that don't want it or don't need it.
+
+My opinion is to let the OAuth2 library do Oauth2, add the extras openid connect wants on top with a library of its own that uses the openid2 library, and keep a good separation of concerns so the code stays as SOLID and DRY as possible.","",""
+"issue_comment","484","idan","oauthlib","skion","2017-10-19 21:02:54","@duaneking Not so easy to back out OIDC entirely, since its support was added long before this PR already, and mostly modular/separate from the existing code.
+
+The exception being the preconfigured server code, which I agree would have been better to leave alone and add a dedicated OIDC server. But undoing this now would also be a breaking change.
+
+IMO this PR should not have been a breaking change at all, and my suggestion would be: Find a fix to make this non-breaking and release 2.0.6, and plan for more structural changes in 3.0.","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-10-20 15:16:54","Is there no way to remove 2.0.5 from the history?","",""
+"issue_comment","484","idan","oauthlib","lepture","2017-10-20 17:19:34","@wiliamsouza no. But there is a 2.0.6 in pypi now. I cherry picked every commits except this one.","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-10-20 18:30:44","@lepture Great job!","",""
+"issue_comment","484","idan","oauthlib","thedrow","2017-10-23 11:52:09","Can we reopen this PR or release 3.0 with the relevant commit?","",""
+"issue_comment","484","idan","oauthlib","wiliamsouza","2017-10-23 12:26:15","@thedrow After https://github.com/idan/oauthlib/pull/488 we can release 3.0","",""
+"pull_request_commit_comment","484","idan","oauthlib","thedrow","2017-09-18 08:00:57","Kinda expensive to split the string into a list just to check if token is in it.","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(25, '', u'oauthlib/oauth2/rfc6749/grant_types/implicit.py')"
+"pull_request_commit_comment","484","idan","oauthlib","skion","2017-09-19 20:30:12","Is it possible to assert here (and below) how the mocked `get_authorization_code_scopes()` method was called?","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(127, '', u'tests/oauth2/rfc6749/grant_types/test_openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","skion","2017-09-19 20:33:19","Should `id_token` and `id_token token` not point to the `openid_connect_implicit` grant directly?","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/endpoints/pre_configured.py')"
+"pull_request_commit_comment","484","idan","oauthlib","skion","2017-09-19 20:39:51","Why do `client_id` and `redirect_uri` default to an empty string instead of `None`?","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","skion","2017-09-19 20:43:24","Typo: `rase`","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","wiliamsouza","2017-09-19 22:33:08","Nothing special, changed to `None`, thanks.","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","wiliamsouza","2017-09-21 00:28:08","Done in 34aa9b0","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(127, '', u'tests/oauth2/rfc6749/grant_types/test_openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","skion","2017-09-21 19:50:37","What I don't particularly like, but also not really sure how to do differently, is that this forces to lookup the grant twice; once in `get_authorization_code_scopes()` and once in `validate_code()`. Not ideal for performance.
+
+I wonder if we should pass in the `request` object here, as with many of the other validator methods. Then at least one can choose to attach the result of the first lookup to the request.","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","wiliamsouza","2017-09-21 23:13:49","This is a gap between stateless endpoints:
+
+* Authorization Endpoint
+* Token Endpoint
+
+`request_validator.get_authorization_code_scopes()` is called before `request_validator.validate_code()` which is used inside `AuthorizationCodeGrant.validate_token_request()` we can call `request_validator.validate_code()` here and pass in `request.code_validate` a `True` value indicating the code was already validated and in `AuthorizationCodeGrant.validate_token_request()` line 410 add a check before call `request_validator.validate_code()` again.
+","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","wiliamsouza","2017-09-24 21:54:25","`split()` can not be removed because:
+
+```
+ipdb> 'token' in 'id_token'
+True
+ipdb> 'token' in ['id_token']
+False
+```
+When using implicit flow:
+
+```
+http://127.0.0.1:8000/o/authorize?response_type=id_token&client_id=Ktn0Sh4hO2gA8PKC2aqsauY4ZCxNyIdF1wNfFfJ3&redirect_uri=http://localhost/callback&scope=openid&state=af0ifjsldkj&nonce=n-0S6_WzA2Mj
+```
+without `split` it return `access_token` instead of only returning `id_token` as requested.","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(25, '', u'oauthlib/oauth2/rfc6749/grant_types/implicit.py')"
+"pull_request_commit_comment","484","idan","oauthlib","skion","2017-09-25 08:35:13","I guess what I meant was: Could we use the following signature instead?
+
+    def get_authorization_code_scopes(self, client_id, code, redirect_uri, request):
+
+This seems to be a common pattern already, and it would allow us to cache database lookups on the `request` object easily across validation calls.
+","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/openid_connect.py')"
+"pull_request_commit_comment","484","idan","oauthlib","wiliamsouza","2017-09-28 00:50:30","@skion done","5c4b2a35de001c572c4017abb89dc19dd4a653c7","(None, '', u'oauthlib/oauth2/rfc6749/grant_types/openid_connect.py')"
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 00:42:12","Change create_token_response to only save access_token when it's present in request.response_type","d42cf77515276bfb6b0500eb565270c4ea1cf411",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 00:44:00","Remove unused import, fix indentation and improve comment","685d85ca978b9a91f89e1d00fb7755bb46ff57c6",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 00:53:56","Fix AuthorizationEndpoint response_type for OpenID Connect hybrid flow","cacade56da996a19af14b8c48339ed3a558052e2",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 01:01:54","Add new ImplicitTokenGrantDispatcher
+
+Changes AuthorizationEndpoint response_type `'token'`, `'id_token'` and
+`'id_token token'` to work with OpenID Connect and OAuth2 implicit flow
+in a transparent way","a112e151c280ef2d724f603ef17d2a1fd512f103",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 01:12:36","Add new AuthTokenGrantDispatcher
+
+Change AuthorizationEndpoint grant_types `'authorization_code'` to work with
+OpenID Connect and OAuth2 authorization flow in a transparent way","a4579b596de109ae1937da345b5395e4d8008497",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 01:15:13","Change tests to include required client_id and redirect_uri","61939722cf7f79aebb36fa80c60d88e3abf2963d",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 01:18:15","Remove AuthorizationEndpoint grant_types `'openid'`
+
+Now OpenID Connect and OAuth2 authorization flow can use `authorization_code`
+in a transparent way","14aee436baff777e4460fe5fa8a0907898ba0fca",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-04 01:20:31","Add sone blank lines and fix indentation","9fb35bbc71acf2d8d212c3a6a2de169a06123f34",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-19 22:26:58","Change AuthorizationEndpoint grant type id_token and id_token token to use openid_connect_implicit direct","421dee3ac40d88e41b613827107813198e704683",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-19 22:30:46","Change default empty value to None and  fix a typo","3a273599c604c2fc70dcd1f0a9cf2d9e3cc0d492",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-19 22:57:46","Add assert called to AuthTokenGrantDispatcher tests","76c08b71810b6b264ac95978e5ef1b529048ae53",""
+"pull_request_commit","484","idan","oauthlib","wiliamsouza","2017-09-28 00:48:05","Add request to get_authorization_code_scopes","5c4b2a35de001c572c4017abb89dc19dd4a653c7",""

@@ -1,0 +1,288 @@
+,rectype,issueid,project_owner,project_name,actor,time,text,action,title
+0,issue_title,194,idan,oauthlib,ib-lundgren,2013-07-09 16:02:38,"Add a new flag/param to preconfigured servers used to indicate whether new refresh tokens should be issued upon token refresh or not.
+
+See #192 for some more details.
+",start issue,Toggle refresh token reuse on a high level
+1,issue_closed,194,idan,oauthlib,ib-lundgren,2013-09-19 09:16:16,,closed issue,Toggle refresh token reuse on a high level
+0,issue_title,211,idan,oauthlib,ib-lundgren,2013-09-18 16:25:06,,start issue,OAuth 2 provider arg expires_in can now be callable
+1,issue_closed,211,idan,oauthlib,ib-lundgren,2013-09-19 08:55:30,,closed issue,OAuth 2 provider arg expires_in can now be callable
+0,issue_title,212,idan,oauthlib,ib-lundgren,2013-09-18 16:25:48,"Grant types are lacking unittests although most of their features are tested from a higher level (the endpoint tests). However some minor functionality is not tested and it would be good to use mocks to ensure the correct validator methods are called as well.
+",start issue,OAuth 2 grant type tests lacking/missing
+1,issue_closed,212,idan,oauthlib,ib-lundgren,2014-09-24 16:29:31,,closed issue,OAuth 2 grant type tests lacking/missing
+0,issue_title,214,idan,oauthlib,masci,2013-09-20 23:25:37,"I forgot to pass `request` parameter to `client_authentication_required` in `authorization_code` module, fixed with c38dab5.
+
+Added tests involving `client_authentication_required`, I tried to be coherent with existing code per testing module.
+
+While writing tests, I stumbled upon a strange behaviour in request's `duplicate_params` property, if I understood correct there's a bug involving operators precedence.
+",start issue,Fix bug in client_authentication_required call
+1,issue_closed,214,idan,oauthlib,ib-lundgren,2013-09-25 11:55:48,,closed issue,Fix bug in client_authentication_required call
+2,pull_request_title,214,idan,oauthlib,masci,2013-09-20 23:25:37,"I forgot to pass `request` parameter to `client_authentication_required` in `authorization_code` module, fixed with c38dab5.
+
+Added tests involving `client_authentication_required`, I tried to be coherent with existing code per testing module.
+
+While writing tests, I stumbled upon a strange behaviour in request's `duplicate_params` property, if I understood correct there's a bug involving operators precedence.
+",c0dc977de73573ca0c286b05da34b8e525467254,Fix bug in client_authentication_required call
+3,pull_request_merged,214,idan,oauthlib,ib-lundgren,2013-09-25 11:55:47,Fix bug in client_authentication_required call,cfe649ccecd3e50c65f2fe8a9f400db59f0e0769,Pull request merge from masci/oauthlib:fix_client_authentication_required_call to idan/oauthlib:master
+4,issue_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 10:59:27,"Ah, sorry I should have spotted that. 
+
+Thanks for sorting out some of the direly missing unit tests for this grant type. 
+
+Regarding the duplicate params I've not looked into it much, might very well be precedence.
+",,
+5,issue_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 11:11:17,"Also, please add yourself in the AUTHORS file :)
+",,
+6,issue_comment,214,idan,oauthlib,ib-lundgren,2013-09-25 11:55:45,"Looks great. Awsome work @masci!
+",,
+7,issue_comment,214,idan,oauthlib,masci,2013-09-25 14:16:48,"Thank you @ib-lundgren !
+",,
+8,pull_request_commit_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 11:00:52,"I quite like wraps too since that will invoke the actual, non implemented, method if not mocked. This is fine tho.
+
+```
+ mock.MagicMock(wraps=RequestValidator())
+```
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_authorization_code.py')"
+9,pull_request_commit_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 11:04:44,"Think we need to decide on an import style and stick with it everyone since now its fairly inconsistent.  I am not a big fan of using a parenthesis for importing like this so imo it is either between explicitly importing what you need (one per line)
+
+```
+from oauthlib.oauth2.rfc6749.errors import UnsupportedGrantTypeError
+from oauthlib.oauth2.rfc6749.errors import InvalidClientError
+```
+
+or to import the module only and prefix with that
+
+```
+from oauthlib.oauth2.rfc6749 import errors
+```
+
+I don't feel strongly about either. The former makes it very obvious what methods are used, the latter is less code and is arguably better for dynamic inspection.
+
+@masci thoughts?
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_refresh_token.py')"
+10,pull_request_commit_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 11:05:29,"Think assert_called_once_with is what you are trying to say here :)
+
+http://www.voidspace.org.uk/python/mock/mock.html#mock.Mock.assert_called_once_with
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_refresh_token.py')"
+11,pull_request_commit_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 11:08:04,"Ideally this would be split into several test methods, along the lines of
+
+test_authentication_required
+test_invalid_grant_type
+test_authenticate_client_id
+test_invalid_refresh_token
+test_invalid_scope
+test_valid_token_request
+
+but I/we could sort that out later.
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_refresh_token.py')"
+12,pull_request_commit_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 11:09:20,"No need for this when using MagicMock. Just set return value directly.
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_resource_owner_password.py')"
+13,pull_request_commit_comment,214,idan,oauthlib,masci,2013-09-21 13:14:49,"I'm a mock newbie and didn't know about _wraps_. Think using wraps and explicitly mocking not implemented methods is better though, I'm going to fix it.
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_authorization_code.py')"
+14,pull_request_commit_comment,214,idan,oauthlib,masci,2013-09-21 13:20:23,"Agree to remove parentheses. For this specific case maybe it's better doing `from oauthlib.oauth2.rfc6749 import errors` since the number of names needed from that module is quite large and could be more readable referring to errors explicitly with an `error.` prefix.
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_refresh_token.py')"
+15,pull_request_commit_comment,214,idan,oauthlib,masci,2013-09-21 13:22:52,"D'Oh! Fixed
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_refresh_token.py')"
+16,pull_request_commit_comment,214,idan,oauthlib,masci,2013-09-21 13:30:37,":+1: it would also be more reliable since setUp/tearDown would be called between them, and every test would start with mock objects in clean state. Maybe it's better doing it now since I'm on that already.
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_refresh_token.py')"
+17,pull_request_commit_comment,214,idan,oauthlib,masci,2013-09-21 13:48:33,"Something like this?
+
+```
+    # right params but with duplicates
+    request = mock.MagicMock(wraps=Request('http://a.b/path/'))
+    request.duplicate_params = ['scope']
+    self.assertRaises(InvalidRequestError, auth.validate_token_request,
+                      request)
+    # wrong grant type
+    request = mock.MagicMock(wraps=Request('http://a.b/path'))
+    request.grant_type = 'foo'
+    self.assertRaises(UnsupportedGrantTypeError,
+                      auth.validate_token_request, request)
+```
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_resource_owner_password.py')"
+18,pull_request_commit_comment,214,idan,oauthlib,ib-lundgren,2013-09-21 15:38:26,"I mean you can have
+
+```
+mock = MagicMock()
+mock.some_attr.some_func.return_value = False
+```
+
+without having to first create mock.some_attr or mock.some_attr.some_func
+",c0dc977de73573ca0c286b05da34b8e525467254,"(None, '', u'tests/oauth2/rfc6749/grant_types/test_resource_owner_password.py')"
+19,pull_request_commit,214,idan,oauthlib,masci@evonove.it,2013-09-20 23:05:31,fixed call to client_authentication_required,c38dab51aec039ac3a89778233c190776b5d7e8c,
+20,pull_request_commit,214,idan,oauthlib,masci@evonove.it,2013-09-20 23:06:02,added test involving client_authentication_required method,012fbbebcdafa28340ecaf5addb5c1b9da30057b,
+21,pull_request_commit,214,idan,oauthlib,masci@evonove.it,2013-09-20 23:13:20,fixed operator precedence in duplicate_params property,939b05f185958723f833dcbc707a066bf3359c7e,
+22,pull_request_commit,214,idan,oauthlib,masci@evonove.it,2013-09-21 14:35:41,added myself to the authors list,9f44b81a7ff4456bc9698f6187d0f128051364b6,
+23,pull_request_commit,214,idan,oauthlib,masci@evonove.it,2013-09-22 09:27:30,"broke up method into different tests, fixed import style",e94439bf0f327d2b434ae479a296323e38bc2435,
+24,pull_request_commit,214,idan,oauthlib,masci@evonove.it,2013-09-22 13:57:16,fixed and extended tests for validate_token_request method,c0dc977de73573ca0c286b05da34b8e525467254,
+0,issue_title,208,idan,oauthlib,masci,2013-09-17 16:30:47,"Just a proof of concept, I tried to uniform the logic for the three grants involved with Client authentication and make it generic enough for final users to decide if and how authenticate Clients through the validator.
+",start issue,Ask validator if Client has to be authenticated
+1,issue_closed,208,idan,oauthlib,ib-lundgren,2013-09-18 16:18:03,,closed issue,Ask validator if Client has to be authenticated
+2,pull_request_title,208,idan,oauthlib,masci,2013-09-17 16:30:47,"Just a proof of concept, I tried to uniform the logic for the three grants involved with Client authentication and make it generic enough for final users to decide if and how authenticate Clients through the validator.
+",4ea5db5724bf71d84d27f4c68f177129bac1c637,Ask validator if Client has to be authenticated
+3,pull_request_merged,208,idan,oauthlib,ib-lundgren,2013-09-18 16:18:03,Ask validator if Client has to be authenticated,5c9c8366edbdab7977f6aeb463dd5bed5b9fdc57,Pull request merge from masci/oauthlib:is_auth_required_method to idan/oauthlib:master
+4,issue_comment,208,idan,oauthlib,ib-lundgren,2013-09-18 16:18:00,"Great work @masci
+",,
+5,pull_request_commit_comment,208,idan,oauthlib,ib-lundgren,2013-09-17 20:14:11,"Nice that you added this in there, uncertain why it never got there in the first place. I probably just missed it in the spec.
+",4ea5db5724bf71d84d27f4c68f177129bac1c637,"(36, '', u'oauthlib/oauth2/rfc6749/grant_types/resource_owner_password_credentials.py')"
+6,pull_request_commit_comment,208,idan,oauthlib,ib-lundgren,2013-09-17 20:14:41,"Neat getting rid of this awkward check.
+",4ea5db5724bf71d84d27f4c68f177129bac1c637,"(36, '', u'oauthlib/oauth2/rfc6749/grant_types/authorization_code.py')"
+7,pull_request_commit_comment,208,idan,oauthlib,ib-lundgren,2013-09-17 20:15:31,"Should this be `return True` instead? Since the default should be to authenticate and then providers implementing non authenticated support could override this method.
+",4ea5db5724bf71d84d27f4c68f177129bac1c637,"(None, '', u'oauthlib/oauth2/rfc6749/request_validator.py')"
+8,pull_request_commit_comment,208,idan,oauthlib,masci,2013-09-18 08:22:17,"At first I was actually returning True, which is perfectly ok with the standard and is coherent with the current behaviour of oauthlib, but then I thought this would be an assumption of the server and wasn't sure what to do...
+For me it's ok returning true since, as you say, I could easily implement my logic inside my validator.
+",4ea5db5724bf71d84d27f4c68f177129bac1c637,"(None, '', u'oauthlib/oauth2/rfc6749/request_validator.py')"
+9,pull_request_commit_comment,208,idan,oauthlib,ib-lundgren,2013-09-18 11:45:14,"Think it is ok to make this assumption. Will try and make it clear in the docs as well, maybe even a full public vs confidential client section is in order.
+",4ea5db5724bf71d84d27f4c68f177129bac1c637,"(None, '', u'oauthlib/oauth2/rfc6749/request_validator.py')"
+10,pull_request_commit_comment,208,idan,oauthlib,masci,2013-09-18 13:34:05,":+1: 
+",4ea5db5724bf71d84d27f4c68f177129bac1c637,"(None, '', u'oauthlib/oauth2/rfc6749/request_validator.py')"
+11,pull_request_commit,208,idan,oauthlib,masci@evonove.it,2013-09-16 22:25:10,added client_authentication_required() method to the validator,dff8e6d170f8028c9169bde1d208c1cccbea5aae,
+12,pull_request_commit,208,idan,oauthlib,masci@evonove.it,2013-09-16 22:31:25,ask validator if client has to be authenticated,07326c9baad1dcc631157f8edfa508066aee6d23,
+13,pull_request_commit,208,idan,oauthlib,masci@evonove.it,2013-09-18 13:31:41,client authentication needed by default,4ea5db5724bf71d84d27f4c68f177129bac1c637,
+0,issue_title,77,idan,oauthlib,ib-lundgren,2012-11-16 19:24:19,"Most people are likely to use OAuthLib indirectly, either through requests or through an extension to their favorite web framework, it would be good to make this explicit in the docs. 
+
+However some will be interested in installing (rather than cloning) and at least PyPi instructions would be useful. Furthermore OAuthLib is included in ubuntu and possibly in other distros, maybe a few unices too, have a look around and add installation instructions.
+",start issue,Installation instruction docs
+1,issue_closed,77,idan,oauthlib,ib-lundgren,2013-09-19 14:30:40,,closed issue,Installation instruction docs
+0,issue_title,207,idan,oauthlib,masci,2013-09-16 09:32:19,"Scenario: I'm trying to implement a drop-in replacement for Basic Auth with an OAuth2 password flow. 
+
+The problem is that even if client type is set to ""Public"", the client has to be authenticated anyway with _client_id:client_secret_ credentials. I see `create_token_response` mehtod in `ResourceOwnerPasswordCredentialsGrant` class has a boolean parameter `require_authentication` that can be used to bypass authentication, but I don't know how to pass it without deriving some oauthlib's classes.
+",start issue,Client authentication always needed in Resource Owner Password Credentials Grant
+1,issue_closed,207,idan,oauthlib,ib-lundgren,2013-09-18 16:18:14,,closed issue,Client authentication always needed in Resource Owner Password Credentials Grant
+2,issue_comment,207,idan,oauthlib,ib-lundgren,2013-09-16 09:53:22,"Think forwarding the parameter from the composite endpoints would be
+reasonable here. Similar to token_generator.
+On Sep 16, 2013 10:32 AM, ""Massimiliano Pippi"" notifications@github.com
+wrote:
+
+> Scenario: I'm trying to implement a drop-in replacement for Basic Auth
+> with an OAuth2 password flow.
+> 
+> The problem is that even if client type is set to ""Public"", the client has
+> to be authenticated anyway with _client_id:client_secret_ credentials. I
+> see create_token_response mehtod in ResourceOwnerPasswordCredentialsGrantclass has a boolean parameter
+> require_authentication that can be used to bypass authentication, but I
+> don't know how to pass it without deriving some oauthlib's classes.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/207
+> .
+",,
+3,issue_comment,207,idan,oauthlib,ib-lundgren,2013-09-16 11:00:47,"I can add the parameter forwarding later today but feel free to send a PR if you are already on it :)
+
+Also, if the client still authenticates with a client_id/client_secret, is the client really public? not confidential? Since if you simple want to auth by looking at params in the body rather than in the Auth header that could easily be done in authenticate_client. Maybe I am missing something,,,
+",,
+4,issue_comment,207,idan,oauthlib,masci,2013-09-16 14:33:01,"Yep, I could bypass authentication in my own validator at `authenticate_client` method, but at a first glance I found this a bit weird because I thought I shouldn't be arrived at that point (the flow does not require validation after all).
+
+Forwarding the parameter would be ok but I prefer not to have such kind of controls outside the validator (plus it costs me a database query :-).
+
+What about subsituting/integrating the `require_authentication` parameter with a call to something like `is_authentication_required()` method in the validator? Base class could return always true to behave like it does now. The same method could be used in the _Authorization flow_ instead of trying to authenticate with _authenticate_client_ method and falling back to _authenticate_client_id_ and letting third parties to decide what to do when that check fails.
+
+If it makes sense to you I can write a draft
+",,
+5,issue_comment,207,idan,oauthlib,ib-lundgren,2013-09-16 14:38:36,"Sounds good to me.
+On Sep 16, 2013 3:33 PM, ""Massimiliano Pippi"" notifications@github.com
+wrote:
+
+> Yep, I could bypass authentication in my own validator at
+> authenticate_client method, but at a first glance I found this a bit
+> weird because I thought I shouldn't be arrived at that point (the flow does
+> not require validation after all).
+> 
+> Forwarding the parameter would be ok but I prefer not to have such kind of
+> controls outside the validator (plus it costs me a database query :-).
+> 
+> What about subsituting/integrating the require_authentication parameter
+> with a call to something like is_authentication_required() method in the
+> validator? Base class could return always true to behave like it does now.
+> The same method could be used in the _Authorization flow_ instead of
+> trying to authenticate with _authenticate_client_ method and falling back
+> to _authenticate_client_id_ and letting third parties to decide what to
+> do when that check fails.
+> 
+> If it makes sense to you I can write a draft
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/207#issuecomment-24514159
+> .
+",,
+0,issue_title,200,idan,oauthlib,squirly,2013-08-01 20:46:14,"Update OAuth2 API to match OAuth1 API as per #199.
+",start issue,Remove url return from first parameter across all endpoints in OAuth2
+1,issue_closed,200,idan,oauthlib,ib-lundgren,2013-09-18 16:24:29,,closed issue,Remove url return from first parameter across all endpoints in OAuth2
+2,issue_comment,200,idan,oauthlib,squirly,2013-08-01 21:44:48,"I have started doing this but am running into errors with the current implementation.
+
+The current implementation expects that the library user will redirect the client to an error endpoint URL. This seems like a hack and I would never suggest doing this.
+
+It would make more sense to immediately return a 400 error from the current view. In the current view you have the full exception and will be able to provide a better error. Also, it seems weird to not send anything but a 400 error to the user on a client error sending a 302 before returning an error page is very strange.
+",,
+3,issue_comment,200,idan,oauthlib,ib-lundgren,2013-08-02 08:46:14,"Thanks for taking the time to sort out all these changes. Much appreciated!
+
+Regarding the redirect. It might not be the purest in REST terms but having a view dedicated to showing the error and redirecting rather than returning directly is hardly weird or a hack. It also makes it very clear in the example what the intended way to handle a FatalError is, i.e. display it to the user and not send the user back to client. That said I think it is perfectly fine to suggest to return an error view directly instead of redirecting, but ultimately it is up to the implementer and this is just an example.
+",,
+4,issue_comment,200,idan,oauthlib,squirly,2013-08-02 17:07:26,"Agreed. Though showing best practices even in simple examples can help with clarity. If you have ever use the Angular.js documentation you would know where I am coming from.
+",,
+0,issue_title,192,idan,oauthlib,vitriol,2013-07-09 12:13:15,"The definition of the refresh token in the specs is that of a long lasting credential for trusted clients, while at some point it does specify that the implementation MAY (their caps) chose to issue a new refresh token after the use of a refresh_token grant.
+
+Currently from what i see in the lib this is default behavior, and there is no way of keeping the same refresh token. For our needs this does not fit.
+
+Could this behavior be changed in any easy way?
+Thanks
+",start issue,Option to keep same refresh token after a bearer token is refreshed?
+1,issue_closed,192,idan,oauthlib,ib-lundgren,2013-09-19 09:20:04,,closed issue,Option to keep same refresh token after a bearer token is refreshed?
+2,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 12:33:35,"There currently is no flag/parameter to specify refresh token re-use from a high level. This would be nice to have, Ill open an issue to add it later.
+
+In the meantime you could achieve this by passing in a custom token generator, for example
+
+```
+from your_validator import the_validator
+from oauthlib.common import generate_token
+from oauthlib.oauth2 import WebApplicationServer
+
+def keep_refresh_tokens(request, refresh_token=False):
+    return request.refresh_token if refresh_token else generate_token()
+
+server = WebApplicationServer(the_validator, token_generator=keep_refresh_tokens)
+```
+",,
+3,issue_comment,192,idan,oauthlib,vitriol,2013-07-09 12:44:43,"perfect, thanks! 
+please leave a sign so I'm notified when the feature is added
+",,
+4,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 12:48:32,"Will do :)
+
+On Tue, Jul 9, 2013 at 1:44 PM, ciupenhauer notifications@github.comwrote:
+
+> perfect, thanks!
+> please leave a sign so I'm notified when the feature is added
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/192#issuecomment-20671168
+> .
+",,
+5,issue_comment,192,idan,oauthlib,vitriol,2013-07-09 13:18:30,":-D
+just realized the above solution does not work for me because I am using Server instead of WebApplicationServer.
+I could use BackendApplicationServer and LegacyApplicationServer and decide which one gets to process the request, but is there any reason that Server, the all inclusive one, does not support that param?
+",,
+6,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 13:32:04,"Oh, Server should support token_generators too. Its a two line fix. Will
+sort it out tonight.
+
+On Tue, Jul 9, 2013 at 2:18 PM, ciupenhauer notifications@github.comwrote:
+
+> :-D
+> just realized the above solution does not work for me because I am using
+> Server instead of WebApplicationServer, and cannot switch to
+> WebApplicationServer
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/192#issuecomment-20672990
+> .
+",,
+7,issue_comment,192,idan,oauthlib,ib-lundgren,2013-07-09 16:04:22,"@vitriol The token_generator param is now available in Server on master. Will push a new release soon so it should be on Pypi, opened a new issue to track the token reuse feature.
+",,
+8,issue_comment,192,idan,oauthlib,ib-lundgren,2013-09-19 09:20:04,"Added `rotate_refresh_token(request)` to the validator which can be used to determine whether to refresh or not. This will not break your work around with a custom token generator but if you want to get rid of the work around simple use
+
+```
+ def rotate_refresh_token(self, request):
+     return False
+```
+
+to keep the previous refresh token.
+
+http://oauthlib.readthedocs.org/en/latest/oauth2/validator.html#oauthlib.oauth2.RequestValidator.rotate_refresh_token
+",,

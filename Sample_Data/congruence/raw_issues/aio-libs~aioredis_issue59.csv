@@ -1,0 +1,273 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","59","aio-libs","aioredis","Natim","2015-04-03 14:43:35","When a coroutine is wrapped in a Task that is cancelled, the pending redis call is not cancelled and its result is lost.
+
+Here is an example using `BLPOP`
+
+``` python
+#!/usr/bin/env python
+
+import asyncio
+import aioredis
+
+
+@asyncio.coroutine
+def simulate_client():
+    redis = yield from aioredis.create_redis(('localhost', 6379))
+    print(""$ Client sleeps"")
+    yield from asyncio.sleep(2)
+    print(""$ Client add task hello"")
+    yield from redis.lpush(""channel"", ""hello"")
+    print(""$ Client sleeps"")    
+    yield from asyncio.sleep(10)
+
+
+@asyncio.coroutine
+def simulate_server():
+    redis = yield from aioredis.create_redis(('localhost', 6379))
+    print(""# Wait for task"")
+    try:
+        data = yield from asyncio.wait_for(redis.blpop(""channel""), 1)
+    except asyncio.TimeoutError:
+        print(""# BLPOP timed-out"")
+        yield from asyncio.sleep(5)
+        print(""# Wait for task"")
+        try:
+            data = yield from asyncio.wait_for(redis.blpop(""channel""), 1)
+        except asyncio.TimeoutError:
+            print(""# BLPOP timed-out the task is lost."")
+        else:
+            print(""# BLPOP returned: %s"" % data)
+    else:
+        print(""# BLPOP returned: %s"" % data)
+
+
+asyncio.get_event_loop().run_until_complete(
+    asyncio.wait({simulate_server(), simulate_client()})
+)
+```
+
+For this example, I can fix it using the timeout value of BLPOP but I have the same behavior when using it with `asyncio.wait`
+
+``` python
+    yield from asyncio.wait(
+                {redis.blpop(""channel""), websocket.recv()},
+                return_when=asyncio.FIRST_COMPLETED)
+```
+","start issue","When an aioredis coroutine is wrapped in a cancelled task, the pending call is not cancelled"
+"issue_closed","59","aio-libs","aioredis","Natim","2015-04-09 15:02:52","","closed issue","When an aioredis coroutine is wrapped in a cancelled task, the pending call is not cancelled"
+"pull_request_title","59","aio-libs","aioredis","Natim","2015-04-08 15:55:24","When a coroutine is wrapped in a Task that is cancelled, the pending redis call is not cancelled and its result is lost.
+
+Here is an example using `BLPOP`
+
+``` python
+#!/usr/bin/env python
+
+import asyncio
+import aioredis
+
+
+@asyncio.coroutine
+def simulate_client():
+    redis = yield from aioredis.create_redis(('localhost', 6379))
+    print(""$ Client sleeps"")
+    yield from asyncio.sleep(2)
+    print(""$ Client add task hello"")
+    yield from redis.lpush(""channel"", ""hello"")
+    print(""$ Client sleeps"")    
+    yield from asyncio.sleep(10)
+
+
+@asyncio.coroutine
+def simulate_server():
+    redis = yield from aioredis.create_redis(('localhost', 6379))
+    print(""# Wait for task"")
+    try:
+        data = yield from asyncio.wait_for(redis.blpop(""channel""), 1)
+    except asyncio.TimeoutError:
+        print(""# BLPOP timed-out"")
+        yield from asyncio.sleep(5)
+        print(""# Wait for task"")
+        try:
+            data = yield from asyncio.wait_for(redis.blpop(""channel""), 1)
+        except asyncio.TimeoutError:
+            print(""# BLPOP timed-out the task is lost."")
+        else:
+            print(""# BLPOP returned: %s"" % data)
+    else:
+        print(""# BLPOP returned: %s"" % data)
+
+
+asyncio.get_event_loop().run_until_complete(
+    asyncio.wait({simulate_server(), simulate_client()})
+)
+```
+
+For this example, I can fix it using the timeout value of BLPOP but I have the same behavior when using it with `asyncio.wait`
+
+``` python
+    yield from asyncio.wait(
+                {redis.blpop(""channel""), websocket.recv()},
+                return_when=asyncio.FIRST_COMPLETED)
+```
+","a2f5781673fb8de67dc1e071bfc73627a17f654b","When an aioredis coroutine is wrapped in a cancelled task, the pending call is not cancelled"
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-03 14:46:29","I've seen a similar problem with `websockets` https://github.com/aaugustin/websockets/issues/50
+","",""
+"issue_comment","59","aio-libs","aioredis","popravich","2015-04-03 17:34:21","Ok, I'll take a look
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-03 17:56:41","I tried my best but I couldn't find where is the future yield from.
+I though it was here: https://github.com/aio-libs/aioredis/blob/master/aioredis/commands/__init__.py#L35
+
+But adding pdb or a print just before was never called.
+
+A CancelledError exception is raises in the yield from of the blpop, I think we should catch it and probably stop the _read_data coroutine when it is or something like that.
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-08 10:19:52","I have reach the python-tulip mailing list for help as well: https://groups.google.com/forum/#!topic/python-tulip/_J6BedIpu5I
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-08 10:23:05","My understanding of the matter is that in case of CancelledError we should call `self._reader_task.cancel()` or even `self._conn._do_close()`
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-08 10:32:04","Ok so because aioredis return a future we should catch the CancelledError when yielding from this future and then call fut.cancel() in the aioredis we might want to inherit from Future.cancel to handle the _do_close
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-08 11:35:20","``` python
+#!/usr/bin/env python
+
+import asyncio
+import aioredis
+
+
+@asyncio.coroutine
+def simulate_client():
+    redis = yield from aioredis.create_redis(('localhost', 6379))
+    print(""$ Client sleeps"")
+    yield from asyncio.sleep(1)
+    print(""$ Client add task hello"")
+    yield from redis.lpush(""channel"", ""hello"")
+    yield from asyncio.sleep(1)
+
+
+@asyncio.coroutine
+def simulate_server():
+    redis = yield from aioredis.create_redis(('localhost', 6379))
+    print(""# Wait for task"")
+    try:
+        fut = redis.blpop(""channel"")
+        data = yield from asyncio.wait_for(fut, 0.1)
+    except asyncio.TimeoutError:
+        print(""# BLPOP timed-out"")
+        redis._conn._do_close(None)
+        yield from asyncio.sleep(1)
+        print(""# Wait for task"")
+        try:
+            data = yield from asyncio.wait_for(redis.blpop(""channel""), 0.1)
+        except asyncio.TimeoutError:
+            print(""# BLPOP timed-out the task is lost."")
+        else:
+            print(""# BLPOP returned: %s"" % data)
+    else:
+        print(""# BLPOP returned: %s"" % data)
+
+
+asyncio.get_event_loop().run_until_complete(
+    asyncio.wait({simulate_server(), simulate_client()})
+)
+```
+
+It works.
+","",""
+"issue_comment","59","aio-libs","aioredis","popravich","2015-04-08 12:16:56","The main question is what to do with connection as it is still usable (well after BLPOP timeout in redis).
+I think I'll implement connection invalidation but in a bit strange form:
+- when there are no more futures in queue before the on which is cancelled -- connection can be closed safely:
+- but if qeueu is not empty -- I'd prefer to keep the connection alive ( as cancelling it will cause all that tasks to crash);
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-08 12:21:37","> if queue is not empty -- I'd prefer to keep the connection alive ( as cancelling it will cause all that tasks to crash);
+
+The thing is the queue is for other `yield from` so we should be able to cancel the current command of the connection and let the other in queue reopen a connection before continuing.
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-08 15:41:48","Here is how I finally handled the thing, with the pool of connection it is even harder.
+
+https://github.com/mozilla-services/remote-worker-server/pull/9/files#diff-1941b7aa355a66a8168348cce764a718R131
+
+I'd like to be able to return the future and then do `fut.cancel()` but I am not sure of how to do it yet.
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-08 15:55:40","Here is my fix proposal.
+","",""
+"issue_comment","59","aio-libs","aioredis","coveralls","2015-04-08 16:05:04","[![Coverage Status](https://coveralls.io/builds/2291624/badge)](https://coveralls.io/builds/2291624)
+
+Coverage decreased (-0.03%) to 93.16% when pulling **47ad527c430a55d2d0e7a5cad426d3c8fdc62e26 on Natim:59-handle-cancel** into **31f64206eb97ea34fc51d6609a09a51431ba020b on aio-libs:master**.
+","",""
+"issue_comment","59","aio-libs","aioredis","coveralls","2015-04-08 17:56:59","[![Coverage Status](https://coveralls.io/builds/2292554/badge)](https://coveralls.io/builds/2292554)
+
+Coverage decreased (-0.03%) to 93.16% when pulling **a2f5781673fb8de67dc1e071bfc73627a17f654b on Natim:59-handle-cancel** into **31f64206eb97ea34fc51d6609a09a51431ba020b on aio-libs:master**.
+","",""
+"issue_comment","59","aio-libs","aioredis","coveralls","2015-04-08 18:00:01","[![Coverage Status](https://coveralls.io/builds/2291965/badge)](https://coveralls.io/builds/2291965)
+
+Coverage decreased (-0.03%) to 93.16% when pulling **d83e22655ba0ccb279f762a99ba450af32901354 on Natim:59-handle-cancel** into **31f64206eb97ea34fc51d6609a09a51431ba020b on aio-libs:master**.
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-09 13:35:23","Ok so continuing to think this through, I have come to the following piece of code:
+
+``` python
+#!/usr/bin/env python
+import asyncio
+import hiredis
+from aioredis.util import encode_command
+from aioredis.errors import ProtocolError, ReplyError
+
+
+@asyncio.coroutine
+def run_me():
+    reader, writer = yield from asyncio.open_connection(""localhost"", 6379)
+    writer.write(encode_command(""BLPOP"", ""channel"", 0))
+    try:
+        task = asyncio.Task(reader.read(65536))
+        data = yield from asyncio.wait_for(task, 1)
+    except asyncio.TimeoutError:
+        task.cancel()
+        data = yield from reader.read(65536)
+    finally:
+        parser = hiredis.Reader(protocolError=ProtocolError,
+                                replyError=ReplyError)
+        parser.feed(data)
+        return parser.gets()
+
+data = asyncio.get_event_loop().run_until_complete(run_me())
+print(data)
+```
+
+The question to answer is how can we stop the current `read()` call in order to read the reader again later.
+
+With this code, the python answer is:
+
+```
+RuntimeError: read() called while another coroutine is already waiting for incoming data
+```
+","",""
+"issue_comment","59","aio-libs","aioredis","popravich","2015-04-09 13:50:36","With single connection this is very hard.
+I'm trying to rewrite `Redis` #40  to make it work with pool of connection.
+In that case such connection could be safely dropped and created new one.
+
+I'd recommend you try using pool and not single connection (for now, while #40 is still in progress).
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-09 13:56:59","i think it is a bug in the StreamReader actually that doesn't handle the cancel() correctly.
+","",""
+"issue_comment","59","aio-libs","aioredis","popravich","2015-04-09 14:47:12","No, the StreamReader is ok.
+The problem is that you restart it in `except` block -- waiter future is cancelled but code in `finally` block has not been executed yet and you trying to restart reader, see [StreamReader._wait_for_data](https://hg.python.org/cpython/file/283036fe48e2/Lib/asyncio/streams.py#l382) 
+","",""
+"issue_comment","59","aio-libs","aioredis","popravich","2015-04-09 14:48:57","Connection is blocked by Redis server until BLPOP timeout is expired. In case timeout is set to 0 the connection will be blocked forever and so simply must be closed.
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-09 14:55:56","Yes ok it makes sense. So the right solution is to close the connection in case of a read for subscribe or BLPOP.
+
+Maybe we should make sure that aioredis doesn't queue any commands for this long polling commands?
+","",""
+"issue_comment","59","aio-libs","aioredis","popravich","2015-04-09 15:02:05","Yes, and that should be done in terms of #40 -- pool should be hidden inside Redis and so it would be possible to choose free connection for new commands
+","",""
+"issue_comment","59","aio-libs","aioredis","Natim","2015-04-09 15:02:52","Right perfect, thanks a lot @popravich for tackling this, I am here to help in case you need me.
+","",""
+"pull_request_commit_comment","59","aio-libs","aioredis","popravich","2015-04-08 18:14:56","this is bad, because cancelling `_reader_task` will also cancel `_reader.read()` inside it and make connection unusable. So re-createing new `_reader_task` does not make much sense.
+","a2f5781673fb8de67dc1e071bfc73627a17f654b","(24, '', u'aioredis/connection.py')"
+"pull_request_commit_comment","59","aio-libs","aioredis","Natim","2015-04-08 19:10:18","It is strange because test are passing. Could you add a test to show this behavior?
+","a2f5781673fb8de67dc1e071bfc73627a17f654b","(24, '', u'aioredis/connection.py')"
+"pull_request_commit_comment","59","aio-libs","aioredis","popravich","2015-04-08 20:08:38","you should not catch `CancelledError` here -- the test must either run as expected or fail with error
+","a2f5781673fb8de67dc1e071bfc73627a17f654b","(10, '', u'tests/_testutil.py')"
+"pull_request_commit_comment","59","aio-libs","aioredis","Natim","2015-04-08 21:13:38","Yes I had a doubt about this...
+","a2f5781673fb8de67dc1e071bfc73627a17f654b","(10, '', u'tests/_testutil.py')"
+"pull_request_commit","59","aio-libs","aioredis","Natim","2015-04-08 15:55:02","Handle cancel() on RedisConnection (fixes #59)","47ad527c430a55d2d0e7a5cad426d3c8fdc62e26",""
+"pull_request_commit","59","aio-libs","aioredis","Natim","2015-04-08 16:34:50","Fix tests.","a2f5781673fb8de67dc1e071bfc73627a17f654b",""

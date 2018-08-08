@@ -1,0 +1,75 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","110","aio-libs","aioredis","tumb1er","2016-03-04 09:41:04","On a highly-loaded process with single connection I've got an `AssertionError from`MultiExec._do_execute`.
+
+``` python
+assert len(results) == len(waiters), (results, waiters)
+# results, waiters looked like: 
+([('OK', 0)], [])
+```
+
+It seems, that when I use multi like this:
+
+``` python
+with (yield from self.tr_lock):  # asyncio.Lock                            
+     tr = self.redis.multi_exec()                             
+     tr.hmset(self.data_key, *chunk_data)        
+     tr.zadd(self.chunks_key, *items)            
+     yield from tr.execute()
+```
+
+other green threads somehow can add other commands to this connection.
+Is it possible for reconnecting redis? 
+
+``` python
+self.redis = yield from aioredis.create_reconnecting_redis(...)
+```
+
+Should I always use separate redis connection for transaction-only interactions?
+By the way, the whole application freezes until Ctrl+C pressed.
+","start issue","Transactions and not transaction commands in one connection"
+"issue_closed","110","aio-libs","aioredis","popravich","2016-03-10 12:40:41","","closed issue","Transactions and not transaction commands in one connection"
+"issue_comment","110","aio-libs","aioredis","popravich","2016-03-04 12:46:15","Hmm...
+This looks very strange, need to look into it...
+","",""
+"issue_comment","110","aio-libs","aioredis","popravich","2016-03-04 14:00:36","Can you make a test to reproduce it?
+","",""
+"issue_comment","110","aio-libs","aioredis","tumb1er","2016-03-04 16:27:16","I'll try to write an example script next week, because it's probably a race-condition effect.
+","",""
+"issue_comment","110","aio-libs","aioredis","tumb1er","2016-03-05 07:57:30","Well, transaction and standalone commands itself don't break anything.
+I wrote a simple script, that executes 120 transactions and 1200 standalone redis commands with single redis connection, and couldn't reproduce behavior described above.
+Than I added ""cancel monkey"", than randomly cancels and re-launches green cycles, and in less than a minute script stucked with AssertionError. All other green cycles also stopped, except ""cancel monkey"".
+
+Script itself is here: https://gist.github.com/anonymous/4ea757a6690ccfb27d99
+
+Maybe `transaction.execute()` should be [shielded](https://docs.python.org/3/library/asyncio-task.html#asyncio.shield) from cancellation?
+","",""
+"issue_comment","110","aio-libs","aioredis","popravich","2016-03-05 10:09:53","Thanks, I will take a look
+","",""
+"issue_comment","110","aio-libs","aioredis","tumb1er","2016-03-09 15:05:27","``` python
+yield from asyncio.shield(transaction.execute())
+```
+
+And no more freezes. Is PR without any tests appropriate for this bugfix?
+","",""
+"issue_comment","110","aio-libs","aioredis","asvetlov","2016-03-09 15:51:18","Interesting, I've added `shield` to aiopg in December
+","",""
+"issue_comment","110","aio-libs","aioredis","popravich","2016-03-09 19:28:08","Its a bit deeper problem, but I almost have a fix.
+","",""
+"issue_comment","110","aio-libs","aioredis","popravich","2016-03-10 12:42:00","@tumb1er, the issue should be fixed now, can you check it with latest version from master?
+","",""
+"issue_comment","110","aio-libs","aioredis","tumb1er","2016-03-10 13:09:34","@popravich works for me now:
+
+``` sh
+$ pip install git+https://github.com/aio-libs/aioredis.git
+Collecting git+https://github.com/aio-libs/aioredis.git
+  Cloning https://github.com/aio-libs/aioredis.git to /tmp/pip-l10d4d8q-build
+Requirement already satisfied (use --upgrade to upgrade): hiredis in /home/tumbler/virtualenv/mitya/lib/python3.4/site-packages (from aioredis==0.2.5)
+Installing collected packages: aioredis
+  Found existing installation: aioredis 0.2.4
+    Uninstalling aioredis-0.2.4:
+      Successfully uninstalled aioredis-0.2.4
+  Running setup.py install for aioredis ... done
+Successfully installed aioredis-0.2.5
+
+```
+","",""

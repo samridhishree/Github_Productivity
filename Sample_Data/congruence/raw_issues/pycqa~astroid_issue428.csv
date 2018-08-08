@@ -1,0 +1,98 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","428","pycqa","astroid","garrybodsworth","2017-04-28 15:15:15","### Steps to reproduce
+1. This is running a moderate sized Python3 codebase in Pylint and I can't determine what code is exercising this issue.  But the call stack is:
+```
+Traceback (most recent call last):
+  File ""/usr/bin/pylint"", line 11, in <module>
+    sys.exit(run_pylint())
+  File ""/usr/lib/python3.5/site-packages/pylint/__init__.py"", line 13, in run_pylint
+    Run(sys.argv[1:])
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 1300, in __init__
+    linter.check(args)
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 726, in check
+    self._do_check(files_or_modules)
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 855, in _do_check
+    self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
+  File ""/usr/lib/python3.5/site-packages/pylint/lint.py"", line 934, in check_astroid_module
+    walker.walk(ast_node)
+  File ""/usr/lib/python3.5/site-packages/pylint/utils.py"", line 973, in walk
+    self.walk(child)
+  File ""/usr/lib/python3.5/site-packages/pylint/utils.py"", line 970, in walk
+    cb(astroid)
+  File ""/usr/lib/python3.5/site-packages/pylint/checkers/variables.py"", line 1144, in visit_importfrom
+    module = node.do_import_module(name_parts[0])
+  File ""/usr/lib/python3.5/site-packages/astroid/mixins.py"", line 119, in do_import_module
+    relative_only=level and level >= 1)
+  File ""/usr/lib/python3.5/site-packages/astroid/scoped_nodes.py"", line 409, in import_module
+    return MANAGER.ast_from_module_name(absmodname)
+  File ""/usr/lib/python3.5/site-packages/astroid/manager.py"", line 154, in ast_from_module_name
+    return self.ast_from_file(found_spec.location, modname, fallback=False)
+  File ""/usr/lib/python3.5/site-packages/astroid/manager.py"", line 80, in ast_from_file
+    return AstroidBuilder(self).file_build(filepath, modname)
+  File ""/usr/lib/python3.5/site-packages/astroid/builder.py"", line 152, in file_build
+    return self._post_build(module, encoding)
+  File ""/usr/lib/python3.5/site-packages/astroid/builder.py"", line 172, in _post_build
+    self.delayed_assattr(delayed)
+  File ""/usr/lib/python3.5/site-packages/astroid/builder.py"", line 231, in delayed_assattr
+    for inferred in node.expr.infer():
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/inference.py"", line 237, in infer_attribute
+    for owner in self.expr.infer(context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 85, in wrapped
+    res = next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/bases.py"", line 95, in _infer_stmts
+    for inferred in stmt.infer(context=context):
+  File ""/usr/lib/python3.5/site-packages/astroid/context.py"", line 40, in cache_generator
+    for result in generator:
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 82, in wrapped
+    generator = _func(node, context, **kwargs)
+  File ""/usr/lib/python3.5/site-packages/astroid/inference.py"", line 764, in infer_assign
+    stmts = list(self.assigned_stmts(context=context))
+  File ""/usr/lib/python3.5/site-packages/astroid/decorators.py"", line 138, in raise_if_nothing_inferred
+    yield next(generator)
+  File ""/usr/lib/python3.5/site-packages/astroid/protocols.py"", line 511, in with_assigned_stmts
+    obj = obj.elts[index]
+TypeError: 'Uninferable' object does not support indexing
+```
+2. 
+3. 
+
+### Current behavior
+Exception: `TypeError: 'Uninferable' object does not support indexing`
+
+### Expected behavior
+No exception - possibly show an error - not sure.
+
+I can fix the code by changing the code on this line https://github.com/PyCQA/astroid/blob/master/astroid/protocols.py#L512
+to:
+```
+except (IndexError, TypeError):
+```
+
+I'm not sure why the error is occurring so have not created a pull request for it.
+
+### ``python -c ""from astroid import __pkginfo__; print(__pkginfo__.version)""`` output
+
+1.5.2
+
+This problem started occurring in PyLint 1.7.0 but doesn't happen in 1.6.5","start issue","TypeError: 'Uninferable' object does not support indexing"
+"issue_closed","428","pycqa","astroid","PCManticore","2017-05-22 12:58:29","","closed issue","TypeError: 'Uninferable' object does not support indexing"
+"issue_comment","428","pycqa","astroid","rogalski","2017-05-15 05:31:55","#429 will fix this.","",""
+"issue_comment","428","pycqa","astroid","PCManticore","2017-05-22 12:58:29","This should be fixed after #429 ","",""

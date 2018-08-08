@@ -1,0 +1,37 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","454","pycqa","astroid","hugovk","2017-10-12 06:24:44","### Steps to reproduce
+1. Test latest master (eg. on Travis CI or Appveyor)
+
+### Current behavior
+```
+FAIL: test_object_dunder_new_is_inferred_if_decorator (unittest_inference.ObjectDunderNewTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File ""/home/travis/build/PyCQA/astroid/.tox/py27/lib/python2.7/site-packages/astroid/tests/unittest_inference.py"", line 4269, in test_object_dunder_new_is_inferred_if_decorator
+    self.assertIsInstance(inferred, Instance)
+AssertionError: <ClassDef.instance l.2 at 0x7f9fdf2f8290> is not an instance of <class 'astroid.bases.Instance'>
+```
+
+### Expected behavior
+Tests pass.
+
+### More info
+
+I think https://travis-ci.org/PyCQA/astroid/builds/257015909 is the first failing build, from commit https://github.com/PyCQA/astroid/commit/e348d6396a6849cc2b73397dce92c3d1a7921802.
+
+Tip: rather than committing directly to master, always create a PR, that way you can see if the new changes pass or fail the CI before merging.
+
+","start issue","Tests: AssertionError: <ClassDef.instance l.2 at 0x7f9fdf2f8290> is not an instance of <class 'astroid.bases.Instance'>"
+"issue_closed","454","pycqa","astroid","PCManticore","2017-10-12 08:40:14","","closed issue","Tests: AssertionError: <ClassDef.instance l.2 at 0x7f9fdf2f8290> is not an instance of <class 'astroid.bases.Instance'>"
+"issue_comment","454","pycqa","astroid","hugovk","2017-10-12 07:49:24","On further investigation, commit c2e8ca524793905018e0e4adc5e29e1d3b0446c6 to fix #172, which introduced that test, has been failing from the start.
+
+Here's the failing commit to fix #172:
+https://travis-ci.org/hugovk/astroid/builds/286902750
+
+And here's the passing commit (except for pylint) before that one:
+https://travis-ci.org/hugovk/astroid/builds/286903238
+
+In the short term, I suggest at least removing the test so the CI is useful for new PRs. And then revisit the test to make sure the fix for #172 is working as expected.
+
+","",""
+"issue_comment","454","pycqa","astroid","PCManticore","2017-10-12 08:40:14","This is caused by https://github.com/PyCQA/astroid/issues/444. The PR looks good to me, plus we also track the error in the linked issue.","",""

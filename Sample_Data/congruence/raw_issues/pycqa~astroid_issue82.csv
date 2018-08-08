@@ -1,0 +1,53 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","82","pycqa","astroid","pylint-bot","2015-03-13 23:59:09","Originally reported by: **Daniel Balparda (BitBucket: [balparda](http://bitbucket.org/balparda), GitHub: @balparda?)**
+
+---
+
+After issue #59 the ""ability to optimize small ast subtrees, with the first use in the optimization of multiple BinOp nodes"" was added. We have a pylint checker that defines a visit_binop() to catch things like:
+print 'a' + 'b'
+print 'a' + 'b' 'c'
+print 'a' 'b' + 'c'
+print 'a' + 'b' + 'c'
+The idea is to warn against explicit string concatenations. After v1.3.5 the last example comes as:
+node.as_string() -> ""print 'abc'""
+This means out visit_binop() is never called. This may be a problem not worth fixing but it is an issue nonetheless. Thanks.
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/82
+","start issue","The new BinOp optimization in 1.3.5 kills pylint's ability to warn on 'a'+'b'+'c'"
+"issue_closed","82","pycqa","astroid","pylint-bot","2015-12-09 05:53:04","","closed issue","The new BinOp optimization in 1.3.5 kills pylint's ability to warn on 'a'+'b'+'c'"
+"issue_comment","82","pycqa","astroid","pylint-bot","2015-03-13 23:11:03","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Interesting use case.  A flag that disables the optimisation will help? Something along the lines of `manager.disable_ast_optimisation`, which needs to be set to True in your checker. Another solution would be for the peephole optimizer to obtain the joined string only if there are more than `n` nodes involved in the operation, but I don't think this one deserves the hassle. 
+","",""
+"issue_comment","82","pycqa","astroid","pylint-bot","2015-03-13 23:22:10","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+In fact, it should be `True` by default and should be enabled only if the user wants to get rid of the maximum recursion depth problem.
+","",""
+"issue_comment","82","pycqa","astroid","pylint-bot","2015-03-13 23:23:37","_Original comment by_ **Daniel Balparda (BitBucket: [balparda](http://bitbucket.org/balparda), GitHub: @balparda?)**:
+
+---
+
+A flag disabling it would solve the issue fine. That is what we (Google) will do internally to go around this problem anyway, so I see no problem in having a public mechanism to do this.
+","",""
+"issue_comment","82","pycqa","astroid","pylint-bot","2015-03-14 15:31:48","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+Add a new option to AstroidManager for controlling the AST peephole optimizer
+
+The new option, 'optimize_ast', controls if peephole optimizer should be enabled or not.
+This prevents a regression, where the visit_binop method wasn't called
+anymore with astroid 1.3.5, due to the differences in the resulting AST.
+Closes issue #82.
+","",""
+"issue_comment","82","pycqa","astroid","pylint-bot","2015-03-14 15:51:44","_Original comment by_ **Claudiu Popa (BitBucket: [PCManticore](http://bitbucket.org/PCManticore), GitHub: @PCManticore)**:
+
+---
+
+And this commit for Pylint https://bitbucket.org/logilab/pylint/commits/d3153c4d948290940ecf75077e7e47e1d5aed405. I'll follow with a new release shortly.
+","",""

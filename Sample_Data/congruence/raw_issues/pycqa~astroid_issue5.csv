@@ -1,0 +1,89 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","5","pycqa","astroid","pylint-bot","2013-09-05 01:34:05","Originally reported by: **Gilles Devaux (BitBucket: [gillesdevaux](http://bitbucket.org/gillesdevaux))**
+
+---
+
+```
+#!shell
+
+************* Module kwarter.admin.util
+C:  1, 0: Missing module docstring (missing-docstring)
+Traceback (most recent call last):
+  File ""/Users/gillesdevaux/.virtualenvs/platform/bin/pylint"", line 9, in <module>
+    load_entry_point('pylint==1.0.0', 'console_scripts', 'pylint')()
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/__init__.py"", line 21, in run_pylint
+    Run(sys.argv[1:])
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/lint.py"", line 1010, in __init__
+    linter.check(args)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/lint.py"", line 599, in check
+    self.check_astroid_module(astroid, walker, rawcheckers, tokencheckers)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/lint.py"", line 685, in check_astroid_module
+    walker.walk(astroid)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/utils.py"", line 662, in walk
+    self.walk(child)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/utils.py"", line 662, in walk
+    self.walk(child)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/utils.py"", line 662, in walk
+    self.walk(child)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/utils.py"", line 662, in walk
+    self.walk(child)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/utils.py"", line 662, in walk
+    self.walk(child)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/utils.py"", line 662, in walk
+    self.walk(child)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/utils.py"", line 659, in walk
+    cb(astroid)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/pylint/checkers/typecheck.py"", line 174, in visit_getattr
+    if is_super(owner) or getattr(owner, 'type', None) == 'metaclass':
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/astroid/bases.py"", line 51, in __getattr__
+    return getattr(self._proxied, name)
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 681, in _class_type
+    if _class_type(base, ancestors) != 'class':
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 680, in _class_type
+    for base in klass.ancestors(recurs=False):
+  File ""/Users/gillesdevaux/.virtualenvs/platform/lib/python2.7/site-packages/astroid/scoped_nodes.py"", line 801, in ancestors
+    for baseobj in stmt.infer(context):
+TypeError: unbound method infer() must be called with Tuple instance as first argument (got InferenceContext instance instead)
+```
+
+I nailed it down to this code
+
+```
+#!python
+
+def merge_url_qs(url, **kw):
+    """""" Merge the query string elements of a URL with the ones in ``kw``.
+    If any query string element exists in ``url`` that also exists in
+    ``kw``, replace it.""""""
+    segments = urlparse.urlsplit(url)
+    extra_qs = ['%s=%s' % (k, v) for (k, v) in
+                urlparse.parse_qsl(segments.query, keep_blank_values=1)
+                if k not in kw]
+    qs = ''
+    for k, v in sorted(kw.items()):
+        qs += '%s=%s&' % (k, v)
+    if extra_qs:
+        qs += '&'.join(extra_qs)
+    else:
+        qs = qs[:-1]
+    return urlparse.urlunsplit(
+        (segments.scheme, segments.netloc, segments.path, qs, segments.fragment)
+    )
+```
+
+---
+- Bitbucket: https://bitbucket.org/logilab/astroid/issue/5
+","start issue","Pylint throws an Exception when analyzing a file"
+"issue_closed","5","pycqa","astroid","pylint-bot","2015-12-09 05:51:32","","closed issue","Pylint throws an Exception when analyzing a file"
+"issue_comment","5","pycqa","astroid","pylint-bot","2013-09-05 19:15:01","_Original comment by_ **Chris Rebert (BitBucket: [cvrebert](http://bitbucket.org/cvrebert), GitHub: @cvrebert?)**:
+
+---
+
+Duplicate of [Issue #3](#3/error-after-upgrade-to-pylint-10)?
+","",""
+"issue_comment","5","pycqa","astroid","pylint-bot","2013-09-05 19:24:37","_Original comment by_ **Gilles Devaux (BitBucket: [gillesdevaux](http://bitbucket.org/gillesdevaux))**:
+
+---
+
+looks like it
+","",""

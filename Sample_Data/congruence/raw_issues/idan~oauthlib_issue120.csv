@@ -1,0 +1,138 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","120","idan","oauthlib","warsaw","2013-02-19 22:08:16","We ran into an interesting usability issue as we were porting some code from the old oauth library to oauthlib.  Our url had query parameters, but the same parameters were being passed in as the `body` argument to .sign().  E.g. something like this:
+
+url = 'https://www.example.com/foo/bar/?platform=linux'
+client = oauth1.Client(...)
+url, headers, body = client.sign(url, 'GET', {'platform': 'linux'})
+
+This breaks because while the query parameters are properly normalized out of the base string uri, as per RFC 5849 $3.4.1.2, the query parameters get added signature base string twice, once from the original url query parameters, and then again from the `body` arguments.  Eliminating either one of those duplicates fixes the signature.
+
+While I think technically, oauthlib is following the spec, the API makes it easy to get this wrong.  At the very least, some documentation on .sign() is in order, to explain that the `body` parameters are added to any query string parameters, and duplicates are maintained.  Perhaps better would be raising an exception if a query url was used in a GET while a non-default `body` argument was given.
+","start issue","Signing with query params in url and `body` argument is confusing"
+"issue_closed","120","idan","oauthlib","ib-lundgren","2013-02-20 22:46:07","","closed issue","Signing with query params in url and `body` argument is confusing"
+"issue_comment","120","idan","oauthlib","ib-lundgren","2013-02-19 22:57:54","Interesting dilemma. 
+
+Retaining duplicates is indeed in accordance with the spec and I am curious to why you say it breaks, breaks what? It sounds like your OAuth provider has its verification logic wrong ;) 
+
+Adding some documentation to sign regarding the parameter extraction from query and body is a good idea. Since  having a request body is valid with GET we need to be careful with adding an exception/warning. Is this a GET specific issue? Would simply excluding body on GETs suffice?
+
+```
+url = 'https://www.example.com/foo/bar/?platform=linux'
+client = oauth1.Client(...)
+if http_method == 'GET':
+    url, headers, body = client.sign(url, http_method)
+else:
+    url, headers, body = client.sign(url, http_method, {'platform': 'linux'})
+```
+","",""
+"issue_comment","120","idan","oauthlib","ib-lundgren","2013-02-19 23:04:47","According to Roy Fielding 1) it seems changing the response based on the request body of a GET request is against the HTTP 1.1 spec as it should not have semantic meaning. Which would warrant an exception in sign I think.
+
+1) http://stackoverflow.com/questions/978061/http-get-with-request-body
+","",""
+"issue_comment","120","idan","oauthlib","ib-lundgren","2013-02-19 23:35:04","Let me know if that commit helps out.
+","",""
+"issue_comment","120","idan","oauthlib","warsaw","2013-02-20 13:11:57","On Feb 19, 2013, at 02:57 PM, Ib Lundgren wrote:
+
+> Retaining duplicates is indeed in accordance with the spec and I am curious
+> to why you say it breaks, breaks what? It sounds like your OAuth provider has
+> its verification logic wrong ;)
+
+It's not so much the retention of duplicates that surprised the user, it was
+that both the query string and the body dict contributed to the parameters in
+the signature.  It makes sense now that we know, but it was difficult to
+figure out what was causing the signatures to fail.
+
+> Adding some documentation to sign regarding the parameter extraction from
+> query and body is a good idea. Since having a request body is valid with GET
+> we need to be careful with adding an exception/warning. Is this a GET
+> specific issue? Would simply excluding body on GETs suffice?
+> 
+>    url = 'https://www.example.com/foo/bar/?platform=linux'
+>    client = oauth1.Client(...)
+>    if http_method == 'GET':
+>        url, headers, body = client.sign(url, http_method)
+>    else:
+>        url, headers, body = client.sign(url, http_method, {'platform': 'linux'})
+
+That's essentially the solution we came up with.  Actually, first we manually
+stripped the query from the URL, but then I traced the code and realized what
+was happening.
+","",""
+"issue_comment","120","idan","oauthlib","warsaw","2013-02-20 13:21:42","On Feb 19, 2013, at 03:04 PM, Ib Lundgren wrote:
+
+> According to Roy Fielding 1) it seems changing the response based on the
+> request body of a GET request is against the HTTP 1.1 spec as it should not
+> have semantic meaning. Which would warrant an exception in sign I think.
+
+Agreed.  The diff looks good to me, thanks.
+
+Minor typos:
+
+s/this change the semantic/this changes the semantic/
+s/This because the body/This is because the body/
+
+Also, the sentence ""Which including the parameters when creating the signature
+would have."" doesn't make sense to me, sorry. ;)
+","",""
+"issue_comment","120","idan","oauthlib","ib-lundgren","2013-02-20 13:32:05","More proof that I really should not write documentation around midnight...
+Will sort it out tonight... Although I'll probably ending up making it
+worse...
+
+What my brain intended to write was something a long the lines of
+""Extracting the request body parameters and including them in the signature
+base string would give semantic meaning to the body, which it should not
+have according to the HTTP 1.1 spec.""
+
+Unfortunately the error won't remove the need for your workaround but it
+will hopefully make it more obvious for the next person running into the
+same issue.
+
+On Wed, Feb 20, 2013 at 2:21 PM, Barry Warsaw notifications@github.comwrote:
+
+> On Feb 19, 2013, at 03:04 PM, Ib Lundgren wrote:
+> 
+> > According to Roy Fielding 1) it seems changing the response based on the
+> > request body of a GET request is against the HTTP 1.1 spec as it should
+> > not
+> > have semantic meaning. Which would warrant an exception in sign I think.
+> 
+> Agreed. The diff looks good to me, thanks.
+> 
+> Minor typos:
+> 
+> s/this change the semantic/this changes the semantic/
+> s/This because the body/This is because the body/
+> 
+> Also, the sentence ""Which including the parameters when creating the
+> signature
+> would have."" doesn't make sense to me, sorry. ;)
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/issues/120#issuecomment-13831149.
+","",""
+"issue_comment","120","idan","oauthlib","warsaw","2013-02-20 13:38:09","On Feb 20, 2013, at 05:32 AM, Ib Lundgren wrote:
+
+> More proof that I really should not write documentation around midnight...
+
+:)
+
+> Will sort it out tonight... Although I'll probably ending up making it
+> worse...
+> 
+> What my brain intended to write was something a long the lines of
+> ""Extracting the request body parameters and including them in the signature
+> base string would give semantic meaning to the body, which it should not
+> have according to the HTTP 1.1 spec.""
+
++1
+
+> Unfortunately the error won't remove the need for your workaround but it
+> will hopefully make it more obvious for the next person running into the
+> same issue.
+
+Yep, and this is fine.  It's not a use case that makes sense, so providing the
+error early helps debug the situation much more quickly.  At least, that's
+what I think today. :)
+
+Thanks!
+","",""

@@ -1,0 +1,86 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","226","idan","oauthlib","TkTech","2013-12-09 20:10:01","About two years ago it appears pycrypto was swapped out for python-rsa. Then at some point about a year ago pycrypto was re-introduced (this time as a soft dependency).
+
+My questions:
+- Why was this decision made?
+- If python-rsa was no longer viable, why not the alternatives like tlslite?
+- Why is there no easy extension mechanism for swapping out implementations?
+
+I ask because [jira-python](http://jira-python.readthedocs.org/en/latest/) already includes [tlslite](https://pypi.python.org/pypi/tlslite) which is perfectly capable of doing the signing, but is pure-python and can optionally use pycrypto for acceleration. Howerver, there is no easy (or maybe there is but undocumented?) way of swapping it out without forking the code. I had to resort to monkey patching to do so:
+
+``` python
+def _pure_python_rsa_sha1(base_string, rsa_private_key):
+    """"""
+    An alternative, pure-python RSA-SHA1 signing method, using
+    the tlslite library.
+    """"""
+    import base64
+    from tlslite.utils import keyfactory
+
+    private_key = keyfactory.parsePrivateKey(rsa_private_key)
+    signature = private_key.hashAndSign(base_string.encode('ascii'))
+
+    # This *must* be unicode, since oauthlib refuses to work with
+    # anything else.
+    return unicode(base64.b64encode(signature))
+
+# Monkey patch the built-in RSA-SHA1 signing method, since the
+# package offers no proper extension mechanism.
+from oauthlib.oauth1.rfc5849 import signature
+signature.sign_rsa_sha1 = _pure_python_rsa_sha1
+```
+","start issue","Why PyCrypto for RSA?"
+"issue_closed","226","idan","oauthlib","thedrow","2015-07-01 11:31:23","","closed issue","Why PyCrypto for RSA?"
+"issue_comment","226","idan","oauthlib","ib-lundgren","2013-12-09 22:28:49","If I recall correctly we quickly swapped to python-rsa to ease installation of oauthlib. However, since pycrypto was (at the time at least) considered more proven in the field we preferred pycrypto. Instead of relying on an arguably less trusted library we decided that it is better to let only the ones who really need to use OAuth1 with RSA go through the installation process, hence the optional dependency and swap back again.
+
+I remember searching for alternatives at the time but did not stumble upon tlslite, since then there has been no search or suggestion to use alternatives which is why there is no easy way to swap which library is used. It would be a very neat feature to have and I'd love a PR :)
+
+I've not really thought about how to best implement this but maybe trying to either do library detection through imports or asking the user to explicitly specify would be viable options.
+","",""
+"issue_comment","226","idan","oauthlib","TkTech","2013-12-10 00:17:31","Because the signing methods are so simple, I was thinking of:
+- making the `Client()`'s `signature_method` kwarg accept a method instead of a string.
+- `oauthlib.oauth1.SIGNATURE_RSA` then just becomes an alias for the default implementation.
+- `SIGNATURE_RSA` uses tlslite by default, which is widely portable with 9 years of development and can use M2Crypto, pycrypto, or GMPY if they are installed for speed.
+- Add tlslite to `setup.py` as it's a light dependency (simplifying installation of oauthlib with all features out of the box).
+
+I think this would be more future-friendly and lower maintenance than library probing (although they aren't incompatible).
+
+I'll go ahead and make these changes in a PR if you are okay with them.
+","",""
+"issue_comment","226","idan","oauthlib","ib-lundgren","2013-12-10 11:30:02","Sounds good. I'd say make signature_method be either a string or a method and use error catching to decide, something along the lines of 
+
+```
+try:
+    signature_method(...)
+except TypeError:
+    proceed as before...
+```
+
+and keep tlslite optional. The number of people using OAuth 1 is decreasing since most providers are moving away from it and the subset using the RSA signing method has always been a very small minority (AFAIK).
+
+Looking forward to the PR :)
+","",""
+"issue_comment","226","idan","oauthlib","thedrow","2014-08-24 14:08:57","I suggest using [cryptography](https://cryptography.io/en/latest/). It supports RSA and Python 3/PyPy which makes it by far superior in comparision to PyCrypto.
+","",""
+"issue_comment","226","idan","oauthlib","ib-lundgren","2014-09-01 13:43:19","Looks very promising indeed.
+
+On Sun, Aug 24, 2014 at 3:08 PM, Omer Katz notifications@github.com wrote:
+
+> I suggest using cryptography https://cryptography.io/en/latest/. It
+> supports RSA and Python 3/PyPy which makes it by far superior in
+> comparision to PyCrypto.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/idan/oauthlib/issues/226#issuecomment-53194390.
+","",""
+"issue_comment","226","idan","oauthlib","ib-lundgren","2014-09-24 16:28:30","Sketched out a way to support both PyCrypto and Cryptography but the latter is not quite ready for prime time yet. Most notably it lacks support for loading public keys but it is coming (https://github.com/pyca/cryptography/pull/1331) and when it hits PyPI ill re-test and merge.
+","",""
+"issue_comment","226","idan","oauthlib","Zopieux","2015-01-08 14:53:19","@ib-lundgren Just so you know, [pyca/cryptography#1331](https://github.com/pyca/cryptography/pull/1331) has been merged.
+","",""
+"issue_comment","226","idan","oauthlib","thedrow","2015-01-08 16:02:06","Woot!
+","",""
+"issue_comment","226","idan","oauthlib","tilgovi","2015-04-19 19:18:38","Can be closed now that #322 merged.
+","",""
+"issue_comment","226","idan","oauthlib","thedrow","2015-06-15 12:55:08","@ib-lundgren ping. You can close this issue now.
+","",""

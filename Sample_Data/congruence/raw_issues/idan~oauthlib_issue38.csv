@@ -1,0 +1,51 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","38","idan","oauthlib","michaelhelmick","2012-05-14 14:42:55","Say I want to update my status on Twitter
+
+Example: https://gist.github.com/2690021
+
+If `data = {}` it works fine. But when `data = {'status': 'some status would go here'}` it effs up and throws a 401 Unauthorized rather than a 200 OK.
+","start issue","Passing params along with file"
+"issue_closed","38","idan","oauthlib","ib-lundgren","2012-06-12 15:37:37","","closed issue","Passing params along with file"
+"issue_comment","38","idan","oauthlib","ib-lundgren","2012-05-14 23:26:47","Hey and thanks for the report!
+
+It is indeed a bug and the caused by incorrectly including data when calculating the OAuth signature. When sending multipart form data the body parameters should not be used in the signature, but they are in this case.
+
+This happens because when requests call OAuth1 it has not yet set the content-type header (which ive not looked deeper into why), this causes OAuth1 to have to guess content type, since no is set and data is included it happily and wrongly assumes it is x-www-form-urlencoded (no check for files etc.). OAuthLib then has no clue that wrong input is given since its correctly formatted and proceeds to calculate a signature.
+
+There are a two solutions to this but unfortunately for you @michaelhelmick no easy one-line fix.
+- Have requests set the content-type prior to calling OAuth1
+- Make OAuth1 do a better job figuring out content-type
+
+Note to @idangazit @dgouldin, [Twitter docs](https://dev.twitter.com/discussions/1059) mentioned that they exclude body params (as per spec)  but in this specific case also query parameters which is odd. Maybe add an option to OAuth1 to exclude params from query/body?
+","",""
+"issue_comment","38","idan","oauthlib","michaelhelmick","2012-05-15 00:04:24","Yep. You hit the nail on the head. I've found ways around this with standard urllib2 (in my Tumblpy and Flick libs) and with requests in @ryanmcgrath's Twython lib by creating a ""fake request"" and signing the params then sending them to a new requests.post() with the authorization headers (https://github.com/ryanmcgrath/twython/blob/master/twython/twython.py#L514-L552)
+
+The first solution I believe was turned down by @kennethreitz I believe. Don't quote me on that. Haha. 
+
+The second solution I would imagine would be more desired. 
+
+Sent from my iPad
+
+On May 14, 2012, at 7:26 PM, ib-lundgrenreply@reply.github.com wrote:
+
+> Hey and thanks for the report!
+> 
+> It is indeed a bug and the caused by incorrectly including data when calculating the OAuth signature. When sending multipart form data the body parameters should not be used in the signature, but they are in this case.
+> 
+> This happens because when requests call OAuth1 it has not yet set the content-type header (which ive not looked deeper into why), this causes OAuth1 to have to guess content type, since no is set and data is included it happily and wrongly assumes it is x-www-form-urlencoded (no check for files etc.). OAuthLib then has no clue that wrong input is given since its correctly formatted and proceeds to calculate a signature.
+> 
+> There are a two solutions to this but unfortunately for you @michaelhelmick no easy one-line fix.
+> - Have requests set the content-type prior to calling OAuth1
+> - Make OAuth1 do a better job figuring out content-type
+> 
+> Note to @idangazit @dgouldin, [Twitter docs](https://dev.twitter.com/discussions/1059) mentioned that they exclude body params (as per spec)  but in this specific case also query parameters which is odd. Maybe add an option to OAuth1 to exclude params from query/body?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/idangazit/oauthlib/issues/38#issuecomment-5704881
+","",""
+"issue_comment","38","idan","oauthlib","ib-lundgren","2012-05-15 15:39:49","@idangazit Sent a pull request addressing this at https://github.com/kennethreitz/requests/pull/614. If it gets merged you can probably close this issue =)
+","",""
+"issue_comment","38","idan","oauthlib","kennethreitz","2012-05-15 15:40:18","Merged. :cake:
+","",""

@@ -19,9 +19,9 @@ import argparse
 warnings.filterwarnings('ignore',category=DeprecationWarning)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--project_data_dir', help='Directory with the daily activity counts of each project', default='data/daily_data_nullstate/')
-parser.add_argument('--model_dir', help='Directory that stores the trained models on different #states', default='results/GaussianHMMdiag/')
-parser.add_argument('--output_dir', help='Directory to store state predictions for each project', default='results/predictions/')
+parser.add_argument('--project_data_dir', help='Directory with the daily activity counts of each project', default='Sample_Data/HMM/daily_data_with_nullstate/')
+parser.add_argument('--model_dir', help='Directory that stores the trained models on different #states', default='Sample_Data/HMM/results/GaussianHMMdiag/')
+parser.add_argument('--output_dir', help='Directory to store state predictions for each project', default='Sample_Data/HMM/results/predictions/')
 parser.add_argument('--nstates', help='Number of states HMM model to use. The one with the maximum likelihood', default='12')
 args, unknown = parser.parse_known_args()
 

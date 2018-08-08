@@ -1,0 +1,52 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","313","idan","oauthlib","kramer65","2015-02-05 18:40:32","I'm trying to send some xml to the LinkedIn api, by doing like this:
+
+```
+xmlStr = '<share><comment>This is a comment.</comment><content><title>This is the title</title><description>This is the description</description><submitted-url>http://www.isittuesday.co.uk</submitted-url><submitted-image-url>http://stunningplaces.net/wp-content/uploads/2014/05/11-Rio-de-Janeiro-Cochabana-Beach.-Photo-by-ballnkicka.com_.jpg</submitted-image-url></content><visibility><code>connections-only</code></visibility></share>'
+r = linkedInApp.post('people/~/shares', data=xmlStr, content_type='application/xml')
+```
+
+But this creates the following request:
+
+```
+POST https://api.linkedin.com/v1/people/~/shares?oauth2_access_token=XXXXX
+Content-Type: application/json;charset=UTF-8
+```
+
+On [this page](http://flask-oauthlib.readthedocs.org/en/latest/client.html) it indeed says that for outgoing requests, OAutlib only supports `'urlencode'` and `'json'`. So I also tried setting the header like this:
+
+```
+r = linkedInApp.post('people/~/shares', data=xmlStr, headers={'Content-Type': 'application/xml'})
+```
+
+which gives me the traceback below. Does anybody know how I can get OAuthLib to set the header to `'application/xml'`? All tips are welcome!
+
+Traceback (most recent call last):
+  File ""/Library/Python/2.7/site-packages/flask/app.py"", line 1820, in wsgi_app
+    response = self.make_response(self.handle_exception(e))
+  File ""/Library/Python/2.7/site-packages/flask/app.py"", line 1403, in handle_exception
+    reraise(exc_type, exc_value, tb)
+  File ""/Library/Python/2.7/site-packages/flask/app.py"", line 1817, in wsgi_app
+    response = self.full_dispatch_request()
+  File ""/Library/Python/2.7/site-packages/flask/app.py"", line 1477, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File ""/Library/Python/2.7/site-packages/flask/app.py"", line 1381, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File ""/Library/Python/2.7/site-packages/flask/app.py"", line 1475, in full_dispatch_request
+    rv = self.dispatch_request()
+  File ""/Library/Python/2.7/site-packages/flask/app.py"", line 1461, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File ""/Users/kramer65/repos/v/app/views.py"", line 706, in authorized
+    r = linkedInApp.post('people/~/shares', data=xmlStr, headers={'Content-Type': 'application/xml'})
+  File ""/Library/Python/2.7/site-packages/flask_oauthlib/client.py"", line 371, in post
+    return self.request(_args, *_kwargs)
+  File ""/Library/Python/2.7/site-packages/flask_oauthlib/client.py"", line 424, in request
+    data, content_type = encode_request_data(data, format)
+  File ""/Library/Python/2.7/site-packages/flask_oauthlib/client.py"", line 154, in encode_request_data
+    return url_encode(data or {}), 'application/x-www-form-urlencoded'
+  File ""/Library/Python/2.7/site-packages/werkzeug/urls.py"", line 729, in url_encode
+    return separator.join(_url_encode_impl(obj, charset, encode_keys, sort, key))
+  File ""/Library/Python/2.7/site-packages/werkzeug/urls.py"", line 308, in _url_encode_impl
+    for key, value in iterable:
+ValueError: need more than 1 value to unpack
+","start issue","How to set outgoing content_type to xml?"

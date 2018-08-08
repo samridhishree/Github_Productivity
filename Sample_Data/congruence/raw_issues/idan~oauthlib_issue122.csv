@@ -1,0 +1,18 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","122","idan","oauthlib","elachuni","2013-02-21 19:40:08","Using OAuth1, if you attempt to sign a request with an empty body and a Content-Type header 'application/x-www-form-urlencoded', oauthlib will think that there was actually a body but that it wasn't able to decode it, and raise ValueError(""Headers indicate a formencoded body but body was not decodable."")
+
+Admittedly it's not all that usual to submit an empty body with a Content-Type header, but the calling code shouldn't need to special case this out and remove the Content-Type header or set it to something else (specially as some servers might then refuse this request without even looking to see if the body is empty).
+
+Right there in Client.sign, oauthlib should be able to tell the difference between ""there was no body"" and ""there was a body but I was unable to decode it"".
+
+Thanks!
+","start issue","In Oauth 1, submitting an empty body doesn't work with formencoded content-type "
+"issue_closed","122","idan","oauthlib","ib-lundgren","2013-02-21 20:41:03","","closed issue","In Oauth 1, submitting an empty body doesn't work with formencoded content-type "
+"issue_comment","122","idan","oauthlib","ib-lundgren","2013-02-21 19:43:50","Hrm, pretty sure it could before and I mistakenly introduced a regression in urldecode, will sort it out tonight. Cheers
+","",""
+"issue_comment","122","idan","oauthlib","ib-lundgren","2013-02-21 19:57:54","I'm unable to reproduce this, for me having an empty body ('') works as expected. Are you passing body=None?because that is expected to raise that error
+","",""
+"issue_comment","122","idan","oauthlib","elachuni","2013-02-21 20:01:18","Ah, yes, I was passing in body=None instead of an empty string.  Thanks for clarifying!
+","",""
+"issue_comment","122","idan","oauthlib","ib-lundgren","2013-02-21 20:41:03","No problem =)
+","",""

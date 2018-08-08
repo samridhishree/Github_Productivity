@@ -1,0 +1,75 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","406","idan","oauthlib","ryarnyah","2016-02-22 23:00:24","Hi!
+
+When i read the doc in **_oauthlib/oauth2/rfc6749/grant_types/authorization_code.py**_, i can see :
+`scope
+                OPTIONAL.  The scope of the access request as described by
+`Section 3.3`_.`
+
+But this check assume that scopes is mandatory
+`
+            if not request.scopes:
+                raise ValueError('Scopes must be set on post auth.')`
+
+Am i misunderstanding something? 
+","start issue","scope is optional in code response_type?"
+"issue_comment","406","idan","oauthlib","romsuhov","2016-03-01 17:11:57","I encountered the same behavior and I don't understand it too. RFC says that scope is optional, exception should not be raised. 
+","",""
+"issue_comment","406","idan","oauthlib","btimby","2017-03-27 16:57:28","This one bit me too. I monkey-patched it.
+
+```python
+# A bit of monkey patching here. OAuthlib states that scope are optional, also
+# RFC6749 confirms this, however, one method of the AuthorizationCodeGrant
+# class requires scopes to be defined. As I don't know if we are going to use
+# scopes, or what the scopes might be, I am going to monkey-patch this class to
+# make scopes optional.
+#
+# https://github.com/idan/oauthlib/issues/406
+
+# Some imports we need for the patching of the monkey...
+from oauthlib.oauth2.rfc6749 import errors
+
+
+def create_authorization_response(self, request, token_handler):
+    """"""
+    Monkey-patched version of this method that allows undefined scopes.
+    """"""
+    try:
+        # Right here is where the base method checks scopes. We omit this check
+        # but the rest of the method body is identical.
+
+        self.validate_authorization_request(request)
+
+        log.debug('Pre resource owner authorization validation ok for %r.',
+                  request)
+    except errors.FataClientError as e:
+        log.debug('Fatal client error during validation of %r. %r.',
+                  request, e)
+        raise
+    except errors.OAuth2Error as e:
+        log.debug('Client error during validation of %r. %r.', request, e)
+        request.redirect_uri = request.redirect_uri or self.error_uri
+        return {
+            'Location': common.add_params_to_uri(request.redirect_uri,
+                                                 e.twotuples)
+        }, None, 302
+
+    grant = self.create_authorization_code(request)
+    for modifier in self._code_modifiers:
+        grant = modifier(grant, token_handler, request)
+    log.debug('Saving grant %r for %r.', grant, request)
+    self.request_validator.save_authorization_code(
+        request.client_id, grant, request)
+    return self.prepare_authorization_response(
+        request, grant, {}, None, 302)
+
+
+from oauthlib.oauth2.rfc6749.grant_types.authorization_code import (
+    AuthorizationCodeGrant, log
+)
+
+AuthorizationCodeGrant.create_authorization_response = \
+    create_authorization_response
+
+# Now we can import the rest of what we need from oauthlib.
+```","",""

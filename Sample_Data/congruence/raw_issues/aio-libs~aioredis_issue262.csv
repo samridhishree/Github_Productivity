@@ -1,0 +1,153 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","262","aio-libs","aioredis","pfreixes","2017-07-04 23:07:55","When a new connection tries to get connected to the redis server and it
+has been configured with a maximum number of connections, the client
+will get a `MaxClientsError` exception if this limit is reached out.
+
+Also if a pool initialization with a `min_size` that cant meet the
+requirements - beucase of that limit u others issues - the pool creation
+will return also a `MaxClientsError`.","start issue","#186 Support for MaxClientsError for connection and pool"
+"pull_request_title","262","aio-libs","aioredis","pfreixes","2017-07-04 23:07:55","When a new connection tries to get connected to the redis server and it
+has been configured with a maximum number of connections, the client
+will get a `MaxClientsError` exception if this limit is reached out.
+
+Also if a pool initialization with a `min_size` that cant meet the
+requirements - beucase of that limit u others issues - the pool creation
+will return also a `MaxClientsError`.","6b95264014409a01fc7f854d0ca6b7e846714773","#186 Support for MaxClientsError for connection and pool"
+"issue_comment","262","aio-libs","aioredis","codecov[bot]","2017-07-05 07:06:37","# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=h1) Report
+> Merging [#262](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=desc) into [master](https://codecov.io/gh/aio-libs/aioredis/commit/b5604b7d0f1557ca2f6d1a036e675fd7ce69a592?src=pr&el=desc) will **increase** coverage by `0.06%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/262/graphs/tree.svg?token=THCDhqngRB&src=pr&height=150&width=650)](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff             @@
+##           master     #262      +/-   ##
+==========================================
++ Coverage   96.88%   96.95%   +0.06%     
+==========================================
+  Files          57       58       +1     
+  Lines        7450     7486      +36     
+  Branches      587      591       +4     
+==========================================
++ Hits         7218     7258      +40     
++ Misses        172      168       -4     
+  Partials       60       60
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/transaction\_commands\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-dGVzdHMvdHJhbnNhY3Rpb25fY29tbWFuZHNfdGVzdC5weQ==) | `100% <100%> (ø)` | :arrow_up: |
+| [tests/errors\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-dGVzdHMvZXJyb3JzX3Rlc3QucHk=) | `100% <100%> (ø)` | |
+| [tests/pool\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-dGVzdHMvcG9vbF90ZXN0LnB5) | `99.65% <100%> (+1.36%)` | :arrow_up: |
+| [tests/connection\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-dGVzdHMvY29ubmVjdGlvbl90ZXN0LnB5) | `100% <100%> (ø)` | :arrow_up: |
+| [aioredis/errors.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-YWlvcmVkaXMvZXJyb3JzLnB5) | `100% <100%> (ø)` | :arrow_up: |
+| [aioredis/sentinel/\_\_init\_\_.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-YWlvcmVkaXMvc2VudGluZWwvX19pbml0X18ucHk=) | `100% <0%> (ø)` | :arrow_up: |
+| [aioredis/sentinel/pool.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-YWlvcmVkaXMvc2VudGluZWwvcG9vbC5weQ==) | `86.75% <0%> (+0.04%)` | :arrow_up: |
+| [examples/py34/connection.py](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=tree#diff-ZXhhbXBsZXMvcHkzNC9jb25uZWN0aW9uLnB5) | `93.35% <0%> (+0.17%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=footer). Last update [b5604b7...6b95264](https://codecov.io/gh/aio-libs/aioredis/pull/262?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+","",""
+"issue_comment","262","aio-libs","aioredis","pfreixes","2017-07-05 18:13:14","Looks like the test suite executed by appveryor has raised an interesting buggy behavior with asyncio. If there are no waiters waiting in a stream and the stream gets first some data and later a close connection from the other peer, with the current implementation the client wont be able to grab the buffer data that was sent first. Having always an exception notifying that the connection was closed. IMHO a bug in asyncio.
+
+Articulate a fix in `aioredis` might be complicated, but the scenario that happens in the appveyor environment - Windows? - can happen also in other systems. It's just a matter of how the code is implemented, indeed I was able to reproduce it easily. Therefore, my first thoughts will go to implement the hack.
+
+BTW I will raise this conversation to the Python async community to get feedback, I will work with a fix ASAP .
+
+ ","",""
+"issue_comment","262","aio-libs","aioredis","popravich","2017-07-06 12:46:39","Oh, that `CancelledError` is misleading, we should change that.
+`_read_data` coroutine has this block with comment:
+```python
+        while not self._reader.at_eof():
+            try:
+                data = yield from self._reader.read(MAX_CHUNK_SIZE)
+            except asyncio.CancelledError:
+                break
+            except Exception as exc:
+                # XXX: for QUIT command connection error can be received
+                #       before response
+                logger.error(""Exception on data read %r"", exc, exc_info=True)
+                break
+            if data == b'' and self._reader.at_eof():
+                logger.debug(""Connection has been closed by server"")
+                break
+```
+I think we should do the same here as we do with MaxClientsError — close connection with exception.
+We will close connection with other error (`ConnectionResetError` instead of `MaxClientsError`) but
+at least not dummy `CancelledError`.
+```diff
+diff --git a/aioredis/connection.py b/aioredis/connection.py
+index b31c886..65f6746 100644
+--- a/aioredis/connection.py
++++ b/aioredis/connection.py
+@@ -166,9 +166,12 @@ class RedisConnection(AbcConnection):
+                 # XXX: for QUIT command connection error can be received
+                 #       before response
+                 logger.error(""Exception on data read %r"", exc, exc_info=True)
+-                break
++                self._closing = True
++                self._do_close(exc)
++                return
+             if data == b'' and self._reader.at_eof():
+                 logger.debug(""Connection has been closed by server"")
++                # NOTE: probably set ConnectionClosedError here as well.
+                 break
+             self._parser.feed(data)
+             while True:
+```
+Your thoughts?","",""
+"issue_comment","262","aio-libs","aioredis","pfreixes","2017-07-06 17:15:12","Correct me if I'm wrong but I would say that this piece of code is something that is really coupled to the transaction command. Trying to make happy all of the paths when one of the commands belonging to a transaction closes the connection. If you change that code the following test will start having issues [1].
+
+My 2cents here. The issue that I've commented before is still possible [2]. And the way to catch them is the piece of code that you commented. But we have two problems here:
+
+1) The `maxclients` test might become a heisentest. Sometimes parsing the `ReplyError` and sometimes not. This is what is happening right now between `appveyor` and `travis`. Might be Im wrong, but in any case, this is a plausible scenario.
+2) The code that we should touch has strong dependencies with the transaction behavior and how the pending futures must be closed once the Redis connection has been closed.
+
+
+[1]  https://github.com/aio-libs/aioredis/blob/master/tests/transaction_commands_test.py#L60
+[2] http://bugs.python.org/issue30861","",""
+"issue_comment","262","aio-libs","aioredis","pfreixes","2017-07-20 06:30:47","Looks like that the bug [1] is moving ahead in somehow, but obviously it won't get rid of the pain taking into account the multiple python versions that aioredis supports.
+
+I'm a bit stuck here, not sure how to tackle this PR having in mind the many factors that are involved:
+
+- Can't be possible with the current StreamReader implementation gather the buffer if the RST  already came into the OS.
+- Dependencies with the transaction command. 
+
+Any thoughts on how move ahead with all of this?
+
+[1] http://bugs.python.org/issue30861","",""
+"issue_comment","262","aio-libs","aioredis","popravich","2017-07-20 09:09:42","Here are my quick thoughts:
+* this PR fixes *max clients* issue;
+* with another PR we can replace asyncio.StreamReader with our own.
+This way we can solve this RST case and also this can make `aioredis` a bit faster,
+instead of copying data into `StreamReader`'s buffer then moving it into `hiredis`' Reader
+we can send it directly to hiredis (although must consider hiredis buffer limits).
+","",""
+"issue_comment","262","aio-libs","aioredis","pfreixes","2017-07-20 09:25:51","Then if you don't mind let's keep this PR frozen till we are able to provide our own `StreamReader`. 
+
+So once this is implemented and merged, this PR would get the pipeline in green automatically. Even though my gut feeling says that the transaction command will give us some headaches.
+
+I will try to work with the `StreamReader` ASAP, or do you wanna take it?
+","",""
+"issue_comment","262","aio-libs","aioredis","popravich","2017-07-20 09:33:55","> I will try to work with the StreamReader ASAP, or do you wanna take it?
+
+Go ahead with this, I don't have much free time for now(
+","",""
+"pull_request_commit_comment","262","aio-libs","aioredis","pfreixes","2017-07-04 23:10:20","No really happy with that change - to much implicit -, but it is needed a deterministic way to check that the pool can be created with that min_size requirements.  Should we keep this way to check that a connection is not really opened or try something more sophisticated (hard problem)?
+
+Also have in mind that the code that is above when the kw `override_min` is True, should be following the same pattern than here? ","6b95264014409a01fc7f854d0ca6b7e846714773","(6, '', u'aioredis/pool.py')"
+"pull_request_commit","262","aio-libs","aioredis","pfreixes","2017-07-04 23:03:54","Support for MaxClientsError for connection and pool #186
+
+When a new connection tries to get connected to the redis server and it
+has been configured with a maximum number of connections, the client
+will get a `MaxClientsError` exception if this limit is reached out.
+
+Also if a pool initialization with a `min_size` that can meet the
+requirements - beucase of that limit u others issues - the pool creation
+will return also a `MaxClientsError`.","fc2d573c9a2cd92dc2c44370bf12b7fd89fa5a61",""
+"pull_request_commit","262","aio-libs","aioredis","pfreixes","2017-07-05 07:04:57","Maxclients test must run only for Redis >= 2.8.0","6b95264014409a01fc7f854d0ca6b7e846714773",""

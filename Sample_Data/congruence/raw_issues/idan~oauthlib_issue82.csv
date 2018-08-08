@@ -1,0 +1,187 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","82","idan","oauthlib","Chez","2012-11-28 09:50:47","I have introduced a RefreshTokenGrant in grant_types.py. I am using this as a replacement for the AuthorisationCodeGrant when the consumer sends a refresh token request. If you are handling this a different way server side could you point that out as it is not obvious.
+
+Cheers
+","start issue","Introduced RefreshTokenGrant"
+"issue_closed","82","idan","oauthlib","ib-lundgren","2012-12-19 21:40:54","","closed issue","Introduced RefreshTokenGrant"
+"pull_request_title","82","idan","oauthlib","Chez","2012-11-28 09:50:47","I have introduced a RefreshTokenGrant in grant_types.py. I am using this as a replacement for the AuthorisationCodeGrant when the consumer sends a refresh token request. If you are handling this a different way server side could you point that out as it is not obvious.
+
+Cheers
+","85456b65c7ce7d60dfbe958c2a4cd35129fe9955","Introduced RefreshTokenGrant"
+"issue_comment","82","idan","oauthlib","ib-lundgren","2012-11-28 09:57:06","Awesome! I was planning on creating a grant for this but forgot to document it anywhere. Well spotted and great initiative. Can't look over it now but will try and find some time this week.
+","",""
+"issue_comment","82","idan","oauthlib","Chez","2012-11-28 10:30:36","No worries, it's a basic version of the AuthorisationCodeGrant :)
+","",""
+"issue_comment","82","idan","oauthlib","ib-lundgren","2012-12-16 21:38:13","Just an update, you are not forgotten and I'll patch your PR in at some point this week =)
+","",""
+"issue_comment","82","idan","oauthlib","ib-lundgren","2012-12-19 21:40:54","I broke a fair bit off your PR with my recent update so I copied it in manually and adjusted a few things to match my updates. I like that you started to break out redirect validation from the request validator and hope to get around to doing that for both auth code and implicit tomorrow.
+
+I added you to authors, let me know if you'd rather not be listed.
+","",""
+"issue_comment","82","idan","oauthlib","Chez","2012-12-20 09:48:10","Hi,
+
+Okay, no worries. I have some example python code that might be good to share as examples for setting up the provider side of things, that area is sadly lacking on the web. I'll get around to making sure all tests are running with it and take out anything specific to last project. Then push it up, probably after Christmas sometime :)
+
+I notice that you didn't include the in validate_token_request under AuthorizationCodeGrant. Did yo put it somewhere else? This takes care of making sure the consumer passes the same redirect_uri with the token request as they did with the initial auth request.
+
+```
+    # validate_redirect_uri must be provided by the
+    # subclass validator and Check that the redirect uri is the same
+    # as the one passed in with Authorisation end point.
+    redirect_uri = getattr(request, 'redirect_uri', None)
+    if not self.request_validator.validate_redirect_uri(request.client, redirect_uri):
+        raise errors.InvalidRequestError()
+```
+
+Chez Cheesmar
+chez@chezandred.com
+
+On Dec 19, 2012, at 11:40 PM, Ib Lundgren wrote:
+
+> I broke a fair bit off your PR with my recent update so I copied it in manually and adjusted a few things to match my updates. I like that you started to break out redirect validation from the request validator and hope to get around to doing that for both auth code and implicit tomorrow.
+> 
+> I added you to authors, let me know if you'd rather not be listed.
+> 
+> —
+> Reply to this email directly or view it on GitHub.
+","",""
+"issue_comment","82","idan","oauthlib","Chez","2012-12-20 09:49:15","Lol, ok
+
+re-read your mail, so ignore comments on redirect uri in last mail. Sorry!
+
+Cheers
+
+Chez Cheesmar
+chez@chezandred.com
+
+On Dec 19, 2012, at 11:40 PM, Ib Lundgren wrote:
+
+> I broke a fair bit off your PR with my recent update so I copied it in manually and adjusted a few things to match my updates. I like that you started to break out redirect validation from the request validator and hope to get around to doing that for both auth code and implicit tomorrow.
+> 
+> I added you to authors, let me know if you'd rather not be listed.
+> 
+> —
+> Reply to this email directly or view it on GitHub.
+","",""
+"issue_comment","82","idan","oauthlib","ib-lundgren","2012-12-20 10:00:40","Some example code would be great =) If you are able to keep them web
+framework neutral that's even better.
+
+If you (or others reading this) are feeling ambitious there is an unfilled
+place on the interwebs for a django-oauth2provider extension and I'm sure
+other frameworks are lacking as well. I'd love to help out with this when
+the oauthlib side of things stabilize but doubt I have time to lead the
+efforts myself.
+
+I'm planning quite a few changes in regard to tricky exceptions such as
+when a redirect URI is invalid or missing as this need to be handled on the
+provider side outside of the scope of oauthlib and not through a response
+to the client. I'm also very keen on making this compliant with the RFC and
+I think there are several cases which do not match currently. I'll try and
+get this done during the holidays and will track my plans and progress
+somewhere. On a high level I plan to move everything that can be taken care
+of automatically (such as checking fields) into the grants and have all
+methods which need to be implemented in the request validator. Furthermore
+I plan to differentiate exceptions into two classes, one which can be
+serialized into a response and one that must be acted upon by the provider.
+The latter is mainly present in the auth code grant and the implicit grant.
+
+Keep up the good work!
+
+On Thu, Dec 20, 2012 at 10:49 AM, Chez notifications@github.com wrote:
+
+> Lol, ok
+> 
+> re-read your mail, so ignore comments on redirect uri in last mail. Sorry!
+> 
+> Cheers
+> 
+> Chez Cheesmar
+> chez@chezandred.com
+> 
+> On Dec 19, 2012, at 11:40 PM, Ib Lundgren wrote:
+> 
+> > I broke a fair bit off your PR with my recent update so I copied it in
+> > manually and adjusted a few things to match my updates. I like that you
+> > started to break out redirect validation from the request validator and
+> > hope to get around to doing that for both auth code and implicit tomorrow.
+> > 
+> > I added you to authors, let me know if you'd rather not be listed.
+> > 
+> > —
+> > Reply to this email directly or view it on GitHub.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/82#issuecomment-11566343.
+","",""
+"issue_comment","82","idan","oauthlib","Chez","2012-12-20 19:16:55","I have quite a bit of Django experience, so might be interested, what sort of commitment does it require?
+
+Separating data/modeling requirements is the trickiest bit to making anything framework independent, but there are ways and means. I'm planning to write a data abstraction layer (bunch of wrappers) for my latest project which is in GAE. 
+
+As for your plans, sounds like a plan :) However, I have to go revisit the code again for a thorough walk through. Have been busy writing a spec for a personal project the last week. One thing I would want to do is consider the possibilities to separate provider vs client code into different packages so that you do not need to include all the code in both.
+
+Chez Cheesmar
+chez@chezandred.com
+
+On Dec 20, 2012, at 12:00 PM, Ib Lundgren wrote:
+
+> Some example code would be great =) If you are able to keep them web 
+> framework neutral that's even better. 
+> 
+> If you (or others reading this) are feeling ambitious there is an unfilled 
+> place on the interwebs for a django-oauth2provider extension and I'm sure 
+> other frameworks are lacking as well. I'd love to help out with this when 
+> the oauthlib side of things stabilize but doubt I have time to lead the 
+> efforts myself. 
+> 
+> I'm planning quite a few changes in regard to tricky exceptions such as 
+> when a redirect URI is invalid or missing as this need to be handled on the 
+> provider side outside of the scope of oauthlib and not through a response 
+> to the client. I'm also very keen on making this compliant with the RFC and 
+> I think there are several cases which do not match currently. I'll try and 
+> get this done during the holidays and will track my plans and progress 
+> somewhere. On a high level I plan to move everything that can be taken care 
+> of automatically (such as checking fields) into the grants and have all 
+> methods which need to be implemented in the request validator. Furthermore 
+> I plan to differentiate exceptions into two classes, one which can be 
+> serialized into a response and one that must be acted upon by the provider. 
+> The latter is mainly present in the auth code grant and the implicit grant. 
+> 
+> Keep up the good work! 
+> 
+> On Thu, Dec 20, 2012 at 10:49 AM, Chez notifications@github.com wrote: 
+> 
+> > Lol, ok 
+> > 
+> > re-read your mail, so ignore comments on redirect uri in last mail. Sorry! 
+> > 
+> > Cheers 
+> > 
+> > Chez Cheesmar 
+> > chez@chezandred.com 
+> > 
+> > On Dec 19, 2012, at 11:40 PM, Ib Lundgren wrote: 
+> > 
+> > > I broke a fair bit off your PR with my recent update so I copied it in 
+> > > manually and adjusted a few things to match my updates. I like that you 
+> > > started to break out redirect validation from the request validator and 
+> > > hope to get around to doing that for both auth code and implicit tomorrow. 
+> > > 
+> > > I added you to authors, let me know if you'd rather not be listed. 
+> > > 
+> > > — 
+> > > Reply to this email directly or view it on GitHub. 
+> > 
+> > — 
+> > Reply to this email directly or view it on GitHubhttps://github.com/idan/oauthlib/pull/82#issuecomment-11566343. 
+> > 
+> > —
+> > Reply to this email directly or view it on GitHub.
+","",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-11-28 09:21:07","added RefreshTokenGrant to grant_types.py.","e7bfbd06fb2cd4908f788d5571b63d5689c0618f",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-11-28 17:08:57","changed RefreshTokenGrant error for failing validate_refresh_token to InvalidRequestError as per the Oauth2 spec 5.2","829f793edd216777e233131ab1b4625c8130002d",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-12-01 08:43:07","added validate_redirect_uri method call to RefreshTokenGrant in grant_types.py","15be5b69386732aa20f0afb19d8024168faf05b3",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-12-01 08:50:20","ammeded comment for validate_redirect_uri","9ecbb081917f503fbefa47671f5261d90da8b6bd",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-12-02 09:25:39","moved redirect token check to validate_token_request in AuthorizationCodeGrant.","8d17f0612420b9740f619a4fe550c7dff5957c94",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-12-03 08:02:49","fixed sleepy mistake for checking redirect uri","6ca6d6b41076a104c088dbc2e4a130a4255b3601",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-12-07 07:00:54","changed self.request to request in create_token_response","a6aa8463bfe5ff0d977e994d212e9a2bec1db871",""
+"pull_request_commit","82","idan","oauthlib","Chez","2012-12-12 21:45:16","changed request.scopes to singlular which seems to be the normal tense for scope parameter.","85456b65c7ce7d60dfbe958c2a4cd35129fe9955",""

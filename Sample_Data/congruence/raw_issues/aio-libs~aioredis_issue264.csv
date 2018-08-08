@@ -1,0 +1,67 @@
+"rectype","issueid","project_owner","project_name","actor","time","text","action","title"
+"issue_title","264","aio-libs","aioredis","thomasst","2017-07-06 11:32:42","Fixes https://github.com/aio-libs/aioredis/issues/249","start issue","Support PING in pubsub mode"
+"issue_closed","264","aio-libs","aioredis","popravich","2017-09-26 06:51:34","","closed issue","Support PING in pubsub mode"
+"pull_request_title","264","aio-libs","aioredis","thomasst","2017-07-06 11:32:42","Fixes https://github.com/aio-libs/aioredis/issues/249","282e8803f94eb1504920bb3d13f7717f9ec9175b","Support PING in pubsub mode"
+"pull_request_merged","264","aio-libs","aioredis","popravich","2017-09-26 06:51:34","Support PING in pubsub mode","6d62869fd4a418114b79939a2cde7496501c10fc","Pull request merge from closeio/aioredis:pubsub-ping to aio-libs/aioredis:master"
+"issue_comment","264","aio-libs","aioredis","codecov[bot]","2017-07-17 15:21:50","# [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=h1) Report
+> Merging [#264](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=desc) into [master](https://codecov.io/gh/aio-libs/aioredis/commit/b5604b7d0f1557ca2f6d1a036e675fd7ce69a592?src=pr&el=desc) will **increase** coverage by `0.01%`.
+> The diff coverage is `100%`.
+
+[![Impacted file tree graph](https://codecov.io/gh/aio-libs/aioredis/pull/264/graphs/tree.svg?src=pr&token=THCDhqngRB&width=650&height=150)](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree)
+
+```diff
+@@            Coverage Diff            @@
+##           master    #264      +/-   ##
+=========================================
++ Coverage   96.88%   96.9%   +0.01%     
+=========================================
+  Files          57      57              
+  Lines        7450    7463      +13     
+  Branches      587     589       +2     
+=========================================
++ Hits         7218    7232      +14     
++ Misses        172     171       -1     
+  Partials       60      60
+```
+
+
+| [Impacted Files](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree) | Coverage Δ | |
+|---|---|---|
+| [tests/pubsub\_commands\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-dGVzdHMvcHVic3ViX2NvbW1hbmRzX3Rlc3QucHk=) | `100% <100%> (ø)` | :arrow_up: |
+| [examples/py34/connection.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-ZXhhbXBsZXMvcHkzNC9jb25uZWN0aW9uLnB5) | `93.01% <0%> (-0.17%)` | :arrow_down: |
+| [tests/sentinel\_failover\_test.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-dGVzdHMvc2VudGluZWxfZmFpbG92ZXJfdGVzdC5weQ==) | `88.72% <0%> (+0.75%)` | :arrow_up: |
+| [aioredis/locks.py](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=tree#diff-YWlvcmVkaXMvbG9ja3MucHk=) | `100% <0%> (+4.34%)` | :arrow_up: |
+
+------
+
+[Continue to review full report at Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=continue).
+> **Legend** - [Click here to learn more](https://docs.codecov.io/docs/codecov-delta)
+> `Δ = absolute <relative> (impact)`, `ø = not affected`, `? = missing data`
+> Powered by [Codecov](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=footer). Last update [b5604b7...282e880](https://codecov.io/gh/aio-libs/aioredis/pull/264?src=pr&el=lastupdated). Read the [comment docs](https://docs.codecov.io/docs/pull-request-comments).
+","",""
+"issue_comment","264","aio-libs","aioredis","thomasst","2017-07-17 15:25:31","Just pushed some fixes. I also wanted to get your opinion on the return value of `ping()`. Normally it returns the string ""PONG"" (which Redis returns). However, in pubsub mode is returns a (lower case) ""pong"" message, so for consistency reasons I chose to return the ""PONG"" string. We might also want to consider returning nothing or True (the regular Python Redis library returns True). What do you think?","",""
+"issue_comment","264","aio-libs","aioredis","thomasst","2017-07-31 20:24:04","@popravich could you please take another look at this PR? Thanks!","",""
+"issue_comment","264","aio-libs","aioredis","popravich","2017-09-26 06:58:39","Thanks,
+Sorry for long delay","",""
+"pull_request_commit_comment","264","aio-libs","aioredis","popravich","2017-07-12 07:31:14","Try removing `ping` from `_PUBSUB_COMMANDS`, that is the reason why pool tests are failing","282e8803f94eb1504920bb3d13f7717f9ec9175b","(None, '', u'aioredis/connection.py')"
+"pull_request_commit_comment","264","aio-libs","aioredis","thomasst","2017-07-17 11:41:31","This will fail then though:
+
+```
+        is_pubsub = command in _PUBSUB_COMMANDS
+        if self._in_pubsub and not is_pubsub:
+>           raise RedisError(""Connection in SUBSCRIBE mode"")
+E           aioredis.errors.RedisError: Connection in SUBSCRIBE mode
+
+aioredis/connection.py:274: RedisError
+```
+
+Any other suggestions?","282e8803f94eb1504920bb3d13f7717f9ec9175b","(None, '', u'aioredis/connection.py')"
+"pull_request_commit_comment","264","aio-libs","aioredis","popravich","2017-07-17 11:54:37","Yes, it will fail.
+You can extend condition of that `if` to something like:
+```python
+if self._in_pubsub and not (is_pubsub or is_ping):
+    ...
+```","282e8803f94eb1504920bb3d13f7717f9ec9175b","(None, '', u'aioredis/connection.py')"
+"pull_request_commit","264","aio-libs","aioredis","thomasst","2017-07-06 11:29:34","Support PING in pubsub mode","861a139832a007396b4f4d698640006d09a1704e",""
+"pull_request_commit","264","aio-libs","aioredis","thomasst","2017-07-17 15:21:12","Fixes","f2c684f56a1a435b8f1395c234464527e0f3e792",""
+"pull_request_commit","264","aio-libs","aioredis","thomasst","2017-07-17 17:02:11","Add Redis version requirement","282e8803f94eb1504920bb3d13f7717f9ec9175b",""
