@@ -7,7 +7,7 @@ import sys
 import csv
 import pandas as pd
 import cPickle as pickle
-import argpase
+import argparse
 csv.field_size_limit(sys.maxsize)
 
 parser = argparse.ArgumentParser()
