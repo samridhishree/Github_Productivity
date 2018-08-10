@@ -77,6 +77,11 @@ def CreateDaySeries(str_time_list):
 # In[ ]:
 
 
+# Applies the text tiling algorithm from 
+# Hearst MA (1994) Multi-paragraph segmentation of expository text. 
+#  In: Pro-ceedings of the 32nd annual meeting on Association for 
+#  Computational Lin-guistics, Association for Computational Linguistics, pp 9–16
+# It uses people instead of words to find sequences of similar people working
 for filename in os.listdir(daily_activity_dir):
     project = filename.split('.csv')[0].strip()
     print "Processing for project = ", project
