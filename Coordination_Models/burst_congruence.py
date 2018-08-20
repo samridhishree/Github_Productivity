@@ -531,6 +531,7 @@ def CalculateAndStoreCongruence(project_name, bursts):
 				temp['burst_end'] = burst[1]
 				temp['burst_duration_days'] = burst_duration_days
 				temp['total_activity'] = num_commits + num_comments
+				temp['num_commits'] = num_commits
 				temp['num_files (Change Size)'] = len(files_modified)
 				temp['file_modules (#Teams)'] = len(file_modules_involved)
 				temp['total_num_issues'] = num_issues

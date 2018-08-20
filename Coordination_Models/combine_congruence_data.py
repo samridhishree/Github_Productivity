@@ -20,7 +20,7 @@ args, unknown = parser.parse_known_args()
 congruence_dir = args.congruence_dir
 output_file = args.output_file
 
-title_row = ['burst_id', 'burst_start', 'burst_end', 'burst_duration_days', 'total_activity', \
+title_row = ['burst_id', 'burst_start', 'burst_end', 'burst_duration_days', 'total_activity', 'num_commits',\
             'num_files (Change Size)', 'file_modules (#Teams)', 'total_num_issues', 'issues_opened', 'issues_closed',\
             'avg_res_time_hours', 'efficiency', 'issue_per_person (Team Load)', \
             'activity_per_person', 'committing_users', 'commenting_users', 'total_actors',\
