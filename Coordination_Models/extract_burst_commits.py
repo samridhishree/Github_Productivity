@@ -23,8 +23,6 @@ parser.add_argument('--output_dir', help='Directory containing commits per burst
 parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='Sample_Data/HMM/results/daily_bursts.pickle')
 args = parser.parse_args()
 
-import pdb
-pdb.set_trace()
 raw_commits_dir = args.raw_commits_dir
 output_dir = args.output_dir
 project_burst_pickle = args.burst_pickle
