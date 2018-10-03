@@ -21,9 +21,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--raw_commits_dir', help='Directory with project-wise commit files', default='Sample_Data/congruence/raw_commits/')
 parser.add_argument('--output_dir', help='Directory containing commits per burst per project', default='Sample_Data/congruence/burst_commits/')
 parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='Sample_Data/HMM/results/daily_bursts.pickle')
-args, unknown = parser.parse_known_args()
+args = parser.parse_args()
 
-
+import pdb
+pdb.set_trace()
 raw_commits_dir = args.raw_commits_dir
 output_dir = args.output_dir
 project_burst_pickle = args.burst_pickle
@@ -65,8 +66,7 @@ def ExtractAndStoreCommits(commit_file, bursts, project_name):
 
 # ExtractAndStoreCommits(os.path.join(commits_dir, 'repo_google_oauth2client_commits.csv'), google_bursts, 'google_oauth2client')
 for project in projects:
-	commit_file_project = project.replace('~', '_')
-	commit_file_name = 'repo_' + commit_file_project + '_commits.csv'
+	commit_file_name = project + '_commits.csv'
 	commit_file = os.path.join(raw_commits_dir, commit_file_name)
 	if os.path.isfile(commit_file):
 		print "Processing for project : ", project
