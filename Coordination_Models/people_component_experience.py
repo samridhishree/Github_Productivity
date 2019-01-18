@@ -24,7 +24,7 @@ parser.add_argument('--project_bursts_pickle', help='Pickled list of bursts per 
 					default='Sample_Data/HMM/results/daily_bursts.pickle')
 parser.add_argument('--output_pickle_path', help='Output directory to store the pickled dictionary of component experience',\
 					default='Sample_Data/congruence/component_exp/')
-args, unknown = parser.parse_known_args()
+args = parser.parse_args()
 
 raw_commit_path = args.raw_commit_path
 project_bursts_pickle = args.project_bursts_pickle

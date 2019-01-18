@@ -51,7 +51,7 @@ parser.add_argument('--output_pickle_dir', help='Output directory to hold te com
 parser.add_argument('--output_csv_req_metrics', help='Output directory to hold the requirement matrices',\
 	default='Sample_Data/congruence/congruence_outputs/output_requirements/')
 
-args, unknown = parser.parse_known_args()
+args = parser.parse_args()
 
 fct_adjacency_dir = args.fct_adjacency_dir
 user_file_pickle_dir = args.user_file_pickle_dir	
@@ -296,17 +296,22 @@ def CalculateAndStoreCongruence(project_name, bursts):
 	fct_adjacency_file = "repo_" + project_name + '_co_commit.pickle'
 	user_file_pickle = project_name + '_user_file.pickle'
 	user_mod_filename = project_name + '_user_module.pickle'
-	file_mod_filename = "repo_" + project_name + '_file_mod.pickle'
+	file_mod_filename =  project_name + '_file_mod.pickle'
 	exp_dict_filename = prev +'_user_experience.pickle'
 	pickle_file = os.path.join(output_pickle_dir, project_name + '_cm_mr_info.pickle')
 
 	if (os.path.isfile(os.path.join(user_mod_fct, user_mod_filename)) == False):  print "Warning: " + user_mod_fct + user_mod_filename + " missing"
-	if (os.path.isfile(os.path.join(fct_adjacency_dir, fct_adjacency_file)) == False): print "Warning: " + fct_adjacency_dir + fct_adjacency_file + " missing"
+	if (os.path.isfile(os.path.join(fct_adjacency_dir, fct_adjacency_file)) == False): 
+            print "Warning: " + fct_adjacency_dir + fct_adjacency_file + " missing"
+	    fct_adjacency_file = project_name + '_co_commit.pickle'
+	    if (os.path.isfile(os.path.join(fct_adjacency_dir, fct_adjacency_file)) == False): 
+                print "Warning: " + fct_adjacency_dir + fct_adjacency_file + " missing"
 	if (os.path.isfile(os.path.join(user_mod_fct, user_mod_filename)) == True) and \
 	(os.path.isfile(os.path.join(fct_adjacency_dir, fct_adjacency_file)) == True):
 		print "Calculating the measure for the project = ", project_name
 		
 		#Load all the data from the required files
+		print "Reading from ", os.path.join(fct_adjacency_dir, fct_adjacency_file)
 		fct_adjacency = pickle.load(open(os.path.join(fct_adjacency_dir, fct_adjacency_file), 'rb'))
 		user_file_dict = pickle.load(open(os.path.join(user_file_pickle_dir, user_file_pickle), 'rb'))
 		user_mod_fct_dict = pickle.load(open(os.path.join(user_mod_fct, user_mod_filename), 'rb'))

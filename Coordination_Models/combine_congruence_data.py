@@ -15,7 +15,7 @@ parser.add_argument('--congruence_dir', help='Directory containing the out csvs 
     default='Sample_Data/congruence/congruence_outputs/output_csv/')
 parser.add_argument('--output_file', help='Final regression table',\
     default='Sample_Data/congruence/congruence_outputs/regression_table.csv')
-args, unknown = parser.parse_known_args()
+args = parser.parse_args()
 
 congruence_dir = args.congruence_dir
 output_file = args.output_file
@@ -31,6 +31,7 @@ writer = csv.writer(w, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 writer.writerow(['project'] + title_row)
 
 #for project in projects:
+import pdb; pdb.set_trace()
 for filename in os.listdir(congruence_dir):
     project = filename.split('_cm_mr_info.csv')[0]
     #congruence_file = os.path.join(congruence_dir, project.replace('~','_') + '_cm_mr_info.csv')
