@@ -69,10 +69,13 @@ def ConvertToTime(time_df):
 
 for project in projects:
 	commit_project = project.replace('~', '_')
-	commit_file_name = 'repo_' + commit_project + '_commits.csv'
+	commit_file_name = project + '_commits.csv'
 	commit_file = os.path.join(raw_commit_path, commit_file_name)
 	if os.path.isfile(commit_file) == False:
-		continue
+		commit_file_name = "repo_" + commit_project + '_commits.csv'
+		commit_file = os.path.join(raw_commit_path, commit_file_name)
+		if os.path.isfile(commit_file) == False:
+			continue
 
 	print "Processing for project = ", project
 	project_burst = burst_dict[project]
@@ -82,19 +85,25 @@ for project in projects:
 	commit_times = commits['time']
 	formatted_time = ConvertToTime(commit_times)
 	commits['formatted_time'] = formatted_time
+        commits.sort_values('formatted_time')
 	
 	for burst_id,burst in enumerate(formatted_burst):
 		valid_commits = commits.loc[commits['formatted_time'] < burst[0]]
+	        if burst_id > 0:
+                    for user in experience_dict:
+                        experience_dict[user][burst_id] = experience_dict[user][burst_id-1].copy()
 		for index, row in valid_commits.iterrows():
 			files = str(row['paths'])
 			user = row['actor']
-			parts = files.split(',')
-			file_list = map(lambda x: x.replace('[', '').replace(']','').replace('"','').strip(), parts)
-			# files_commited = ast.literal_eval(files)
-			for file in file_list:
+                        try:
+                            file_list = eval(eval(files)[0])
+			    for file in file_list:
 				file = file.lower()
 				if file.endswith('.py'):
 					experience_dict[user][burst_id][file] += 1
+                        except:
+                            pass
+		commits = commits.loc[commits['formatted_time'] >= burst[0]]
 
 	user_exp_pick = os.path.join(output_pickle_path, (project + '_user_experience.pickle'))
 	with open(user_exp_pick, 'wb') as u_pickle:
