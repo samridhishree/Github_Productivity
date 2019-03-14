@@ -1,0 +1,60 @@
+
+DiGraph coordination_software {
+    edge [labelfontsize=10.0];
+    node [labelfontsize=14.0];
+    
+    "HMM/prepare_data_for_hmm.py" [shape=box];
+    "HMM/train_hmm.py" [shape=box];
+    #"HMM/train_hmm_parallel.py" [shape=box];
+    "HMM/save_model_scores.py" [shape=box];
+    "HMM/predict_hmm.py" [shape=box];
+    "HMM/interpret_hmm.py" [shape=box];
+    "HMM/filter_active_states.py" [shape=box];
+    "HMM/extract_daily_bursts.py" [shape=box];
+    #"HMM/generate_transition_graph.py" [shape=box];
+
+    #  === FILES
+    "HMM/daily_data_with_nullstate/";
+    "HMM/hmm_data.hdf5";
+    "HMM/results/<N>states";
+    "<N>";
+    "HMM/results/GaussianHMMdiag";
+    "HMM/results/predictions";
+    "HMM/results/filtered_states/";
+    "(Hand edit script to choose states)";
+    "HMM/results/daily_bursts.pickle";
+
+    #  === RULES
+    "HMM/daily_data_with_nullstate/" -> "HMM/prepare_data_for_hmm.py" [label="input_dir"];
+    "HMM/prepare_data_for_hmm.py" -> "HMM/hmm_data.hdf5" [label="output_dir"];
+
+    "HMM/hmm_data.hdf5" -> "HMM/train_hmm.py" [label="data_file"];
+    "HMM/train_hmm.py" -> "HMM/results/<N>states" [label="output_dir"];
+    "HMM/train_hmm.py" -> "HMM/results/GaussianHMMdiag" [label="output_dir"];
+
+    "HMM/hmm_data.hdf5" -> "HMM/save_model_scores.py" [label="data_file"];
+    "HMM/results/GaussianHMMdiag" -> "HMM/save_model_scores.py" [label="model_dir"];
+    "HMM/save_model_scores.py" -> "HMM/results/model_scores.csv" [label="output_file"];
+
+    "HMM/daily_data_with_nullstate/" -> "HMM/predict_hmm.py" [label="project_data_dir"];
+    "HMM/results/GaussianHMMdiag" -> "HMM/predict_hmm.py" [label="model_dir"];
+    "HMM/predict_hmm.py" -> "HMM/results/predictions" [label="output_dir"];
+    "<N>" -> "HMM/predict_hmm.py" [label="nstates"];
+
+    "HMM/results/GaussianHMMdiag" -> "HMM/interpret_hmm.py" [label="model_dir"];
+    "HMM/interpret_hmm.py" -> "HMM/results/model_interpretation" [label="output_dir"];
+
+    "(Hand edit script to choose states)" -> "HMM/filter_active_states.py" ;
+    "HMM/results/predictions" -> "HMM/filter_active_states.py" [label="prediction_dir"];
+    "HMM/filter_active_states.py" -> "HMM/results/filtered_states/" [label="input_dir"];
+
+    "HMM/results/filtered_states/" -> "HMM/extract_daily_bursts.py" [label="filtered_dir"];
+    "HMM/extract_daily_bursts.py" -> "HMM/results/daily_bursts.pickle" [label="output_file"];
+
+    #"HMM/results/GaussianHMMdiag" -> "HMM/generate_transition_graph.py" [label="model_file"];
+    #"HMM/generate_transition_graph.py" -> "??" [label="output_dir"];
+    #"<N>" -> "HMM/generate_transition_graph.py" [label="nstates"];
+    # == UNUSED
+
+   
+}

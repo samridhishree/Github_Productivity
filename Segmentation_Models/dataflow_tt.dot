@@ -1,0 +1,27 @@
+
+DiGraph coordination_software {
+    edge [labelfontsize=10.0];
+    node [labelfontsize=14.0];
+    
+    "TT_Segments/combine_issue_comments.py" [shape=box];
+    "TT_Segments/create_project_active_days.py" [shape=box];
+    "TT_Segments/create_tt_segments.py" [shape=box];
+    "TT_Segments/num_tt_segments_per_burst.py" [shape=box];
+
+    "congruence/raw_issues/" -> "TT_Segments/combine_issue_comments.py" [label="clean_issue_dir"];
+    "congruence/raw_commits/" -> "TT_Segments/combine_issue_comments.py" [label="commits_dir"];
+    "TT_Segments/combine_issue_comments.py" -> "alternative_bursts/tt/stemmed/" [label="output_dir"];
+
+    "HMM/daily_data/" -> "TT_Segments/create_project_active_days.py" [label="daily_activity_dir"];
+    "TT_Segments/create_project_active_days.py" -> "alternative_bursts/tt/active_days.pickle" [label="output_file"];
+
+    "alternative_bursts/tt/active_days.pickle" -> "TT_Segments/create_tt_segments.py" [label="project_active_days_pickle"];
+    "alternative_bursts/tt/stemmed/" -> "TT_Segments/create_tt_segments.py" [label="combined_activity_dir"];
+    "TT_Segments/create_tt_segments.py" -> "alternative_bursts/tt/segments" [label="output_dir"];
+
+    "(ref bursts)" -> "TT_Segments/num_tt_segments_per_burst.py" [label="ref_burst_pickle"];
+    "alternative_bursts/tt/segments" -> "TT_Segments/num_tt_segments_per_burst.py" [label="tt_burst_dir"];
+    "alternative_bursts/tt/active_days.pickle" -> "TT_Segments/num_tt_segments_per_burst.py" [label="project_active_days_pickle"];
+    "TT_Segments/num_tt_segments_per_burst.py" -> "(tts per ref burst file)" [label="output_file"];
+
+}

@@ -46,3 +46,4 @@ The execution is divided into three phases:
 
 2. __*Generate the final table*__: Generates the final table that acts as in input to the linear regression model by concatenating the individual project files.
 > Script: __combine_congruence_data.py__
+

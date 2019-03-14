@@ -1,0 +1,85 @@
+
+DiGraph coordination_software {
+    edge [labelfontsize=10.0];
+    node [labelfontsize=14.0];
+    "extract_burst_commits.py" [shape=box];
+    "extract_burst_issues.py"[shape=box];
+    "file_co_commit.py"[shape=box];
+    "build_co_commit_graph.py"[shape=box];
+    "file_module_dict.py"[shape=box];
+    "people_file_dict.py"[shape=box];
+    "people_module_dict.py"[shape=box];
+    "people_component_experience.py"[shape=box];
+    "reformat_adjacency.py"[shape=box];
+    "burst_congruence.py"[shape=box];
+    "combine_congruence_data.py"[shape=box];
+   
+    "raw_commits" ;
+    "burst_commits" ;
+    "burst_issues" ;
+    "daily_bursts.pickle" [color="red"];
+    "co_commit_adj_pickle" ;
+    "graph_metrics" ;
+    "graph_gml_files" ;
+    "file_module_dict" ;
+    "user_file_dict" ;
+    "user_module_dict" ;
+    "component_exp" ;
+    "co_commit_adj" ;
+    "participation.csv" ;
+    "congruence_outputs/\noutput_csv" ;
+    "congruence_outputs/\noutput_pickle" ;
+    "congruence_outputs/\noutput_requirements" ;
+    "extraneous_events" ;
+    "regression_table.csv" ;
+   
+    "raw_commits" -> "extract_burst_commits.py" [label="raw_commits_dir"];
+    "daily_bursts.pickle" -> "extract_burst_commits.py" [label="burst_pickle", color="red"];
+    "extract_burst_commits.py" -> "burst_commits" [label="output_dir"];
+
+    "raw_issues" -> "extract_burst_issues.py" [label="issue_dir"];
+    "daily_bursts.pickle" -> "extract_burst_issues.py" [label="burst_pickle", color="red"];
+    "extract_burst_issues.py" -> "burst_issues" [label="output_dir"];
+    "extract_burst_issues.py" -> "extraneous_events" [label="output_dir_extraneous"];
+
+    "raw_commits" -> "file_co_commit.py" [label="commit_dir"];
+    "file_co_commit.py" -> "co_commit_adj_pickle" [label="output_pickle_dir"];
+
+    "co_commit_adj_pickle" -> "build_co_commit_graph.py" [label="adj_pickle_dir"];
+    "build_co_commit_graph.py" -> "graph_gml_files" [label="output_graph_path"];
+    "build_co_commit_graph.py" -> "graph_metrics" [label="output_csv_path"];
+
+    "file_module_dict.py" -> "file_module_dict" [label="output_pickle_path"];
+    "graph_metrics" -> "file_module_dict.py" [label="code_metric_path"];
+
+    "raw_commits" -> "people_file_dict.py" [label="commit_dir"];
+    "people_file_dict.py" -> "user_file_dict" [label="output_pickle_path"];
+
+    "user_file_dict" -> "people_module_dict.py" [label="people_file_pickle_dir"];
+    "file_module_dict" -> "people_module_dict.py" [label="file_mod_pickle_dir"];
+    "people_module_dict.py" -> "user_module_dict" [label="output_pickle_dir"];
+
+    "raw_commits" -> "people_component_experience.py" [label="raw_commit_path"];
+    "daily_bursts.pickle" -> "people_component_experience.py" [label="project_bursts_pickle", color="red"];
+    "people_component_experience.py" -> "component_exp" [label="output_pickle_path"];
+
+    "co_commit_adj_pickle" -> "reformat_adjacency.py" [label="input_adjacency_dir"];
+    "reformat_adjacency.py" -> "co_commit_adj" [label="output_pickle_dir"];
+
+    "co_commit_adj" -> "burst_congruence.py" [label="fct_adjacency_dir"];
+    "user_file_dict" -> "burst_congruence.py" [label="user_file_pickle_dir"];
+    "user_module_dict" -> "burst_congruence.py" [label="user_mod_fct"];
+    "burst_commits" -> "burst_congruence.py" [label="bursty_commits_dir"];
+    "burst_issues" -> "burst_congruence.py" [label="bursty_issues_dir"];
+    "daily_bursts.pickle" -> "burst_congruence.py" [label="project_bursts_pickle", color="red"];
+    "file_module_dict" -> "burst_congruence.py" [label="file_mod_pickle_dir"];
+    "component_exp" -> "burst_congruence.py" [label="user_experience_pickle_dir"];
+    "participation.csv" -> "burst_congruence.py" [label="participation_csv"];
+    "burst_congruence.py" -> "congruence_outputs/\noutput_csv" [label="output_csv_dir"];
+    "burst_congruence.py" -> "congruence_outputs/\noutput_pickle" [label="output_pickle_dir"];
+    "burst_congruence.py" -> "congruence_outputs/\noutput_requirements" [label="output_csv_req_metrics"];
+
+    "congruence_outputs/\noutput_csv" -> "combine_congruence_data.py" [label="congruence_dir"];
+    "extraneous_events" -> "combine_congruence_data.py" [label="extraneous_events"];
+    "combine_congruence_data.py" -> "regression_table.csv" [label="output_file"];
+}

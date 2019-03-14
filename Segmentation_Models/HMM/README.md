@@ -23,15 +23,18 @@ The execution is divided into following steps. Each step is noted with the corre
 > 
 > Script: __train_hmm_parallel.py__ (trains in parallel for different states using multiple processors for faster execution (one processor for each state))
 
-3. __State Prediction__ - Use the trained model with the best likelihood on the validation set to predict the states for each timepoint for all projects.
+3. __Comparing Models__ -- create scores.csv in which highest number is the best model
+> Script: __save_model_scores.py__ 
+
+4. __State Prediction__ - Use the trained model with the best likelihood on the validation set to predict the states for each timepoint for all projects.
 > Script : __predict_hmm.py__
 
-4. __Interpret Model__ - Interpret the model with the best likelihood to get the mean parameter values at each state in order to find the 'active' and the 'non-active' states.
+5. __Interpret Model__ - Interpret the model with the best likelihood to get the mean parameter values at each state in order to find the 'active' and the 'non-active' states.   Graph the output to choose the active states.
 >   Script : __interpret_hmm.py__
 
-5. __Filter the Active States__ - Once the active states of the model are identified, this step filters the days of the project that are assigned any one of these active states.
+6. __Filter the Active States__ - Once the active states of the model are identified, this step filters the days of the project that are assigned any one of these active states.  BEFORE RUNNING, change the script to reflect the active states chosen in the previous step
 > Script: __filter_active_states.py__
 
-6. __Extract Activity Bursts__ - From the filtered, active days of the project a contiguous run of days (with a maximum gap of 3 days), are clubbed together to form a burst. 
+7. __Extract Activity Bursts__ - From the filtered, active days of the project a contiguous run of days (with a maximum gap of 3 days), are clubbed together to form a burst. 
 > Script: __extract_daily_bursts.py__
 

@@ -1,0 +1,27 @@
+
+DiGraph coordination_software {
+    edge [labelfontsize=10.0];
+    node [labelfontsize=14.0];
+    
+    "Klein/create_offsets_from_activity.py" [shape=box];
+    "Klein/format_klein_bursts.py" [shape=box];
+    "Klein/interpret_bursts.py" [shape=box];
+    "Klein/klein_bursts.R" [shape=box];
+
+    "HMM/daily_data/" -> "Klein/create_offsets_from_activity.py" [label="input_dir"];
+    "Klein/create_offsets_from_activity.py" -> "alternative_bursts/klein/computed_offsets" [label="output_dir"];
+
+    "alternative_bursts/klein/computed_offsets" -> "Klein/klein_bursts.R";
+    "Klein/klein_bursts.R" -> "alternative_bursts/klein/burst_output";
+
+    "alternative_bursts/klein/burst_output" -> "Klein/interpret_bursts.py" [label="klein_burst_dir"];
+    "alternative_bursts/klein/computed_offsets" ->  "Klein/interpret_bursts.py" [label="offset_dir"];
+    "Klein/interpret_bursts.py" -> "alternative_bursts/klein/level_bursts.pickle" [label="output_file"];
+
+    "alternative_bursts/klein/level_bursts.pickle" -> "Klein/format_klein_bursts.py" [label="klein_pickle"];
+    "Klein/format_klein_bursts.py" -> "alternative_bursts/klein/final_bursts.pickle" [label="output_pickle"];
+
+
+   
+   
+}

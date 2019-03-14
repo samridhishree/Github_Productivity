@@ -16,7 +16,10 @@ The execution is divided into following steps. Each step is noted with the corre
 > Script : __create_offsets_from_activity.py__
 
 2. __Segment the Timeline__ - The frequencies calculated above are modeled using an automaton.
-> Script: __klein_bursts.R__ 
+> Script: Rscript __klein_bursts.R__ 
 
-3. __Format the Burst__ - From the automata state assignments predicted from the previous step, map it to daily bursts (continuous run of days with the same state)
+3. __Interpret the Burst__  - make project -> level -> [burst] pickle
+> Script : __interpret_bursts.py__
+
+4. __Format the Burst__ - From the automata state assignments predicted from the previous step, map it to daily bursts (continuous run of days with the same state)
 > Script : __format_klein_bursts.py__

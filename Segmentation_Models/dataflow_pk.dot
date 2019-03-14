@@ -1,0 +1,27 @@
+
+DiGraph coordination_software {
+    edge [labelfontsize=10.0];
+    node [labelfontsize=14.0];
+    
+    "PK/compute_pk_tt.py" [shape=box];
+    "PK/pairwise_pk.py" [shape=box];
+    "compute_fano_factor.py" [shape=box];
+    "fano_table.py" [shape=box];
+
+    "(dict of bursts)" -> "PK/compute_pk_tt.py" [label="ref_burst_pickle"];
+    "(tt segments by project)" -> "PK/compute_pk_tt.py" [label="tt_burst_dir"];
+    "(active days pickle)" -> "PK/compute_pk_tt.py" [label="project_active_days_pickle"];
+    "PK/compute_pk_tt.py" -> "(pairwise avg. pk values in csv)" [label="output_file"];
+
+    "(model 1 burst dict)" -> "PK/pairwise_pk.py" [label="ref_burst_pickle"];
+    "(model 2 burst dict)" -> "PK/pairwise_pk.py" [label="hyp_burst_pickle"];
+    "(active days pickle) " -> "PK/pairwise_pk.py" [label="project_active_days_pickle"];
+    "PK/pairwise_pk.py" -> "(pairwise avg. pk values in csv) " [label="output_file"];
+
+    "HMM/daily_data_with_nullstate/" -> "compute_fano_factor.py" [label="input_dir"];
+    "compute_fano_factor.py" -> "HMM/results/fano_factor_per_project.pickle" [label="output_file"];
+
+    "HMM/results/fano_factor_per_project.pickle" -> "fano_table.py" [label="input_file"];
+   
+   
+}
