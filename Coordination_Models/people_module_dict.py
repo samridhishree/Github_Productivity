@@ -39,7 +39,7 @@ def dd():
 for fileName in os.listdir(people_file_pickle_dir):
 	if fileName.endswith('.pickle'):
 		project_name = fileName.split('_user_file.pickle')[0]
-		file_mod_pickle = "repo_" + project_name + '_file_mod.pickle'
+		file_mod_pickle = project_name + '_file_mod.pickle'
 		file_mod_p_file = file_mod_pickle_dir + file_mod_pickle
 
 		if os.path.isfile(file_mod_p_file):

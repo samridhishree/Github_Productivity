@@ -16,9 +16,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--project_active_days_pickle', help='Pickled list of active days of project (output of create_project_active_days.py)')
-parser.add_argument('--combined_activity_dir', help='Directory containing project combined commits and issues (cleaned)')
-parser.add_argument('--output_dir', help='Directory to store the project-wise TT Segments')
+parser.add_argument('--project_active_days_pickle', help='Pickled list of active days of project (output of create_project_active_days.py)',
+         default="Sample_Data/alternate_bursts/tt/active_days.pickle")
+parser.add_argument('--combined_activity_dir', help='Directory containing project combined commits and issues (cleaned)',
+         default="Sample_Data/alternate_bursts/tt/stemmed/")
+parser.add_argument('--output_dir', help='Directory to store the project-wise TT Segments',
+         default="Sample_Data/alternate_bursts/tt/segments/")
 args, unknown = parser.parse_known_args()
 
 project_active_days_pickle = args.project_active_days_pickle

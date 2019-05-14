@@ -43,4 +43,7 @@ for fileName in os.listdir(input_adjacency_dir):
 		#Save as pickle
 		adj_df = pd.DataFrame.from_dict(reformed_dict, orient='index')
 		adj_df.fillna(0.0, inplace=True)
-		adj_df.to_pickle(adj_pick)
+                try:
+		    adj_df.to_pickle(adj_pick)
+                except SystemError, se:
+                    print "Cannot write pickle for " + fileName

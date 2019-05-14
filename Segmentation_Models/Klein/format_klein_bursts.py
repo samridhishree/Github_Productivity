@@ -8,8 +8,10 @@ import cPickle as pickle
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--klein_pickle', help='Pickle file containing the klein bursts of the project in the {project:{intensity:[burst]}} format')
-parser.add_argument('--output_pickle', help='Output pickle for the formatted burst of the format {project:[burst]}')
+parser.add_argument('--klein_pickle', help='Pickle file containing the klein bursts of the project in the {project:{intensity:[burst]}} format',
+          default = "Sample_Data/alternate_bursts/klein/level_bursts.pickle")
+parser.add_argument('--output_pickle', help='Output pickle for the formatted burst of the format {project:[burst]}',
+          default = "Sample_Data/alternate_bursts/klein/final_bursts.pickle")
 args, unknown = parser.parse_known_args()
 
 
@@ -19,8 +21,8 @@ output_pickle = args.output_pickle
 klein_bursts = pickle.load(open(klein_pickle, 'rb'))
 formatted = {}
 
-for project in klein_bursts:
-    print "Project = ", project
+for ix, project in enumerate(klein_bursts):
+    print "Project ",ix,":", project
     bursts = []
 
     for intensity, burst_list in klein_bursts[project].items():

@@ -1,19 +1,18 @@
 '''
-Combines all the issue data for each project along with the comment text.
-The fields kept in the final csv: project, date, rectype, text(clean)
+Clean and stem the issue thread texts from the raw issue files
 '''
 
 import os
 import sys
 import csv
-import codecs
-import glob
-import pandas as pd
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-import cPickle as pickle
 import re
 import string
+import codecs
+import pandas as pd
+import cPickle as pickle
+from collections import defaultdict
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
 import argparse
 
 csv.field_size_limit(sys.maxsize)
@@ -21,24 +20,22 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--clean_issue_dir', help='Directory with clean issue threads',
-       default="Sample_Data/congruence/raw_issues/")
-parser.add_argument('--commits_dir', help='Directory containing project commits',
-       default="Sample_Data/congruence/raw_commits/")
-parser.add_argument('--output_dir', help='Directory to store the output csv containing commits and issues with stemmed words',
-       default="Sample_Data/alternate_bursts/tt/stemmed/")
+parser.add_argument('--raw_issue_dir', help='The directory containing raw issue files', 
+                default='Sample_Data/congruence/raw_issues/')
+parser.add_argument('--clean_issue_dir', help='Directory containing the clean issues', 
+                default='Sample_Data/congruence/clean_issues/')
 args, unknown = parser.parse_known_args()
 
+raw_issue_dir = args.raw_issue_dir
 clean_issue_dir = args.clean_issue_dir
-commits_dir = args.commits_dir
-output_dir = args.output_dir
 MAX_LEN = 400
 
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+try:
+    os.makedirs(clean_issue_dir)
+except:
+    pass
 
-def CleanText(text):
-    text = str(text)
+def CleanIssueComment(text):
     i=text.find('~~')    
     while (i>=0):
         endi=i+2+text[i+2:].find('~~')
@@ -111,44 +108,19 @@ def CleanText(text):
 
     return text
 
-#for project in projects:
-for commit_filename in os.listdir(commits_dir):
-    project = commit_filename.split('_commits.csv')[0]
-    print "Processing for project: ", project
-    issue_pattern = clean_issue_dir + '*' + project + '*.csv'
-    isuue_files = glob.glob(issue_pattern)
-    if len(isuue_files) == 0:
-        print "No issue files found aborting"
-        continue
-    commit_file = os.path.join(commits_dir, commit_filename)
-
-    output_file = os.path.join(output_dir, project + '_issue_comment.csv')
+for filename in os.listdir(raw_issue_dir):
+    print "Processing for file = ", filename
+    f = codecs.open(os.path.join(raw_issue_dir, filename), 'rb', encoding='utf-8')
+    reader = csv.DictReader(f)
+    header = reader.fieldnames + ['clean_text']
+    output_file = os.path.join(clean_issue_dir, filename.replace('.csv', '_clean.csv'))
     w = codecs.open(output_file, 'wb', encoding='utf-8')
-    writer = csv.writer(w)
-    writer.writerow(['time', 'rectype', 'text'])
-
-    # Write the issue data
-    for issue_file in isuue_files:
-        data = pd.read_csv(issue_file)
-        df_comment = data.loc[data['rectype'].str.find('comment')>0]
-        df_title = data.loc[data['rectype'].str.find('title')>0]
-        df = pd.concat([df_comment, df_title])
-        df.fillna('', inplace=True)
-        df_non_repeat = df.drop_duplicates(subset=['clean_text'], keep='first')
-        for index,row in df_non_repeat.iterrows():
-            to_write = [row['time'], row['rectype'], row['clean_text']]
-            writer.writerow(to_write)
-
-    # Write commit data
-    c_data = pd.read_csv(commit_file)
-    for index,row in c_data.iterrows():
-        clean_text = CleanText(row['text'])
-        to_write = [row['time'], row['rectype'], clean_text]
-        writer.writerow(to_write)
-    w.close()
-
-
-
+    writer = csv.DictWriter(w, fieldnames=header)
+    writer.writeheader()
+    for row in reader:
+        clean_text = CleanIssueComment(row['text'])
+        row['clean_text'] = clean_text
+        writer.writerow(row)
 
 
 

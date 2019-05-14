@@ -17,8 +17,10 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--burst_score_pickle', help='The pickled file containing project-wise burst scores')
-parser.add_argument('--output_file', help='Output filename for the maximal bursts')
+parser.add_argument('--burst_score_pickle', help='The pickled file containing project-wise burst scores',
+           default="Sample_Data/alternate_bursts/max_sum/burst_score_per_interval.pickle")
+parser.add_argument('--output_file', help='Output filename for the maximal bursts',
+           default="Sample_Data/alternate_bursts/max_sum/max_sum_segments.pickle")
 args, unknown = parser.parse_known_args()
 
 burst_score_pickle = args.burst_score_pickle

@@ -14,8 +14,10 @@ import csv
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input_dir', help='Input directory containing project-wise daily activity counts')
-parser.add_argument('--output_dir', help='Output directory for csv files containing computed offsets each day')
+parser.add_argument('--input_dir', help='Input directory containing project-wise daily activity counts',
+         default="Sample_Data/HMM/daily_data/")
+parser.add_argument('--output_dir', help='Output directory for csv files containing computed offsets each day',
+         default="Sample_Data/alternate_bursts/klein/computed_offsets")
 args, unknown = parser.parse_known_args()
 
 input_dir = args.input_dir
@@ -32,6 +34,7 @@ for filename in os.listdir(input_dir):
     days = list(map(lambda x: str(x), days))
     dates = list(map(lambda x: x[0:4] + "-" + x[4:6] + "-" + x[6:], days))
     dates = list(map(lambda x: datetime.strptime(x, '%Y-%m-%d'), dates))
+    if len(dates) == 0: continue
     start = dates[0]
     offsets = [(str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day), (cur-start).days) for cur in dates]
     project = filename.split('.csv')[0]

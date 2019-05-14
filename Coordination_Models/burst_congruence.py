@@ -145,8 +145,8 @@ def ConvertStringToTime(str_time):
 Get the open and close times of an issue and convert them to datetime objects for better processing
 '''
 def GetIssueTimes(issue_df, burst_start, burst_end, for_art=False):
-	starts = issue_df.loc[issue_df['action'] == 'start issue']
-	closes = issue_df.loc[issue_df['action'] == 'closed issue']
+	starts = issue_df.loc[issue_df['rectype'] == 'issue_title']
+	closes = issue_df.loc[issue_df['rectype'] == 'issue_closed']
 	s_times = starts['time']
 	c_times = closes['time']
 	if((starts.empty == False) and (closes.empty == False)):
@@ -181,8 +181,8 @@ Get the number of issues opened in the burst period and the number of issues_clo
 def GetOpenCloseIssues(issue_df, burst_start, burst_end):
 	opened = 0
 	closed = 0
-	starts = issue_df.loc[issue_df['action'] == 'start issue']
-	closes = issue_df.loc[issue_df['action'] == 'closed issue']
+	starts = issue_df.loc[issue_df['rectype'] == 'issue_title']
+	closes = issue_df.loc[issue_df['rectype'] == 'issue_closed']
 	s_times = starts['time']
 	c_times = closes['time']
 	if((starts.empty == False) and (closes.empty == False)):
@@ -292,8 +292,7 @@ Read the PR info csv files for each project and compute measure for each PR in t
 '''
 def CalculateAndStoreCongruence(project_name, bursts):
 	prev = project_name
-	project_name = project_name.replace("~", "_")	
-	fct_adjacency_file = "repo_" + project_name + '_co_commit.pickle'
+	fct_adjacency_file = project_name + '_co_commit.pickle'
 	user_file_pickle = project_name + '_user_file.pickle'
 	user_mod_filename = project_name + '_user_module.pickle'
 	file_mod_filename =  project_name + '_file_mod.pickle'
@@ -519,7 +518,7 @@ def CalculateAndStoreCongruence(project_name, bursts):
 					activity_per_person = (num_comments + num_commits)/(float)(num_all_users)
 
 				# Calculate Tenure
-				parts = project_name.split('_')
+				parts = project_name.split('~')
 				project_owner = parts[0].lower()
 				project = ' '.join(parts[1:]).lower()
 				valid_participation = all_participation.loc[all_participation['owner'] == project_owner]
@@ -554,6 +553,7 @@ def CalculateAndStoreCongruence(project_name, bursts):
 				temp['structural_congruence_fct'] = cm_mod_fct  
 				temp['mr_congruence_fct'] = cm_mr_fct
 				temp['users_to_coordinate'] = commiting_users
+                                print cm_mod_fct
 				final_info_dict.append(temp)
 
 			#Save the final info for this project as a pickle file
@@ -572,7 +572,10 @@ for project_name in projects:
 		continue
 	project_burst = burst_dict[project_name]
 	formatted_burst = FormatBurstTimeInterval(project_burst)
-	CalculateAndStoreCongruence(project_name, formatted_burst)
+        try:
+	    CalculateAndStoreCongruence(project_name, formatted_burst)
+        except Exception, e:
+            print project_name, e
 
 
 

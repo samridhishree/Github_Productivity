@@ -46,7 +46,6 @@ def ConvertToFilesList(list_str):
 for fileName in os.listdir(commit_dir):
 	if fileName.endswith('.csv'):
 		project_name = fileName.split('_commits.csv')[0]
-		project_name = project_name.replace('repo_','',1)
 		print "processing for project: ", project_name
 		
 		#Create a dictionary of files that each user touched

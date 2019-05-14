@@ -10,9 +10,12 @@ import cPickle as pickle
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--klein_burst_dir', help='Directory with the csv files containing the computed automata state assignments')
-parser.add_argument('--offsets_dir', help='Directory containing computed offsets for each day to map them back to actual dates')
-parser.add_argument('--output_file', help='Output pickle storing the directory {project:[bursts]}')
+parser.add_argument('--klein_burst_dir', help='Directory with the csv files containing the computed automata state assignments',
+             default="Sample_Data/alternate_bursts/klein/burst_output")
+parser.add_argument('--offsets_dir', help='Directory containing computed offsets for each day to map them back to actual dates',
+             default="Sample_Data/alternate_bursts/klein/computed_offsets/")
+parser.add_argument('--output_file', help='Output pickle storing the directory {project:{level:[bursts]}}',
+             default="Sample_Data/alternate_bursts/klein/level_bursts.pickle")
 args, unknown = parser.parse_known_args()
 
 klein_burst_dir = args.klein_burst_dir
@@ -20,11 +23,11 @@ offsets_dir = args.offsets_dir
 output_file = args.output_file
 
 final_dict = {}
-for filename in os.listdir(klein_burst_dir):
+for ix, filename in enumerate(os.listdir(klein_burst_dir)):
     if '.csv' not in filename:
         continue
 
-    print "Processing for project = ", filename
+    print "Processing for project ", ix, ":", filename
     project = filename.split('.csv')[0]
 
     # Enumerate the states' ranges

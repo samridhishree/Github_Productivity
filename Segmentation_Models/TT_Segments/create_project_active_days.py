@@ -12,13 +12,18 @@ import cPickle as pickle
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--daily_activity_dir', help='Directory containing daily activity counts per project')
-parser.add_argument('--output_file', help='Pickled dictionary of the format: {project:[list of active days]}')
+parser.add_argument('--daily_activity_dir', help='Directory containing daily activity counts per project',
+              default="Sample_Data/HMM/daily_data/")
+parser.add_argument('--output_file', help='Pickled dictionary of the format: {project:[list of active days]}',
+              default="Sample_Data/alternate_bursts/tt/active_days.pickle")
 args, unknown = parser.parse_known_args()
 
 daily_activity_dir = args.daily_activity_dir
 output_file = args.output_file
 final_dict = {}
+
+if not os.path.exists(os.path.dirname(output_file)):
+    os.makedirs(os.path.dirname(output_file))
 
 def FormatDates(dates_list):
     null_num = 0

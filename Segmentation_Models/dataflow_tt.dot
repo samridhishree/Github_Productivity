@@ -7,9 +7,11 @@ DiGraph coordination_software {
     "TT_Segments/create_project_active_days.py" [shape=box];
     "TT_Segments/create_tt_segments.py" [shape=box];
     "TT_Segments/num_tt_segments_per_burst.py" [shape=box];
+    "TT_Segments/clean_issue_threads.py" [shape=box];
+    "TT_Segments/clean_issue_threads.py " [shape=box];
 
-    "congruence/raw_issues/" -> "TT_Segments/combine_issue_comments.py" [label="clean_issue_dir"];
-    "congruence/raw_commits/" -> "TT_Segments/combine_issue_comments.py" [label="commits_dir"];
+    "congruence/clean_issues/" -> "TT_Segments/combine_issue_comments.py" [label="clean_issue_dir"];
+    "congruence/clean_commits/" -> "TT_Segments/combine_issue_comments.py" [label="commits_dir"];
     "TT_Segments/combine_issue_comments.py" -> "alternative_bursts/tt/stemmed/" [label="output_dir"];
 
     "HMM/daily_data/" -> "TT_Segments/create_project_active_days.py" [label="daily_activity_dir"];
@@ -24,4 +26,9 @@ DiGraph coordination_software {
     "alternative_bursts/tt/active_days.pickle" -> "TT_Segments/num_tt_segments_per_burst.py" [label="project_active_days_pickle"];
     "TT_Segments/num_tt_segments_per_burst.py" -> "(tts per ref burst file)" [label="output_file"];
 
+    "congruence/raw_issues/" -> "TT_Segments/clean_issue_threads.py" [label="raw_issue_dir"];
+    "TT_Segments/clean_issue_threads.py" -> "congruence/clean_issues/" [label="clean_issue_dir"];
+
+    "congruence/raw_commits/" -> "TT_Segments/clean_issue_threads.py " [label="raw_issue_dir"];
+    "TT_Segments/clean_issue_threads.py " -> "congruence/clean_commits/" [label="clean_issue_dir"];
 }

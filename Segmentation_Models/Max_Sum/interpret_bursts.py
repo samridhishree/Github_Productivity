@@ -13,9 +13,12 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--burst_pickle', help='The pickled file containing project maximal bursts')
-parser.add_argument('--daily_data_dir', help='Directory with project daily counts')
-parser.add_argument('--output_file', help='Output filename for the reformatted bursts')
+parser.add_argument('--burst_pickle', help='The pickled file containing project maximal bursts',
+           default="Sample_Data/alternate_bursts/max_sum/max_sum_segments.pickle")
+parser.add_argument('--daily_data_dir', help='Directory with project daily counts',
+           default="Sample_Data/HMM/daily_data/")
+parser.add_argument('--output_file', help='Output filename for the reformatted bursts',
+           default="Sample_Data/alternate_bursts/max_sum/reformatted_bursts.pickle")
 args, unknown = parser.parse_known_args()
 
 burst_pickle = args.burst_pickle

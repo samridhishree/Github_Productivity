@@ -24,7 +24,7 @@ csv.field_size_limit(sys.maxsize)
 parser = argparse.ArgumentParser()
 parser.add_argument('--issue_dir', help='Directory with issue files', default='Sample_Data/congruence/raw_issues/')
 parser.add_argument('--output_dir', help='Directory containing active issues per burst per project', default='Sample_Data/congruence/burst_issues/')
-parser.add_argument('--dont_extraneous', help='Do not count up other events during the burst not associated with issues that start and end here', action="store_false")
+parser.add_argument('--dont_extraneous', help='Do not count up other events during the burst not associated with issues that start and end here', action="store_true")
 parser.add_argument('--output_dir_extraneous', help='Place to put extra events that happend outside issues that start or end in the burst', default='Sample_Data/congruence/extraneous_events/')
 parser.add_argument('--all_events', help='Include all events.  If option is not specified, just include events from those issues that opened or closed during the burst, and that eventually closed', action="store_true")
 parser.add_argument('--burst_pickle', help='Pickle file containing the project burst information', default='Sample_Data/HMM/results/daily_bursts.pickle')
@@ -35,7 +35,9 @@ issue_dir = args.issue_dir
 output_dir = args.output_dir
 output_dir_extraneous = args.output_dir_extraneous
 project_burst_pickle = args.burst_pickle
-do_extraneous = not args.do_extraneous
+do_extraneous = not args.dont_extraneous
+
+print "Do_extraneous = ", do_extraneous
 
 try:
     os.makedirs(output_dir)

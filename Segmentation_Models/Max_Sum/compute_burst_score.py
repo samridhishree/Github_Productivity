@@ -12,8 +12,10 @@ from collections import defaultdict
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input_dir', help='Input directory containing project-wise daily activity counts')
-parser.add_argument('--output_file', help='Output filename for the pickled dictionary {project:[score_list]}')
+parser.add_argument('--input_dir', help='Input directory containing project-wise daily activity counts',
+            default="Sample_Data/HMM/daily_data/")
+parser.add_argument('--output_file', help='Output filename for the pickled dictionary {project:[score_list]}',
+            default="Sample_Data/alternate_bursts/max_sum/burst_score_per_interval.pickle")
 args, unknown = parser.parse_known_args()
 
 input_dir = args.input_dir

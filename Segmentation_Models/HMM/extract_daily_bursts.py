@@ -61,7 +61,7 @@ for filename in os.listdir(filtered_dir):
 		elif day_delta > 3:
 			nxt = next_date.strftime("%Y/%m/%d")
 			final_dict[project_name].append(nxt + "-" + nxt)
-		else:
+		elif len(dates) > 0:
 			nxt = next_date.strftime("%Y/%m/%d")
 			cur_burst += nxt
 			final_dict[project_name].append(cur_burst)

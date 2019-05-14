@@ -15,7 +15,7 @@ args, unknown = parser.parse_known_args()
 
 prediction_dir = args.prediction_dir
 filtered_dir = args.filtered_dir
-active_states = [2, 3, 4, 5, 6, 7, 8, 10, 11]   # Add the active states according to the model interpretation
+active_states = [1,2,4,5,6,7,8,9,10,15,16]
 
 try:
     os.makedirs(filtered_dir)

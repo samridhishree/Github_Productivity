@@ -13,8 +13,10 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ref_burst_pickle', help='Reference Bursts (HMM/Klein/Max)')
-parser.add_argument('--tt_burst_dir', help='TT Segments per project')
-parser.add_argument('--project_active_days_pickle', help='Pickled list of active days of project (output of create_project_active_days.py)')
+parser.add_argument('--tt_burst_dir', help='TT Segments per project',
+      default="Sample_Data/alternate_bursts/tt/segments/")
+parser.add_argument('--project_active_days_pickle', help='Pickled list of active days of project (output of create_project_active_days.py)',
+      default="Sample_Data/alternate_bursts/tt/active_days.pickle")
 parser.add_argument('--output_file', help='csv file containing number of TT segments per reference burst')
 args, unknown = parser.parse_known_args()
 

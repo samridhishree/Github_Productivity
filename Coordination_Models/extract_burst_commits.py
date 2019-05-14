@@ -11,7 +11,7 @@ import calendar
 import cPickle as pickle
 import pandas as pd
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 import argparse
 
 
@@ -57,7 +57,7 @@ def ExtractAndStoreCommits(commit_file, bursts, project_name):
 		low = low.replace('/', '-')
 		high_str = high.replace('/', '-')
 		low = datetime.strptime(low, '%Y-%m-%d')
-		high = datetime.strptime(high_str, '%Y-%m-%d')
+		high = datetime.strptime(high_str, '%Y-%m-%d') + timedelta(days=1)
 		sub_commit = commits.loc[commits['formatted_time'] >= low.date()]
 		sub_commit = sub_commit.loc[sub_commit['formatted_time'] <= high.date()]
 		sub_commit.to_csv(os.path.join(output_dir, project_name + '_burst_' + str(i) + '_commits.csv'))
@@ -66,6 +66,8 @@ def ExtractAndStoreCommits(commit_file, bursts, project_name):
 for project in projects:
 	commit_file_name = project + '_commits.csv'
 	commit_file = os.path.join(raw_commits_dir, commit_file_name)
+	if not os.path.isfile(commit_file):
+	        commit_file = os.path.join(raw_commits_dir, "repo_" + commit_file_name.replace("~","_"))
 	if os.path.isfile(commit_file):
 		print "Processing for project : ", project
 		burst = burst_dict[project]
