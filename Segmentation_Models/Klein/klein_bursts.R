@@ -1,8 +1,8 @@
 print(getwd())
 #setwd('/usr2/scratch/sschoudh/alternate_burst/klein')
 library("bursts", lib.loc="/usr2/scratch/sschoudh/rlib")
-project_offsets_folder <- "offsets_per_project/"
-output_folder <- "burst_output/"
+project_offsets_folder <- "Sample_Data/alternate_bursts/klein/computed_offsets/"
+output_folder <- "Sample_Data/alternate_bursts/klein/burst_output/"
 #print(output_folder)
 file_list <- list.files(path=project_offsets_folder, pattern="*.csv")
 #print(file_list)
